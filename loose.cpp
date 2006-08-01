@@ -28,7 +28,7 @@
 
 // loose.cpp
 
-#include "sjasm.h"
+#include "loose.h"
 
 void GetCurrentDirectory(int whatever, char *pad) {
   pad[0]=0;
@@ -48,8 +48,12 @@ int SearchPath(char*oudzp,char*filename,char*whatever,int maxlen,char*nieuwzp,ch
     while (*p) { if (*p=='/') f=p+1; ++p; }
     *ach=f;
   }
-  fp=fopen(nieuwzp,"r"); if (fp) fclose(fp);
-  return (int)fp;
+  fp=fopen(nieuwzp,"r");
+  if (fp) {
+	  fclose(fp);
+	  return 1;
+  }
+  return 0;
 }
 
 #ifndef WIN32
@@ -95,6 +99,12 @@ char* strset(char *str, char val)
 		*pByte++=val;		
 	}
 	return str;
+}
+
+long GetTickCount() {
+    struct timeval tv1[1];
+	gettimeofday(tv1, 0);
+    return tv1->tv_usec/1000;
 }
 #endif
 //eof loose.cpp

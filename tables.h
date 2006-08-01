@@ -4,7 +4,7 @@
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
-  Copyright (c) 2005 Sjoerd Mastijn
+  Copyright (c) 2006 Sjoerd Mastijn
 
   This software is provided 'as-is', without any express or implied warranty.
   In no event will the authors be held liable for any damages arising from the
@@ -42,6 +42,8 @@ class labtabentrycls {
 public:
   char *name;
   char page; /* added */
+  bool isdefl; /* added */
+  unsigned char forwardref; /* added */
   aint value,used;
   labtabentrycls();
 };
@@ -49,10 +51,12 @@ public:
 class labtabcls {
 public:
   labtabcls();
-  int insert(char*,aint,bool);
+  int insert(char*,aint,bool,bool);
+  int update(char*,aint);
   int zoek(char*,aint&);
   void dump();
   void dump4unreal(); /* added */
+  void dumpsym(); /* added from SjASM 0.39g */
 private:
   int hashtable[LABTABSIZE],nextlocation;
   labtabentrycls labtab[LABTABSIZE];
@@ -96,22 +100,28 @@ private:
   loklabtabentrycls *first,*last;
 };
 
+class adrlst {
+public:
+  aint val;
+  adrlst *next;
+  adrlst() { next=0; }
+  adrlst(aint nval,adrlst*nnext) { val=nval; next=nnext; }
+};
+
+class stringlst {
+public:
+  char *string;
+  stringlst *next;
+  stringlst() { next=0; }
+  stringlst(char*,stringlst*);
+};
+
 class definetabentrycls {
 public:
   char *naam, *vervanger;
+  stringlst *nss; /* added */
   definetabentrycls *next;
-  definetabentrycls(char*,char*,definetabentrycls*);
-};
-
-class definetabcls {
-public:
-  void init();
-  void add(char*,char*);
-  char *getverv(char*);
-  int bestaat(char*);
-  definetabcls() { init(); }
-private:
-  definetabentrycls *defs[128];
+  definetabentrycls(char*,char*,stringlst* /*added*/,definetabentrycls*);
 };
 
 class macdefinetabcls {
@@ -128,12 +138,16 @@ private:
   definetabentrycls *defs;
 };
 
-class stringlst {
+class definetabcls {
 public:
-  char *string;
-  stringlst *next;
-  stringlst() { next=0; }
-  stringlst(char*,stringlst*);
+  stringlst *defarraylstp; /* added */
+  void init();
+  void add(char*,char*,stringlst* /*added*/);
+  char *getverv(char*);
+  int bestaat(char*);
+  definetabcls() { init(); }
+private:
+  definetabentrycls *defs[128];
 };
 
 class macrotabentrycls {
@@ -248,6 +262,7 @@ private:
 /* added */
 struct dupes {
 	int dupcount;
+	long gcurlin;
 	long lcurlin;
 	long curlin;
 	stringlst *lines;
@@ -256,6 +271,25 @@ struct dupes {
 	bool work;
 	int level;
 };
+/*
+class labtab2entrycls {
+public:
+  char *name;
+  aint value;
+  labtabentrycls();
+};
 
+
+class labtab2cls {
+public:
+  labtab2cls();
+  int replace(char*,aint);
+  int count=0;
+private:
+  int hashtable[LABTABSIZE],nextlocation;
+  labtab2entrycls labtab[LABTABSIZE];
+  int hash(char*);
+};
+*/
 //eof tables.h
 

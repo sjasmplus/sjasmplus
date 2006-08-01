@@ -28,6 +28,8 @@
 
 // piz80.h
 
+#include "sjasm.h"
+
 void piZ80();
 void InitpiZ80();
 void Initpi();

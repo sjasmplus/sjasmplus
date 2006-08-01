@@ -28,11 +28,17 @@
 
 // loose.h
 
-#include <sys/param.h>
+//#include <sys/param.h>
+#include "sjasm.h"
+#ifndef WIN32
+#include <sys/time.h>
+#include <unistd.h>
+#endif
 #define TCHAR char
 void GetCurrentDirectory(int,char*);
 int SearchPath(char*,char*,char*,int,char*,char**);
 #ifndef WIN32
 char* strset(char *str, char val);
+long GetTickCount();
 #endif
 //eof loose.h

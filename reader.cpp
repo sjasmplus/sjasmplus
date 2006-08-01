@@ -2,9 +2,9 @@
 
   SjASMPlus Z80 Cross Assembler
 
-  This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
+  This is modified source of SjASM by Aprisobal - aprisobal@tut.by
 
-  Copyright (c) 2005 Sjoerd Mastijn
+  Copyright (c) 2006 Sjoerd Mastijn
 
   This software is provided 'as-is', without any express or implied warranty.
   In no event will the authors be held liable for any damages arising from the
@@ -91,12 +91,25 @@ void skipparam(char*&p) {
         p++;
 }
 
+/* modified */
 int needequ() {
+  char *olp=lp;
+  skipblanks();
+  /*if (*lp=='=') { ++lp; return 1; }*/
+  /* cut: if (*lp=='=') { ++lp; return 1; } */
+  if (*lp=='.') ++lp;
+  if (cmphstr(lp,"equ")) return 1;
+  lp=olp;
+  return 0;
+}
+
+/* added */
+int needdefl() {
   char *olp=lp;
   skipblanks();
   if (*lp=='=') { ++lp; return 1; }
   if (*lp=='.') ++lp;
-  if (cmphstr(lp,"equ")) return 1;
+  if (cmphstr(lp,"defl")) return 1;
   lp=olp;
   return 0;
 }
@@ -153,9 +166,10 @@ char *getid(char *&p) {
   /*char nid[LINEMAX],*/ char *np;
   np=nidtemp;
   skipblanks(p);
-  if (!isalpha(*p) && *p!='_') return 0;
+  //if (!isalpha(*p) && *p!='_') return 0;
+  if (*p && !isalpha((unsigned char)*p) && *p!='_') return 0;
   while(*p) {
-    if (!isalnum(*p) && *p!='_' && *p!='.' && *p!='?' && *p!='!' && *p!='#' && *p!='@') break;
+    if (!isalnum((unsigned char)*p) && *p!='_' && *p!='.' && *p!='?' && *p!='!' && *p!='#' && *p!='@') break;
     *np=*p; ++p; ++np;
   }
   *np=0;
@@ -169,9 +183,9 @@ char *getinstr(char *&p) {
   /*char nid[LINEMAX],*/ char *np;
   np=instrtemp;
   skipblanks(p);
-  if (!isalpha(*p) && *p!='.') return 0; else { *np=*p; ++p; ++np; }
+  if (!isalpha((unsigned char)*p) && *p!='.') return 0; else { *np=*p; ++p; ++np; }
   while(*p) {
-    if (!isalnum(*p) && *p!='_') break; /////////////////////////////////////
+    if (!isalnum((unsigned char)*p) && *p!='_') break; /////////////////////////////////////
     *np=*p; ++p; ++np;
   }
   *np=0;
@@ -179,22 +193,26 @@ char *getinstr(char *&p) {
   return instrtemp;
 }
 
-int check8(aint val) {
+/* changes applied from SjASM 0.39g */
+int check8(unsigned aint val) {
   if (val!=(val&255) && ~val>127) { error("Bytes lost",0); return 0; }
   return 1;
 }
 
-int check8o(int val) {
+/* changes applied from SjASM 0.39g */
+int check8o(long val) {
   if (val<-128 || val>127) { error("Offset out of range",0); return 0; }
   return 1;
 }
 
-int check16(aint val) {
+/* changes applied from SjASM 0.39g */
+int check16(unsigned aint val) {
   if (val!=(val&65535) && ~val>32767) { error("Bytes lost",0); return 0; }
   return 1;
 }
 
-int check24(aint val) {
+/* changes applied from SjASM 0.39g */
+int check24(unsigned aint val) {
   if (val!=(val&16777215) && ~val>8388607) { error("Bytes lost",0); return 0; }
   return 1;
 }
@@ -207,7 +225,7 @@ int need(char *&p, char c) {
 
 int needa(char *&p, char *c1, int r1, char *c2, int r2, char *c3, int r3) {
 //  skipblanks(p);
-  if (!isalpha(*p)) return 0;
+  if (!isalpha((unsigned char)*p)) return 0;
   if (cmphstr(p,c1)) return r1;
   if (c2 && cmphstr(p,c2)) return r2;
   if (c3 && cmphstr(p,c3)) return r3;
@@ -233,8 +251,8 @@ int getval(int p) {
   case '5': case '6': case '7': case '8': case '9':
     return p-'0';
   default:
-    if (isupper(p)) return p-'A'+10;
-    if (islower(p)) return p-'a'+10;
+    if (isupper((unsigned char)p)) return p-'A'+10;
+    if (islower((unsigned char)p)) return p-'a'+10;
     return 200;
   }
 }
@@ -248,7 +266,7 @@ int getConstant(char *&op, aint &val) {
   case '#':
   case '$': 
     ++p;
-    while (isalnum(*p)) {
+    while (isalnum((unsigned char)*p)) {
       if ((v=getval(*p))>=16) { error("Digit not in base",op); return 0; }
       oval=val; val=val*16+v; ++p; if (oval>val) error("Overflow",0,SUPPRES);
     }
@@ -256,7 +274,7 @@ int getConstant(char *&op, aint &val) {
     op=p; return 1;
   case '%':
     ++p;
-    while (isdigit(*p)) {
+    while (isdigit((unsigned char)*p)) {
       if ((v=getval(*p))>=2) { error("Digit not in base",op); return 0; }
       oval=val; val=val*2+v; ++p; if (oval>val) error("Overflow",0,SUPPRES);
     }
@@ -266,7 +284,7 @@ int getConstant(char *&op, aint &val) {
     ++p;
     if (*p=='x' || *p=='X') {
       ++p;
-      while (isalnum(*p)) {
+      while (isalnum((unsigned char)*p)) {
         if ((v=getval(*p))>=16) { error("Digit not in base",op); return 0; }
         oval=val; val=val*16+v; ++p; if (oval>val) error("Overflow",0,SUPPRES);
       }
@@ -274,9 +292,9 @@ int getConstant(char *&op, aint &val) {
       op=p; return 1;
     }
   default:
-    while(isalnum(*p)) ++p;
+    while(isalnum((unsigned char)*p)) ++p;
     p2=p--;
-    if (isdigit(*p)) base=10;
+    if (isdigit((unsigned char)*p)) base=10;
     else if (*p=='b') { base=2; --p; }
     else if (*p=='h') { base=16; --p; }
     else if (*p=='B') { base=2; --p; }
@@ -434,9 +452,9 @@ char *getid3(char *&p) {
   char nid[4],*np;
   np=nid;
   skipblanks(p);
-  if (!isalpha(*p) && *p!='_') return NULL;
+  if (!isalpha((unsigned char)*p) && *p!='_') return NULL;
   while(*p && tel--) {
-    if (!isalnum(*p) && *p!='_') break;
+    if (!isalnum((unsigned char)*p) && *p!='_') break;
     *np=*p; ++p; ++np;
   }
   *np=0;
@@ -459,7 +477,7 @@ int needbparen(char *&p) {
 }
 
 int islabchar(char p) {
-  if (isalnum(p) || p=='_' || p=='.' || p=='?' || p=='!' || p=='#' || p=='@') return 1;
+  if (isalnum((unsigned char)p) || p=='_' || p=='.' || p=='?' || p=='!' || p=='#' || p=='@') return 1;
   return 0;
 }
 
@@ -492,4 +510,40 @@ structmembs GetStructMemberId(char *&p) {
   }
   return SMEMBUNKNOWN;
 }
+
+/* added */
+int getArray(char *&p, int e[], int add, int dc) {
+  aint val;
+  int t=0;
+  while ('o') {
+    skipblanks(p);
+    if (!*p) { error("Expression expected",0,SUPPRES); break; }
+    if (t==128) { error("Too many arguments",p,SUPPRES); break; }
+    if (*p=='"') {
+      p++;
+      do {
+        if (!*p || *p=='"') { error("Syntax error",p,SUPPRES); e[t]=-1; return t; }
+        if (t==128) { error("Too many arguments",p,SUPPRES); e[t]=-1; return t; }
+        getCharConstChar(p,val); check8(val); e[t++]=(val+add)&255;
+      } while (*p!='"');
+      ++p; if (dc && t) e[t-1]|=128;
+	/* (begin add) */
+	} else if (*p==0x27) {
+      p++;
+      do {
+        if (!*p || *p==0x27) { error("Syntax error",p,SUPPRES); e[t]=-1; return t; }
+        if (t==128) { error("Too many arguments",p,SUPPRES); e[t]=-1; return t; }
+        getCharConstCharSingle(p,val); check8(val); e[t++]=(val+add)&255;
+      } while (*p!=0x27);
+      ++p; if (dc && t) e[t-1]|=128;
+	/* (end add) */
+    } else {
+      if (ParseExpression(p,val)) { check8(val); e[t++]=(val+add)&255; }
+      else { error("Syntax error",p,SUPPRES); break; }
+    }
+    skipblanks(p); if (*p!=',') break; ++p;
+  }
+  e[t]=-1; return t;
+}
+
 //eof reader.cpp

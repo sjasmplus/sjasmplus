@@ -33,6 +33,7 @@ void skipparam(char*&); /* added */
 int skipblanks();
 void skipblanks(char *&p);
 int needequ();
+int needdefl(); /* added */
 int needfield();
 char *getid(char *&p);
 char *getinstr(char *&p);
@@ -40,10 +41,10 @@ int comma(char *&p);
 int oparen(char *&p,char c);
 int cparen(char *&p);
 char *getparen(char *p);
-int check8(aint val);
-int check8o(int val);
-int check16(aint val);
-int check24(aint val);
+int check8(unsigned aint val); /* changes applied from SjASM 0.39g */
+int check8o(long val); /* changes applied from SjASM 0.39g */
+int check16(unsigned aint val); /* changes applied from SjASM 0.39g */
+int check24(unsigned aint val); /* changes applied from SjASM 0.39g */
 int need(char *&p, char c);
 int need(char *&p, char *c);
 int needa(char *&p, char *c1, int r1, char *c2=0, int r2=0, char *c3=0, int r3=0);

@@ -8,7 +8,7 @@ endif
 TARGETS	 = sjasm$(EXTENSION)
 OBJECTS  = direct.o loose.o parser.o piz80.o reader.o sjasm.o sjio.o tables.o 
 
-BINDIR   = /home/us1827/sjasm/
+BINDIR   = /usr/local/bin
 
 CXXFLAGS = -Wall -O2
 ifneq ($(ISMINGW),)

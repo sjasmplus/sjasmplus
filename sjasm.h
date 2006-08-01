@@ -4,7 +4,7 @@
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
-  Copyright (c) 2005 Sjoerd Mastijn
+  Copyright (c) 2006 Sjoerd Mastijn
 
   This software is provided 'as-is', without any express or implied warranty.
   In no event will the authors be held liable for any damages arising from the
@@ -30,6 +30,9 @@
 
 #ifndef SjINCLUDE
 #define SjINCLUDE
+
+#define MAXPASSES 5
+#define _CRT_SECURE_NO_DEPRECATE 1
 
 #ifdef WIN32
 #include <windows.h>
@@ -64,11 +67,11 @@ extern int pass,labelnotfound,nerror,include,running,labellisting,listfile,donot
 extern int popreverse; /* added */
 extern int specmem,speccurpage,adrdisp,disp; /* added for spectrum mode */
 extern char *specram,*specramp; /* added for spectrum ram */
-extern int macronummer,lijst,reglenwidth,synerr;
+extern int macronummer,lijst,reglenwidth,synerr,symfile/*from SjASM 0.39g*/;
 extern aint adres,mapadr,gcurlin,lcurlin,curlin,destlen,size,preverror,maxlin,comlin;
 extern FILE *input;
 extern void (*piCPUp)(void);
-extern char destfilename[],listfilename[],sourcefilename[],expfilename[];
+extern char destfilename[],listfilename[],sourcefilename[],expfilename[],symfilename[]/*from SjASM 0.39g*/;
 extern char *modlabp,*vorlabp,*macrolabp;
 
 extern FILE *listfp;
@@ -99,6 +102,7 @@ extern definetabcls definetab;
 extern macdefinetabcls macdeftab;
 extern macrotabcls macrotab;
 extern structtabcls structtab;
+extern adrlst *maplstp; /*from SjASM 0.39g*/
 extern stringlst *modlstp,*dirlstp;
 #ifdef SECTIONS
 extern pooldatacls pooldata;

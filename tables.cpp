@@ -1,10 +1,10 @@
-/* 
+/*
 
   SjASMPlus Z80 Cross Assembler
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
-  Copyright (c) 2005 Sjoerd Mastijn
+  Copyright (c) 2006 Sjoerd Mastijn
 
   This software is provided 'as-is', without any express or implied warranty.
   In no event will the authors be held liable for any damages arising from the
@@ -45,9 +45,9 @@ char *MaakLabNaam(char *naam) {
   default: break;
   }
   naam=np;
-  if (!isalpha(*np) && *np!='_') { error("Invalid labelname",naam); return 0; }
+  if (!isalpha((unsigned char)*np) && *np!='_') { error("Invalid labelname",naam); return 0; }
   while (*np) {
-    if (isalnum(*np) || *np=='_' || *np=='.' || *np=='?' || *np=='!' || *np=='#' || *np=='@') ++np;
+    if (isalnum((unsigned char)*np) || *np=='_' || *np=='.' || *np=='?' || *np=='!' || *np=='#' || *np=='@') ++np;
     else { error("Invalid labelname",naam); return 0; }
   }
   if (strlen(naam)>LABMAX) {
@@ -58,15 +58,15 @@ char *MaakLabNaam(char *naam) {
     strcat(lp,macrolabp); strcat(lp,">");
   } else {
     if (!p && modlabp) {
-		
-      int len1=strlen(lp);
-      int len2=strlen(modlabp);
-      strcat(lp,modlabp); 
-      strcat(lp,"."); 
+
+      //int len1=strlen(lp);
+      //int len2=strlen(modlabp);
+      strcat(lp,modlabp);
+      strcat(lp,".");
     }
-    if (l) { 
-      strcat(lp,vorlabp); strcat(lp,"."); 
-    } else 
+    if (l) {
+      strcat(lp,vorlabp); strcat(lp,".");
+    } else
       vorlabp=strdup(naam);
   }
   strcat(lp,naam);
@@ -75,7 +75,8 @@ char *MaakLabNaam(char *naam) {
 
 int getLabelValue(char *&p, aint &val) {
   char *mlp=macrolabp,*op=p;
-  int g=0,l=0,len,olabelnotfound=labelnotfound,plen;
+  int g=0,l=0,olabelnotfound=labelnotfound,plen;
+  unsigned int len;
   char *np;
   if (mlp && *p=='@') { ++op; mlp=0; }
   if (mlp) {
@@ -88,8 +89,8 @@ int getLabelValue(char *&p, aint &val) {
     if (l) {
       strcat(temp,macrolabp); strcat(temp,">");
       len=strlen(temp); np=temp+len; plen=0;
-      if (!isalpha(*p) && *p!='_') { error("Invalid labelname",temp); return 0; }
-      while (isalnum(*p) || *p=='_' || *p=='.' || *p=='?' || *p=='!' || *p=='#' || *p=='@') {
+      if (!isalpha((unsigned char)*p) && *p!='_') { error("Invalid labelname",temp); return 0; }
+      while (isalnum((unsigned char)*p) || *p=='_' || *p=='.' || *p=='?' || *p=='!' || *p=='#' || *p=='@') {
         *np=*p; ++np; ++p;
       }
       *np=0;
@@ -120,8 +121,8 @@ int getLabelValue(char *&p, aint &val) {
   if (!g && modlabp) { strcat(temp,modlabp); strcat(temp,"."); }
   if (l) { strcat(temp,vorlabp); strcat(temp,"."); }
   len=strlen(temp); np=temp+len;
-  if (!isalpha(*p) && *p!='_') { error("Invalid labelname",temp); return 0; }
-  while (isalnum(*p) || *p=='_' || *p=='.' || *p=='?' || *p=='!' || *p=='#' || *p=='@') {
+  if (!isalpha((unsigned char)*p) && *p!='_') { error("Invalid labelname",temp); return 0; }
+  while (isalnum((unsigned char)*p) || *p=='_' || *p=='.' || *p=='?' || *p=='!' || *p=='#' || *p=='@') {
     *np=*p; ++np; ++p;
   }
   *np=0;
@@ -143,14 +144,14 @@ int getLocaleLabelValue(char *&op,aint &val) {
   char *p=op,naam[LINEMAX],*np,ch;
   skipblanks(p);
   np=naam;
-  if (!isdigit(*p)) return 0;
+  if (!isdigit((unsigned char)*p)) return 0;
   while (*p) {
-    if (!isdigit(*p)) break;
+    if (!isdigit((unsigned char)*p)) break;
     *np=*p; ++p; ++np;
   }
   *np=0; nummer=atoi(naam);
   ch=*p++;
-  if (isalnum(*p)) return 0;
+  if (isalnum((unsigned char)*p)) return 0;
   switch (ch) {
   case 'b': case 'B': nval=loklabtab.zoekb(nummer); break;
   case 'f': case 'F': nval=loklabtab.zoekf(nummer); break;
@@ -165,7 +166,8 @@ int getLocaleLabelValue(char *&op,aint &val) {
 
 int checkIfLabelUsed(char *&p, aint &val) {
   char *mlp=macrolabp,*op=p;
-  int g=0,l=0,len,olabelnotfound=labelnotfound,plen;
+  int g=0,l=0,olabelnotfound=labelnotfound,plen;
+  unsigned int len;
   char *np;
   if (mlp && *p=='@') { ++op; mlp=0; }
   if (mlp) {
@@ -178,8 +180,8 @@ int checkIfLabelUsed(char *&p, aint &val) {
     if (l) {
       strcat(temp,macrolabp); strcat(temp,">");
       len=strlen(temp); np=temp+len; plen=0;
-      if (!isalpha(*p) && *p!='_') { error("Invalid labelname",temp); return 0; }
-      while (isalnum(*p) || *p=='_' || *p=='.' || *p=='?' || *p=='!' || *p=='#' || *p=='@') {
+      if (!isalpha((unsigned char)*p) && *p!='_') { error("Invalid labelname",temp); return 0; }
+      while (isalnum((unsigned char)*p) || *p=='_' || *p=='.' || *p=='?' || *p=='!' || *p=='#' || *p=='@') {
         *np=*p; ++np; ++p;
       }
       *np=0;
@@ -210,8 +212,8 @@ int checkIfLabelUsed(char *&p, aint &val) {
   if (!g && modlabp) { strcat(temp,modlabp); strcat(temp,"."); }
   if (l) { strcat(temp,vorlabp); strcat(temp,"."); }
   len=strlen(temp); np=temp+len;
-  if (!isalpha(*p) && *p!='_') { error("Invalid labelname",temp); return 0; }
-  while (isalnum(*p) || *p=='_' || *p=='.' || *p=='?' || *p=='!' || *p=='#' || *p=='@') {
+  if (!isalpha((unsigned char)*p) && *p!='_') { error("Invalid labelname",temp); return 0; }
+  while (isalnum((unsigned char)*p) || *p=='_' || *p=='.' || *p=='?' || *p=='!' || *p=='#' || *p=='@') {
     *np=*p; ++np; ++p;
   }
   *np=0;
@@ -235,27 +237,48 @@ labtabcls::labtabcls() {
 }
 
 /* modified */
-int labtabcls::insert(char *nname,aint nvalue,bool undefined=false) {
+int labtabcls::insert(char *nname,aint nvalue,bool undefined=false,bool isdefl=false) {
   if (nextlocation>=LABTABSIZE*2/3) error("Label table full",0,FATAL);
   int tr,htr;
   tr=hash(nname);
   while(htr=hashtable[tr]) {
 	if (!strcmp((labtab[htr].name),nname)) {
-	  if (labtab[htr].page!=-1) return 0;
+		/*if (labtab[htr].isdefl) {
+          cout << "A" << labtab[htr].value << endl;
+		}*/
+	  //old: if (labtab[htr].page!=-1) return 0;
+	  if (!labtab[htr].isdefl && labtab[htr].page!=-1) return 0;
 	  else {
         //if label already added as used
 		labtab[htr].value=nvalue;
 		labtab[htr].page=speccurpage;
+		labtab[htr].isdefl=isdefl; /* added */
 		return 1;
 	  }
 	}
     else if (++tr>=LABTABSIZE) tr=0;
   }
   hashtable[tr]=nextlocation;
-  labtab[nextlocation].name=strdup(nname); 
+  labtab[nextlocation].name=strdup(nname);
+  labtab[nextlocation].isdefl=isdefl; /* added */
   labtab[nextlocation].value=nvalue; labtab[nextlocation].used=-1;
   if (!undefined) labtab[nextlocation].page=speccurpage; else {labtab[nextlocation].page=-1;} /* added */
   ++nextlocation;
+  return 1;
+}
+
+/* added */
+int labtabcls::update(char *nname,aint nvalue) {
+  int tr,htr,otr;
+  otr=tr=hash(nname);
+  while(htr=hashtable[tr]) {
+	if (!strcmp((labtab[htr].name),nname)) {
+	  labtab[htr].value=nvalue;
+	  return 1;
+	}
+	if (++tr>=LABTABSIZE) tr=0;
+    if (tr==otr) break;
+  }
   return 1;
 }
 
@@ -263,11 +286,11 @@ int labtabcls::zoek(char *nname,aint &nvalue) {
   int tr,htr,otr;
   otr=tr=hash(nname);
   while(htr=hashtable[tr]) {
-    if (!strcmp((labtab[htr].name),nname)) { 
+    if (!strcmp((labtab[htr].name),nname)) {
 	  if (labtab[htr].page==-1) {
 		labelnotfound=2; nvalue=0; return 0;
 	  } else {
-        nvalue=labtab[htr].value; if (pass==2) ++labtab[htr].used; return 1; 
+        nvalue=labtab[htr].value; if (pass==2) ++labtab[htr].used; return 1;
 	  }
     }
     if (++tr>=LABTABSIZE) tr=0;
@@ -336,14 +359,14 @@ void labtabcls::dump4unreal() {
       if (lvalue>=0 && lvalue<0x4000)
         page=-1;
       else
-      if (lvalue>=0x4000 && lvalue<0x8000) 
+      if (lvalue>=0x4000 && lvalue<0x8000)
       {
         page=5;lvalue-=0x4000;
       }
       else if (lvalue >=0x8000 && lvalue<0xc000)
       {
         page=2;lvalue-=0x8000;
-      }  
+      }
       else lvalue-=0xc000;
       ep=line; *(ep++)='0';
       if (page!=-1) *(ep++)=page+'0';
@@ -354,6 +377,21 @@ void labtabcls::dump4unreal() {
       fputs(line,unreallistfp);
 	}
   }
+}
+
+/* from SjASM 0.39g */
+void labtabcls::dumpsym() {
+  FILE *symfp;
+  char lnrs[16],*l;
+  if (!(symfp=fopen(symfilename,"w"))) { cout << "Error opening file: " << symfilename << endl; exit(1); }
+  for (int i=1; i<nextlocation; ++i) {
+    if (isalpha(labtab[i].name[0])) {
+      strcpy(eline,labtab[i].name); strcat(eline,": equ "); l=lnrs;
+      printhex32(l,labtab[i].value); *l=0; strcat(eline,lnrs); strcat(eline,"h\n");
+      fputs(eline,symfp);
+    }
+  }
+    fclose(symfp);
 }
 
 funtabcls::funtabcls() {
@@ -377,7 +415,7 @@ int funtabcls::insert(char *nname, void(*nfunp)(void)) {
   ++nextlocation;
 
   strcpy(p=temp,nname); while(*p=(char)toupper(*p)) ++p;
-  
+
   /*if (nextlocation>=FUNTABSIZE*2/3) { cout << "funtab full" << endl; exit(1); }*/
   if (nextlocation>=FUNTABSIZE*2/3) { cout << "funtab full" << endl; exitasm(1); }
   tr=hash(temp);
@@ -408,7 +446,7 @@ int funtabcls::zoek(char *nname, bool bol) {
 	  if (bol && ((sizeof(nname) == 3 && (!strcmp("END",nname) || !strcmp("end",nname))) || (sizeof(nname) == 4 && (!strcmp(".END",nname) || !strcmp(".end",nname))))) { /* added */
 		//do nothing (now you can use END as labels)
 	  } else { /* added */
-		(*funtab[htr].funp)(); return 1; 
+		(*funtab[htr].funp)(); return 1;
 	  } /* added */
     }
     if (++tr>=FUNTABSIZE) tr=0;
@@ -437,8 +475,10 @@ int funtabcls::hash(char* s) {
   return h % FUNTABSIZE;
 }
 
+/* modified */
 loklabtabentrycls::loklabtabentrycls(aint nnummer, aint nvalue, loklabtabentrycls *n) {
-  regel=gcurlin; nummer=nnummer; value=nvalue;
+  regel=curlin; nummer=nnummer; value=nvalue;
+  //regel=lcurlin; nummer=nnummer; value=nvalue;
   prev=n; next=NULL; if (n) n->next=this;
 }
 
@@ -451,42 +491,53 @@ void loklabtabcls::insert(aint nnummer, aint nvalue) {
   if (!first) first=last;
 }
 
+/* modified */
 aint loklabtabcls::zoekf(aint nnum) {
   loklabtabentrycls *l=first;
-  while (l) if (l->regel<=gcurlin) l=l->next; else break;
+  while (l) if (l->regel<=curlin) l=l->next; else break;
+  //while (l) if (l->regel<=lcurlin) l=l->next; else break;
   while (l) if (l->nummer==nnum) return l->value; else l=l->next;
   return (aint)-1;
 }
 
+/* modified */
 aint loklabtabcls::zoekb(aint nnum) {
   loklabtabentrycls *l=last;
-  while (l) if (l->regel>gcurlin) l=l->prev; else break;
+  while (l) if (l->regel>curlin) l=l->prev; else break;
+  //while (l) if (l->regel>lcurlin) l=l->prev; else break;
   while (l) if (l->nummer==nnum) return l->value; else l=l->prev;
   return (aint)-1;
 }
 
-definetabentrycls::definetabentrycls(char *nnaam,char *nvervanger, definetabentrycls *nnext) {
+definetabentrycls::definetabentrycls(char *nnaam,char *nvervanger,stringlst *nnss/*added*/,definetabentrycls *nnext) {
   char *s1, *s2;
   naam=strdup(nnaam);
   vervanger=new char[strlen(nvervanger)+1];
   s1=vervanger; s2=nvervanger; skipblanks(s2);
   while (*s2 && *s2!='\n' && *s2!='\r') { *s1=*s2; ++s1; ++s2; } *s1=0;
   next=nnext;
+  nss=nnss;
 }
 
 void definetabcls::init() {
   for (int i=0; i<128; defs[i++]=0);
 }
 
-void definetabcls::add(char *naam, char *vervanger) {
+void definetabcls::add(char *naam, char *vervanger, stringlst *nss/*added*/) {
   if (bestaat(naam)) error("Duplicate define",naam);
-  defs[*naam]=new definetabentrycls(naam,vervanger,defs[*naam]);
+  defs[*naam]=new definetabentrycls(naam,vervanger,nss,defs[*naam]);
 }
 
 char *definetabcls::getverv(char *naam) {
   definetabentrycls *p=defs[*naam];
+  defarraylstp=0;
   while (p) {
-    if (!strcmp(naam,p->naam)) return p->vervanger;
+	if (!strcmp(naam,p->naam)) {
+	  if (p->nss) {
+		defarraylstp=p->nss;
+	  }
+	  return p->vervanger;
+	}
     p=p->next;
   }
   return NULL;
@@ -507,7 +558,7 @@ void macdefinetabcls::init() {
 }
 
 void macdefinetabcls::macroadd(char *naam, char *vervanger) {
-  defs=new definetabentrycls(naam,vervanger,defs);
+  defs=new definetabentrycls(naam,vervanger,0,defs);
   used[*naam]=1;
 }
 
@@ -603,7 +654,7 @@ int macrotabcls::emit(char *naam, char *&p) {
   odefs=macdeftab.getdefs();
   //*lp=0; /* added */
   a=m->args;
-  /* old: 
+  /* old:
   while (a) {
     n=ml;
     skipblanks(p);
@@ -640,14 +691,14 @@ int macrotabcls::emit(char *naam, char *&p) {
         *n=*p; ++n; ++p;
       }
       ++p;
-    } else while (*p!=',' && *p) { *n=*p; ++n; ++p; }
+    } else while (*p && *p!=',') { *n=*p; ++n; ++p; }
     *n=0;
 	macdeftab.macroadd(a->string,ml);
     skipblanks(p); a=a->next; if (a && *p!=',') { error("Not enough arguments for macro",naam); macrolabp=0; return 1; }
     if (*p==',') ++p;
   }
   skipblanks(p);
-  lp=p; 
+  lp=p;
   if (*p) error("Too many arguments for macro",naam);
   /* (end new) */
   ListFile();
@@ -718,7 +769,7 @@ void structcls::cpymembs(structcls *st,char *&lp) {
   while (ip) {
     switch(ip->soort) {
     case SMEMBBLOCK: copymemb(ip,ip->def); break;
-    case SMEMBBYTE: 
+    case SMEMBBYTE:
     case SMEMBWORD:
     case SMEMBD24:
     case SMEMBDWORD:
@@ -746,7 +797,7 @@ void structcls::deflab() {
   } else {
     if (!labtab.insert(p,noffset)) error("Duplicate label",tp,PASS1);
   }
-  strcat(sn,".");  
+  strcat(sn,".");
   while (np) {
     strcpy(ln,sn); strcat(ln,np->naam);
     op=ln;
@@ -774,7 +825,7 @@ void structcls::emitlab(char *iid) {
   } else {
     if (!labtab.insert(p,adres)) error("Duplicate label",tp,PASS1);
   }
-  strcat(sn,".");  
+  strcat(sn,".");
   while (np) {
     strcpy(ln,sn); strcat(ln,np->naam);
     op=ln;
@@ -791,15 +842,15 @@ void structcls::emitlab(char *iid) {
 
 void structcls::emitmembs(char*&p) {
   int *e,et=0,t;
-  e=new int[noffset];
+  e=new int[noffset+1];
   structmembicls *ip=mbf;
   aint val;
   int haakjes=0;
-  skipblanks(p); if (*p=='{') { ++haakjes; ++p; }
+  skipblanks(p); if (*p && *p=='{') { ++haakjes; ++p; }
   while (ip) {
     switch(ip->soort) {
     case SMEMBBLOCK: t=ip->len; while (t--) { e[et++]=ip->def; } break;
-    case SMEMBBYTE: 
+    case SMEMBBYTE:
       synerr=0; if (!ParseExpression(p,val)) val=ip->def; synerr=1;
       e[et++]=val%256;
       check8(val); comma(p);
@@ -826,7 +877,9 @@ void structcls::emitmembs(char*&p) {
     ip=ip->next;
   }
   while (haakjes--) if (!need(p,'}')) error("closing } missing",0);
+  skipblanks(p); if (*p) error("[STRUCT] Syntax error - too many arguments?",0); /* this line from SjASM 0.39g */
   e[et]=-1; EmitBytes(e);
+  delete e;
 }
 
 void structtabcls::init() {
@@ -964,7 +1017,7 @@ void pooltabcls::emit() {
     && cpu!=Z80
 #endif
     ) { EmitBlock(0,(~adres+1)&3); ListFile(); }
-  while (first) { 
+  while (first) {
     if (*(lp=first->data)==' ') {
       if (*(lp+1)=='!') {
         lp++; PoolData(); listdata=0; ListFile(); listdata=olistdata;
@@ -975,7 +1028,7 @@ void pooltabcls::emit() {
       if (pass==1) if(!labtab.insert(lp,adres)) error("Duplicate label",tp,PASS1);
       break;
     }
-    first=first->next; 
+    first=first->next;
   }
   last=first; lp=olp;
   strcpy(line,oline);

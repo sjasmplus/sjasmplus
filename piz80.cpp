@@ -28,7 +28,7 @@
 
 // piz80.cpp
 
-#include "sjasm.h"
+#include "piz80.h"
 
 enum Z80Reg { Z80_B=0,Z80_C,Z80_D,Z80_E,Z80_H,Z80_L,Z80_A=7,
               Z80_I,Z80_R,Z80_F,Z80_BC=0x10,Z80_DE=0x20,Z80_HL=0x30,

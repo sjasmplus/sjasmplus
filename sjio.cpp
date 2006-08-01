@@ -4,7 +4,7 @@
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
-  Copyright (c) 2005 Sjoerd Mastijn
+  Copyright (c) 2006 Sjoerd Mastijn
 
   This software is provided 'as-is', without any express or implied warranty.
   In no event will the authors be held liable for any damages arising from the
@@ -48,7 +48,8 @@ char destbuf[DESTBUFLEN];
 FILE *input, *output;
 FILE *listfp,*expfp=NULL;
 FILE *unreallistfp; /* added */
-aint eadres,epadres,desttel=0,skiperrors=0;;
+aint eadres,epadres,skiperrors=0;
+unsigned aint desttel=0;
 char hd[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
 /* modified */
@@ -285,14 +286,14 @@ void emit(int byte) {
 	/* (begin add) */
 	if (specmem) {
 	  if (disp) {
-		if (adrdisp==0x10000) error("Ram limit exceeded",0,FATAL);
+		if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
 		*(specramp++)=(char)byte;
 	  	if ((adrdisp & 0x3FFF) == 0x3FFF) {
 		  ++adrdisp; ++adres;
           CheckPage(); return;
 		}
 	  } else {
-		if (adres==0x10000) error("Ram limit exceeded",0,FATAL);
+		if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
 		*(specramp++)=(char)byte;
 		if ((adres & 0x3FFF) == 0x3FFF) {
 		  ++adres;
@@ -336,14 +337,14 @@ void EmitBlock(aint byte, aint len) {
 	  /* (begin add) */
 	  if (specmem) {
 	    if (disp) {
-		  if (adrdisp==0x10000) error("Ram limit exceeded",0,FATAL);
+		  if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
 		  *(specramp++)=(char)byte;
 	  	  if ((adrdisp & 0x3FFF) == 0x3FFF) {
 		    ++adrdisp; ++adres;
             CheckPage(); continue;
 		  }
 		} else {
-		  if (adres==0x10000) error("Ram limit exceeded",0,FATAL);
+		  if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
 		  *(specramp++)=(char)byte;
 		  if ((adres & 0x3FFF) == 0x3FFF) {
 		    ++adres;
@@ -387,7 +388,7 @@ void BinIncFile(char *fname,int offset,int len) {
   if (*fname=='<') fname++;
   if (!(bif=fopen(nieuwzoekpad,"rb"))) {
     /*old:cout << "Error opening file: " << fname << endl; exit(1);*/
-    cout << "Error opening file: " << fname << endl; exitasm(1);
+	error("Error opening file: ",fname,FATAL);
   }
   if (offset>0) {
     bp=new char[offset+1];
@@ -409,14 +410,14 @@ void BinIncFile(char *fname,int offset,int len) {
         if (desttel==DESTBUFLEN) WriteDest(); 
 	    if (specmem) {
 	      if (disp) {
-		    if (adrdisp==0x10000) error("Ram limit exceeded",0,FATAL);
+		    if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
 		    *(specramp++)=*bp;
 	  	    if ((adrdisp & 0x3FFF) == 0x3FFF) {
 		      ++adrdisp; ++adres;
               CheckPage(); continue;
 			}
 		  } else {
-		    if (adres==0x10000) error("Ram limit exceeded",0,FATAL);
+		    if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
 		    *(specramp++)=*bp;
 		    if ((adres & 0x3FFF) == 0x3FFF) {
 		      ++adres;
@@ -442,14 +443,14 @@ void BinIncFile(char *fname,int offset,int len) {
 		  leng=0;
 		  while (leng!=res) {
 	        if (disp) {
-		      if (adrdisp==0x10000) error("Ram limit exceeded",0,FATAL);
+		      if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
 		      *(specramp++)=(char)destbuf[leng++];
 	  	      if ((adrdisp & 0x3FFF) == 0x3FFF) {
 		        ++adrdisp; ++adres;
                 CheckPage();
 			  } else { ++adrdisp; ++adres; }
 			} else {
-		      if (adres==0x10000) error("Ram limit exceeded",0,FATAL);
+		      if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
 		      *(specramp++)=(char)destbuf[leng++];
 		      if ((adres & 0x3FFF) == 0x3FFF) {
 		        ++adres;
@@ -481,7 +482,7 @@ void OpenFile(char *nfilename) {
   if (*nfilename=='<') nfilename++;
   strcpy(filename,nfilename);
   /*if ((input=fopen(nieuwzoekpad,"r"))==NULL) { cout << "Error opening file: " << nfilename << endl; exit(1); }*/
-  if ((input=fopen(nieuwzoekpad,"r"))==NULL) { cout << "Error opening file: " << nfilename << endl; exitasm(1); }
+  if ((input=fopen(nieuwzoekpad,"r"))==NULL) { error("Error opening file: ",nfilename,FATAL); }
   ohuidigzoekpad=huidigzoekpad; *filenamebegin=0; huidigzoekpad=nieuwzoekpad;
   
   rlreaded=0; rlpbuf=rlbuf; 
@@ -600,37 +601,38 @@ void OpenList() {
   if (listfile) 
     if (!(listfp=fopen(listfilename,"w"))) {
 	  /*cout << "Error opening file: " << listfilename << endl; exit(1);*/
-      cout << "Error opening file: " << listfilename << endl; exitasm(1);
+      error("Error opening file: ",listfilename,FATAL);
     }
 }
 
 /* added */
 void OpenUnrealList() {
     if (!(unreallistfp=fopen(llfilename,"w"))) {
-      cout << "Error opening file: " << llfilename << endl; exitasm(1);
+	  error("Error opening file: ",llfilename,FATAL);
     }
 }
 
 /* modified */
-void OpenDest() {
-  destlen=0; /* correct bug with SIZE */
-  if ( (output = fopen( destfilename, "wb" )) == NULL ) {
-    /*cout << "Error opening file: " << destfilename << endl; exit(1);*/
-	cout << "Error opening file: " << destfilename << endl; exitasm(1);
-  }
-}
+//void OpenDest() {
+//  destlen=0; /* correct bug with SIZE */
+//  if ( (output = fopen( destfilename, "wb" )) == NULL ) {
+ //   /*cout << "Error opening file: " << destfilename << endl; exit(1);*/
+//	cout << "Error opening file: " << destfilename << endl; exitasm(1);
+//  }
+//}
 
+/* changed to new from SjASM 0.39g */
 void CloseDest() {
-  aint pad;
-  
+  long pad;
   if (desttel) WriteDest();
   if (size!=-1) {
     if (destlen>size) error("File exceeds 'size'",0);
     else {
       pad=size-destlen;
-      while (pad--) {
-        destbuf[desttel++]=0;
-        if (desttel==256) WriteDest();
+      if (pad>0) 
+        while (pad--) {
+          destbuf[desttel++]=0;
+          if (desttel==256) WriteDest();
       }
     if (desttel) WriteDest();
     }
@@ -638,10 +640,52 @@ void CloseDest() {
   fclose(output);
 }
 
+/* added from SjASM 0.39g */
+void SeekDest(long offset,int method) {
+	WriteDest();
+	if(fseek(output,offset,method)) error("File seek error (FORG)",0,FATAL);
+}
+
+/* added from SjASM 0.39g */
 void NewDest(char *ndestfilename) {
+  NewDest(ndestfilename,OUTPUT_TRUNCATE);
+}
+
+void NewDest(char *ndestfilename,int mode) {
   CloseDest();
   strcpy(destfilename,ndestfilename);
-  OpenDest();
+  OpenDest(mode);
+}
+
+/* added from SjASM 0.39g */
+void OpenDest() {
+  OpenDest(OUTPUT_TRUNCATE);
+}
+
+/* modified */
+/* changed to new from SjASM 0.39g */
+void OpenDest(int mode) {
+  destlen=0;
+  if(mode!=OUTPUT_TRUNCATE && !FileExists(destfilename)) mode=OUTPUT_TRUNCATE;
+  if ((output = fopen( destfilename, mode==OUTPUT_TRUNCATE ? "wb" : "r+b" )) == NULL )
+  {
+	 error("Error opening file: ",destfilename,FATAL);
+  }
+  if(mode!=OUTPUT_TRUNCATE)
+  {
+     if(fseek(output,0,mode==OUTPUT_REWIND ? SEEK_SET : SEEK_END)) error("File seek error (OUTPUT)",0,FATAL); 
+  }
+}
+
+/* added from SjASM 0.39g */
+int FileExists(char* filename) {
+  int exists=0;
+  FILE* test=fopen(filename,"r");
+  if(test!=NULL) {
+    exists=-1;
+    fclose(test);
+  }
+  return exists;
 }
 
 /* modified */
@@ -652,7 +696,7 @@ void Close() {
 	expfp = NULL;
   }
   if (listfile) fclose(listfp);
-  if (unreallabel) fclose(unreallistfp); /* added */
+  if (unreallabel && pass == 9999) fclose(unreallistfp); /* added */
 }
 
 int SaveMem(FILE *ff,int start,int length) {
@@ -764,6 +808,9 @@ char MemGetByte(unsigned int address) {
 	    break;
 	}
 	addadr += address-0xC000;
+	if (addadr > 0x1FFFF) {
+		return 0;
+	}
 	return specram[addadr];
   }
 }
@@ -771,7 +818,7 @@ char MemGetByte(unsigned int address) {
 /* added */
 int SaveBinary(char *fname,int start,int length) {
   FILE  *ff;
-  if ((ff=fopen(fname, "wb")) == NULL)  { cout << "Error opening file: " << fname << endl; exitasm(1); }
+  if ((ff=fopen(fname, "wb")) == NULL)  { error("Error opening file: ",fname,FATAL); }
   
   if (length + start > 0xFFFF) length = -1;
   if (length <= 0) length = 0x10000-start;
@@ -813,7 +860,7 @@ int SaveHobeta(char *fname,char *fhobname,int start,int length) {
   header[0x10]=(unsigned char)(chk>>8);
   
   FILE  *ff;
-  if ((ff=fopen(fname, "wb")) == NULL)  { cout << "Error opening file: " << fname << endl; exitasm(1); }
+  if ((ff=fopen(fname, "wb")) == NULL)  { error("Error opening file: ",fname,FATAL); }
   
   if (fwrite(header, 1, 17, ff) != 17) {fclose(ff);return 0;}
 
@@ -827,7 +874,7 @@ int SaveHobeta(char *fname,char *fhobname,int start,int length) {
 int SaveSNA128(char *fname,unsigned short start) {
   unsigned char snbuf[31];
   FILE  *ff;
-  if ((ff=fopen(fname, "wb")) == NULL)  { cout << "Error opening file: " << fname << endl; exitasm(1); }
+  if ((ff=fopen(fname, "wb")) == NULL)  { error("Error opening file: ",fname,FATAL); }
   
   memset(snbuf, 0, sizeof(snbuf));
   
@@ -861,7 +908,7 @@ int SaveSNA128(char *fname,unsigned short start) {
   return 1;
 }
 
-/* added */
+/* modified */
 Ending ReadFile(char *pp,char *err) {
   stringlst *ol;
   char *p;
@@ -878,16 +925,18 @@ Ending ReadFile(char *pp,char *err) {
 	
     skipblanks(p);
     if (*p=='.') ++p;
-	if (cmphstr(p,"endif")) { lp=ReplaceDefine(p); return ENDIF; }
+    if (cmphstr(p,"endif")) { lp=ReplaceDefine(p); return ENDIF; }
     if (cmphstr(p,"else")) { ListFile(); lp=ReplaceDefine(p); return ELSE; }
     if (cmphstr(p,"endt")) { lp=ReplaceDefine(p); return ENDTEXTAREA; }
+    if (cmphstr(p,"dephase")) { lp=ReplaceDefine(p); return ENDTEXTAREA; } // hmm??
+    if (cmphstr(p,"unphase")) { lp=ReplaceDefine(p); return ENDTEXTAREA; } // hmm??
     ParseLineSafe();
   }
   error("Unexpected end of file",0,FATAL);
   return END;
 }
 
-/* added */
+/* modified */
 Ending SkipFile(char *pp,char *err) {
   stringlst *ol;
   char *p;
@@ -956,7 +1005,7 @@ void WriteExp(char *n, aint v) {
   if (!expfp) {
     if (!(expfp=fopen(expfilename,"w"))) {
       /*cout << "Error opening file: " << expfilename << endl; exit(1);*/
-	  cout << "Error opening file: " << expfilename << endl; exitasm(1);
+	  error("Error opening file: ",expfilename,FATAL);
 	}
   }
   strcpy(eline,n); strcat(eline,": EQU ");
@@ -995,6 +1044,7 @@ int Empty_TRDImage(char *fname) {
     cout << "Error opening file: " << fname << endl; return 0;
   }
   buf=(unsigned char *)calloc( 1024, sizeof( unsigned char ) );
+  if (buf == NULL) error("No enough memory","",FATAL);
   if (fwrite(buf,1,1024,ff)<1024) { error("Write error (disk full?)",fname,CATCHALL); return 0; } //catalog
   if (fwrite(buf,1,1024,ff)<1024) { error("Write error (disk full?)",fname,CATCHALL); return 0; } //catalog
   buf[0xe1]=0;
@@ -1053,16 +1103,23 @@ int AddFile_TRDImage(char *fname,char *fhobname,int start,int length) {
   SaveMem(ff,start,length);
 
   //header of file
-  for (i=0;i!=8;hdr[i++]=0x20);
-  for (i=0;i!=8;++i){
+  for (i=0;i!=9;hdr[i++]=0x20);
+  for (i=0;i!=9;++i){
     if (*(fhobname+i)==0) break;
 	if (*(fhobname+i)!='.') { hdr[i]=*(fhobname+i); continue; }
 	else if(*(fhobname+i+1)) hdr[8]=*(fhobname+i+1);
 	break;
   }
 
-  hdr[0x09]=(unsigned char)(start&0xff);
-  hdr[0x0a]=(unsigned char)(start>>8);
+  //cout << hdr[8] << endl;
+  if (hdr[8] == 'B') {
+  	
+    hdr[0x09]=(unsigned char)(length&0xff);
+    hdr[0x0a]=(unsigned char)(length>>8);
+  } else {
+    hdr[0x09]=(unsigned char)(start&0xff);
+    hdr[0x0a]=(unsigned char)(start>>8);
+  }
   hdr[0x0b]=(unsigned char)(length&0xff);
   hdr[0x0c]=(unsigned char)(length>>8);
   if (hdr[0x0b] == 0) hdr[0x0d]=hdr[0x0c]; else hdr[0x0d]=hdr[0x0c]+1;

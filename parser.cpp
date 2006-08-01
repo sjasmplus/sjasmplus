@@ -47,9 +47,9 @@ int ParseExpPrim(char *&p, aint &nval) {
 	  nval=(aint) (MemGetByte(nval) + (MemGetByte(nval+1)<<8));
 	  return 1;
   }
-  else if (isdigit(*p) || (*p=='#' && isalnum(*(p+1))) || (*p=='$' && isalnum(*(p+1))) || *p=='%') { res=getConstant(p,nval); }
-  else if (isalpha(*p) || *p=='_' || *p=='.' || *p=='@') { res=getLabelValue(p,nval); }
-  else if (*p=='?' && (isalpha(*(p+1)) || *(p+1)=='_' || *(p+1)=='.' || *(p+1)=='@')) { ++p; res=getLabelValue(p,nval); }
+  else if (isdigit((unsigned char)*p) || (*p=='#' && isalnum((unsigned char)*(p+1))) || (*p=='$' && isalnum((unsigned char)*(p+1))) || *p=='%') { res=getConstant(p,nval); }
+  else if (isalpha((unsigned char)*p) || *p=='_' || *p=='.' || *p=='@') { res=getLabelValue(p,nval); }
+  else if (*p=='?' && (isalpha((unsigned char)*(p+1)) || *(p+1)=='_' || *(p+1)=='.' || *(p+1)=='@')) { ++p; res=getLabelValue(p,nval); }
   else if (specmem && *p=='$' && *(p+1)=='$') { ++p; ++p; nval=speccurpage; return 1; }
   else if (*p=='$') { ++p; nval=adres; return 1; }
   else if (!(res=getCharConst(p,nval))) { if(synerr) error("Syntax error",p,CATCHALL); return 0; }
@@ -260,18 +260,40 @@ char *ReplaceDefine(char *lp) {
     }
 
     if (comlin || comnxtlin) { if (!*lp) { *rp=0; break; } ++lp; continue; }
-    if (!isalpha(*lp) && *lp!='_') { if (!(*rp=*lp)) break; ++rp; ++lp; continue; }
+    if (!isalpha((unsigned char)*lp) && *lp!='_') { if (!(*rp=*lp)) break; ++rp; ++lp; continue; }
 	
     nid=getid(lp); dr=1;
 
     if (!(ver=definetab.getverv(nid))) {
       if (!macrolabp || !(ver=macdeftab.getverv(nid))) { dr=0; ver=nid; }
     }
-    
+
+	/* (begin add) */
+	if (definetab.defarraylstp) {
+	  stringlst *a=definetab.defarraylstp;
+	  aint val;
+	  //cout << lp << endl;
+	  while (*(lp++) && (*lp<=' ' || *lp=='['));
+	  //cout << lp << endl;
+	  if (!ParseExpression(lp,val)) { error("[ARRAY] Expression error",0,CATCHALL);break; }
+	  //cout << lp << endl;
+	  while (*lp==']' && *(lp++));
+	  //cout << "A" << val << endl;
+	  if (val < 0) {
+		error("Number of cell must be positive",0,CATCHALL);break;
+	  }
+	  val++;
+	  while (a && val) { strcpy(ver,a->string); /*cout << val << "-" << ver << endl;*/ a=a->next;val--; }
+	  if (val && !a) {
+		error("Cell of array not found",0,CATCHALL);break;
+	  }
+	}
+	/* (end add) */
+
     /* (begin add) */
 	if (dr) {
 	  kp=lp-strlen(nid);
-	  while (*(kp--) && *kp<=' ') ;
+	  while (*(kp--) && *kp<=' ');
 	  kp=kp-4;
       if (cmphstr(kp,"ifdef")) { 
         dr=0; ver=nid;
@@ -280,6 +302,8 @@ char *ReplaceDefine(char *lp) {
 		if (cmphstr(kp,"ifndef")) { 
 		  dr=0; ver=nid;
 		} else if (cmphstr(kp,"define")) { 
+		  dr=0; ver=nid;
+		} else if (cmphstr(kp,"defarray")) { 
 		  dr=0; ver=nid;
 		}
 	  }
@@ -297,10 +321,9 @@ char *ReplaceDefine(char *lp) {
 /* added */
 char *ReplaceDefineCont(char *lp) {
   int definegereplaced=0,dr;
-  /*char *nl=new char[LINEMAX*2];*/
-  char *nl=sline2; /* added. speed up! */
+  char *nl=sline2;
   char *rp=nl,*nid,*kp,*ver,a;
-  int def=0; /* added */
+  int def=0;
   if (++replacedefineteller>20) error("Over 20 defines nested",0,FATAL);
   while ('o') {
     if (comlin || comnxtlin)
@@ -327,15 +350,31 @@ char *ReplaceDefineCont(char *lp) {
     }
 
     if (comlin || comnxtlin) { if (!*lp) { *rp=0; break; } ++lp; continue; }
-    if (!isalpha(*lp) && *lp!='_') { if (!(*rp=*lp)) break; ++rp; ++lp; continue; }
+    if (!isalpha((unsigned char)*lp) && *lp!='_') { if (!(*rp=*lp)) break; ++rp; ++lp; continue; }
 
     nid=getid(lp); dr=1;
     
     if (!(ver=definetab.getverv(nid))) {
       if (!macrolabp || !(ver=macdeftab.getverv(nid))) { dr=0; ver=nid; }
     }
+
+	if (definetab.defarraylstp) {
+	  stringlst *a=definetab.defarraylstp;
+	  aint val;
+	  //cout << lp << endl;
+	  while (*(lp++) && (*lp<=' ' || *lp=='['));
+	  //cout << lp << endl;
+	  if (!ParseExpression(lp,val)) { error("Array error",0,CATCHALL);break; }
+	  //cout << lp << endl;
+	  while (*lp==']' && *(lp++));
+	  //cout << "A" << val << endl;
+	  val++;
+	  while (a && val) { strcpy(ver,a->string); /*cout << val << "-" << ver << endl;*/a=a->next;val--; }
+	  if (val && !a) {
+		error("Entry in array not found",0,CATCHALL);break;
+	  }
+	}
     
-	/* (begin add) */
 	if (dr) {
 	  kp=lp-strlen(nid);
 	  while (*(kp--) && *kp<=' ') ;
@@ -351,12 +390,10 @@ char *ReplaceDefineCont(char *lp) {
 		}
 	  }
 	}
-	/* (end add) */
 
 	if (dr) definegereplaced=1;
     while (*rp=*ver) { ++rp; ++ver; }
   }
-  //cout << "AA" << replacedefineteller << endl;
   if (strlen(nl)>LINEMAX-1) error("line too long after macro expansion",0,FATAL);
   if (definegereplaced) return ReplaceDefine(nl);
   return nl;
@@ -377,8 +414,9 @@ void ParseLabel() {
   switch (section) {
   case TEXT:
 #endif
-	if (isdigit(*tp)) {
-    if (needequ() || needfield()) { 
+	if (isdigit((unsigned char)*tp)) {
+	if (needequ() || needdefl() || needfield()) { 
+    /*old:if (needequ() || needfield()) { */
       error("Numberlabels only allowed as adresslabels",0); 
 #ifdef SECTIONS
       break;
@@ -386,43 +424,63 @@ void ParseLabel() {
       return;
 #endif
     }
-    val=atoi(tp); if (pass==1) loklabtab.insert(val,adres);
+	val=atoi(tp); 
+	//cout << curlin << " " << val << " " << adres << endl;
+	if (pass==1) loklabtab.insert(val,adres);
 	} else {
+	  bool isdefl=0; /* added */
 	  if (needequ()) {
   		if (!ParseExpression(lp,val)) { error("Expression error",lp); val=0; }
   		if (labelnotfound) { error("Forward reference",0,PASS1); }
+	  /* begin add */
+	  } else if (needdefl()) {
+  		if (!ParseExpression(lp,val)) { error("Expression error",lp); val=0; }
+  		if (labelnotfound) { error("Forward reference",0,PASS1); }
+		isdefl=1;
+	  /* end add */
 	  } else if (needfield()) {
-		  aint nv;
-		  val=mapadr;
-      synerr=0; if (ParseExpression(lp,nv)) mapadr+=nv; synerr=1;
-      if (labelnotfound) error("Forward reference",0,PASS1);
-    } else {
-      int gl=0;
-      char *p=lp,*n; 
-      skipblanks(p);
-      if (*p=='@') { ++p; gl=1; }
-      if ((n=getid(p)) && structtab.emit(n,tp,p,gl)) { lp=p; return; }
-      val=adres;
-    }
-    ttp=tp;
+		aint nv;
+		val=mapadr;
+		synerr=0; if (ParseExpression(lp,nv)) mapadr+=nv; synerr=1;
+		if (labelnotfound) error("Forward reference",0,PASS1);
+	  } else {
+		int gl=0;
+		char *p=lp,*n; 
+		skipblanks(p);
+		if (*p=='@') { ++p; gl=1; }
+		if ((n=getid(p)) && structtab.emit(n,tp,p,gl)) { lp=p; return; }
+		val=adres;
+      }
+      ttp=tp;
 	  if (!(tp=MaakLabNaam(tp)))
 #ifdef SECTIONS
       break;
 #else
       return;
 #endif
-    if (pass==2) {
-      if (!getLabelValue(ttp,oval)) error("Internal error. ParseLabel()",0,FATAL);
-      if (val!=oval) error("Label has different value in pass 2",temp);
-    } else
-      if (!labtab.insert(tp,val,false)) error("Duplicate label",tp,PASS1);
-	}
+      if (pass==2) {
+	    /* begin add */
+	    if (isdefl && !labtab.insert(tp,val,false,isdefl)) error("Duplicate label",tp,PASS1);
+        /* end add */
+		if (!getLabelValue(ttp,oval)) error("Internal error. ParseLabel()",0,FATAL);	
+        /*if (val!=oval) error("Label has different value in pass 2",temp);*/
+		if (!isdefl && val!=oval) {
+		  //error("Label has different value in pass 2 1",temp);
+		  cout << "(DEBUG) " << filename << " line " << lcurlin << ": " << "Label has different value in pass 2: ";
+		  cout << val << "!=" << oval << endl;
+		  labtab.update(tp,val);
+		}
+      } else
+        /*if (!labtab.insert(tp,val,false)) error("Duplicate label",tp,PASS1);*/
+	    if (!labtab.insert(tp,val,false,isdefl)) error("Duplicate label",tp,PASS1);
+	  }
 #ifdef SECTIONS
-  break;
+    break;
   case DATA:
-    if (isdigit(*tp)) { error("Number labels not allowed in data sections",tp); break; }
-    if (needequ()) { error("Equ not allowed in data sections",0); break; }
-    if (needfield()) { error("Field not allowed in data sections",0); break; }
+    if (isdigit((unsigned char)*tp)) { error("Number labels not allowed in data sections",tp); break; }
+    if (needequ()) { error("EQU not allowed in data sections",0); break; }
+	if (needdefl()) { error("DEFL not allowed in data sections",0); break; } /* added */
+    if (needfield()) { error("FIELD not allowed in data sections",0); break; }
     if (!(tp=MaakLabNaam(tp))) break; 
     pooltab.addlabel(tp);
     break;
@@ -487,11 +545,11 @@ unsigned char win2dos[]= //taken from HorrorWord %)))
 void ParseLine() {
   /*++gcurlin;*/
   replacedefineteller=comnxtlin=0;
-  lp=ReplaceDefine(line);
   /* (begin add) */
   if (!dupestack.empty()) {
     dupes& dup=dupestack.top();
 	if (!dup.work) {
+	  lp=line;
 	  stringlst *f;
 	  f=new stringlst(lp,NULL);
 	  dup.pointer->next=f;
@@ -501,6 +559,7 @@ void ParseLine() {
 	  return;
 	}
   }
+  lp=ReplaceDefine(line);
   if (!c_encoding){
 	  unsigned char*lp2=(unsigned char*)lp;
 	  while(*(lp2++)){ 
@@ -537,7 +596,7 @@ void ParseStructLabel(structcls *st) {
   while (*lp && islabchar(*lp)) { *tp=*lp; ++tp; ++lp; }
   *tp=0; if (*lp==':') ++lp;
   tp=temp; skipblanks();
-  if (isdigit(*tp)) { error("Numberlabels not allowed within structs",0); return; }
+  if (isdigit((unsigned char)*tp)) { error("[STRUCT] Numberlabels not allowed within structs",0); return; }
   prevlab=strdup(tp); st->addlabel(tp);
 }
 
@@ -547,9 +606,9 @@ void ParseInSTRUCTion(structcls *st) {
   bp=lp;
   switch (GetStructMemberId(lp)) {
   case SMEMBBLOCK:
-    if (!ParseExpression(lp,len)) { len=1; error("Expression expected",0,PASS1); }
+    if (!ParseExpression(lp,len)) { len=1; error("[STRUCT] Expression expected",0,PASS1); }
     if (comma(lp)) {
-      if (!ParseExpression(lp,val)) { val=0; error("Expression expected",0,PASS1); }
+      if (!ParseExpression(lp,val)) { val=0; error("[STRUCT] Expression expected",0,PASS1); }
     } else val=0;
     check8(val);
     smp=new structmembicls(st->noffset,len,val&255,SMEMBBLOCK);
@@ -584,7 +643,17 @@ void ParseInSTRUCTion(structcls *st) {
     int gl=0;
     structcls *s;
     skipblanks(pp); if (*pp=='@') { ++pp; gl=1; }
-    if ((n=getid(pp)) && (s=structtab.zoek(n,gl))) { lp=pp; st->cpylabels(s); st->cpymembs(s,lp); }
+    if ((n=getid(pp)) && (s=structtab.zoek(n,gl))) { 
+		/* begin add */
+		if (cmphstr(st->naam,n)) {
+			error("[STRUCT] Use structure itself",0,CATCHALL);
+			break;
+		}
+		/* end add */
+		lp=pp; 
+		st->cpylabels(s); 
+		st->cpymembs(s,lp); 
+	}
     break;
   }
 }
@@ -596,6 +665,6 @@ void ParseStructLine(structcls *st) {
   comlin+=comnxtlin; if (!*lp) return;
   ParseStructLabel(st); if (skipblanks()) return;
   ParseInSTRUCTion(st); if (skipblanks()) return;
-  if (*lp) error("Unexpected",lp);
+  if (*lp) error("[STRUCT] Unexpected",lp);
 }
 //eof parser.cpp

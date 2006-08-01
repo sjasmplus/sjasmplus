@@ -4,7 +4,7 @@
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
-  Copyright (c) 2005 Sjoerd Mastijn
+  Copyright (c) 2006 Sjoerd Mastijn
 
   This software is provided 'as-is', without any express or implied warranty.
   In no event will the authors be held liable for any damages arising from the
@@ -35,6 +35,13 @@ enum Ending { END, ELSE, ENDIF, ENDTEXTAREA, ENDM };
 
 extern aint eadres,epadres;
 
+#define OUTPUT_TRUNCATE 0
+#define OUTPUT_REWIND 1
+#define OUTPUT_APPEND 2
+
+void OpenDest(int); /* added from new SjASM 0.39g */
+void NewDest(char *ndestfilename, int mode); /* added from new SjASM 0.39g */
+int FileExists(char* filename); /* added from new SjASM 0.39g */
 void error(char*,char*,int=PASS2);
 void ListFile();
 void ListFileSkip(char*);
@@ -54,16 +61,17 @@ void printhex32(char *&p, aint h);
 void printhex16(char *&p, aint h); /* added */
 char *getpath(char *fname, TCHAR **filenamebegin); /* added */
 void BinIncFile(char *fname,int offset,int length);
-char MemGetByte(unsigned int address); /*added*/
-int SaveBinary(char *fname,int start,int length); /*added*/
-int SaveHobeta(char *fname,char *fhobname,int start,int length); /*added*/
-int SaveSNA128(char *fname,unsigned short start); /*added*/
+char MemGetByte(unsigned int address); /* added */
+int SaveBinary(char *fname,int start,int length); /* added */
+int SaveHobeta(char *fname,char *fhobname,int start,int length); /* added */
+int SaveSNA128(char *fname,unsigned short start); /* added */
 int ReadLine();
 Ending ReadFile();
 Ending ReadFile(char *pp,char *err); /* added */
 Ending SkipFile();
 Ending SkipFile(char *pp,char *err); /* added */
 void NewDest(char *ndestfilename);
+void SeekDest(long,int); /* added from new SjASM 0.39g */
 int ReadFileToStringLst(stringlst *&f,char *end);
 void WriteExp(char *n, aint v);
 void emitarm(aint data);

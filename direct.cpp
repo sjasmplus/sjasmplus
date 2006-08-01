@@ -4,7 +4,7 @@
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
-  Copyright (c) 2005 Sjoerd Mastijn
+  Copyright (c) 2006 Sjoerd Mastijn
 
   This software is provided 'as-is', without any express or implied warranty.
   In no event will the authors be held liable for any damages arising from the
@@ -50,9 +50,9 @@ int ParseDirective(bool bol) {
  
   if (dirtab.zoek(n, bol)) { return 1; }
   /* (begin add) */
-  else if (!bol && *n=='.' && (isdigit(*(n+1)) || *lp=='(')) {
+  else if ((!bol || dirbol) && *n=='.' && (isdigit((unsigned char)*(n+1)) || *lp=='(')) {
 	aint val;
-	if (isdigit(*(n+1))) {
+	if (isdigit((unsigned char)*(n+1))) {
 	  ++n;
 	  if (!ParseExpression(n,val)) { error("Syntax error",0,CATCHALL); lp=olp; return 0; }
 	} else if (*lp=='(') {
@@ -120,10 +120,12 @@ void dirDATA() {
 }
 #endif
 
+/* modified */
 void dirBYTE() {
-  int teller,e[129];
+  int teller,e[256];
   teller=getBytes(lp,e,0,0);
-  if (!teller) { error(".byte with no arguments",0); return; }
+  //old: if (!teller) { error(".byte with no arguments",0); return; }
+  if (!teller) { error("BYTE/DEFB/DB with no arguments",0); return; }
 #ifdef SECTIONS
   switch (section) {
   case TEXT: case POOL: EmitBytes(e); break;
@@ -138,7 +140,7 @@ void dirBYTE() {
 void dirDC() {
   int teller,e[129];
   teller=getBytes(lp,e,0,1);
-  if (!teller) { error(".byte with no arguments",0); return; }
+  if (!teller) { error("DC with no arguments",0); return; }
 #ifdef SECTIONS
   switch (section) {
   case TEXT: case POOL: EmitBytes(e); break;
@@ -153,7 +155,7 @@ void dirDC() {
 void dirDZ() {
   int teller,e[130];
   teller=getBytes(lp,e,0,0);
-  if (!teller) { error(".byte with no arguments",0); return; }
+  if (!teller) { error("DZ with no arguments",0); return; }
   e[teller++]=0; e[teller]=-1;
 #ifdef SECTIONS
   switch (section) {
@@ -172,7 +174,7 @@ void dirABYTE() {
   if (ParseExpression(lp,add)) {
     check8(add); add&=255;
     teller=getBytes(lp,e,add,0);
-    if (!teller) { error(".abyte with no arguments",0); return; }
+    if (!teller) { error("ABYTE with no arguments",0); return; }
 #ifdef SECTIONS
     switch (section) {
     case TEXT: case POOL: EmitBytes(e); break;
@@ -182,7 +184,7 @@ void dirABYTE() {
 #else
     EmitBytes(e);
 #endif
-  } else error("Expression expected",0);
+  } else error("[ABYTE] Expression expected",0);
 }
 
 void dirABYTEC() {
@@ -191,7 +193,7 @@ void dirABYTEC() {
   if (ParseExpression(lp,add)) {
     check8(add); add&=255;
     teller=getBytes(lp,e,add,1);
-    if (!teller) { error(".abyte with no arguments",0); return; }
+    if (!teller) { error("ABYTEC with no arguments",0); return; }
 #ifdef SECTIONS
     switch (section) {
     case TEXT: case POOL: EmitBytes(e); break;
@@ -201,7 +203,7 @@ void dirABYTEC() {
 #else
     EmitBytes(e);
 #endif
-  } else error("Expression expected",0);
+  } else error("[ABYTEC] Expression expected",0);
 }
 
 void dirABYTEZ() {
@@ -210,7 +212,7 @@ void dirABYTEZ() {
   if (ParseExpression(lp,add)) {
     check8(add); add&=255;
     teller=getBytes(lp,e,add,0);
-    if (!teller) { error(".abyte with no arguments",0); return; }
+    if (!teller) { error("ABYTEZ with no arguments",0); return; }
     e[teller++]=0; e[teller]=-1;
 #ifdef SECTIONS
     switch (section) {
@@ -221,7 +223,7 @@ void dirABYTEZ() {
 #else
     EmitBytes(e);
 #endif
-  } else error("Expression expected",0);
+  } else error("[ABYTEZ] Expression expected",0);
 }
 
 void dirWORD() {
@@ -231,15 +233,15 @@ void dirWORD() {
   while (*lp) {
     if (ParseExpression(lp,val)) {
       check16(val);
-      if (teller>127) error("Over 128 values in .word",0,FATAL);
+      if (teller>127) error("Over 128 values in DW/DEFW/WORD",0,FATAL);
       e[teller++]=val & 65535;
-    } else { error("Syntax error",lp,CATCHALL); return; }
+    } else { error("[DW/DEFW/WORD] Syntax error",lp,CATCHALL); return; }
     skipblanks();
     if (*lp!=',') break;
     ++lp; skipblanks();
   }
   e[teller]=-1;
-  if (!teller) { error(".word with no arguments",0); return; }
+  if (!teller) { error("DW/DEFW/WORD with no arguments",0); return; }
 #ifdef SECTIONS
   switch (section) {
   case TEXT: case POOL: EmitWords(e); break;
@@ -257,15 +259,15 @@ void dirDWORD() {
   skipblanks();
   while (*lp) {
     if (ParseExpression(lp,val)) {
-      if (teller>127) error("Over 128 values in .dword",0,FATAL);
+      if (teller>127) error("[DWORD] Over 128 values",0,FATAL);
       e[teller*2]=val & 65535; e[teller*2+1]=val >> 16; ++teller;
-    } else { error("Syntax error",lp,CATCHALL); return; }
+    } else { error("[DWORD] Syntax error",lp,CATCHALL); return; }
     skipblanks();
     if (*lp!=',') break;
     ++lp; skipblanks();
   }
   e[teller*2]=-1;
-  if (!teller) { error(".dword with no arguments",0); return; }
+  if (!teller) { error("DWORD with no arguments",0); return; }
 #ifdef SECTIONS
   switch (section) {
   case TEXT: case POOL: EmitWords(e); break;
@@ -284,15 +286,15 @@ void dirD24() {
   while (*lp) {
     if (ParseExpression(lp,val)) {
       check24(val);
-      if (teller>127) error("Over 128 values in .d24",0,FATAL);
+      if (teller>127) error("[D24] Over 128 values",0,FATAL);
       e[teller*3]=val & 255; e[teller*3+1]=(val>>8)&255; e[teller*3+2]=(val>>16)&255; ++teller;
-    } else { error("Syntax error",lp,CATCHALL); return; }
+    } else { error("[D24] Syntax error",lp,CATCHALL); return; }
     skipblanks();
     if (*lp!=',') break;
     ++lp; skipblanks();
   }
   e[teller*3]=-1;
-  if (!teller) { error(".d24 with no arguments",0); return; }
+  if (!teller) { error("D24 with no arguments",0); return; }
 #ifdef SECTIONS
   switch (section) {
   case TEXT: case POOL: EmitBytes(e); break;
@@ -307,41 +309,41 @@ void dirD24() {
 void dirBLOCK() {
   aint teller,val=0;
   if (ParseExpression(lp,teller)) {
-    if ((signed)teller<0) error("Negative .block?",0,FATAL);
+    if ((signed)teller<0) error("Negative BLOCK?",0,FATAL);
     if (comma(lp)) ParseExpression(lp,val);
 #ifdef SECTIONS
     switch (section) {
     case TEXT: case POOL: EmitBlock(val,teller); break;
     case DATA: pooltab.add(bp); break;
-    default: error ("Unknown section",0,FATAL); break;
+    default: error ("[BLOCK] Unknown section",0,FATAL); break;
     }
 #else
   EmitBlock(val,teller);
 #endif
-  } else error("Syntax Error",lp,CATCHALL);
+  } else error("[BLOCK] Syntax Error",lp,CATCHALL);
 }
 
 /* modified */
 void dirORG() {
   aint val;
 #ifdef SECTIONS
-  if (section!=TEXT) { error(".org only allowed in text sections",0); *lp=0; return; }
+  if (section!=TEXT) { error("ORG only allowed in text sections",0); *lp=0; return; }
 #endif
   /* old: if (ParseExpression(lp,val)) {adres=val;} else error("Syntax error",0,CATCHALL); */
   if (specmem) {
 	if (ParseExpression(lp,val)) {
-	  if (val < 0x4000) { error(".org less than 4000h not allowed in ZX-Spectrum memory mode(key -m)",lp,CATCHALL); return; }
+	  if (val < 0x4000) { error("ORG less than 4000h not allowed in ZX-Spectrum memory mode(key -m)",lp,CATCHALL); return; }
 	  adres=val;
 	} else { error("Syntax error",lp,CATCHALL); return; }
     if (comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",lp,CATCHALL); return; } 
-      if (val<0) { error("Negative values are not allowed",lp); return; }
-	  else if (val>SPECMAXPAGES-1) { error(".page must be in range 0..7",0,CATCHALL); return;  }
+      if (!ParseExpression(lp,val)) { error("[ORG] Syntax error",lp,CATCHALL); return; } 
+      if (val<0) { error("[ORG] Negative values are not allowed",lp); return; }
+	  else if (val>SPECMAXPAGES-1) { error("[ORG] Page number must be in range 0..7",0,CATCHALL); return;  }
       speccurpage=val;
     }
 	CheckPage();
   } else {
-    if (ParseExpression(lp,val)) {adres=val;} else error("Syntax error",0,CATCHALL);
+    if (ParseExpression(lp,val)) {adres=val;} else error("[ORG] Syntax error",0,CATCHALL);
   }
 }
 
@@ -349,18 +351,18 @@ void dirORG() {
 void dirDISP() {
   aint val;
 #ifdef SECTIONS
-  if (section!=TEXT) { error(".org only allowed in text sections",0); *lp=0; return; }
+  if (section!=TEXT) { error("DISP only allowed in text sections",0); *lp=0; return; }
 #endif
-  if (ParseExpression(lp,val)) {adrdisp=adres;adres=val;} else {error("Syntax error",0,CATCHALL); return; }
+  if (ParseExpression(lp,val)) {adrdisp=adres;adres=val;} else {error("[DISP] Syntax error",0,CATCHALL); return; }
   disp=1;
 }
 
 /* added */
 void dirENT() {
 #ifdef SECTIONS
-  if (section!=TEXT) { error(".ent only allowed in text sections",0); *lp=0; return; }
+  if (section!=TEXT) { error("ENT only allowed in text sections",0); *lp=0; return; }
 #endif
-  if (!disp) { error(".ent should be after .disp",0);return; }
+  if (!disp) { error("ENT should be after DISP",0);return; }
   adres=adrdisp;
   disp=0;
 }
@@ -368,27 +370,44 @@ void dirENT() {
 /* added */
 void dirPAGE() {
   aint val;
-  if (!specmem) error(".page only allowed in ZX-Spectrum memory mode(key -m)",0,CATCHALL);
+  if (!specmem) error("PAGE only allowed in ZX-Spectrum memory mode(key -m)",0,CATCHALL);
   if (!ParseExpression(lp,val)) {
 	error("Syntax error",0,CATCHALL);
 	return;
   }
   if (val<0 || val>7) {
-    error(".page must be in range 0..7",0,CATCHALL);
+    error("[PAGE] Page number must be in range 0..7",0,CATCHALL);
 	return;
   }
   speccurpage=val;
   CheckPage();
 }
 
+/* modified */
 void dirMAP() {
 #ifdef SECTIONS
-  if (section!=TEXT) { error(".map only allowed in text sections",0); *lp=0; return; }
+  //if (section!=TEXT) { error(".map only allowed in text sections",0); *lp=0; return; }
+  if (section!=TEXT) { error("MAP only allowed in text sections",0); *lp=0; return; }
 #endif
+  maplstp=new adrlst(mapadr,maplstp); /* from SjASM 0.39g */
   aint val;
   labelnotfound=0;
-  if (ParseExpression(lp,val)) mapadr=val; else error("Syntax error",0,CATCHALL);
-  if (labelnotfound) error("Forward reference",0,ALL);
+  //if (ParseExpression(lp,val)) mapadr=val; else error("Syntax error",0,CATCHALL);
+  //if (labelnotfound) error("Forward reference",0,ALL);
+  if (ParseExpression(lp,val)) mapadr=val; else error("[MAP] Syntax error",0,CATCHALL);
+  if (labelnotfound) error("[MAP] Forward reference",0,ALL);
+}
+
+/* added from SjASM 0.39g */
+/* modified */
+void dirENDMAP() {
+#ifdef SECTIONS
+  //if (section!=TEXT) { error(".endmap only allowed in text sections",0); *lp=0; return; }
+  if (section!=TEXT) { error("ENDMAP only allowed in text sections",0); *lp=0; return; }
+#endif
+  if (maplstp) { mapadr=maplstp->val; maplstp=maplstp->next; }
+  //else error(".endmodule without module",0);
+  else error("ENDMAP without MAP",0);
 }
 
 void dirALIGN() {
@@ -402,26 +421,32 @@ void dirALIGN() {
     EmitBlock(0,val);
     break;
   default:
-    error("Illegal align",0); break;
+    error("[ALIGN] Illegal align",0); break;
   }
 }
 
+/* modified */
 void dirMODULE() {
 #ifdef SECTIONS
-  if (section!=TEXT) { error(".module only allowed in text sections",0); *lp=0; return; }
+  //old: if (section!=TEXT) { error(".module only allowed in text sections",0); *lp=0; return; }
+  if (section!=TEXT) { error("MODULE only allowed in text sections",0); *lp=0; return; }
 #endif
   modlstp=new stringlst(modlabp,modlstp);
   char *n;
   if (modlabp) delete[] modlabp;
-  if (n=getid(lp)) modlabp=strdup(n); else error("Syntax error",0,CATCHALL);
+  //old: if (n=getid(lp)) modlabp=strdup(n); else error("Syntax error",0,CATCHALL);
+  if (n=getid(lp)) modlabp=strdup(n); else error("[MODULE] Syntax error",0,CATCHALL);
 }
 
+/* modified */
 void dirENDMODULE() {
 #ifdef SECTIONS
-  if (section!=TEXT) { error(".endmodule only allowed in text sections",0); *lp=0; return; }
+  //old: if (section!=TEXT) { error(".endmodule only allowed in text sections",0); *lp=0; return; }
+  if (section!=TEXT) { error("ENDMODULE only allowed in text sections",0); *lp=0; return; }
 #endif
   if (modlstp) { modlabp=modlstp->string; modlstp=modlstp->next; }
-  else error(".endmodule without module",0);
+  //old: else error(".endmodule without module",0);
+  else error("ENDMODULE without MODULE",0);
 }
 
 void dirZ80() {
@@ -466,14 +491,17 @@ void dirEND() {
   running=0;
 }
 
+/* modified */
 void dirSIZE() {
   aint val;
 #ifdef SECTIONS
   if (section!=TEXT) error(".size is only allowed in text sections",0,FATAL);
 #endif
-  if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; }
+  //old: if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; }
+  if (!ParseExpression(lp,val)) { error("[SIZE] Syntax error",bp,CATCHALL); return; }
   if (pass==2) return;
-  if (size!=(aint)-1) { error("Multiple sizes?",0); return; }
+  //old: if (size!=(aint)-1) { error("Multiple sizes?",0); return; }
+  if (size!=(aint)-1) { error("[SIZE] Multiple sizes?",0); return; }
   size=val;
 }
 
@@ -481,19 +509,17 @@ void dirINCBIN() {
   aint val;
   char *fnaam;
   int offset=-1,length=-1;
-#ifdef SECTIONS
-  if (section!=TEXT) error(".incbin only allowed in text sections",0,FATAL);
-#endif
+
   fnaam=getfilename(lp);
   if (comma(lp)) {
     if (!comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0) { error("Negative values are not allowed",bp); return; }
+      if (!ParseExpression(lp,val)) { error("[INCBIN] Syntax error",bp,CATCHALL); return; } 
+      if (val<0) { error("[INCBIN] Negative values are not allowed",bp); return; }
       offset=val;
     }
     if (comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0) { error("Negative values are not allowed",bp); return; }
+      if (!ParseExpression(lp,val)) { error("[INCBIN] Syntax error",bp,CATCHALL); return; } 
+      if (val<0) { error("[INCBIN] Negative values are not allowed",bp); return; }
       length=val;
     }
   }
@@ -508,19 +534,17 @@ void dirINCHOB() {
   unsigned char len[2];
   int offset=17,length=-1,res;
   FILE *ff;
-#ifdef SECTIONS
-  if (section!=TEXT) error(".inchob only allowed in text sections",0,FATAL);
-#endif
+
   fnaam=getfilename(lp);
   if (comma(lp)) {
     if (!comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0) { error("Negative values are not allowed",bp); return; }
+      if (!ParseExpression(lp,val)) { error("[INCHOB] Syntax error",bp,CATCHALL); return; } 
+      if (val<0) { error("[INCHOB] Negative values are not allowed",bp); return; }
       offset+=val;
     }
     if (comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0) { error("Negative values are not allowed",bp); return; }
+      if (!ParseExpression(lp,val)) { error("[INCHOB] Syntax error",bp,CATCHALL); return; } 
+      if (val<0) { error("[INCHOB] Negative values are not allowed",bp); return; }
       length=val;
     }
   }
@@ -528,11 +552,11 @@ void dirINCHOB() {
   fnaamh=getpath(fnaam,NULL);
   if (*fnaam=='<') fnaam++;
   if (!(ff=fopen(fnaamh,"rb"))) {
-    cout << "Error opening file: " << fnaam << endl; exitasm(1);
+	error("[INCHOB] Error opening file: ",fnaam,FATAL);
   }
-  if (fseek(ff,0x0b,0)) error("Hobeta file has wrong format",fnaam,FATAL);
+  if (fseek(ff,0x0b,0)) error("[INCHOB] Hobeta file has wrong format",fnaam,FATAL);
   res = fread(len,1,2,ff);
-  if (res != 2) error("Hobeta file has wrong format",fnaam,FATAL);
+  if (res != 2) error("[INCHOB] Hobeta file has wrong format",fnaam,FATAL);
   if (length==-1) { length=len[0]+(len[1]<<8); }
   fclose(ff);
   BinIncFile(fnaam,offset,length);
@@ -544,34 +568,31 @@ void dirINCHOB() {
 void dirINCTRD() {
   aint val;
   char *fnaam,*fnaamh,*fnaamh2;
-  char hobeta[12],hdr[16];
+  char hobeta[12],hdr[17];
   int offset=-1,length=-1,res,i;
   FILE *ff;
-#ifdef SECTIONS
-  if (section!=TEXT) error(".inctrd only allowed in text sections",0,FATAL);
-#endif
+
   fnaam=getfilename(lp);
   if (comma(lp)) {
 	if (!comma(lp)) {
       fnaamh=gethobetaname(lp);
-	  if (!*fnaamh) { error("Syntax error",bp,CATCHALL); return; }
+	  if (!*fnaamh) { error("[INCTRD] Syntax error",bp,CATCHALL); return; }
 	} else {
-	  error("Syntax error. No parameters",bp,CATCHALL); return;
+	  error("[INCTRD] Syntax error",bp,CATCHALL); return;
 	}
   }
   if (comma(lp)) {
-    if (!comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0) { error("Negative values are not allowed",bp); return; }
+    if (!comma(lp)) {
+      if (!ParseExpression(lp,val)) { error("[INCTRD] Syntax error",bp,CATCHALL); return; }
+      if (val<0) { error("[INCTRD] Negative values are not allowed",bp); return; }
       offset+=val;
     }
-    if (comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0) { error("Negative values are not allowed",bp); return; }
+    if (comma(lp)) {
+      if (!ParseExpression(lp,val)) { error("[INCTRD] Syntax error",bp,CATCHALL); return; }
+      if (val<0) { error("[INCTRD] Negative values are not allowed",bp); return; }
       length=val;
     }
   }
-
   // get spectrum filename
   for (i=0;i!=8;hobeta[i++]=0x20);
   for (i=8;i!=11;hobeta[i++]=0);
@@ -581,23 +602,21 @@ void dirINCTRD() {
 	else if(*(fnaamh+i+1)) hobeta[8]=*(fnaamh+i+1);
 	break;
   }
-
   // open TRD
   fnaamh2=getpath(fnaam,NULL);
   if (*fnaam=='<') fnaam++;
   if (!(ff=fopen(fnaamh2,"rb"))) {
-    cout << "Error opening file: " << fnaam << endl; exitasm(1);
+	error("[INCTRD] Error opening file: ",fnaam,FATAL);
   }
-
   // find file
   fseek(ff,0,SEEK_SET);
   for (i=0;i<128;i++) {
     res=fread(hdr,1,16,ff);
-	if (res!=16) { error("Read error",fnaam,CATCHALL); return; }
-	if (strstr(hdr,hobeta)) { i=0; break; }
+	hdr[16]=0;
+	if (res!=16) { error("[INCTRD] Read error",fnaam,CATCHALL); return; }
+	if (strstr(hdr,hobeta) != NULL) { i=0; break; }
   }
-  if (i) { error("File not found in TRD image",fnaamh,CATCHALL); return; }
-  
+  if (i) { error("[INCTRD] File not found in TRD image",fnaamh,CATCHALL); return; }
   if (length>0) {
     if (offset==-1) offset=0;
   } else {
@@ -605,7 +624,6 @@ void dirINCTRD() {
     if (offset==-1) offset=0; else length-=offset;
   }
   offset+=(((unsigned char)hdr[0x0f])<<12)+(((unsigned char)hdr[0x0e])<<8);
-
   fclose(ff);
 
   BinIncFile(fnaam,offset,length);
@@ -616,102 +634,100 @@ void dirINCTRD() {
 
 /* added */
 void dirSAVESNA() {
-  if (!specmem) error(".savesna only allowed in ZX-Spectrum memory mode(key -m)",0,FATAL);
+  if (!specmem) error("SAVESNA only allowed in ZX-Spectrum memory mode(key -m)",0,FATAL);
   if (pass==1) return;
   aint val;
   char *fnaam;
   int start=-1;
-#ifdef SECTIONS
-  if (section!=TEXT) error(".savesna only allowed in text sections",0,FATAL);
-#endif
+
   fnaam=getfilename(lp);
   if (comma(lp)) {
     if (!comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0) { error("Negative values are not allowed",bp); return; }
+      if (!ParseExpression(lp,val)) { error("[SAVESNA]Syntax error",bp,CATCHALL); return; } 
+      if (val<0) { error("[SAVESNA]Negative values are not allowed",bp); return; }
       start=val;
     } else {
-      error("Syntax error. No parameters",bp,CATCHALL); return;
+      error("[SAVESNA] Syntax error. No parameters",bp,CATCHALL); return;
 	}
   } else {
-    error("Syntax error. No parameters",bp,CATCHALL); return;
+    error("[SAVESNA] Syntax error. No parameters",bp,CATCHALL); return;
   }
   if (!SaveSNA128(fnaam,start)) {
-    error("Error writing file (Disk full?)",bp,CATCHALL); return;
+    error("[SAVESNA] Error writing file (Disk full?)",bp,CATCHALL); return;
   }
   delete[] fnaam;
 }
 
 /* added */
 void dirSAVEBIN() {
-  if (!specmem) error(".savebin only allowed in ZX-Spectrum memory mode(key -m)",0,FATAL);
+  if (!specmem) error("SAVEBIN only allowed in ZX-Spectrum memory mode(key -m)",0,FATAL);
   if (pass==1) return;
   aint val;
   char *fnaam;
   int start=-1,length=-1;
-#ifdef SECTIONS
-  if (section!=TEXT) error(".savebin only allowed in text sections",0,FATAL);
-#endif
+
   fnaam=getfilename(lp);
   if (comma(lp)) {
     if (!comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0x4000) { error("Values less than 4000h are not allowed",bp); return; }
-	  else if (val>0xFFFF) { error("Values more than FFFFh are not allowed",bp); return; }
+      if (!ParseExpression(lp,val)) { error("[SAVEBIN] Syntax error",bp,CATCHALL); return; } 
+      if (val<0x4000) { error("[SAVEBIN] Values less than 4000h are not allowed",bp); return; }
+	  else if (val>0xFFFF) { error("[SAVEBIN] Values more than FFFFh are not allowed",bp); return; }
       start=val;
     } else {
-      error("Syntax error. No parameters",bp,CATCHALL); return;
+      error("[SAVEBIN] Syntax error. No parameters",bp,CATCHALL); return;
 	}
     if (comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0) { error("Negative values are not allowed",bp); return; }
+      if (!ParseExpression(lp,val)) { error("[SAVEBIN] Syntax error",bp,CATCHALL); return; } 
+      if (val<0) { error("[SAVEBIN] Negative values are not allowed",bp); return; }
       length=val;
     }
   } else {
-    error("Syntax error. No parameters",bp,CATCHALL); return;
+    error("[SAVEBIN] Syntax error. No parameters",bp,CATCHALL); return;
   }
-  SaveBinary(fnaam,start,length);
+  if (!SaveBinary(fnaam,start,length)) {
+    error("[SAVEBIN] Error writing file (Disk full?)",bp,CATCHALL); return;
+  }
   delete[] fnaam;
 }
 
 /* added */
 void dirSAVEHOB() {
-  if (!specmem) error(".savehob only allowed in ZX-Spectrum memory mode(key -m)",0,FATAL);
+  if (!specmem) error("SAVEHOB only allowed in ZX-Spectrum memory mode(key -m)",0,FATAL);
   if (pass==1) return;
   aint val;
   char *fnaam,*fnaamh;
   int start=-1,length=-1;
-#ifdef SECTIONS
-  if (section!=TEXT) error(".savehob only allowed in text sections",0,FATAL);
-#endif
+
   fnaam=getfilename(lp);
   if (comma(lp)) {
 	if (!comma(lp)) {
       fnaamh=gethobetaname(lp);
-	  if (!*fnaamh) { error("Syntax error",bp,CATCHALL); return; }
+	  if (!*fnaamh) { error("[SAVEHOB] Syntax error",bp,CATCHALL); return; }
 	} else {
-	  error("Syntax error. No parameters",bp,CATCHALL); return;
+	  error("[SAVEHOB] Syntax error. No parameters",bp,CATCHALL); return;
 	}
   }
 
   if (comma(lp)) {
     if (!comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0x4000) { error("Values less than 4000h are not allowed",bp); return; }
-	  else if (val>0xFFFF) { error("Values more than FFFFh are not allowed",bp); return; }
+      if (!ParseExpression(lp,val)) { error("[SAVEHOB] Syntax error",bp,CATCHALL); return; } 
+      if (val<0x4000) { error("[SAVEHOB] Values less than 4000h are not allowed",bp); return; }
+	  else if (val>0xFFFF) { error("[SAVEHOB] Values more than FFFFh are not allowed",bp); return; }
       start=val;
     } else {
-      error("Syntax error. No parameters",bp,CATCHALL); return;
+      error("[SAVEHOB] Syntax error. No parameters",bp,CATCHALL); return;
 	}
     if (comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0) { error("Negative values are not allowed",bp); return; }
+      if (!ParseExpression(lp,val)) { error("[SAVEHOB] Syntax error",bp,CATCHALL); return; } 
+      if (val<0) { error("[SAVEHOB] Negative values are not allowed",bp); return; }
       length=val;
     }
   } else {
-    error("Syntax error. No parameters",bp,CATCHALL); return;
+    error("[SAVEHOB] Syntax error. No parameters",bp,CATCHALL); return;
   }
-  SaveHobeta(fnaam,fnaamh,start,length);
+  if (!SaveHobeta(fnaam,fnaamh,start,length)) {
+    error("[SAVEHOB] Error writing file (Disk full?)",bp,CATCHALL); return;
+  }
   delete[] fnaam;
   delete[] fnaamh;
 }
@@ -720,50 +736,47 @@ void dirSAVEHOB() {
 void dirEMPTYTRD() {
   if (pass==1) return;
   char *fnaam;
-#ifdef SECTIONS
-  if (section!=TEXT) error(".emptytrd only allowed in text sections",0,FATAL);
-#endif
+
   fnaam=getfilename(lp);
+  if (!*fnaam) { error("[EMPTYTRD] Syntax error",bp,CATCHALL); return; }
   Empty_TRDImage(fnaam);
   delete[] fnaam;
 }
 
 /* added */
 void dirSAVETRD() {
-  if (!specmem) error(".savetrd only allowed in ZX-Spectrum memory mode(key -m)",0,FATAL);
+  if (!specmem) error("SAVETRD only allowed in ZX-Spectrum memory mode(key -m)",0,FATAL);
   if (pass==1) return;
   aint val;
   char *fnaam,*fnaamh;
   int start=-1,length=-1;
-#ifdef SECTIONS
-  if (section!=TEXT) error(".savetrd only allowed in text sections",0,FATAL);
-#endif
+
   fnaam=getfilename(lp);
   if (comma(lp)) {
 	if (!comma(lp)) {
       fnaamh=gethobetaname(lp);
-	  if (!*fnaamh) { error("Syntax error",bp,CATCHALL); return; }
+	  if (!*fnaamh) { error("[SAVETRD] Syntax error",bp,CATCHALL); return; }
 	} else {
-	  error("Syntax error. No parameters",bp,CATCHALL); return;
+	  error("[SAVETRD] Syntax error. No parameters",bp,CATCHALL); return;
 	}
   }
 
   if (comma(lp)) {
     if (!comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0x4000) { error("Values less than 4000h are not allowed",bp); return; }
-	  else if (val>0xFFFF) { error("Values more than FFFFh are not allowed",bp); return; }
+      if (!ParseExpression(lp,val)) { error("[SAVETRD] Syntax error",bp,CATCHALL); return; } 
+      if (val<0x4000) { error("[SAVETRD] Values less than 4000h are not allowed",bp); return; }
+	  else if (val>0xFFFF) { error("[SAVETRD] Values more than FFFFh are not allowed",bp); return; }
       start=val;
     } else {
-      error("Syntax error. No parameters",bp,CATCHALL); return;
+      error("[SAVETRD] Syntax error. No parameters",bp,CATCHALL); return;
 	}
     if (comma(lp)) { 
-      if (!ParseExpression(lp,val)) { error("Syntax error",bp,CATCHALL); return; } 
-      if (val<0) { error("Negative values are not allowed",bp); return; }
+      if (!ParseExpression(lp,val)) { error("[SAVETRD] Syntax error",bp,CATCHALL); return; } 
+      if (val<0) { error("[SAVETRD] Negative values are not allowed",bp); return; }
       length=val;
     }
   } else {
-    error("Syntax error. No parameters",bp,CATCHALL); return;
+    error("[SAVETRD] Syntax error. No parameters",bp,CATCHALL); return;
   }
   AddFile_TRDImage(fnaam,fnaamh,start,length);
   delete[] fnaam;
@@ -774,75 +787,64 @@ void dirSAVETRD() {
 void dirENCODING() {
   char *opt=gethobetaname(lp);
   char *opt2=opt;
-  if (!(*opt)) { error("Syntax error. No parameters",bp,CATCHALL); return; }
+  if (!(*opt)) { error("[ENCODING] Syntax error. No parameters",bp,CATCHALL); return; }
 	  do 
 	  {
 		  *opt2=(char)tolower(*opt2);
 	  } while (*(opt2++));
 	  if (!strcmp (opt,"dos")) {c_encoding=ENCDOS;delete[] opt;return;}
       if (!strcmp (opt,"win")) {c_encoding=ENCWIN;delete[] opt;return;}
-	  error("Syntax error. Bad parameter",bp,CATCHALL); delete[] opt;return;
+	  error("[ENCODING] Syntax error. Bad parameter",bp,CATCHALL); delete[] opt;return;
 }
 
 /* added */
 void dirLABELSLIST() {
-  if (!specmem) error(".labelslist only allowed in ZX-Spectrum memory mode(key -m)",0,FATAL);
+  if (!specmem) error("LABELSLIST only allowed in ZX-Spectrum memory mode(key -m)",0,FATAL);
   if (pass!=1) 
   {
       skipparam(lp);return;
   }
   char *opt=getfilename(lp);
-  char *opt2=opt;
-  if (!(*opt)) { error("Syntax error. No parameters",bp,CATCHALL); return; }
+  if (!(*opt)) { error("[LABELSLIST] Syntax error. No parameters",bp,CATCHALL); return; }
   strcpy(llfilename,opt);
   unreallabel=1;
-  delete[] opt2;
+  delete[] opt;
 }
 
-/* modified */
-void dirTEXTAREA() {
-#ifdef SECTIONS
-  if (section!=TEXT) { error(".textarea only allowed in text sections",0); *lp=0; return; }
-#endif
-  aint oadres=adres,val;
-  labelnotfound=0;
-  if (!ParseExpression(lp,val)) { error("No adress given",0); return; }
-  if (labelnotfound) error("Forward reference",0,ALL);
-  ListFile();
-  /*adres=val; if (ReadFile()!=ENDTEXTAREA) error("No end of textarea",0);*/
-  adres=val; if (ReadFile(lp,"No end of textarea")!=ENDTEXTAREA) error("No end of textarea",0);
-#ifdef SECTIONS
-  dirPOOL();
-#endif
-  adres=oadres+adres-val;
-}
+/* deleted */
+/*void dirTEXTAREA() {
+
+}*/
 
 /* modified */
 void dirIF() {
   aint val;
   labelnotfound=0;
   /*if (!ParseExpression(p,val)) { error("Syntax error",0,CATCHALL); return; }*/
-  if (!ParseExpression(lp,val)) { error("Syntax error",0,CATCHALL); return; }
-  if (labelnotfound) error("Forward reference",0,ALL);
+  if (!ParseExpression(lp,val)) { error("[IF] Syntax error",0,CATCHALL); return; }
+  /*if (labelnotfound) error("Forward reference",0,ALL);*/
+  if (labelnotfound) error("[IF] Forward reference",0,ALL);
 
   if (val) {
     ListFile();
 	/*switch (ReadFile()) {*/
-    switch (ReadFile(lp,"No endif")) {
+    switch (ReadFile(lp,"[IF] No endif")) {
 	/*case ELSE: if (SkipFile()!=ENDIF) error("No endif",0); break;*/
-    case ELSE: if (SkipFile(lp,"No endif")!=ENDIF) error("No endif",0); break;
+    case ELSE: if (SkipFile(lp,"[IF] No endif")!=ENDIF) error("[IF] No endif",0); break;
     case ENDIF: break;
-    default: error("No endif!",0); break;
+	/*default: error("No endif!",0); break;*/
+    default: error("[IF] No endif!",0); break;
     }
   } 
   else {
     ListFile();
 	/*switch (SkipFile()) {*/
-    switch (SkipFile(lp,"No endif")) {
+    switch (SkipFile(lp,"[IF] No endif")) {
 	/*case ELSE: if (ReadFile()!=ENDIF) error("No endif",0); break;*/
-    case ELSE: if (ReadFile(lp,"No endif")!=ENDIF) error("No endif",0); break;
+    case ELSE: if (ReadFile(lp,"[IF] No endif")!=ENDIF) error("[IF] No endif",0); break;
     case ENDIF: break;
-    default: error("No endif!",0); break;
+    /*default: error("No endif!",0); break;*/
+    default: error("[IF] No endif!",0); break;
     }
   }
   /**lp=0;*/
@@ -852,44 +854,45 @@ void dirIF() {
 void dirIFN() {
   aint val;
   labelnotfound=0;
-  if (!ParseExpression(lp,val)) { error("Syntax error",0,CATCHALL); return; }
-  if (labelnotfound) error("Forward reference",0,ALL);
+  if (!ParseExpression(lp,val)) { error("[IFN] Syntax error",0,CATCHALL); return; }
+  if (labelnotfound) error("[IFN] Forward reference",0,ALL);
 
   if (!val) {
     ListFile();
-    switch (ReadFile(lp,"No endif")) {
-    case ELSE: if (SkipFile(lp,"No endif")!=ENDIF) error("No endif",0); break;
+    switch (ReadFile(lp,"[IFN] No endif")) {
+    case ELSE: if (SkipFile(lp,"[IFN] No endif")!=ENDIF) error("[IFN] No endif",0); break;
     case ENDIF: break;
-    default: error("No endif!",0); break;
+    default: error("[IFN] No endif!",0); break;
     }
   } 
   else {
     ListFile();
-    switch (SkipFile(lp,"No endif")) {
-    case ELSE: if (ReadFile(lp,"No endif")!=ENDIF) error("No endif",0); break;
+    switch (SkipFile(lp,"[IFN] No endif")) {
+    case ELSE: if (ReadFile(lp,"[IFN] No endif")!=ENDIF) error("[IFN] No endif",0); break;
     case ENDIF: break;
-    default: error("No endif!",0); break;
+    default: error("[IFN] No endif!",0); break;
     }
   }
 }
 
 void dirELSE() {
-  error("Else without if",0);
+  error("ELSE without IF",0);
 }
 
 void dirENDIF() {
-  error("Endif without if",0);
+  error("ENDIF without IF",0);
 }
 
-void dirENDTEXTAREA() {
-  error("Endt without textarea",0);
-}
+/* deleted */
+/*void dirENDTEXTAREA() {
+  error("ENDT without TEXTAREA",0);
+}*/
 
 /* modified */
 void dirINCLUDE() {
   char *fnaam;
 #ifdef SECTIONS
-  if (section!=TEXT) error(".include only allowed in text sections",0,FATAL);
+  if (section!=TEXT) error("INCLUDE only allowed in text sections",0,FATAL);
 #endif
   fnaam=getfilename(lp);
   ListFile(); /*OpenFile(fnaam);*/ IncludeFile(fnaam); donotlist=1;
@@ -900,37 +903,53 @@ void dirINCLUDE() {
 void dirOUTPUT() {
   char *fnaam;
 #ifdef SECTIONS
-  if (section!=TEXT) error(".output only allowed in text sections",0,FATAL);
+  if (section!=TEXT) error("OUTPUT only allowed in text sections",0,FATAL);
 #endif
   fnaam=getfilename(lp); //if (fnaam[0]=='<') fnaam++;
-  if (pass==2) NewDest(fnaam);
-  delete[] fnaam;
+  /* begin from SjASM 0.39g */
+  int mode=OUTPUT_TRUNCATE;
+  if(comma(lp))
+  {
+    char modechar=(*lp) | 0x20;
+    lp++;
+    if(modechar=='t') mode=OUTPUT_TRUNCATE;
+    else if(modechar=='r') mode=OUTPUT_REWIND;
+    else if(modechar=='a') mode=OUTPUT_APPEND;
+    else error("Syntax error",bp,CATCHALL);
+  }
+  if (pass==2) NewDest(fnaam,mode);
+  /* end from SjASM 0.39g */
+  //if (pass==2) NewDest(fnaam);
+  delete[] fnaam; /* added */
 }
 
 /* modified */
 void dirDEFINE() {
   char *id;
   /*char *p=line;*/
-  char *p=lp;
+  /*char *p=lp;*/
 #ifdef SECTIONS
-  if (section!=TEXT) { error(".define only allowed in text sections",0); *lp=0; return; }
+  /*if (section!=TEXT) { error(".define only allowed in text sections",0); *lp=0; return; }*/
+  if (section!=TEXT) { error("DEFINE only allowed in text sections",0); *lp=0; return; }
 #endif
   /* (modified all rest code)
   while ('o') {
-    if (!*p) error("define error",0,FATAL);
+    if (!*p) error("Define error",0,FATAL);
     if (*p=='.') { ++p; continue; }
     if (*p=='d' || *p=='D') break;
     ++p;
   }
-  if (!cmphstr(p,"define")) error("define error",0,FATAL);
-  if (!(id=getid(p))) { error("illegal define",0); return; }
+  if (!cmphstr(p,"define")) error("Define error",0,FATAL);
+  if (!(id=getid(p))) { error("Illegal define",0); return; }
   definetab.add(id,p);
   while (*lp) ++lp;
   */
-  if (!(id=getid(p))) { error("illegal define",0); return; }
+  if (!(id=getid(lp))) { error("[DEFINE] Illegal define",0); return; }
 
-  definetab.add(id,p);
-  *lp=0;
+  /*definetab.add(id,p);
+  *lp=0;*/
+
+  definetab.add(id,lp,0);
 }
 
 /* modified */
@@ -947,29 +966,31 @@ void dirIFDEF() {
   if (!cmphstr(p,"ifdef")) error("ifdef error",0,FATAL);
   */
   Ending res;
-  if (!(id=getid(lp))) { error("Illegal identifier",0,PASS1); return; }
+  if (!(id=getid(lp))) { error("[IFDEF] Illegal identifier",0,PASS1); return; }
   
   if (definetab.bestaat(id)) {
     ListFile();
 	/*switch (res=ReadFile()) {*/
-    switch (res=ReadFile(lp,"No endif")) {
+    switch (res=ReadFile(lp,"[IFDEF] No endif")) {
 	/*case ELSE: if (SkipFile()!=ENDIF) error("No endif",0); break;*/
-    case ELSE: if (SkipFile(lp,"No endif")!=ENDIF) error("No endif",0); break;
+    case ELSE: if (SkipFile(lp,"[IFDEF] No endif")!=ENDIF) error("[IFDEF] No endif",0); break;
     case ENDIF: break;
-    default: error("No endif!",0); break;
+    /*default: error("No endif!",0); break;*/
+	default: error("[IFDEF] No endif!",0); break;
     }
   } 
   else {
     ListFile();
 	/*switch (res=SkipFile()) {*/
-    switch (res=SkipFile(lp,"No endif")) {
+    switch (res=SkipFile(lp,"[IFDEF] No endif")) {
     /*case ELSE: if (ReadFile()!=ENDIF) error("No endif",0); break;*/
-	case ELSE: if (ReadFile(lp,"No endif")!=ENDIF) error("No endif",0); break;
+	case ELSE: if (ReadFile(lp,"[IFDEF] No endif")!=ENDIF) error("[IFDEF] No endif",0); break;
     case ENDIF: break;
-    default: error("No endif!",0); break;
+    /*default: error(" No endif!",0); break;*/
+    default: error("[IFDEF] No endif!",0); break;
     }
   }
-  *lp=0;
+  /**lp=0;*/
 }
 
 /* modified */
@@ -986,44 +1007,44 @@ void dirIFNDEF() {
   if (!cmphstr(p,"ifndef")) error("ifndef error",0,FATAL);
   */
   Ending res;
-  if (!(id=getid(lp))) { error("Illegal identifier",0,PASS1); return; }
+  if (!(id=getid(lp))) { error("[IFNDEF] Illegal identifier",0,PASS1); return; }
 
   if (!definetab.bestaat(id)) {
     ListFile();
 	/*switch (res=ReadFile()) {*/
-    switch (res=ReadFile(lp,"No endif")) {
+    switch (res=ReadFile(lp,"[IFNDEF] No endif")) {
 	/*case ELSE: if (SkipFile()!=ENDIF) error("No endif",0); break;*/
-    case ELSE: if (SkipFile(lp,"No endif")!=ENDIF) error("No endif",0); break;
+    case ELSE: if (SkipFile(lp,"[IFNDEF] No endif")!=ENDIF) error("[IFNDEF] No endif",0); break;
     case ENDIF: break;
-    default: error("No endif!",0); break;
+    /*default: error("No endif!",0); break;*/
+	default: error("[IFNDEF] No endif!",0); break;
     }
   } 
   else {
     ListFile();
 	/*switch (res=SkipFile()) {*/
-    switch (res=SkipFile(lp,"No endif")) {
+    switch (res=SkipFile(lp,"[IFNDEF] No endif")) {
     /*case ELSE: if (ReadFile()!=ENDIF) error("No endif",0); break;*/
-    case ELSE: if (ReadFile(lp,"No endif")!=ENDIF) error("No endif",0); break;
+    case ELSE: if (ReadFile(lp,"[IFNDEF] No endif")!=ENDIF) error("[IFNDEF] No endif",0); break;
 	case ENDIF: break;
-    default: error("No endif!",0); break;
+    /*default: error("No endif!",0); break;*/
+	default: error("[IFNDEF] No endif!",0); break;
     }
   }
-  *lp=0;
+  /**lp=0;*/
 }
 
-/* i didn't modify it */
+/* modified */
 void dirEXPORT() {
   aint val;
   char *n,*p;
   if (pass==1) return;
-  if (!(n=p=getid(lp))) { error("Syntax error",lp,CATCHALL); return; }
+  //if (!(n=p=getid(lp))) { error("Syntax error",lp,CATCHALL); return; }
+  if (!(n=p=getid(lp))) { error("[EXPORT] Syntax error",lp,CATCHALL); return; }
   labelnotfound=0;
-//  if (*lp!='*') {
-    getLabelValue(n,val); if (labelnotfound) { error("Label not found",p,SUPPRES); return; }
-    WriteExp(p,val);
-//  } else {
-//    ++lp;
-//  }
+  //getLabelValue(n,val); if (labelnotfound) { error("Label not found",p,SUPPRES); return; }
+  getLabelValue(n,val); if (labelnotfound) { error("[EXPORT] Label not found",p,SUPPRES); return; }
+  WriteExp(p,val);
 }
 
 int printdec(char*&p,aint val){
@@ -1049,8 +1070,8 @@ void dirDISPLAY() {
   int t=0;
   while ('o') {
     skipblanks(lp);
-    if (!*lp) { error("Expression expected",0,SUPPRES); break; }
-    if (t==LINEMAX-1) { error("Too many arguments",lp,SUPPRES); break; }
+	if (!*lp) { error("[DISPLAY] Expression expected",0,SUPPRES); break; }
+    if (t==LINEMAX-1) { error("[DISPLAY] Too many arguments",lp,SUPPRES); break; }
     if (*(lp)=='/') {
         ++lp;
         switch (*(lp++)){
@@ -1065,12 +1086,12 @@ void dirDISPLAY() {
 			case 'T':case 't':
                 break ;
             default:
-                error("Syntax error",line,SUPPRES);return;
+                error("[DISPLAY] Syntax error",line,SUPPRES);return;
         }
         skipblanks(lp);
 
         if ((*(lp)!=0x2c)){
-            error("Syntax error",line,SUPPRES);return;}
+            error("[DISPLAY] Syntax error",line,SUPPRES);return;}
         ++lp;
         skipblanks(lp);
     }
@@ -1078,16 +1099,16 @@ void dirDISPLAY() {
     if (*lp=='"') {
       lp++;
       do {
-        if (!*lp || *lp=='"') { error("Syntax error",line,SUPPRES); e[t]=0; return; }
-        if (t==128) { error("Too many arguments",line,SUPPRES); e[t]=0; return; }
+        if (!*lp || *lp=='"') { error("[DISPLAY] Syntax error",line,SUPPRES); e[t]=0; return; }
+        if (t==128) { error("[DISPLAY] Too many arguments",line,SUPPRES); e[t]=0; return; }
         getCharConstChar(lp,val); check8(val); e[t++]=(char)(val&255);
       } while (*lp!='"');
       ++lp; 
     } else if (*lp==0x27) {
       lp++;
       do {
-        if (!*lp || *lp==0x27) { error("Syntax error",line,SUPPRES); e[t]=0; return; }
-        if (t==LINEMAX-1) { error("Too many arguments",line,SUPPRES); e[t]=0; return; }
+        if (!*lp || *lp==0x27) { error("[DISPLAY] Syntax error",line,SUPPRES); e[t]=0; return; }
+        if (t==LINEMAX-1) { error("[DISPLAY] Too many arguments",line,SUPPRES); e[t]=0; return; }
         getCharConstCharSingle(lp,val); check8(val); e[t++]=(char)(val&255);
       } while (*lp!=0x27);
       ++lp;
@@ -1096,7 +1117,7 @@ void dirDISPLAY() {
       if (ParseExpression(lp,val)){ 
         if (displayerror) { 
           displayinprocces=0;
-          error("Bad argument",line,SUPPRES);
+          error("[DISPLAY] Bad argument",line,SUPPRES);
           return;
         } else {
           displayinprocces=0;
@@ -1110,7 +1131,7 @@ void dirDISPLAY() {
         decprint=0;
       }
     }
-      else { error("Syntax error",line,SUPPRES); return; }
+      else { error("[DISPLAY] Syntax error",line,SUPPRES); return; }
     }
     skipblanks(lp); if (*lp!=',') break;
     ++lp;
@@ -1119,32 +1140,38 @@ void dirDISPLAY() {
   cout << e << endl;
 }
 
+/* modified */
 void dirMACRO() {
 #ifdef SECTIONS
-  if (section!=TEXT) error("macro definitions only allowed in text sections",0,FATAL);
+  if (section!=TEXT) error("Macro definitions only allowed in text sections",0,FATAL);
 #endif
 
-  if (lijst) error("No macro definitions allowed here",0,FATAL);
+  //if (lijst) error("No macro definitions allowed here",0,FATAL);
+  if (lijst) error("[MACRO] No macro definitions allowed here",0,FATAL);
   char *n;
-  if (!(n=getid(lp))) { error("Illegal macroname",0,PASS1); return; }
+  //if (!(n=getid(lp))) { error("Illegal macroname",0,PASS1); return; }
+  if (!(n=getid(lp))) { error("[MACRO] Illegal macroname",0,PASS1); return; }
   macrotab.add(n,lp);
 }
 
 void dirENDS() {
-  error("End structre without structure",0);
+  error("[ENDS] End structre without structure",0);
 }
 
+/* modified */
 void dirASSERT() {
   char *p=lp;
   aint val;
-  if (!ParseExpression(lp,val)) { error("Syntax error",0,CATCHALL); return; }
-  if (pass==2 && !val) error("Assertion failed",p);
-  *lp=0;
+  /*if (!ParseExpression(lp,val)) { error("Syntax error",0,CATCHALL); return; }
+  if (pass==2 && !val) error("Assertion failed",p);*/
+  if (!ParseExpression(lp,val)) { error("[ASSERT] Syntax error",0,CATCHALL); return; }
+  if (pass==2 && !val) error("[ASSERT] Assertion failed",p);
+  /**lp=0;*/
 }
 
 void dirSTRUCT() {
 #ifdef SECTIONS
-  if (section!=TEXT) error("structure definitions only allowed in text sections",0,FATAL);
+  if (section!=TEXT) error("Structure definitions only allowed in text sections",0,FATAL);
 #endif
   structcls *st;
   int global=0;
@@ -1152,22 +1179,32 @@ void dirSTRUCT() {
   char *naam;
   skipblanks();
   if (*lp=='@') { ++lp; global=1; }
-  if (!(naam=getid(lp))) { error("Illegal structurename",0,PASS1); return; }
+  if (!(naam=getid(lp))) { error("[STRUCT] Illegal structure name",0,PASS1); return; }
   if (comma(lp)) {
     labelnotfound=0;
-    if (!ParseExpression(lp,offset)) { error("Syntax error",0,CATCHALL); return; }
-    if (labelnotfound) error("Forward reference",0,ALL);
+    if (!ParseExpression(lp,offset)) { error("[STRUCT] Syntax error",0,CATCHALL); return; }
+    if (labelnotfound) error("[STRUCT] Forward reference",0,ALL);
   }
   st=structtab.add(naam,offset,bind,global);
   ListFile();
   while ('o') {
-    if (!ReadLine()) { error("Unexpected end of structure",0,PASS1); break; }
+    if (!ReadLine()) { error("[STRUCT] Unexpected end of structure",0,PASS1); break; }
     lp=line; /*if (white()) { skipblanks(lp); if (*lp=='.') ++lp; if (cmphstr(lp,"ends")) break; }*/
 	skipblanks(lp); if (*lp=='.') ++lp; if (cmphstr(lp,"ends")) break;
     ParseStructLine(st);
     ListFileSkip(line);
   }
   st->deflab();
+}
+
+/* added from SjASM 0.39g */
+void dirFORG() {
+  aint val;
+  int method=SEEK_SET;
+  skipblanks(lp);
+  if((*lp=='+') || (*lp=='-')) method=SEEK_CUR;
+  if (!ParseExpression(lp,val)) error("[FORG] Syntax error",0,CATCHALL);
+  if (pass==2) SeekDest(val,method);
 }
 
 /* i didn't modify it */
@@ -1184,15 +1221,15 @@ void dirDUP() {
   if (!dupestack.empty()) {
     dupes& dup=dupestack.top();
 	if (!dup.work) {
-      if (!ParseExpression(lp,val)) { error("Syntax error",0,CATCHALL); return; }
+      if (!ParseExpression(lp,val)) { error("[DUP/REPT] Syntax error",0,CATCHALL); return; }
 	  dup.level++;
 	  return;
 	}
   }
 
-  if (!ParseExpression(lp,val)) { error("Syntax error",0,CATCHALL); return; }
-  if (labelnotfound) error("Forward reference",0,ALL);
-  if ((int)val<1) { error("Illegal repeat value",0,CATCHALL); return; }
+  if (!ParseExpression(lp,val)) { error("[DUP/REPT] Syntax error",0,CATCHALL); return; }
+  if (labelnotfound) error("[DUP/REPT] Forward reference",0,ALL);
+  if ((int)val<1) { error("[DUP/REPT] Illegal repeat value",0,CATCHALL); return; }
   
   dupes dup;
   dup.dupcount=val;
@@ -1201,15 +1238,15 @@ void dirDUP() {
   dup.lines=new stringlst(lp,NULL);
   dup.pointer=dup.lines;
   dup.lp=lp; //чтобы брать код перед EDUP
+  dup.gcurlin=gcurlin;
   dup.lcurlin=lcurlin;
-  dup.curlin=curlin;
   dup.work=false;
   dupestack.push(dup);
 }
 
 /* added */
 void dirEDUP() {
-  if (dupestack.empty()) {error ("End repeat without repeat",0);return;}
+  if (dupestack.empty()) {error ("[EDUP/ENDR] End repeat without repeat",0);return;}
 
   if (!dupestack.empty()) {
     dupes& dup=dupestack.top();
@@ -1219,21 +1256,22 @@ void dirEDUP() {
 	}
   }
   int olistmacro;
-  long lcurln,curln;
+  long gcurln,lcurln;
   char *ml;
   dupes& dup=dupestack.top();
   dup.work=true;
   strcpy(dup.pointer->string,"");
-  strncat(dup.pointer->string,dup.lp,lp-dup.lp-4); //чтобы взять код перед EDUP
+  strncat(dup.pointer->string,dup.lp,lp-dup.lp-4); //чтобы взять код перед EDUP/ENDR/ENDM
   stringlst *s;
-  olistmacro=listmacro; listmacro=1; ml=strdup(line); lcurln=lcurlin; curln=curlin;
-  lcurlin=dup.lcurlin; curlin=dup.curlin;
+  olistmacro=listmacro; listmacro=1; ml=strdup(line); 
+  gcurln=gcurlin; lcurln=lcurlin;
   while (dup.dupcount--) {
+    gcurlin=dup.gcurlin; lcurlin=dup.lcurlin;
     s=dup.lines; 
-    while (s) { strcpy(line,s->string); s=s->next; ParseLineSafe(); }
+    while (s) { strcpy(line,s->string); s=s->next; ParseLineSafe();lcurlin++;gcurlin++;curlin++; }
   }
   dupestack.pop();
-  lcurlin=lcurln; curlin=curln; listmacro=olistmacro; donotlist=1; strcpy(line,ml);
+  gcurlin=gcurln; lcurlin=lcurln; listmacro=olistmacro; donotlist=1; strcpy(line,ml);
   
   ListFile();
 }
@@ -1242,8 +1280,48 @@ void dirENDM() {
   if (!dupestack.empty()) {
     dirEDUP();
   } else {
-    error("End macro without macro",0);
+    error("[ENDM] End macro without macro",0);
   }
+}
+
+/* modified */
+void dirDEFARRAY() {
+  char *n;
+  char *id;
+  char ml[LINEMAX];
+  stringlst *a;
+  stringlst *f;
+  
+  if (!(id=getid(lp))) { error("[DEFARRAY] Syntax error",0); return; }
+  skipblanks(lp);
+  if (!*lp) { error("DEFARRAY must have less one entry",0); return; }
+	
+  a = new stringlst();
+  f=a;
+  while (*lp) {
+    n=ml;
+    skipblanks(lp);
+    if (*lp=='<') {
+      ++lp;
+      while (*lp!='>') {
+		if (!*lp) { error("[DEFARRAY] No closing bracket - <..>",0); return; }
+        if (*lp=='!') {
+          ++lp; if (!*lp) { error("[DEFARRAY] No closing bracket - <..>",0); return; }
+        }
+        *n=*lp; ++n; ++lp;
+      }
+      ++lp;
+    } else while (*lp && *lp!=',') { *n=*lp; ++n; ++lp; }
+    *n=0;
+	//cout << a->string << endl;
+	f->string=strdup(ml);
+    skipblanks(lp);
+    if (*lp==',') ++lp; else break;
+	f->next=new stringlst();
+	f=f->next;
+  }
+  definetab.add(id,"\n",a);
+  //while (a) { strcpy(ml,a->string); cout << ml << endl; a=a->next; }
 }
 
 /* modified */
@@ -1265,7 +1343,8 @@ void InsertDirectives() {
   dirtab.insertd("arm",dirARM);
   dirtab.insertd("thumb",dirTHUMB);
   dirtab.insertd("size",dirSIZE);
-  dirtab.insertd("textarea",dirTEXTAREA);
+  //dirtab.insertd("textarea",dirTEXTAREA);
+  dirtab.insertd("textarea",dirDISP);
   dirtab.insertd("msx",dirZ80);
   dirtab.insertd("else",dirELSE);
   dirtab.insertd("export",dirEXPORT);
@@ -1273,6 +1352,7 @@ void InsertDirectives() {
   dirtab.insertd("end",dirEND);
   dirtab.insertd("include",dirINCLUDE);
   dirtab.insertd("incbin",dirINCBIN);
+  dirtab.insertd("binary",dirINCBIN); /* added */
   dirtab.insertd("inchob",dirINCHOB); /* added */
   dirtab.insertd("inctrd",dirINCTRD); /* added */
   dirtab.insertd("insert",dirINCBIN); /* added */
@@ -1285,6 +1365,7 @@ void InsertDirectives() {
   dirtab.insertd("ifn",dirIFN); /* added */
   dirtab.insertd("output",dirOUTPUT);
   dirtab.insertd("define",dirDEFINE);
+  dirtab.insertd("defarray",dirDEFARRAY); /* added */
   dirtab.insertd("ifdef",dirIFDEF);
   dirtab.insertd("ifndef",dirIFNDEF);
   dirtab.insertd("macro",dirMACRO);
@@ -1292,6 +1373,7 @@ void InsertDirectives() {
   dirtab.insertd("dc",dirDC);
   dirtab.insertd("dz",dirDZ);
   dirtab.insertd("db",dirBYTE);
+  dirtab.insertd("dm",dirBYTE); /* added */
   dirtab.insertd("dw",dirWORD);
   dirtab.insertd("ds",dirBLOCK);
   dirtab.insertd("dd",dirDWORD);
@@ -1299,8 +1381,10 @@ void InsertDirectives() {
   dirtab.insertd("defw",dirWORD);
   dirtab.insertd("defs",dirBLOCK);
   dirtab.insertd("defd",dirDWORD);
+  dirtab.insertd("defm",dirBYTE); /* added */
   dirtab.insertd("endmod",dirENDMODULE);
   dirtab.insertd("endmodule",dirENDMODULE);
+  dirtab.insertd("endmap",dirENDMAP); /* added from SjASM 0.39g */
   dirtab.insertd("rept",dirDUP);
   dirtab.insertd("dup",dirDUP); /* added */
   dirtab.insertd("disp",dirDISP); /* added */
@@ -1313,7 +1397,8 @@ void InsertDirectives() {
   dirtab.insertd("labelslist",dirLABELSLIST); /* added */
 //  dirtab.insertd("bind",dirBIND); /* i didn't comment this */
   dirtab.insertd("endif",dirENDIF);
-  dirtab.insertd("endt",dirENDTEXTAREA);
+  //dirtab.insertd("endt",dirENDTEXTAREA);
+  dirtab.insertd("endt",dirENT);
   dirtab.insertd("endm",dirENDM);
   dirtab.insertd("edup",dirEDUP); /* added */
   dirtab.insertd("endr",dirEDUP); /* added */

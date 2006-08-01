@@ -4,7 +4,7 @@
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
-  Copyright (c) 2005 Sjoerd Mastijn
+  Copyright (c) 2006 Sjoerd Mastijn
 
   This software is provided 'as-is', without any express or implied warranty.
   In no event will the authors be held liable for any damages arising from the
@@ -30,10 +30,10 @@
 
 #include "sjasm.h"
 
-char destfilename[LINEMAX],listfilename[LINEMAX],expfilename[LINEMAX],sourcefilename[LINEMAX];
+char destfilename[LINEMAX],listfilename[LINEMAX],expfilename[LINEMAX],sourcefilename[LINEMAX],symfilename[LINEMAX]/* from SjASM 0.39g */;
 char llfilename[LINEMAX]; /* added */
 bool unreallabel=0; /* added */
-bool dirbol=1; /* added */
+bool dirbol=0; /* added */
 bool displayerror,displayinprocces=0; /* added */
 char filename[LINEMAX],*lp,line[LINEMAX],temp[LINEMAX],*tp,pline[LINEMAX*2],eline[LINEMAX*2],*bp;
 char mline[LINEMAX*2],sline[LINEMAX*2],sline2[LINEMAX*2]; /* added */
@@ -43,7 +43,7 @@ int pass,labelnotfound,nerror,include=-1,running,labellisting=0,listfile=1,donot
 int popreverse=0; /* added */
 int specmem=0,speccurpage=0,adrdisp=0,disp=0; /* added for spectrum ram */
 char *specram,*specramp; /* added for spectrum ram */
-int macronummer,lijst,reglenwidth,synerr=1;
+int macronummer,lijst,reglenwidth,synerr=1,symfile=0/* from SjASM 0.39g */; 
 aint adres,mapadr,gcurlin,lcurlin,curlin,destlen,size=(aint)-1,preverror=(aint)-1,maxlin=0,comlin;
 #ifdef METARM
 cpus cpu;
@@ -65,12 +65,14 @@ definetabcls definetab;
 macdefinetabcls macdeftab;
 macrotabcls macrotab;
 structtabcls structtab;
+adrlst *maplstp=0; /* from SjASM 0.39g */
 stringlst *modlstp=0,*dirlstp=0;
 #ifdef SECTIONS
 pooldatacls pooldata;
 pooltabcls pooltab;
 #endif
 
+/* modified */
 void InitPass(int p) {
 #ifdef SECTIONS
   section=TEXT;
@@ -84,6 +86,7 @@ void InitPass(int p) {
   if (maxlin>999999) reglenwidth=7;
   modlabp=0; vorlabp="_"; macrolabp=0; listmacro=0;
   pass=p; adres=mapadr=0; running=1; gcurlin=lcurlin=curlin=0;
+  disp=0; adrdisp=0; /* added */
   eadres=0; epadres=0; macronummer=0; lijst=0; comlin=0;
   modlstp=0;
 #ifdef METARM
@@ -98,6 +101,7 @@ void InitPass(int p) {
 /* added */
 void Initram() {
   specram = (char *)calloc( 0x20000, sizeof( char ) );
+  if (specram == NULL) error("No enough memory","",FATAL);
   specramp = specram;
   unsigned char sysvars[]=
    {0x0D,0x03,0x20,0x0D,0xFF,0x00,0x1E,0xF7,0x0D,0x23,0x02,0x00,0x00,0x00,0x16,0x07,
@@ -140,10 +144,11 @@ void getOptions(char **&argv,int &i) {
       switch (tolower(c)) {
       case 'q': listfile=0; break;
       case 'l': labellisting=1; break;
+      case 's': symfile=1; break; /* added from SjASM 0.39g */
       case 'p': popreverse=1; break; /* added */
       case 'd': c_encoding=ENCDOS; break; /* added */
       case 'm': specmem=1; break; /* added */
-	  case 'b': dirbol=0; break; /* added */
+	  case 'b': dirbol=1; break; /* added */
       case 'i': dirlstp=new stringlst(p,dirlstp); p=""; break;
       default:
         cout << "Unrecognized option: " << c << endl;
@@ -165,30 +170,30 @@ int main(int argc, char **argv) {
   int i=1;
   
   /*cout << "SjASM Z80 Assembler v0.39f - www.xl2s.tk" << endl;*/
-  cout << "SjASMPlus Z80 Cross-Assembler v1.05 Stable (build 2005-12-08)" << endl;
+  cout << "SjASMPlus Z80/R800 Cross-Assembler v1.06 Stable (build 2006-08-02)" << endl;
   sourcefilename[0]=destfilename[0]=listfilename[0]=expfilename[0]=0;
   if (argc==1) {
-	cout << "based on code of SjASM by Sjoerd Mastijn - www.xl2s.tk" << endl; /* added */
-	/*cout << "Copyright 2005 Sjoerd Mastijn" << endl;*/
-    cout << "Copyright 2005 Aprisobal - aprisobal@tut.by" << endl;
-	cout << "Coauthors: Kurles^HS^CPU" << endl; /* added */
-    cout << "\nUsage:\nsjasm [-options] sourcefile [targetfile [listfile [exportfile]]]\n";
+	cout << "based on code of SjASM by Sjoerd Mastijn / http://www.xl2s.tk /" << endl; /* added */
+	/*cout << "Copyright 2006 Sjoerd Mastijn" << endl;*/
+	cout << "Copyright 2005-2006 by Aprisobal / http://sjasmplus.sf.net / aprisobal@tut.by /" << endl;
+    cout << "\nUsage:\nsjasmplus [-options] sourcefile [targetfile [listfile [exportfile]]]\n";
     cout << "\nOption flags as follows:\n";
     cout << "  -l        Label table in listing\n";
     cout << "  -q        Do not generate listing\n";
+    cout << "  -s        Generate .SYM symbol file\n"; /* added from SjASM 0.39g */
 	cout << "  -d        Switch to encode strings to DOS-866\n"; /* added */
 	cout << "  -p        Enable reverse POP order (as in base SjASM version)\n"; /* added */
-	cout << "  -b        Disable processing directives in the beginning of line\n"; /* added */
-	cout << "  -m        Switch to ZX-Spectrum memory support mode\n"; /* added */
+	cout << "  -b        Enable processing directives from the beginning of line\n"; /* added */
+	cout << "  -m        Switch to ZX-Spectrum 128 memory support mode\n"; /* added */
     cout << "  -i<path>  Include path\n";
     exit(1);
   }
   
   /* (begin add) */
-  #ifdef WIN32
-  aint dwStart;
+  //#ifdef WIN32
+  long dwStart;
   dwStart = GetTickCount();
-  #endif
+  //#endif
   /* (end add) */
 
   GetCurrentDirectory(MAX_PATH,zoekpad);
@@ -211,10 +216,16 @@ int main(int argc, char **argv) {
     if (!(p=strchr(listfilename,'.'))) p=listfilename; else *p=0;
     strcat(p,".lst");
   }
+  strcpy(symfilename,expfilename); /* added from SjASM 0.39g */
   if (!expfilename[0]) {
     strcpy(expfilename,sourcefilename);
     if (!(p=strchr(expfilename,'.'))) p=expfilename; else *p=0;
     strcat(p,".exp");
+  }
+  if (!symfilename[0]) { /* 'if' added from SjASM 0.39g */
+    strcpy(symfilename,sourcefilename);
+    if (!(p=strchr(symfilename,'.'))) p=symfilename; else *p=0;
+    strcat(p,".sym");
   }
 
   Initpi();
@@ -236,24 +247,37 @@ int main(int argc, char **argv) {
   c_encoding=base_encoding;
   /* (end add) */
 
-  InitPass(2); OpenDest(); OpenFile(sourcefilename);
+  /* new code */
+  do {
+    pass++;
+    InitPass(pass); OpenDest(); OpenFile(sourcefilename);
 
-  if (labellisting) labtab.dump();
-  if (unreallabel) labtab.dump4unreal();
+    if (disp) {
+      adres=adrdisp; disp=0;
+    }
 
-  cout << "Pass 2 complete" << endl;
+	cout << "Pass " << pass << " complete" << endl;
 
-  Close();
+    Close();
+
+	//if (!labtab.checkonforward()) break;
+  } while (pass < 2);//MAXPASSES);
+
+  pass = 9999; /* added for detect end of compiling */
+  if (labellisting) labtab.dump(); 
+  if (unreallabel) labtab.dump4unreal(); /* added */
+  if (symfile) labtab.dumpsym(); /* added from SjASM 0.39g */
   
   /*old: cout << "Errors: " << nerror << endl << flush;*/
   /* modified to: (begin modify) */
-  cout << "Errors: " << nerror << ", compiled: " << gcurlin << " lines";
+  cout << "Errors: " << nerror << ", compiled: " << curlin << " lines";
 
-  #ifdef WIN32
+  //#ifdef WIN32
   double dwCount;
   dwCount = GetTickCount() - dwStart;
+  if (dwCount < 0) dwCount = 0; //todo
   printf(", work time: %.3f seconds",dwCount / 1000);
-  #endif
+  //#endif
 
   cout << flush;
   /* (end modify) */
