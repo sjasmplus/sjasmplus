@@ -1,0 +1,11 @@
+2006-09-18  Aprisobal  <my@aprisobal.by>
+
+	* VERSION: 1.07 RC1
+	* 3-pass design 
+	* Built-in Lua scripting engine 
+	* Changed command line keys 
+	* Documentation converted to HTML. 
+	* Added new directives: DEVICE, SLOT, SHELLEXEC 
+	* Added predefined constanst: _SJASMPLUS=1, _ERRORS and other 
+	* Changed output log format. 
+	* And many many more.
