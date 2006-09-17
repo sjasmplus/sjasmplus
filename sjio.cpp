@@ -1,6 +1,6 @@
 /* 
 
-  SjASMPlus Z80 Cross Assembler
+  SjASMPlus Z80 Cross Compiler
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
@@ -15,12 +15,12 @@
   subject to the following restrictions:
 
   1. The origin of this software must not be misrepresented; you must not claim
-     that you wrote the original software. If you use this software in a product,
-     an acknowledgment in the product documentation would be appreciated but is
-     not required.
+	 that you wrote the original software. If you use this software in a product,
+	 an acknowledgment in the product documentation would be appreciated but is
+	 not required.
 
   2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
+	 misrepresented as being the original software.
 
   3. This notice may not be removed or altered from any source distribution.
 
@@ -28,7 +28,7 @@
 
 // sjio.cpp
 
-#include "sjasm.h"
+#include "sjdefs.h"
 
 #include <fcntl.h>
 #include <sys/types.h>
@@ -36,1112 +36,1413 @@
 
 #define DESTBUFLEN 8192
 
-/* (begin add) */
-char rlbuf[4096*2]; //x2 to prevent errors
-int rlreaded;
-bool rldquotes=false,rlsquotes=false,rlspace=false,rlcomment=false,rlcolon=false,rlnewline=true;
-char *rlpbuf,*rlppos;
-/* (end add) */
+char rlbuf[4096 * 2]; //x2 to prevent errors
+int RL_Readed;
+bool rldquotes = false,rlsquotes = false,rlspace = false,rlcomment = false,rlcolon = false,rlnewline = true;
+char* rlpbuf, * rlppos;
 
-int EB[1024*64],nEB=0;
-char destbuf[DESTBUFLEN];
-FILE *input, *output;
-FILE *listfp,*expfp=NULL;
-FILE *unreallistfp; /* added */
-aint eadres,epadres,skiperrors=0;
-unsigned aint desttel=0;
-char hd[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+FILE* FP_UnrealList;
 
-/* modified */
-void error(char *fout,char *bd,int soort) {
-  char *ep=eline;
-  if (skiperrors && preverror==lcurlin && soort!=FATAL) return;
-  if (soort==CATCHALL && preverror==lcurlin) return;
-  if (soort==PASS1 && pass!=1) return;
-  if ((soort==CATCHALL || soort==SUPPRES || soort==PASS2) && pass!=2) return;
-  skiperrors=(soort==SUPPRES);
-  preverror=lcurlin;
-  ++nerror;
-  sprintf(ep,"%s line %lu: %s", filename, lcurlin, fout);
-  if (bd) { strcat(ep,": "); strcat(ep,bd); }
-  if (!strchr(ep,'\n')) strcat(ep,"\n");
-  if (listfile) fputs(eline,listfp);
-  cout << eline;
-  /*if (soort==FATAL) exit(1);*/
-  if (soort==FATAL) exitasm(1);
+int EB[1024 * 64],nEB = 0;
+char WriteBuffer[DESTBUFLEN];
+FILE* FP_Input, * FP_Output, * FP_RAW;
+FILE* FP_ListingFile,* FP_ExportFile = NULL;
+aint PreviousAddress,epadres,IsSkipErrors = 0;
+aint WBLength = 0;
+char hd[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+};
+
+void Error(char* fout, char* bd, int type) {
+	char* ep = ErrorLine;
+	char count[25];
+	int ln;
+	lua_Debug ar;
+
+	if (IsSkipErrors && PreviousErrorLine == CurrentLocalLine && type != FATAL) {
+		return;
+	}
+	if (type == CATCHALL && PreviousErrorLine == CurrentLocalLine) {
+		return;
+	}
+	if (type == PASS1 && pass != 1) {
+		return;
+	}
+	if (type == PASS3 && pass < 3) {
+		return;
+	}
+	if ((type == CATCHALL || type == SUPPRESS || type == PASS2) && pass < 2) {
+		return;
+	}
+	IsSkipErrors = (type == SUPPRESS);
+	PreviousErrorLine = CurrentLocalLine;
+	++ErrorCount;
+
+	SPRINTF1(count, 25, "%lu", ErrorCount);
+	DefineTable.Replace("_ERRORS", count);
+
+	/*SPRINTF3(ep, LINEMAX2, "%s line %lu: %s", filename, CurrentLocalLine, fout);
+	if (bd) {
+		STRCAT(ep, LINEMAX2, ": "); STRCAT(ep, LINEMAX2, bd);
+	}
+	if (!strchr(ep, '\n')) {
+		STRCAT(ep, LINEMAX2, "\n");
+	}*/
+
+	if (pass > LASTPASS) {
+		SPRINTF1(ep, LINEMAX2, "error: %s", fout);
+	} else {
+		if (LuaLine >= 0) {
+			lua_getstack(LUA, 1, &ar) ;
+			lua_getinfo(LUA, "l", &ar);
+			ln = LuaLine + ar.currentline;
+		} else {
+			ln = CurrentLocalLine;
+		}
+		SPRINTF3(ep, LINEMAX2, "%s(%lu): error: %s", filename, ln, fout);
+	}
+
+	if (bd) {
+		STRCAT(ep, LINEMAX2, ": "); STRCAT(ep, LINEMAX2, bd);
+	}
+	if (!strchr(ep, '\n')) {
+		STRCAT(ep, LINEMAX2, "\n");
+	}
+
+	if (FP_ListingFile) {
+		fputs(ErrorLine, FP_ListingFile);
+	}
+	cout << ErrorLine;
+	/*if (type==FATAL) exit(1);*/
+	if (type == FATAL) {
+		ExitASM(1);
+	}
+}
+
+void Warning(char* fout, char* bd, int type) {
+	char* ep = ErrorLine;
+	char count[25];
+	int ln;
+	lua_Debug ar;
+
+	if (type == PASS1 && pass != 1) {
+		return;
+	}
+	if (type == PASS2 && pass < 2) {
+		return;
+	}
+
+	++WarningCount;
+	SPRINTF1(count, 25, "%lu", WarningCount);
+	DefineTable.Replace("_WARNINGS", count);
+	
+	if (pass > LASTPASS) {
+		SPRINTF1(ep, LINEMAX2, "warning: %s", fout);
+	} else {
+		if (LuaLine >= 0) {
+			lua_getstack(LUA, 1, &ar) ;
+			lua_getinfo(LUA, "l", &ar);
+			ln = LuaLine + ar.currentline;
+		} else {
+			ln = CurrentLocalLine;
+		}
+		SPRINTF3(ep, LINEMAX2, "%s(%lu): warning: %s", filename, ln, fout);
+	}
+
+	if (bd) {
+		STRCAT(ep, LINEMAX2, ": ");
+		STRCAT(ep, LINEMAX2, bd);
+	}
+	if (!strchr(ep, '\n')) {
+		STRCAT(ep, LINEMAX2, "\n");
+	}
+
+	if (FP_ListingFile) {
+		fputs(ErrorLine, FP_ListingFile);
+	}
+	cout << ErrorLine;
 }
 
 void WriteDest() {
-  if (!desttel) return;
-  destlen+=desttel;
-  if(fwrite(destbuf,1,desttel,output)!=desttel) error("Write error (disk full?)",0,FATAL);
-  desttel=0;
+	if (!WBLength) {
+		return;
+	}
+	destlen += WBLength;
+	if (fwrite(WriteBuffer, 1, WBLength, FP_Output) != WBLength) {
+		Error("Write error (disk full?)", 0, FATAL);
+	}
+	if (FP_RAW && fwrite(WriteBuffer, 1, WBLength, FP_RAW) != WBLength) {
+		Error("Write error (disk full?)", 0, FATAL);
+	}
+	WBLength = 0;
 }
 
-void printhex8(char *&p, aint h) {
-  aint hh=h&0xff;
-  *(p++)=hd[hh>>4];
-  *(p++)=hd[hh&15];
+void PrintHEX8(char*& p, aint h) {
+	aint hh = h&0xff;
+	*(p++) = hd[hh >> 4];
+	*(p++) = hd[hh & 15];
 }
 
-void listbytes(char *&p) {
-  int i=0;
-  while (nEB--) { printhex8(p,EB[i++]); *(p++)=' '; }
-  i=4-i;
-  while (i--) { *(p++)=' '; *(p++)=' '; *(p++)=' '; }
+void listbytes(char*& p) {
+	int i = 0;
+	while (nEB--) {
+		PrintHEX8(p, EB[i++]); *(p++) = ' ';
+	}
+	i = 4 - i;
+	while (i--) {
+		*(p++) = ' '; *(p++) = ' '; *(p++) = ' ';
+	}
 }
 
-void listbytes2(char *&p) {
-  for (int i=0;i!=5;++i) printhex8(p,EB[i]);
-  *(p++)=' '; *(p++)=' ';
+void listbytes2(char*& p) {
+	for (int i = 0; i != 5; ++i) {
+		PrintHEX8(p, EB[i]);
+	}
+	*(p++) = ' '; *(p++) = ' ';
 }
 
-void printlcurlin(char *&p) {
-  aint v=lcurlin;
-  switch (reglenwidth) {
-  default: *(p++)=(unsigned char)('0'+v/1000000); v%=1000000;
-  case 6: *(p++)=(unsigned char)('0'+v/100000); v%=100000;
-  case 5: *(p++)=(unsigned char)('0'+v/10000); v%=10000;
-  case 4: *(p++)=(unsigned char)('0'+v/1000); v%=1000;
-  case 3: *(p++)=(unsigned char)('0'+v/100); v%=100;
-  case 2: *(p++)=(unsigned char)('0'+v/10); v%=10;
-  case 1: *(p++)=(unsigned char)('0'+v);
-  }
-  *(p++)=include>0?'+':' ';
-  *(p++)=include>1?'+':' ';
-  *(p++)=include>2?'+':' ';
+void printCurrentLocalLine(char*& p) {
+	aint v = CurrentLocalLine;
+	switch (reglenwidth) {
+	default:
+		*(p++) = (unsigned char)('0' + v / 1000000); v %= 1000000;
+	case 6:
+		*(p++) = (unsigned char)('0' + v / 100000); v %= 100000;
+	case 5:
+		*(p++) = (unsigned char)('0' + v / 10000); v %= 10000;
+	case 4:
+		*(p++) = (unsigned char)('0' + v / 1000); v %= 1000;
+	case 3:
+		*(p++) = (unsigned char)('0' + v / 100); v %= 100;
+	case 2:
+		*(p++) = (unsigned char)('0' + v / 10); v %= 10;
+	case 1:
+		*(p++) = (unsigned char)('0' + v);
+	}
+	*(p++) = IncludeLevel > 0 ? '+' : ' ';
+	*(p++) = IncludeLevel > 1 ? '+' : ' ';
+	*(p++) = IncludeLevel > 2 ? '+' : ' ';
 }
 
-void printhex32(char *&p, aint h) {
-  aint hh=h&0xffffffff;
-  *(p++)=hd[hh>>28]; hh&=0xfffffff;
-  *(p++)=hd[hh>>24]; hh&=0xffffff;
-  *(p++)=hd[hh>>20]; hh&=0xfffff;
-  *(p++)=hd[hh>>16]; hh&=0xffff;
-  *(p++)=hd[hh>>12]; hh&=0xfff;
-  *(p++)=hd[hh>>8];  hh&=0xff;
-  *(p++)=hd[hh>>4];  hh&=0xf;
-  *(p++)=hd[hh];
+void PrintHEX32(char*& p, aint h) {
+	aint hh = h&0xffffffff;
+	*(p++) = hd[hh >> 28]; hh &= 0xfffffff;
+	*(p++) = hd[hh >> 24]; hh &= 0xffffff;
+	*(p++) = hd[hh >> 20]; hh &= 0xfffff;
+	*(p++) = hd[hh >> 16]; hh &= 0xffff;
+	*(p++) = hd[hh >> 12]; hh &= 0xfff;
+	*(p++) = hd[hh >> 8];  hh &= 0xff;
+	*(p++) = hd[hh >> 4];  hh &= 0xf;
+	*(p++) = hd[hh];
 }
 
-void printhex16(char *&p, aint h) {
-  aint hh=h&0xffff;
-  *(p++)=hd[hh>>12]; hh&=0xfff;
-  *(p++)=hd[hh>>8]; hh&=0xff;
-  *(p++)=hd[hh>>4]; hh&=0xf;
-  *(p++)=hd[hh];
+void PrintHEX16(char*& p, aint h) {
+	aint hh = h&0xffff;
+	*(p++) = hd[hh >> 12]; hh &= 0xfff;
+	*(p++) = hd[hh >> 8]; hh &= 0xff;
+	*(p++) = hd[hh >> 4]; hh &= 0xf;
+	*(p++) = hd[hh];
 }
 
 void listbytes3(int pad) {
-  int i=0,t;
-  char *pp,*sp=pline+3+reglenwidth;
-  while (nEB) {
-    pp=sp;
-#ifdef METARM
-    if (cpu==Z80) printhex16(pp,pad); else printhex32(pp,pad);
-#else
-    printhex16(pp,pad);
-#endif
-    *(pp++)=' '; t=0;
-    while (nEB && t<32) { printhex8(pp,EB[i++]); --nEB; ++t; }
-    *(pp++)='\n'; *pp=0;
-    fputs(pline,listfp);
-    pad+=32;
-  }
+	int i = 0,t;
+	char* pp,* sp = pline + 3 + reglenwidth;
+	while (nEB) {
+		pp = sp;
+		PrintHEX16(pp, pad);
+		*(pp++) = ' '; t = 0;
+		while (nEB && t < 32) {
+			PrintHEX8(pp, EB[i++]); --nEB; ++t;
+		}
+		*(pp++) = '\n'; *pp = 0;
+		if (FP_ListingFile) {
+			fputs(pline, FP_ListingFile);
+		}
+		pad += 32;
+	}
 }
-
-#ifdef METARM
-void listi32(char *&p) {
-  printhex8(p,EB[3]);
-  printhex8(p,EB[2]);
-  printhex8(p,EB[1]);
-  printhex8(p,EB[0]);
-  *p=0; strcat(pline,"    "); p+=4;
-}
-
-void listi16(char *&p) {
-  printhex8(p,EB[1]);
-  printhex8(p,EB[0]);
-  *p=0; strcat(pline,"        "); p+=8;
-}
-#endif
 
 void ListFile() {
-  char *pp=pline;
-  aint pad;
-  if (pass==1 || !listfile || donotlist) { donotlist=nEB=0; return; }
-  if (listmacro) if (!nEB) return;
-  if ((pad=eadres)==(aint)-1) pad=epadres;
-  if (strlen(line) && line[strlen(line)-1]!=10) strcat(line,"\n");
-  else strcpy(line,"\n");
-  *pp=0;
-  printlcurlin(pp);
-#ifdef METARM
-  if (cpu==Z80) printhex16(pp,pad); else printhex32(pp,pad);
-#else
-  printhex16(pp,pad);
-#endif
-  *(pp++)=' ';
-#ifdef METARM
-  switch (cpu) {
-  case ARM:
-    if (nEB==4 && !listdata) { listi32(pp); *pp=0; if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp); break; }
-    if (nEB<5) { listbytes(pp); *pp=0; if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp); }
-    else if (nEB<6) { listbytes2(pp); *pp=0; if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp); }
-    else { listbytes2(pp); *pp=0; if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp); listbytes3(pad); fputs(pline,listfp); }
-    break;
-  case THUMB:
-    if (nEB==2 && !listdata) { listi16(pp); *pp=0; if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp); break; }
-    if (nEB==4 && !listdata) { listi32(pp); *pp=0; if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp); break; }
-    if (nEB<5) { listbytes(pp); *pp=0; if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp); }
-    else if (nEB<6) { listbytes2(pp); *pp=0; if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp); }
-    else { listbytes2(pp); *pp=0; if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp); listbytes3(pad); fputs(pline,listfp); }
-    break;
-  case Z80:
-#endif
-    if (nEB<5) { listbytes(pp); *pp=0; if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp); }
-    else if (nEB<6) { listbytes2(pp); *pp=0; if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp); }
-    else { for (int i=0;i!=12;++i) *(pp++)=' '; *pp=0; if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp); listbytes3(pad); }
-#ifdef METARM
-    break;
-  default:
-    error("internal error listfile",0,FATAL);
-  }
-#endif
-  epadres=adres; eadres=(aint)-1; nEB=0; listdata=0;
+	char* pp = pline;
+	aint pad;
+	if (pass != LASTPASS || !IsListingFileOpened || donotlist) {
+		donotlist = nEB = 0; return;
+	}
+	if (!Options::ListingFName[0] || !FP_ListingFile) {
+		return;
+	}
+	if (listmacro) {
+		if (!nEB) {
+			return;
+		}
+	}
+	if ((pad = PreviousAddress) == (aint) - 1) {
+		pad = epadres;
+	}
+	if (strlen(line) && line[strlen(line) - 1] != 10) {
+		STRCAT(line, LINEMAX, "\n");
+	} else {
+		STRCPY(line, LINEMAX, "\n");
+	}
+	*pp = 0;
+	printCurrentLocalLine(pp);
+	PrintHEX16(pp, pad);
+	*(pp++) = ' ';
+	if (nEB < 5) {
+		listbytes(pp);
+		*pp = 0;
+		if (listmacro) {
+			STRCAT(pp, LINEMAX2, ">");
+		}
+		STRCAT(pp, LINEMAX2, line);
+		fputs(pline, FP_ListingFile);
+	} else if (nEB < 6) {
+		listbytes2(pp); *pp = 0;
+		if (listmacro) {
+			STRCAT(pp, LINEMAX2, ">");
+		}
+		STRCAT(pp, LINEMAX2, line);
+		fputs(pline, FP_ListingFile);
+	} else {
+		for (int i = 0; i != 12; ++i) {
+			*(pp++) = ' ';
+		}
+		*pp = 0;
+		if (listmacro) {
+			STRCAT(pp, LINEMAX2, ">");
+		}
+		STRCAT(pp, LINEMAX2, line); 
+		fputs(pline, FP_ListingFile); 
+		listbytes3(pad);
+	}
+	epadres = CurAddress;
+	PreviousAddress = (aint) - 1;
+	nEB = 0;
+	listdata = 0;
 }
 
-void ListFileSkip(char *line) {
-  char *pp=pline;
-  aint pad;
-  if (pass==1 || !listfile || donotlist) { donotlist=nEB=0; return; }
-  if (listmacro) return;
-  if ((pad=eadres)==(aint)-1) pad=epadres;
-  if (strlen(line) && line[strlen(line)-1]!=10) strcat(line,"\n");
-  *pp=0;
-  printlcurlin(pp);
-#ifdef METARM
-  if (cpu==Z80) printhex16(pp,pad); else printhex32(pp,pad);
-#else
-  printhex16(pp,pad);
-#endif
-  *pp=0; strcat(pp,"~            ");
-  if (nEB) error("Internal error lfs",0,FATAL);
-  if (listmacro) strcat(pp,">"); strcat(pp,line); fputs(pline,listfp);
-  epadres=adres; eadres=(aint)-1; nEB=0; listdata=0;
+void ListFileSkip(char* line) {
+	char* pp = pline;
+	aint pad;
+	if (pass != LASTPASS || !IsListingFileOpened || donotlist) {
+		donotlist = nEB = 0;
+		return;
+	}
+	if (!Options::ListingFName[0] || !FP_ListingFile) {
+		return;
+	}
+	if (listmacro) {
+		return;
+	}
+	if ((pad = PreviousAddress) == (aint) - 1) {
+		pad = epadres;
+	}
+	if (strlen(line) && line[strlen(line) - 1] != 10) {
+		STRCAT(line, LINEMAX, "\n");
+	}
+	*pp = 0;
+	printCurrentLocalLine(pp);
+	PrintHEX16(pp, pad);
+	*pp = 0;
+	STRCAT(pp, LINEMAX2, "~            ");
+	if (nEB) {
+		Error("Internal error lfs", 0, FATAL);
+	}
+	if (listmacro) {
+		STRCAT(pp, LINEMAX2, ">");
+	}
+	STRCAT(pp, LINEMAX2, line);
+	fputs(pline, FP_ListingFile);
+	epadres = CurAddress;
+	PreviousAddress = (aint) - 1;
+	nEB = 0;
+	listdata = 0;
 }
 
 /* added */
 void CheckPage() {
-  if (!specmem) return;
-  int addadr=0;
-  switch (speccurpage) {
+	if (!DeviceID) {
+		return;
+	}
+	/*
+	int addadr = 0;
+	switch (Slot->Number) {
 	case 0:
-	  addadr=0x8000;
-	  break;
+		addadr = 0x8000;
+		break;
 	case 1:
-	  addadr=0xc000;
-	  break;
+		addadr = 0xc000;
+		break;
 	case 2:
-	  addadr=0x4000;
-	  break;
+		addadr = 0x4000;
+		break;
 	case 3:
-	  addadr=0x10000;
-	  break;
+		addadr = 0x10000;
+		break;
 	case 4:
-	  addadr=0x14000;
-	  break;
+		addadr = 0x14000;
+		break;
 	case 5:
-	  addadr=0x0000;
-	  break;
+		addadr = 0x0000;
+		break;
 	case 6:
-	  addadr=0x18000;
-	  break;
+		addadr = 0x18000;
+		break;
 	case 7:
-	  addadr=0x1c000;
-	  break;
-  }
-  if (disp) {
-	if (adrdisp < 0xC000) {
-      addadr = adrdisp - 0x4000;
-	} else {
-      addadr += adrdisp - 0xC000;
+		addadr = 0x1c000;
+		break;
 	}
-  } else {
-    if (adres < 0xC000) {
-      addadr = adres - 0x4000;
-	} else {
-      addadr += adres - 0xC000;
+	if (MemoryCPage > 7) {
+		addadr = 0x4000 * MemoryCPage;
 	}
-  }
-  specramp = specram + addadr;
+	if (PseudoORG) {
+		if (adrdisp < 0xC000) {
+			addadr = adrdisp - 0x4000;
+		} else {
+			addadr += adrdisp - 0xC000;
+		}
+	} else {
+		if (CurAddress < 0xC000) {
+			addadr = CurAddress - 0x4000;
+		} else {
+			addadr += CurAddress - 0xC000;
+		}
+	}
+	MemoryPointer = MemoryRAM + addadr;*/
+
+	CDeviceSlot* S;
+	for (int i=0;i<Device->SlotsCount;i++) {
+		S = Device->GetSlot(i);
+		if (CurAddress >= S->Address  && CurAddress < S->Address + S->Size) {
+			if (PseudoORG) {
+				MemoryPointer = S->Page->RAM + (adrdisp - S->Address);
+				Page = S->Page;
+				return;
+			} else {
+				MemoryPointer = S->Page->RAM + (CurAddress - S->Address);
+				Page = S->Page;
+				return;
+			}
+		}
+	}
+
+	Warning("Error in CheckPage();", 0);
+	ExitASM(1);
+	return;
 }
 
 /* modified */
-void emit(int byte) {
-  EB[nEB++]=byte;
-  if (pass==2) { 
-    destbuf[desttel++]=(char)byte;
-    if (desttel==DESTBUFLEN) WriteDest();
-	/* (begin add) */
-	if (specmem) {
-	  if (disp) {
-		if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
-		*(specramp++)=(char)byte;
-	  	if ((adrdisp & 0x3FFF) == 0x3FFF) {
-		  ++adrdisp; ++adres;
-          CheckPage(); return;
+void Emit(int byte) {
+	EB[nEB++] = byte;
+	if (pass == LASTPASS) {
+		WriteBuffer[WBLength++] = (char) byte;
+		if (WBLength == DESTBUFLEN) {
+			WriteDest();
 		}
-	  } else {
-		if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
-		*(specramp++)=(char)byte;
-		if ((adres & 0x3FFF) == 0x3FFF) {
-		  ++adres;
-          CheckPage(); return;
+		/* (begin add) */
+		if (DeviceID) {
+			if (PseudoORG) {
+				if (CurAddress >= 0x10000) {
+					char buf[1024];
+					SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
+					Error(buf, 0, FATAL);
+				}
+				*(MemoryPointer++) = (char) byte;
+				if ((MemoryPointer - Page->RAM) > Page->Size) {
+					++adrdisp; ++CurAddress;
+					CheckPage();
+					return;
+				}
+			} else {
+				if (CurAddress >= 0x10000) {
+					char buf[1024];
+					SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
+					Error(buf, 0, FATAL);
+				}
+
+				*(MemoryPointer++) = (char) byte;
+				
+				if ((MemoryPointer - Page->RAM) > Page->Size) {
+					++CurAddress; 
+					CheckPage();
+					return;
+				}
+			}
 		}
-	  }
+		/* (end add) */
 	}
-	/* (end add) */
-  }
-  if (disp) ++adrdisp; /* added */
-  ++adres;
+	if (PseudoORG) {
+		++adrdisp;
+	} /* added */
+	++CurAddress;
 }
 
 void EmitByte(int byte) {
-  eadres=adres;
-  emit(byte);
+	PreviousAddress = CurAddress;
+	Emit(byte);
 }
 
-void EmitBytes(int *bytes) {
-  eadres=adres;
-  if (*bytes==-1) { error("Illegal instruction",line,CATCHALL); *lp=0; }
-  while (*bytes!=-1) emit(*bytes++);
+void EmitWord(int word) {
+	PreviousAddress = CurAddress;
+	Emit(word % 256);
+	Emit(word / 256);
 }
 
-void EmitWords(int *words) {
-  eadres=adres;
-  while (*words!=-1) {
-    emit((*words)%256);
-    emit((*words++)/256);
-  }
+void EmitBytes(int* bytes) {
+	PreviousAddress = CurAddress;
+	if (*bytes == -1) {
+		Error("Illegal instruction", line, CATCHALL); *lp = 0;
+	}
+	while (*bytes != -1) {
+		Emit(*bytes++);
+	}
+}
+
+void EmitWords(int* words) {
+	PreviousAddress = CurAddress;
+	while (*words != -1) {
+		Emit((*words) % 256);
+		Emit((*words++) / 256);
+	}
 }
 
 /* modified */
 void EmitBlock(aint byte, aint len) {
-  eadres=adres;
-  if (len) { EB[nEB++]=byte; }
-  while (len--) {
-    if (pass==2) { 
-      destbuf[desttel++]=(char)byte; 
-      if (desttel==DESTBUFLEN) WriteDest(); 
-	  /* (begin add) */
-	  if (specmem) {
-	    if (disp) {
-		  if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
-		  *(specramp++)=(char)byte;
-	  	  if ((adrdisp & 0x3FFF) == 0x3FFF) {
-		    ++adrdisp; ++adres;
-            CheckPage(); continue;
-		  }
-		} else {
-		  if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
-		  *(specramp++)=(char)byte;
-		  if ((adres & 0x3FFF) == 0x3FFF) {
-		    ++adres;
-            CheckPage(); continue;
-		  }
-		}
-	  }
-	  /* (end add) */
-    }
-	if (disp) ++adrdisp; /* added */
-    ++adres;
-  }
-}
-
-char *getpath(char *fname, TCHAR **filenamebegin) {
-  int g=0;
-  char *kip,nieuwzoekpad[MAX_PATH];
-  g=SearchPath(huidigzoekpad,fname,NULL,MAX_PATH,nieuwzoekpad,filenamebegin);
-  if (!g) {
-    if (fname[0]=='<') fname++;
-    stringlst *dir=dirlstp;
-    while (dir) {
-      if (SearchPath(dir->string,fname,NULL,MAX_PATH,nieuwzoekpad,filenamebegin)) { g=1; break; }
-      dir=dir->next;
-    }
-  }
-  if (!g) SearchPath(huidigzoekpad,fname,NULL,MAX_PATH,nieuwzoekpad,filenamebegin);
-  kip=strdup(nieuwzoekpad);
-  if (filenamebegin) *filenamebegin+=kip-nieuwzoekpad;
-  return kip;
-}
-
-/* modified */
-void BinIncFile(char *fname,int offset,int len) {
-  char *bp;
-  FILE *bif;
-  int res;
-  int leng;
-  char *nieuwzoekpad;
-  nieuwzoekpad=getpath(fname,NULL);
-  if (*fname=='<') fname++;
-  if (!(bif=fopen(nieuwzoekpad,"rb"))) {
-    /*old:cout << "Error opening file: " << fname << endl; exit(1);*/
-	error("Error opening file: ",fname,FATAL);
-  }
-  if (offset>0) {
-    bp=new char[offset+1];
-    res=fread(bp,1,offset,bif);
-    if (res==-1) error("Read error",fname,FATAL);
-    if (res!=offset) error("Offset beyond filelength",fname,FATAL);
-  }
-  if (len>0) {
-    bp=new char[len+1];
-    res=fread(bp,1,len,bif);
-    if (res==-1) error("Read error",fname,FATAL);
-    if (res!=len) error("Unexpected end of file",fname,FATAL);
-    while (len--) {
-      /*old:if (pass==2) { destbuf[desttel++]=*bp++; if (desttel==DESTBUFLEN) WriteDest(); }
-      ++adres;*/
-	  /* (begin add) */
-	  if (pass==2) {
-        destbuf[desttel++]=*bp; 
-        if (desttel==DESTBUFLEN) WriteDest(); 
-	    if (specmem) {
-	      if (disp) {
-		    if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
-		    *(specramp++)=*bp;
-	  	    if ((adrdisp & 0x3FFF) == 0x3FFF) {
-		      ++adrdisp; ++adres;
-              CheckPage(); continue;
-			}
-		  } else {
-		    if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
-		    *(specramp++)=*bp;
-		    if ((adres & 0x3FFF) == 0x3FFF) {
-		      ++adres;
-              CheckPage(); continue;
-			}
-		  }
-		}
-	    *bp++;
-	  }
-	  if (disp) ++adrdisp;
-      ++adres;
-	  /* (end add) */
-    }
-  } else {
-    if (pass==2) WriteDest();
-    do {
-      res=fread(destbuf,1,DESTBUFLEN,bif);
-      if (res==-1) error("Read error",fname,FATAL);
-      if (pass==2) { 
-		desttel=res; 
-        /* (begin add) */
-	    if (specmem) {
-		  leng=0;
-		  while (leng!=res) {
-	        if (disp) {
-		      if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
-		      *(specramp++)=(char)destbuf[leng++];
-	  	      if ((adrdisp & 0x3FFF) == 0x3FFF) {
-		        ++adrdisp; ++adres;
-                CheckPage();
-			  } else { ++adrdisp; ++adres; }
-			} else {
-		      if (adres>=0x10000) error("Ram limit exceeded",0,FATAL);
-		      *(specramp++)=(char)destbuf[leng++];
-		      if ((adres & 0x3FFF) == 0x3FFF) {
-		        ++adres;
-                CheckPage();
-			  } else ++adres;
-			}
-		  }
-		}
-	    /* (end add) */
-	    WriteDest(); 
-	  }
-      /*old:adres+=res;*/
-	  if (!specmem || pass==1) { if (disp) adrdisp+=res; adres+=res; }
-    } while (res==DESTBUFLEN);
-  }
-  fclose(bif);
-}
-
-/* modified */
-void OpenFile(char *nfilename) {
-  char ofilename[LINEMAX];
-  char *ohuidigzoekpad,*nieuwzoekpad;
-  TCHAR *filenamebegin;
-  aint olcurlin=lcurlin;
-  lcurlin=0;
-  strcpy(ofilename,filename);
-  if (++include>20) error("Over 20 files nested",0,FATAL);
-  nieuwzoekpad=getpath(nfilename,&filenamebegin);
-  if (*nfilename=='<') nfilename++;
-  strcpy(filename,nfilename);
-  /*if ((input=fopen(nieuwzoekpad,"r"))==NULL) { cout << "Error opening file: " << nfilename << endl; exit(1); }*/
-  if ((input=fopen(nieuwzoekpad,"r"))==NULL) { error("Error opening file: ",nfilename,FATAL); }
-  ohuidigzoekpad=huidigzoekpad; *filenamebegin=0; huidigzoekpad=nieuwzoekpad;
-  
-  rlreaded=0; rlpbuf=rlbuf; 
-  ReadBufLine(true);
-  
-  fclose(input);
-  --include;
-  huidigzoekpad=ohuidigzoekpad;
-  strcpy(filename,ofilename);
-  if (lcurlin>maxlin) maxlin=lcurlin;
-  lcurlin=olcurlin;
-  
-}
-
-/* added */
-void IncludeFile(char *nfilename) {
-  FILE *oinput=input;
-  input=0;
-    
-  char *pbuf=rlpbuf;
-  char *buf=strdup(rlbuf);
-  int readed=rlreaded;
-  bool squotes=rlsquotes,dquotes=rldquotes,space=rlspace,comment=rlcomment,colon=rlcolon,newline=rlnewline;
-  
-  rldquotes=false;rlsquotes=false;rlspace=false;rlcomment=false;rlcolon=false;rlnewline=true;
-  strset(rlbuf,0);
-
-  OpenFile(nfilename);
-
-  rlsquotes=squotes,rldquotes=dquotes,rlspace=space,rlcomment=comment,rlcolon=colon,rlnewline=newline;
-  rlpbuf=pbuf;
-  strcpy(rlbuf,buf);
-  rlreaded=readed;
-
-  delete[] buf;
-  
-  input=oinput;
-}
-
-/* added */
-void ReadBufLine(bool Parse) {
-  rlppos=line;
-  if (rlcolon) *(rlppos++)='\t';
-  while(running && (rlreaded>0 || (rlreaded=fread(rlbuf,1,4096,input)))) {
-	if (!*rlpbuf) rlpbuf=rlbuf;
-	while (rlreaded>0) {
-	  if (*rlpbuf=='\n' || *rlpbuf=='\r') {
-		if (*rlpbuf=='\n') {rlpbuf++;rlreaded--;if (*rlpbuf && *rlpbuf=='\r') {rlpbuf++;rlreaded--;}}
-		else if (*rlpbuf=='\r') {rlpbuf++;rlreaded--;}
-		*rlppos=0;
-		if (strlen(line)==LINEMAX-1) error("Line too long",0,FATAL);
-		if (rlnewline) {lcurlin++; curlin++; gcurlin++;}
-		rlsquotes=rldquotes=rlcomment=rlspace=rlcolon=false;
-		//cout << line << endl;
-		if (Parse) ParseLine(); else return;
-		rlppos=line; if (rlcolon) *(rlppos++)=' '; rlnewline=true;
-	  } else if (*rlpbuf==':' && rlspace && !rldquotes && !rlsquotes && !rlcomment) {
-		while (*rlpbuf && *rlpbuf==':') {rlpbuf++;rlreaded--;}
-		*rlppos=0;
-		if (strlen(line)==LINEMAX-1) error("Line too long",0,FATAL);
-		if (rlnewline) {lcurlin++; curlin++; gcurlin++; rlnewline=false;}
-		rlcolon=true;
-        if (Parse) ParseLine(); else return;
-		rlppos=line; if (rlcolon) *(rlppos++)=' '; 
-	  } else if (*rlpbuf==':' && !rlspace && !rlcolon && !rldquotes && !rlsquotes && !rlcomment) {
-	    lp=line; *rlppos=0; char *n;
-		if ((n=getinstr(lp)) && dirtab.find(n)) {
-          //it's directive
-		  while (*rlpbuf && *rlpbuf==':') {rlpbuf++;rlreaded--;}
-		  if (strlen(line)==LINEMAX-1) error("Line too long",0,FATAL);
-		  if (rlnewline) {lcurlin++; curlin++; gcurlin++; rlnewline=false;}
-		  rlcolon=true; 
-		  if (Parse) ParseLine(); else return;
-		  rlspace=true;
-		  rlppos=line; if (rlcolon) *(rlppos++)=' '; 
-		} else {
-		  //it's label
-          *(rlppos++)=':';
-		  *(rlppos++)=' ';
-		  rlspace=true;
-		  while (*rlpbuf && *rlpbuf==':') {rlpbuf++;rlreaded--;}
-		}
-	  } else {
-		if (*rlpbuf=='\'') {
-          if (rlsquotes) rlsquotes=false; else rlsquotes=true;
-	    } else if (*rlpbuf=='"') {
-	      if (rldquotes) rldquotes=false; else rldquotes=true;  
-	    } else if (*rlpbuf==';') {
-	      rlcomment=true;  
-	    } else if (*rlpbuf=='/' && *(rlpbuf+1)=='/') {
-	      rlcomment=true;  
-		  *(rlppos++)=*(rlpbuf++); rlreaded--;
-	    } else if (*rlpbuf<=' ') {
-	      rlspace=true;
-	    }
-	    *(rlppos++)=*(rlpbuf++); rlreaded--;
-	  }
+	PreviousAddress = CurAddress;
+	if (len) {
+		EB[nEB++] = byte;
 	}
-	rlpbuf=rlbuf;
-  }
-  //for end line
-  if (feof(input) && rlreaded<=0 && line) {
-    if (rlnewline) {lcurlin++; curlin++; gcurlin++;}
-    rlsquotes=rldquotes=rlcomment=rlspace=rlcolon=false;
-	rlnewline=true;
-	*rlppos=0;
-    if (Parse) {
-	  ParseLine();
-	} else return;
-	rlppos=line;
-  }
+	while (len--) {
+		if (pass == LASTPASS) {
+			WriteBuffer[WBLength++] = (char) byte; 
+			if (WBLength == DESTBUFLEN) {
+				WriteDest();
+			} 
+			/* (begin add) */
+			if (DeviceID) {
+				if (PseudoORG) {
+					if (CurAddress >= 0x10000) {
+						Error("RAM limit exceeded", 0, FATAL);
+					}
+					*(MemoryPointer++) = (char) byte;
+					if ((MemoryPointer - Page->RAM) > Page->Size) {
+						++adrdisp; ++CurAddress;
+						CheckPage(); continue;
+					}
+				} else {
+					if (CurAddress >= 0x10000) {
+						Error("RAM limit exceeded", 0, FATAL);
+					}
+					*(MemoryPointer++) = (char) byte;
+					if ((MemoryPointer - Page->RAM) > Page->Size) {
+						++CurAddress;
+						CheckPage(); continue;
+					}
+				}
+			}
+			/* (end add) */
+		}
+		if (PseudoORG) {
+			++adrdisp;
+		} /* added */
+		++CurAddress;
+	}
+}
+
+char* GetPath(char* fname, TCHAR** filenamebegin) {
+	int g = 0;
+	char* kip, nieuwzoekpad[MAX_PATH];
+	g = SearchPath(CurrentDirectory, fname, NULL, MAX_PATH, nieuwzoekpad, filenamebegin);
+	if (!g) {
+		if (fname[0] == '<') {
+			fname++;
+		}
+		CStringList* dir = Options::IncludeDirsList;
+		while (dir) {
+			if (SearchPath(dir->string, fname, NULL, MAX_PATH, nieuwzoekpad, filenamebegin)) {
+				g = 1; break;
+			}
+			dir = dir->next;
+		}
+	}
+	if (!g) {
+		SearchPath(CurrentDirectory, fname, NULL, MAX_PATH, nieuwzoekpad, filenamebegin);
+	}
+	kip = STRDUP(nieuwzoekpad);
+	if (kip == NULL) {
+		Error("No enough memory!", 0, FATAL);
+	}
+	if (filenamebegin) {
+		*filenamebegin += kip - nieuwzoekpad;
+	}
+	return kip;
+}
+
+void BinIncFile(char* fname, int offset, int len) {
+	char* bp;
+	FILE* bif;
+	int res;
+	int leng;
+	char* nieuwzoekpad;
+	nieuwzoekpad = GetPath(fname, NULL);
+	if (*fname == '<') {
+		fname++;
+	}
+	if (!FOPEN_ISOK(bif, nieuwzoekpad, "rb")) {
+		Error("Error opening file", fname, FATAL);
+	}
+	if (offset > 0) {
+		bp = new char[offset + 1];
+		if (bp == NULL) {
+			Error("No enough memory!", 0, FATAL);
+		}
+		res = fread(bp, 1, offset, bif);
+		if (res == -1) {
+			Error("Read error", fname, FATAL);
+		}
+		if (res != offset) {
+			Error("Offset beyond filelength", fname, FATAL);
+		}
+	}
+	if (len > 0) {
+		bp = new char[len + 1];
+		if (bp == NULL) {
+			Error("No enough memory!", 0, FATAL);
+		}
+		res = fread(bp, 1, len, bif);
+		if (res == -1) {
+			Error("Read error", fname, FATAL);
+		}
+		if (res != len) {
+			Error("Unexpected end of file", fname, FATAL);
+		}
+		while (len--) {
+			if (pass == LASTPASS) {
+				WriteBuffer[WBLength++] = *bp; 
+				if (WBLength == DESTBUFLEN) {
+					WriteDest();
+				} 
+				if (DeviceID) {
+					if (PseudoORG) {
+						if (CurAddress >= 0x10000) {
+							Error("RAM limit exceeded", 0, FATAL);
+						}
+						*(MemoryPointer++) = *bp;
+						if ((MemoryPointer - Page->RAM) > Page->Size) {
+							++adrdisp; ++CurAddress;
+							CheckPage(); continue;
+						}
+					} else {
+						if (CurAddress >= 0x10000) {
+							Error("RAM limit exceeded", 0, FATAL);
+						}
+						*(MemoryPointer++) = *bp;
+						if ((MemoryPointer - Page->RAM) > Page->Size) {
+							++CurAddress;
+							CheckPage(); continue;
+						}
+					}
+				}
+				*bp++;
+			}
+			if (PseudoORG) {
+				++adrdisp;
+			}
+			++CurAddress;
+		}
+	} else {
+		if (pass == LASTPASS) {
+			WriteDest();
+		}
+		do {
+			res = fread(WriteBuffer, 1, DESTBUFLEN, bif);
+			if (res == -1) {
+				Error("Read error", fname, FATAL);
+			}
+			if (pass == LASTPASS) {
+				WBLength = res; 
+				if (DeviceID) {
+					leng = 0;
+					while (leng != res) {
+						if (PseudoORG) {
+							if (CurAddress >= 0x10000) {
+								Error("RAM limit exceeded", 0, FATAL);
+							}
+							*(MemoryPointer++) = (char) WriteBuffer[leng++];
+							if ((MemoryPointer - Page->RAM) > Page->Size) {
+								++adrdisp; ++CurAddress;
+								CheckPage();
+							} else {
+								++adrdisp; ++CurAddress;
+							}
+						} else {
+							if (CurAddress >= 0x10000) {
+								Error("RAM limit exceeded", 0, FATAL);
+							}
+							*(MemoryPointer++) = (char) WriteBuffer[leng++];
+							if ((MemoryPointer - Page->RAM) > Page->Size) {
+								++CurAddress;
+								CheckPage();
+							} else {
+								++CurAddress;
+							}
+						}
+					}
+				}
+				WriteDest();
+			}
+			if (!DeviceID || pass != LASTPASS) {
+				if (PseudoORG) {
+					adrdisp += res;
+				} CurAddress += res;
+			}
+		} while (res == DESTBUFLEN);
+	}
+	fclose(bif);
+}
+
+void OpenFile(char* nfilename) {
+	char ofilename[LINEMAX];
+	char* oCurrentDirectory, * fullpath;
+	TCHAR* filenamebegin;
+	
+	if (++IncludeLevel > 20) {
+		Error("Over 20 files nested", 0, FATAL);
+	}
+	fullpath = GetPath(nfilename, &filenamebegin);
+	if (*nfilename == '<') {
+		nfilename++;
+	}
+	
+	if (!FOPEN_ISOK(FP_Input, fullpath, "r")) {
+		Error("Error opening file", nfilename, FATAL);
+	}
+
+	aint oCurrentLocalLine = CurrentLocalLine;
+	CurrentLocalLine = 0;
+	STRCPY(ofilename, LINEMAX, filename);
+
+	if (Options::IsShowFullPath) {
+		STRCPY(filename, LINEMAX, fullpath);
+	} else {
+		STRCPY(filename, LINEMAX, nfilename);
+	}
+
+	oCurrentDirectory = CurrentDirectory; *filenamebegin = 0; CurrentDirectory = fullpath;
+
+	RL_Readed = 0; rlpbuf = rlbuf; 
+	ReadBufLine(true);
+
+	fclose(FP_Input);
+	--IncludeLevel;
+	CurrentDirectory = oCurrentDirectory;
+	STRCPY(filename, LINEMAX, ofilename);
+	if (CurrentLocalLine > maxlin) {
+		maxlin = CurrentLocalLine;
+	}
+	CurrentLocalLine = oCurrentLocalLine;
+}
+
+/* added */
+void IncludeFile(char* nfilename) {
+	FILE* oFP_Input = FP_Input;
+	FP_Input = 0;
+
+	char* pbuf = rlpbuf;
+	char* buf = STRDUP(rlbuf);
+	if (buf == NULL) {
+		Error("No enough memory!", 0, FATAL);
+	}
+	int readed = RL_Readed;
+	bool squotes = rlsquotes,dquotes = rldquotes,space = rlspace,comment = rlcomment,colon = rlcolon,newline = rlnewline;
+
+	rldquotes = false; rlsquotes = false;rlspace = false;rlcomment = false;rlcolon = false;rlnewline = true;
+
+	memset(rlbuf, 0, 8192);
+
+	OpenFile(nfilename);
+
+	rlsquotes = squotes,rldquotes = dquotes,rlspace = space,rlcomment = comment,rlcolon = colon,rlnewline = newline;
+	rlpbuf = pbuf;
+	STRCPY(rlbuf, 8192, buf);
+	RL_Readed = readed;
+
+	delete[] buf;
+
+	FP_Input = oFP_Input;
+}
+
+/* added */
+void ReadBufLine(bool Parse, bool SplitByColon) {
+	rlppos = line;
+	if (rlcolon) {
+		*(rlppos++) = '\t';
+	}
+	while (IsRunning && (RL_Readed > 0 || (RL_Readed = fread(rlbuf, 1, 4096, FP_Input)))) {
+		if (!*rlpbuf) {
+			rlpbuf = rlbuf;
+		}
+		while (RL_Readed > 0) {
+			if (*rlpbuf == '\n' || *rlpbuf == '\r') {
+				if (*rlpbuf == '\n') {
+					rlpbuf++;RL_Readed--;
+					if (*rlpbuf && *rlpbuf == '\r') {
+						rlpbuf++;RL_Readed--;
+					}
+				} else if (*rlpbuf == '\r') {
+					rlpbuf++;RL_Readed--;
+				}
+				*rlppos = 0;
+				if (strlen(line) == LINEMAX - 1) {
+					Error("Line too long", 0, FATAL);
+				}
+				//if (rlnewline) {
+					CurrentLocalLine++; CurrentLine++; CurrentGlobalLine++;
+				//}
+				rlsquotes = rldquotes = rlcomment = rlspace = rlcolon = false;
+				//cout << line << endl;
+				if (Parse) {
+					ParseLine();
+				} else {
+					return;
+				}
+				rlppos = line;
+				if (rlcolon) {
+					*(rlppos++) = ' ';
+				}
+				rlnewline = true;
+			} else if (SplitByColon && *rlpbuf == ':' && rlspace && !rldquotes && !rlsquotes && !rlcomment) {
+				while (*rlpbuf && *rlpbuf == ':') {
+					rlpbuf++;RL_Readed--;
+				}
+			  	*rlppos = 0;
+				if (strlen(line) == LINEMAX - 1) {
+					Error("Line too long", 0, FATAL);
+				}
+				if (rlnewline) {
+					CurrentLocalLine++; CurrentLine++; CurrentGlobalLine++; rlnewline = false;
+				}
+			  	rlcolon = true;
+				if (Parse) {
+					ParseLine();
+				} else {
+					return;
+				}
+			  	rlppos = line; if (rlcolon) {
+							   	*(rlppos++) = ' ';
+							   }
+			} else if (*rlpbuf == ':' && !rlspace && !rlcolon && !rldquotes && !rlsquotes && !rlcomment) {
+			  	lp = line; *rlppos = 0; char* n;
+				if ((n = getinstr(lp)) && DirectivesTable.Find(n)) {
+					//it's directive
+					while (*rlpbuf && *rlpbuf == ':') {
+						rlpbuf++;RL_Readed--;
+					}
+					if (strlen(line) == LINEMAX - 1) {
+						Error("Line too long", 0, FATAL);
+					}
+					if (rlnewline) {
+						CurrentLocalLine++; CurrentLine++; CurrentGlobalLine++; rlnewline = false;
+					}
+					rlcolon = true; 
+					if (Parse) {
+						ParseLine();
+					} else {
+						return;
+					}
+					rlspace = true;
+					rlppos = line; if (rlcolon) {
+								   	*(rlppos++) = ' ';
+								   }
+				} else {
+					//it's label
+					*(rlppos++) = ':';
+					*(rlppos++) = ' ';
+					rlspace = true;
+					while (*rlpbuf && *rlpbuf == ':') {
+						rlpbuf++;RL_Readed--;
+					}
+				}
+			} else {
+				if (*rlpbuf == '\'') {
+					if (rlsquotes) {
+						rlsquotes = false;
+					} else {
+						rlsquotes = true;
+					}
+				} else if (*rlpbuf == '"') {
+					if (rldquotes) {
+						rldquotes = false;
+					} else {
+						rldquotes = true;
+					}
+				} else if (*rlpbuf == ';') {
+					rlcomment = true;
+				} else if (*rlpbuf == '/' && *(rlpbuf + 1) == '/') {
+					rlcomment = true;  
+					*(rlppos++) = *(rlpbuf++); RL_Readed--;
+				} else if (*rlpbuf <= ' ') {
+					rlspace = true;
+				}
+				*(rlppos++) = *(rlpbuf++); RL_Readed--;
+			}
+		}
+		rlpbuf = rlbuf;
+	}
+	//for end line
+	if (feof(FP_Input) && RL_Readed <= 0 && line) {
+		if (rlnewline) {
+			CurrentLocalLine++; CurrentLine++; CurrentGlobalLine++;
+		}
+		rlsquotes = rldquotes = rlcomment = rlspace = rlcolon = false;
+		rlnewline = true;
+		*rlppos = 0;
+		if (Parse) {
+			ParseLine();
+		} else {
+			return;
+		}
+		rlppos = line;
+	}
 }
 
 /* modified */
 void OpenList() {
-  if (listfile) 
-    if (!(listfp=fopen(listfilename,"w"))) {
-	  /*cout << "Error opening file: " << listfilename << endl; exit(1);*/
-      error("Error opening file: ",listfilename,FATAL);
-    }
+	if (Options::ListingFName[0]) {
+		if (!FOPEN_ISOK(FP_ListingFile, Options::ListingFName, "w")) {
+			Error("Error opening file", Options::ListingFName, FATAL);
+		}
+	}
 }
 
 /* added */
 void OpenUnrealList() {
-    if (!(unreallistfp=fopen(llfilename,"w"))) {
-	  error("Error opening file: ",llfilename,FATAL);
-    }
+	/*if (!FP_UnrealList && Options::UnrealLabelListFName && !FOPEN_ISOK(FP_UnrealList, Options::UnrealLabelListFName, "w")) {
+		Error("Error opening file", Options::UnrealLabelListFName, FATAL);
+	}*/
 }
 
-/* modified */
-//void OpenDest() {
-//  destlen=0; /* correct bug with SIZE */
-//  if ( (output = fopen( destfilename, "wb" )) == NULL ) {
- //   /*cout << "Error opening file: " << destfilename << endl; exit(1);*/
-//	cout << "Error opening file: " << destfilename << endl; exitasm(1);
-//  }
-//}
-
-/* changed to new from SjASM 0.39g */
 void CloseDest() {
-  long pad;
-  if (desttel) WriteDest();
-  if (size!=-1) {
-    if (destlen>size) error("File exceeds 'size'",0);
-    else {
-      pad=size-destlen;
-      if (pad>0) 
-        while (pad--) {
-          destbuf[desttel++]=0;
-          if (desttel==256) WriteDest();
-      }
-    if (desttel) WriteDest();
-    }
-  }
-  fclose(output);
+	long pad;
+	if (WBLength) {
+		WriteDest();
+	}
+	if (size != -1) {
+		if (destlen > size) {
+			Error("File exceeds 'size'", 0);
+		} else {
+			pad = size - destlen;
+			if (pad > 0) {
+				while (pad--) {
+					WriteBuffer[WBLength++] = 0;
+					if (WBLength == 256) {
+						WriteDest();
+					}
+				}
+			}
+			if (WBLength) {
+				WriteDest();
+			}
+		}
+	}
+	fclose(FP_Output);
 }
 
-/* added from SjASM 0.39g */
-void SeekDest(long offset,int method) {
+void SeekDest(long offset, int method) {
 	WriteDest();
-	if(fseek(output,offset,method)) error("File seek error (FORG)",0,FATAL);
+	if (fseek(FP_Output, offset, method)) {
+		Error("File seek error (FORG)", 0, FATAL);
+	}
 }
 
-/* added from SjASM 0.39g */
-void NewDest(char *ndestfilename) {
-  NewDest(ndestfilename,OUTPUT_TRUNCATE);
+void NewDest(char* newfilename) {
+	NewDest(newfilename, OUTPUT_TRUNCATE);
 }
 
-void NewDest(char *ndestfilename,int mode) {
-  CloseDest();
-  strcpy(destfilename,ndestfilename);
-  OpenDest(mode);
+void NewDest(char* newfilename, int mode) {
+	CloseDest();
+	STRCPY(Options::DestionationFName, LINEMAX, newfilename);
+	OpenDest(mode);
 }
 
-/* added from SjASM 0.39g */
 void OpenDest() {
-  OpenDest(OUTPUT_TRUNCATE);
+	OpenDest(OUTPUT_TRUNCATE);
 }
 
-/* modified */
-/* changed to new from SjASM 0.39g */
 void OpenDest(int mode) {
-  destlen=0;
-  if(mode!=OUTPUT_TRUNCATE && !FileExists(destfilename)) mode=OUTPUT_TRUNCATE;
-  if ((output = fopen( destfilename, mode==OUTPUT_TRUNCATE ? "wb" : "r+b" )) == NULL )
-  {
-	 error("Error opening file: ",destfilename,FATAL);
-  }
-  if(mode!=OUTPUT_TRUNCATE)
-  {
-     if(fseek(output,0,mode==OUTPUT_REWIND ? SEEK_SET : SEEK_END)) error("File seek error (OUTPUT)",0,FATAL); 
-  }
+	destlen = 0;
+	if (mode != OUTPUT_TRUNCATE && !FileExists(Options::DestionationFName)) {
+		mode = OUTPUT_TRUNCATE;
+	}
+	if (!FOPEN_ISOK(FP_Output, Options::DestionationFName, mode == OUTPUT_TRUNCATE ? "wb" : "r+b")) {
+		Error("Error opening file", Options::DestionationFName, FATAL);
+	}
+	if (Options::RAWFName[0] && !FOPEN_ISOK(FP_RAW, Options::RAWFName, "wb")) {
+		Warning("Error opening file", Options::RAWFName);
+	}
+	if (mode != OUTPUT_TRUNCATE) {
+		if (fseek(FP_Output, 0, mode == OUTPUT_REWIND ? SEEK_SET : SEEK_END)) {
+			Error("File seek error (OUTPUT)", 0, FATAL);
+		}
+	}
 }
 
-/* added from SjASM 0.39g */
 int FileExists(char* filename) {
-  int exists=0;
-  FILE* test=fopen(filename,"r");
-  if(test!=NULL) {
-    exists=-1;
-    fclose(test);
-  }
-  return exists;
+	int exists = 0;
+	FILE* test;
+	if (FOPEN_ISOK(test, filename, "r")) {
+		exists = 1;
+		fclose(test);
+	}
+	return exists;
 }
 
-/* modified */
 void Close() {
-  CloseDest();
-  if (expfp) {
-	fclose(expfp);
-	expfp = NULL;
-  }
-  if (listfile) fclose(listfp);
-  if (unreallabel && pass == 9999) fclose(unreallistfp); /* added */
+	CloseDest();
+	if (FP_ExportFile) {
+		fclose(FP_ExportFile);
+		FP_ExportFile = NULL;
+	}
+	if (FP_RAW) {
+		fclose(FP_RAW);
+	}
+	if (FP_ListingFile) {
+		fclose(FP_ListingFile);
+	}
+	//if (FP_UnrealList && pass == 9999) {
+	//	fclose(FP_UnrealList);
+	//}
 }
 
-int SaveMem(FILE *ff,int start,int length) {
-  unsigned int addadr=0,save=0;
-  
-  if (length + start > 0xFFFF) length = -1;
-  if (length <= 0) length = 0x10000-start;
+int SaveRAM(FILE* ff, int start, int length) {
+	//unsigned int addadr = 0,save = 0;
+	aint save = 0;
 
-  // $4000-$7FFF
-  if (start < 0x8000) {
-	save=length;
-	addadr=start-0x4000;
-	if (save+start > 0x8000) {
-      save = 0x8000-start;
-	  length -= save;
-	  start = 0x8000;
-	} else {
-      length = 0;
-	}
-    if (fwrite(specram+addadr, 1, save, ff) != save) {return 0;}
-  }
-  // $8000-$BFFF
-  if (length > 0 && start < 0xC000) {
-    save=length;
-	addadr=start-0x4000;
-	if (save+start > 0xC000) {
-      save = 0xC000-start;
-	  length -= save;
-	  start = 0xC000;
-	} else {
-      length = 0;
-	}
-    if (fwrite(specram+addadr, 1, save, ff) != save) {return 0;}
-  }
-
-  // $C000-$FFFF
-  if (length > 0) {
-    switch (speccurpage) {
-	  case 0:
-	    addadr=0x8000;
-	    break;
-	  case 1:
-	    addadr=0xc000;
-	    break;
-	  case 2:
-	    addadr=0x4000;
-	    break;
-	  case 3:
-	    addadr=0x10000;
-	    break;
-	  case 4:
-	    addadr=0x14000;
-	    break;
-	  case 5:
-	    addadr=0x0000;
-	    break;
-	  case 6:
-	    addadr=0x18000;
-	    break;
-	  case 7:
-	    addadr=0x1c000;
-	    break;
-	}
-	save=length;
-	addadr += start-0xC000;
-	if (fwrite(specram+addadr, 1, save, ff) != save) {return 0;}
-  }
-  return 1;
-}
-
-/* added */
-char MemGetByte(unsigned int address) {
-  if (pass==1) return 0;
-  // $4000-$7FFF
-  if (address < 0x8000) {
-	return specram[address-0x4000];
-  }
-  // $8000-$BFFF
-  else if (address < 0xC000) {
-    return specram[address-0x8000];
-  }
-  // $C000-$FFFF
-  else {
-    unsigned int addadr=0;
-    switch (speccurpage) {
-	  case 0:
-	    addadr=0x8000;
-	    break;
-	  case 1:
-	    addadr=0xc000;
-	    break;
-	  case 2:
-	    addadr=0x4000;
-	    break;
-	  case 3:
-	    addadr=0x10000;
-	    break;
-	  case 4:
-	    addadr=0x14000;
-	    break;
-	  case 5:
-	    addadr=0x0000;
-	    break;
-	  case 6:
-	    addadr=0x18000;
-	    break;
-	  case 7:
-	    addadr=0x1c000;
-	    break;
-	}
-	addadr += address-0xC000;
-	if (addadr > 0x1FFFF) {
+	if (!DeviceID) {
 		return 0;
 	}
-	return specram[addadr];
-  }
-}
 
-/* added */
-int SaveBinary(char *fname,int start,int length) {
-  FILE  *ff;
-  if ((ff=fopen(fname, "wb")) == NULL)  { error("Error opening file: ",fname,FATAL); }
-  
-  if (length + start > 0xFFFF) length = -1;
-  if (length <= 0) length = 0x10000-start;
-
-  if (!SaveMem(ff,start,length)) {fclose(ff);return 0;}
-  
-  fclose(ff);
-  return 1;
-}
-
-/* added */
-int SaveHobeta(char *fname,char *fhobname,int start,int length) {
-  unsigned char header[0x11];
-  int i;
-  for (i=0;i!=8;header[i++]=0x20);
-  for (i=0;i!=8;++i)
-  {
-      if (*(fhobname+i)==0) break;
-	  if (*(fhobname+i)!='.') {header[i]=*(fhobname+i);continue;}
-	  else
-		  if(*(fhobname+i+1)) header[8]=*(fhobname+i+1);
-	  break;
-  }
-
-
-  if (length + start > 0xFFFF) length = -1;
-  if (length <= 0) length = 0x10000-start;
-
-  header[0x09]=(unsigned char)(start&0xff);
-  header[0x0a]=(unsigned char)(start>>8);
-  header[0x0b]=(unsigned char)(length&0xff);
-  header[0x0c]=(unsigned char)(length>>8);
-  header[0x0d]=0;
-  if (header[0x0b] == 0) header[0x0e]=header[0x0c]; else header[0x0e]=header[0x0c]+1;
-  length=header[0x0e]*0x100;
-  int chk=0;
-  for (i=0; i<=14; chk=chk+(header[i]*257)+i,i++);
-  header[0x0f]=(unsigned char)(chk&0xff);
-  header[0x10]=(unsigned char)(chk>>8);
-  
-  FILE  *ff;
-  if ((ff=fopen(fname, "wb")) == NULL)  { error("Error opening file: ",fname,FATAL); }
-  
-  if (fwrite(header, 1, 17, ff) != 17) {fclose(ff);return 0;}
-
-  if (!SaveMem(ff,start,length)) {fclose(ff);return 0;}
-  
-  fclose(ff);
-  return 1;
-}
-
-/* added */
-int SaveSNA128(char *fname,unsigned short start) {
-  unsigned char snbuf[31];
-  FILE  *ff;
-  if ((ff=fopen(fname, "wb")) == NULL)  { error("Error opening file: ",fname,FATAL); }
-  
-  memset(snbuf, 0, sizeof(snbuf));
-  
-  snbuf[1]=0x58; //hl'
-  snbuf[2]=0x27; //hl'
-  snbuf[15]=0x3a; //iy
-  snbuf[16]=0x5c; //iy
-  snbuf[23]=0xff; //sp
-  snbuf[24]=0x5F; //sp
-  snbuf[25]=1; //im 1
-  
-  if (fwrite(snbuf, 1, sizeof(snbuf)-4, ff) != sizeof(snbuf)-4) {fclose(ff);return 0;}
-  if (fwrite(specram, 1, SPECPAGE, ff) != SPECPAGE) {fclose(ff);return 0;}
-  if (fwrite(specram+SPECPAGE, 1, SPECPAGE, ff) != SPECPAGE) {fclose(ff);return 0;}
-  if (fwrite(specram+SPECPAGE*2, 1, SPECPAGE, ff) != SPECPAGE) {fclose(ff);return 0;}
-  
-  snbuf[27]=char(start&0x00FF); //pc
-  snbuf[28]=char(start>>8); //pc
-  snbuf[29]=0x10; //7ffd
-  snbuf[30]=0; //tr-dos
-  if (fwrite(snbuf+27, 1, 4, ff) != 4) {fclose(ff);return 0;}
-
-  int n=1;
-  for (int i = 0; i < 8; i++)
-    if (i!=0 && i!=2 && i!=5) {
-	  if (fwrite(specram + SPECPAGE*2 + SPECPAGE*n, 1, SPECPAGE, ff) != SPECPAGE) {fclose(ff);return 0;}
-	  n++;
-    }
-
-  fclose(ff);
-  return 1;
-}
-
-/* modified */
-Ending ReadFile(char *pp,char *err) {
-  stringlst *ol;
-  char *p;
-  while (rlreaded>0 || !feof(input)) {
-    if (!running) return END;
-    if (lijst) { 
-      if (!lijstp) return END;
-      p=strcpy(line,lijstp->string); ol=lijstp; lijstp=lijstp->next;
-    } else {
-	  ReadBufLine(false);
-	  p=line;
-	  //cout << "RF:" << rlcolon << line << endl;
-    }
-	
-    skipblanks(p);
-    if (*p=='.') ++p;
-    if (cmphstr(p,"endif")) { lp=ReplaceDefine(p); return ENDIF; }
-    if (cmphstr(p,"else")) { ListFile(); lp=ReplaceDefine(p); return ELSE; }
-    if (cmphstr(p,"endt")) { lp=ReplaceDefine(p); return ENDTEXTAREA; }
-    if (cmphstr(p,"dephase")) { lp=ReplaceDefine(p); return ENDTEXTAREA; } // hmm??
-    if (cmphstr(p,"unphase")) { lp=ReplaceDefine(p); return ENDTEXTAREA; } // hmm??
-    ParseLineSafe();
-  }
-  error("Unexpected end of file",0,FATAL);
-  return END;
-}
-
-/* modified */
-Ending SkipFile(char *pp,char *err) {
-  stringlst *ol;
-  char *p;
-  int iflevel=0;
-  while (rlreaded>0 || !feof(input)) {
-    if (!running) return END;
-	if (lijst) { 
-      if (!lijstp) return END;
-      p=strcpy(line,lijstp->string); ol=lijstp; lijstp=lijstp->next;
-    } else {
-	  ReadBufLine(false);
-	  p=line;
-	  //cout << "SF:" << rlcolon << line << endl;
-    }
-    skipblanks(p);
-    if (*p=='.') ++p;
-	if (cmphstr(p,"if")) { ++iflevel; }
-	if (cmphstr(p,"ifn")) { ++iflevel; }
-    //if (cmphstr(p,"ifexist")) { ++iflevel; }
-    //if (cmphstr(p,"ifnexist")) { ++iflevel; }
-    if (cmphstr(p,"ifdef")) { ++iflevel; }
-    if (cmphstr(p,"ifndef")) { ++iflevel; }
-	if (cmphstr(p,"endif")) { if (iflevel) --iflevel; else {lp=ReplaceDefine(p);return ENDIF;} }
-	if (cmphstr(p,"else")) { if (!iflevel) { ListFile(); lp=ReplaceDefine(p);return ELSE; } }
-    ListFileSkip(line);
-  }
-  error("Unexpected end of file",0,FATAL);
-  return END;
-}
-
-/* modified */
-int ReadLine() {
-  if (!running) return 0;
-  /*if (!fgets(line,LINEMAX,input)) error("Unexpected end of file",0,FATAL);
-  ++lcurlin; ++curlin;
-  if (strlen(line)==LINEMAX-1) error("Line too long",0,FATAL);*/
-  int res=(rlreaded>0 || !feof(input));
-  ReadBufLine(false);
-  return res;
-}
-
-/* modified (it's so modified that I dont check modifications) */
-int ReadFileToStringLst(stringlst *&f,char *end) {
-  stringlst *s,*l=NULL;
-  char *p;
-  f=NULL;
-  while (rlreaded>0 || !feof(input)) {
-    if (!running) return 0;
-    ReadBufLine(false);
-	p=line;
-	//cout << "P" << line << endl;
-    if (*p) {
-      skipblanks(p); if (*p=='.') ++p;
-	  if (cmphstr(p,end)) { lp=ReplaceDefine(p); return 1; }
-    }
-    s=new stringlst(line,NULL); if (!f) f=s; if (l) l->next=s; l=s;
-    ListFileSkip(line);
-  }
-  error("Unexpected end of file",0,FATAL);
-  return 0;
-}
-
-/* modified */
-void WriteExp(char *n, aint v) {
-  char lnrs[16],*l=lnrs;
-  if (!expfp) {
-    if (!(expfp=fopen(expfilename,"w"))) {
-      /*cout << "Error opening file: " << expfilename << endl; exit(1);*/
-	  error("Error opening file: ",expfilename,FATAL);
+	if (length + start > 0xFFFF) {
+		length = -1;
 	}
-  }
-  strcpy(eline,n); strcat(eline,": EQU ");
-  printhex32(l,v); *l=0; strcat(eline,lnrs); strcat(eline,"h\n");
-  fputs(eline,expfp);
+	if (length <= 0) {
+		length = 0x10000 - start;
+	}
+
+	CDeviceSlot* S;
+	for (int i=0;i<Device->SlotsCount;i++) {
+		S = Device->GetSlot(i);
+		if (start >= S->Address  && start < S->Address + S->Size) {
+			if (length < S->Size - (start - S->Address)) {
+				save = length;
+			} else {
+				save = S->Size - (start - S->Address);
+			}
+			if (fwrite(S->Page->RAM + (start - S->Address), 1, save, ff) != save) {
+				return 0;
+			}
+			length -= save;
+			if (!length) {
+				return 1;
+			}
+		}
+	}
+
+	return 1;
+/*
+	// $4000-$7FFF
+	if (start < 0x8000) {
+		save = length;
+		addadr = start - 0x4000;
+		if (save + start > 0x8000) {
+			save = 0x8000 - start;
+			length -= save;
+			start = 0x8000;
+		} else {
+			length = 0;
+		}
+		if (fwrite(MemoryRAM + addadr, 1, save, ff) != save) {
+			return 0;
+		}
+	}
+
+	// $8000-$BFFF
+	if (length > 0 && start < 0xC000) {
+		save = length;
+		addadr = start - 0x4000;
+		if (save + start > 0xC000) {
+			save = 0xC000 - start;
+			length -= save;
+			start = 0xC000;
+		} else {
+			length = 0;
+		}
+		if (fwrite(MemoryRAM + addadr, 1, save, ff) != save) {
+			return 0;
+		}
+	}
+
+	// $C000-$FFFF
+	if (length > 0) {
+		if (Options::MemoryType == MT_ZX48) {
+			addadr = start;
+		} else {
+			switch (MemoryCPage) {
+			case 0:
+				addadr = 0x8000;
+				break;
+			case 1:
+				addadr = 0xc000;
+				break;
+			case 2:
+				addadr = 0x4000;
+				break;
+			case 3:
+				addadr = 0x10000;
+				break;
+			case 4:
+				addadr = 0x14000;
+				break;
+			case 5:
+				addadr = 0x0000;
+				break;
+			default:
+				addadr = 0x4000*MemoryCPage;
+				break;
+			}
+			addadr += start - 0xC000;
+		}
+		save = length;
+		if (fwrite(MemoryRAM + addadr, 1, save, ff) != save) {
+			return 0;
+		}
+	}
+	return 1;*/
 }
 
-void emitarm(aint data) {
-  eadres=adres;
-  emit(data&255);
-  emit((data>>8)&255);
-  emit((data>>16)&255);
-  emit((data>>24)&255);
+unsigned int MemGetWord(unsigned int address) {
+	if (pass != LASTPASS) {
+		return 0;
+	}
+
+	return MemGetByte(address)+(MemGetByte(address+1)*256);
 }
 
-#ifdef METARM
-void emitthumb(aint data) {
-  eadres=adres;
-  emit(data&255);
-  emit((data>>8)&255);
+unsigned char MemGetByte(unsigned int address) {
+	if (!DeviceID || pass != LASTPASS) {
+		return 0;
+	}
+
+	CDeviceSlot* S;
+	for (int i=0;i<Device->SlotsCount;i++) {
+		S = Device->GetSlot(i);
+		if (address >= S->Address  && address < S->Address + S->Size) {
+			return S->Page->RAM[address - S->Address];
+		}
+	}
+
+	Warning("Error with MemGetByte!", 0);
+	ExitASM(1);
+	return 0;
+	
+	/*// $4000-$7FFF
+	if (address < 0x8000) {
+		return MemoryRAM[address - 0x4000];
+	}
+	// $8000-$BFFF
+	else if (address < 0xC000) {
+		return MemoryRAM[address - 0x8000];
+	}
+		// $C000-$FFFF
+	else {*/
+		/*unsigned int addadr = 0;
+		if (Options::MemoryType == MT_ZX48) {
+			return MemoryRAM[address];
+		} else {
+			switch (MemoryCPage) {
+			case 0:
+				addadr = 0x8000;
+				break;
+			case 1:
+				addadr = 0xc000;
+				break;
+			case 2:
+				addadr = 0x4000;
+				break;
+			case 3:
+				addadr = 0x10000;
+				break;
+			case 4:
+				addadr = 0x14000;
+				break;
+			case 5:
+				addadr = 0x0000;
+				break;
+			default:
+				addadr = 0x4000*MemoryCPage;
+				break;
+			}
+			addadr += address - 0xC000;*/
+			/*if (MemoryRAM[addadr]) {
+				return 0;
+			}*/
+			//return MemoryRAM[addadr];
+		//}
+	//}
 }
 
-void emitarmdataproc(int cond, int I,int opcode,int S,int Rn,int Rd,int Op2) {
-  aint i;
-  i=(cond<<28)+(I<<25)+(opcode<<21)+(S<<20)+(Rn<<16)+(Rd<<12)+Op2;
-  emitarm(i);
-}
-#endif
 
-/* added */
-int Empty_TRDImage(char *fname) {
-  FILE *ff;
-  int i;
-  unsigned char *buf;
-  if (!(ff=fopen(fname,"wb"))) {
-    cout << "Error opening file: " << fname << endl; return 0;
-  }
-  buf=(unsigned char *)calloc( 1024, sizeof( unsigned char ) );
-  if (buf == NULL) error("No enough memory","",FATAL);
-  if (fwrite(buf,1,1024,ff)<1024) { error("Write error (disk full?)",fname,CATCHALL); return 0; } //catalog
-  if (fwrite(buf,1,1024,ff)<1024) { error("Write error (disk full?)",fname,CATCHALL); return 0; } //catalog
-  buf[0xe1]=0;
-  buf[0xe2]=1;
-  buf[0xe3]=0x16;
-  buf[0xe4]=0;
-  buf[0xe5]=0xf0;
-  buf[0xe6]=0x09;
-  buf[0xe7]=0x10;
-  buf[0xe8]=0;
-  buf[0xe9]=0;
-  for (i=0;i<9;i++) buf[0xea+i]=0x20;
-  buf[0xf3]=0;
-  buf[0xf4]=0;
-  for (i=0;i<10;buf[0xf5+i++]=0x20);
-  /*for (i=0;i!=8;i++) {
-    hdr[0xf5+i]=fname[i];
-  }*/
-  if (fwrite(buf,1,256,ff)<256) { error("Write error (disk full?)",fname,CATCHALL); return 0; } //
-  for (i=0;i<31;buf[0xe1+i++]=0);
-  if (fwrite(buf,1,768,ff)<768) { error("Write error (disk full?)",fname,CATCHALL); return 0; } //
-  for (i=0;i<640-3;i++) if (fwrite(buf,1,1024,ff)<1024) { error("Write error (disk full?)",fname,CATCHALL); return 0; }
-  fclose(ff);
-  return 1;
+int SaveBinary(char* fname, int start, int length) {
+	FILE* ff;
+	if (!FOPEN_ISOK(ff, fname, "wb")) {
+		Error("Error opening file", fname, FATAL);
+	}
+
+	if (length + start > 0xFFFF) {
+		length = -1;
+	}
+	if (length <= 0) {
+		length = 0x10000 - start;
+	}
+
+	if (!SaveRAM(ff, start, length)) {
+		fclose(ff);return 0;
+	}
+
+	fclose(ff);
+	return 1;
 }
 
-/* added */
-int AddFile_TRDImage(char *fname,char *fhobname,int start,int length) {
-  FILE *ff;
-  unsigned char hdr[16],trd[31];
-  int i,secs,pos=0; aint res;
 
-  if (!(ff=fopen(fname,"r+b"))) {
-    cout << "Error opening file: " << fname << endl; return 0;
-  }
-  
-  if (fseek(ff,0x8e1,SEEK_SET)) { error("TRD image has wrong format",fname,CATCHALL); return 0; }
-  res=fread(trd,1,31,ff);
-  if (res!=31) { cout << "Read error: " << fname << endl; return 0; }
-  secs = trd[4]+(trd[5]<<8);
-  if (secs<(length>>8) + 1) { error("TRD image haven't free space",fname,CATCHALL); return 0; }
- 
-  // find free position
-  fseek(ff,0,SEEK_SET);
-  for (i=0;i<128;i++) {
-    res=fread(hdr,1,16,ff);
-	if (res!=16) { error("Read error",fname,CATCHALL); return 0; }
-	if (hdr[0]<2) { i=0; break; }
-	pos+=16;
-  }
-  if (i) { error("TRD image is full of files",fname,CATCHALL); return 0; }
+int SaveHobeta(char* fname, char* fhobname, int start, int length) {
+	unsigned char header[0x11];
+	int i;
+	for (i = 0; i != 8; header[i++] = 0x20) {
+		;
+	}
+	for (i = 0; i != 8; ++i) {
+		if (*(fhobname + i) == 0) {
+			break;
+		}
+		if (*(fhobname + i) != '.') {
+			header[i] = *(fhobname + i);continue;
+		} else if (*(fhobname + i + 1)) {
+			header[8] = *(fhobname + i + 1);
+		}
+		break;
+	}
 
-  if (fseek(ff,(trd[1]<<12)+(trd[0]<<8),SEEK_SET)) { error("TRD image has wrong format",fname,CATCHALL); return 0; }
-  if (length + start > 0xFFFF) length = -1;
-  if (length <= 0) length = 0x10000-start;
-  SaveMem(ff,start,length);
 
-  //header of file
-  for (i=0;i!=9;hdr[i++]=0x20);
-  for (i=0;i!=9;++i){
-    if (*(fhobname+i)==0) break;
-	if (*(fhobname+i)!='.') { hdr[i]=*(fhobname+i); continue; }
-	else if(*(fhobname+i+1)) hdr[8]=*(fhobname+i+1);
-	break;
-  }
+	if (length + start > 0xFFFF) {
+		length = -1;
+	}
+	if (length <= 0) {
+		length = 0x10000 - start;
+	}
 
-  //cout << hdr[8] << endl;
-  if (hdr[8] == 'B') {
-  	
-    hdr[0x09]=(unsigned char)(length&0xff);
-    hdr[0x0a]=(unsigned char)(length>>8);
-  } else {
-    hdr[0x09]=(unsigned char)(start&0xff);
-    hdr[0x0a]=(unsigned char)(start>>8);
-  }
-  hdr[0x0b]=(unsigned char)(length&0xff);
-  hdr[0x0c]=(unsigned char)(length>>8);
-  if (hdr[0x0b] == 0) hdr[0x0d]=hdr[0x0c]; else hdr[0x0d]=hdr[0x0c]+1;
-  hdr[0x0e]=trd[0];
-  hdr[0x0f]=trd[1];
+	header[0x09] = (unsigned char)(start & 0xff);
+	header[0x0a] = (unsigned char)(start >> 8);
+	header[0x0b] = (unsigned char)(length & 0xff);
+	header[0x0c] = (unsigned char)(length >> 8);
+	header[0x0d] = 0;
+	if (header[0x0b] == 0) {
+		header[0x0e] = header[0x0c];
+	} else {
+		header[0x0e] = header[0x0c] + 1;
+	}
+	length = header[0x0e] * 0x100;
+	int chk = 0;
+	for (i = 0; i <= 14; chk = chk + (header[i] * 257) + i,i++) {
+		;
+	}
+	header[0x0f] = (unsigned char)(chk & 0xff);
+	header[0x10] = (unsigned char)(chk >> 8);
 
-  if (fseek(ff,pos,SEEK_SET)) { error("TRD image has wrong format",fname,CATCHALL); return 0; }
-  res=fwrite(hdr,1,16,ff);
-  if (res!=16) { error("Write error",fname,CATCHALL); return 0; }
+	FILE* ff;
+	if (!FOPEN_ISOK(ff, fname, "wb")) {
+		Error("Error opening file", fname, FATAL);
+	}
 
-  trd[0]+=hdr[0x0d]; if (trd[0]>15) { trd[1]+=(trd[0]>>4); trd[0]=(trd[0]&15); }
-  secs-=hdr[0x0d];
-  trd[4]=(unsigned char)(secs&0xff);
-  trd[5]=(unsigned char)(secs>>8);
-  trd[3]++;
-  
-  if (fseek(ff,0x8e1,SEEK_SET)) { error("TRD image has wrong format",fname,CATCHALL); return 0; }
-  res=fwrite(trd,1,31,ff);
-  if (res!=31) { error("Write error",fname,CATCHALL); return 0; }
+	if (fwrite(header, 1, 17, ff) != 17) {
+		fclose(ff);return 0;
+	}
 
-  fclose(ff);
-  return 1;
+	if (!SaveRAM(ff, start, length)) {
+		fclose(ff);return 0;
+	}
+
+	fclose(ff);
+	return 1;
+}
+
+EReturn ReadFile(char* pp, char* err) {
+	CStringList* ol;
+	char* p;
+	while (RL_Readed > 0 || !feof(FP_Input)) {
+		if (!IsRunning) {
+			return END;
+		}
+		if (lijst) {
+			if (!lijstp) {
+				return END;
+			}
+			//p = STRCPY(line, LINEMAX, lijstp->string); //mmm
+			STRCPY(line, LINEMAX, lijstp->string);
+			p = line;
+			ol = lijstp;
+			lijstp = lijstp->next;
+		} else {
+			ReadBufLine(false);
+			p = line;
+			//cout << "RF:" << rlcolon << line << endl;
+		}
+
+		SkipBlanks(p);
+		if (*p == '.') {
+			++p;
+		}
+		if (cmphstr(p, "endif")) {
+			lp = ReplaceDefine(p); return ENDIF;
+		}
+		if (cmphstr(p, "else")) {
+			ListFile(); lp = ReplaceDefine(p); return ELSE;
+		}
+		if (cmphstr(p, "endt")) {
+			lp = ReplaceDefine(p); return ENDTEXTAREA;
+		}
+		if (cmphstr(p, "dephase")) {
+			lp = ReplaceDefine(p); return ENDTEXTAREA;
+		} // hmm??
+		if (cmphstr(p, "unphase")) {
+			lp = ReplaceDefine(p); return ENDTEXTAREA;
+		} // hmm??
+		ParseLineSafe();
+	}
+	Error("Unexpected end of file", 0, FATAL);
+	return END;
+}
+
+
+EReturn SkipFile(char* pp, char* err) {
+	CStringList* ol;
+	char* p;
+	int iflevel = 0;
+	while (RL_Readed > 0 || !feof(FP_Input)) {
+		if (!IsRunning) {
+			return END;
+		}
+		if (lijst) {
+			if (!lijstp) {
+				return END;
+			}
+			//p = STRCPY(line, LINEMAX, lijstp->string); //mmm
+			STRCPY(line, LINEMAX, lijstp->string);
+			p = line;
+			ol = lijstp;
+			lijstp = lijstp->next;
+		} else {
+			ReadBufLine(false);
+			p = line;
+			//cout << "SF:" << rlcolon << line << endl;
+		}
+		SkipBlanks(p);
+		if (*p == '.') {
+			++p;
+		}
+		if (cmphstr(p, "if")) {
+			++iflevel;
+		}
+		if (cmphstr(p, "ifn")) {
+			++iflevel;
+		}
+		if (cmphstr(p, "ifused")) {
+			++iflevel;
+		}
+		if (cmphstr(p, "ifnused")) {
+			++iflevel;
+		}
+		//if (cmphstr(p,"ifexist")) { ++iflevel; }
+		//if (cmphstr(p,"ifnexist")) { ++iflevel; }
+		if (cmphstr(p, "ifdef")) {
+			++iflevel;
+		}
+		if (cmphstr(p, "ifndef")) {
+			++iflevel;
+		}
+		if (cmphstr(p, "endif")) {
+			if (iflevel) {
+				--iflevel;
+			} else {
+				lp = ReplaceDefine(p);return ENDIF;
+			}
+		}
+		if (cmphstr(p, "else")) {
+			if (!iflevel) {
+				ListFile(); lp = ReplaceDefine(p);return ELSE;
+			}
+		}
+		ListFileSkip(line);
+	}
+	Error("Unexpected end of file", 0, FATAL);
+	return END;
+}
+
+
+int ReadLine(bool SplitByColon) {
+	if (!IsRunning) {
+		return 0;
+	}
+	int res = (RL_Readed > 0 || !feof(FP_Input));
+	ReadBufLine(false, SplitByColon);
+	return res;
+}
+
+int ReadFileToCStringList(CStringList*& f, char* end) {
+	CStringList* s,* l = NULL;
+	char* p;
+	f = NULL;
+	while (RL_Readed > 0 || !feof(FP_Input)) {
+		if (!IsRunning) {
+			return 0;
+		}
+		ReadBufLine(false);
+		p = line;
+
+		if (*p) {
+			SkipBlanks(p);
+			if (*p == '.') {
+				++p;
+			}
+			if (cmphstr(p, end)) {
+				lp = ReplaceDefine(p); return 1;
+			}
+		}
+		s = new CStringList(line, NULL);
+		if (!f) {
+			f = s;
+		} if (l) {
+			l->next = s;
+		}
+		l = s;
+		ListFileSkip(line);
+	}
+	Error("Unexpected end of file", 0, FATAL);
+	return 0;
+}
+
+void WriteExp(char* n, aint v) {
+	char lnrs[16],* l = lnrs;
+	if (!FP_ExportFile) {
+		if (!FOPEN_ISOK(FP_ExportFile, Options::ExportFName, "w")) {
+			Error("Error opening file", Options::ExportFName, FATAL);
+		}
+	}
+	STRCPY(ErrorLine, LINEMAX2, n);
+	STRCAT(ErrorLine, LINEMAX2, ": EQU ");
+	PrintHEX32(l, v); *l = 0;
+	STRCAT(ErrorLine, LINEMAX2, lnrs);
+	STRCAT(ErrorLine, LINEMAX2, "h\n");
+	fputs(ErrorLine, FP_ExportFile);
 }
 
 //eof sjio.cpp

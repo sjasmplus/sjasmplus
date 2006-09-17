@@ -4,7 +4,7 @@
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
-  Copyright (c) 2005 Sjoerd Mastijn
+  Copyright (c) 2006 Sjoerd Mastijn
 
   This software is provided 'as-is', without any express or implied warranty.
   In no event will the authors be held liable for any damages arising from the
@@ -26,19 +26,22 @@
 
 */
 
-// parser.h
+// io_trd.h
 
-int ParseExpression(char*& lp, aint& val);
-int ParseDirective(bool bol = 0);
-int ParseDirective_REPT();
-void ParseInstruction(); /* added */
-char* ReplaceDefine(char* lp); /* added */
-char* ReplaceDefineNext(char* lp); /* added */
-void ParseLine(bool = true);
-void ParseLineSafe(bool = true);
-void ParseStructLine(CStructure* st);
-unsigned long LuaCalculate(char *str);
-void LuaParseLine(char *str);
-void LuaParseCode(char *str);
-//eof parser.h
+#ifndef __IO_TRD
+#define __IO_TRD
 
+int TRD_SaveEmpty(char* fname);
+int TRD_AddFile(char* fname, char* fhobname, int start, int length);
+struct STRDOSSectorHeader {
+	unsigned char c, s, n, l;
+	unsigned short crc;
+	unsigned char c1, c2; // correct CRCs in address and data
+	unsigned char* data, * id;
+	unsigned datlen; 
+	unsigned crcd;
+};
+
+#endif
+
+//eof io_trd.h

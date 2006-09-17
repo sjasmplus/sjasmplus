@@ -2,7 +2,7 @@
 
   SjASMPlus Z80 Cross Compiler
 
-  This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
+  This is modified source of SjASM by Aprisobal - aprisobal@tut.by
 
   Copyright (c) 2005 Sjoerd Mastijn
 
@@ -26,19 +26,13 @@
 
 */
 
-// parser.h
+// direct.h
 
-int ParseExpression(char*& lp, aint& val);
-int ParseDirective(bool bol = 0);
-int ParseDirective_REPT();
-void ParseInstruction(); /* added */
-char* ReplaceDefine(char* lp); /* added */
-char* ReplaceDefineNext(char* lp); /* added */
-void ParseLine(bool = true);
-void ParseLineSafe(bool = true);
-void ParseStructLine(CStructure* st);
-unsigned long LuaCalculate(char *str);
-void LuaParseLine(char *str);
-void LuaParseCode(char *str);
-//eof parser.h
+extern CFunctionTable DirectivesTable;
+void InsertDirectives();
+
+bool LuaSetPage(aint n);
+bool LuaSetSlot(aint n);
+
+//eof direct.h
 

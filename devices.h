@@ -2,9 +2,7 @@
 
   SjASMPlus Z80 Cross Compiler
 
-  This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
-
-  Copyright (c) 2005 Sjoerd Mastijn
+  Copyright (c) 2004-2006 Aprisobal
 
   This software is provided 'as-is', without any express or implied warranty.
   In no event will the authors be held liable for any damages arising from the
@@ -26,19 +24,8 @@
 
 */
 
-// parser.h
+// devices.h
 
-int ParseExpression(char*& lp, aint& val);
-int ParseDirective(bool bol = 0);
-int ParseDirective_REPT();
-void ParseInstruction(); /* added */
-char* ReplaceDefine(char* lp); /* added */
-char* ReplaceDefineNext(char* lp); /* added */
-void ParseLine(bool = true);
-void ParseLineSafe(bool = true);
-void ParseStructLine(CStructure* st);
-unsigned long LuaCalculate(char *str);
-void LuaParseLine(char *str);
-void LuaParseCode(char *str);
-//eof parser.h
+int SetDevice(char *id);
+char* GetDeviceName();
 

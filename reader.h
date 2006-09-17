@@ -1,6 +1,6 @@
 /* 
 
-  SjASMPlus Z80 Cross Assembler
+  SjASMPlus Z80 Cross Compiler
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
@@ -15,12 +15,12 @@
   subject to the following restrictions:
 
   1. The origin of this software must not be misrepresented; you must not claim
-     that you wrote the original software. If you use this software in a product,
-     an acknowledgment in the product documentation would be appreciated but is
-     not required.
+	 that you wrote the original software. If you use this software in a product,
+	 an acknowledgment in the product documentation would be appreciated but is
+	 not required.
 
   2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
+	 misrepresented as being the original software.
 
   3. This notice may not be removed or altered from any source distribution.
 
@@ -28,40 +28,37 @@
 
 // reader.h
 
-int white();
-void skipparam(char*&); /* added */
-int skipblanks();
-void skipblanks(char *&p);
-int needequ();
-int needdefl(); /* added */
-int needfield();
-char *getid(char *&p);
-char *getinstr(char *&p);
-int comma(char *&p);
-int oparen(char *&p,char c);
-int cparen(char *&p);
-char *getparen(char *p);
-int check8(unsigned aint val); /* changes applied from SjASM 0.39g */
+int White();
+void SkipParam(char*&); /* added */
+int SkipBlanks();
+void SkipBlanks(char*& p);
+int NeedEQU();
+int NeedDEFL(); /* added */
+int NeedField();
+char* GetID(char*& p);
+char* getinstr(char*& p);
+int comma(char*& p);
+int oparen(char*& p, char c);
+int cparen(char*& p);
+char* getparen(char* p);
+int check8(aint val); /* changes applied from SjASM 0.39g */
 int check8o(long val); /* changes applied from SjASM 0.39g */
-int check16(unsigned aint val); /* changes applied from SjASM 0.39g */
-int check24(unsigned aint val); /* changes applied from SjASM 0.39g */
-int need(char *&p, char c);
-int need(char *&p, char *c);
-int needa(char *&p, char *c1, int r1, char *c2=0, int r2=0, char *c3=0, int r3=0);
-int getConstant(char *&op, aint &val);
-int getCharConst(char *&p, aint &val);
-int getCharConstChar(char *&op, aint &val);
-int getCharConstCharSingle(char *&op, aint &val); /* added */
-int getBytes(char *&p, int e[], int add, int dc);
-int cmphstr(char *&p1, char *p2);
-char *getfilename(char *&p);
-char *gethobetaname(char *&p); /* added */
-int needcomma(char *&p);
-int needbparen(char *&p);
+int check16(aint val); /* changes applied from SjASM 0.39g */
+int check24(aint val); /* changes applied from SjASM 0.39g */
+int need(char*& p, char c);
+int need(char*& p, char* c);
+int needa(char*& p, char* c1, int r1, char* c2 = 0, int r2 = 0, char* c3 = 0, int r3 = 0);
+int GetConstant(char*& op, aint& val);
+int GetCharConst(char*& p, aint& val);
+int GetCharConstChar(char*& op, aint& val);
+int GetCharConstCharSingle(char*& op, aint& val); /* added */
+int GetBytes(char*& p, int e[], int add, int dc);
+int cmphstr(char*& p1, char* p2);
+char* GetFileName(char*& p);
+char* GetHobetaFileName(char*& p); /* added */
+int needcomma(char*& p);
+int needbparen(char*& p);
 int islabchar(char p);
-structmembs GetStructMemberId(char *&p);
-#ifdef METARM
-char *getid3(char *&p);
-#endif
+EStructureMembers GetStructMemberId(char*& p);
 //eof reader.h
 

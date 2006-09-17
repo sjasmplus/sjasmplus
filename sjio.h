@@ -1,6 +1,6 @@
 /* 
 
-  SjASMPlus Z80 Cross Assembler
+  SjASMPlus Z80 Cross Compiler
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
@@ -15,12 +15,12 @@
   subject to the following restrictions:
 
   1. The origin of this software must not be misrepresented; you must not claim
-     that you wrote the original software. If you use this software in a product,
-     an acknowledgment in the product documentation would be appreciated but is
-     not required.
+	 that you wrote the original software. If you use this software in a product,
+	 an acknowledgment in the product documentation would be appreciated but is
+	 not required.
 
   2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
+	 misrepresented as being the original software.
 
   3. This notice may not be removed or altered from any source distribution.
 
@@ -28,70 +28,57 @@
 
 // sjio.h
 
-enum _fouten { ALL, PASS1, PASS2, FATAL, CATCHALL, SUPPRES };
-enum Ending { END, ELSE, ENDIF, ENDTEXTAREA, ENDM };
+enum EStatus { ALL, PASS1, PASS2, PASS3, FATAL, CATCHALL, SUPPRESS };
+enum EReturn { END, ELSE, ENDIF, ENDTEXTAREA, ENDM }; 
 
-#define SPECPAGE 0x4000 /* added */
+#define PAGESIZE 0x4000 /* added */
 
-extern aint eadres,epadres;
+extern aint PreviousAddress, epadres;
 
 #define OUTPUT_TRUNCATE 0
 #define OUTPUT_REWIND 1
 #define OUTPUT_APPEND 2
 
+extern FILE* FP_UnrealList, * FP_Input; /* added */
+
 void OpenDest(int); /* added from new SjASM 0.39g */
-void NewDest(char *ndestfilename, int mode); /* added from new SjASM 0.39g */
+void NewDest(char* newfilename, int mode); /* added from new SjASM 0.39g */
 int FileExists(char* filename); /* added from new SjASM 0.39g */
-void error(char*,char*,int=PASS2);
+void Error(char*, char*, int =PASS2);
+void Warning(char*, char*, int =PASS2);
 void ListFile();
 void ListFileSkip(char*);
 void CheckPage(); /* added */
 void EmitByte(int byte);
-void EmitBytes(int *bytes);
-void EmitWords(int *words);
-void EmitBlock(aint byte, aint lengte);
-void OpenFile(char *nfilename);
-void IncludeFile(char *nfilename); /* added */
+void EmitWord(int word);
+void EmitBytes(int* bytes);
+void EmitWords(int* words);
+void EmitBlock(aint byte, aint len);
+void OpenFile(char* nfilename);
+void IncludeFile(char* nfilename); /* added */
 void Close();
 void OpenList();
 void OpenUnrealList(); /* added */
-void ReadBufLine(bool Parse); /* added */
+void ReadBufLine(bool Parse=true, bool SplitByColon=true); /* added */
 void OpenDest();
-void printhex32(char *&p, aint h);
-void printhex16(char *&p, aint h); /* added */
-char *getpath(char *fname, TCHAR **filenamebegin); /* added */
-void BinIncFile(char *fname,int offset,int length);
-char MemGetByte(unsigned int address); /* added */
-int SaveBinary(char *fname,int start,int length); /* added */
-int SaveHobeta(char *fname,char *fhobname,int start,int length); /* added */
-int SaveSNA128(char *fname,unsigned short start); /* added */
-int ReadLine();
-Ending ReadFile();
-Ending ReadFile(char *pp,char *err); /* added */
-Ending SkipFile();
-Ending SkipFile(char *pp,char *err); /* added */
-void NewDest(char *ndestfilename);
-void SeekDest(long,int); /* added from new SjASM 0.39g */
-int ReadFileToStringLst(stringlst *&f,char *end);
-void WriteExp(char *n, aint v);
-void emitarm(aint data);
-#ifdef METARM
-void emitarmdataproc(int cond, int I,int opcode,int S,int Rn,int Rd,int Op2);
-void emitthumb(aint data);
-#endif
-
-/* (begin add) */
-int Empty_TRDImage(char *fname);
-int AddFile_TRDImage(char *fname,char *fhobname,int start,int length);
-struct SECHDR {
-   unsigned char c,s,n,l;
-   unsigned short crc;
-   unsigned char c1, c2; // correct CRCs in address and data
-   unsigned char *data, *id;
-   unsigned datlen;
-   unsigned crcd;
-};
-/* (end add) */
+void PrintHEX32(char*& p, aint h);
+void PrintHEX16(char*& p, aint h); /* added */
+char* GetPath(char* fname, TCHAR** filenamebegin); /* added */
+void BinIncFile(char* fname, int offset, int length);
+int SaveRAM(FILE*, int, int);
+unsigned char MemGetByte(unsigned int address); /* added */
+unsigned int MemGetWord(unsigned int address); /* added */
+int SaveBinary(char* fname, int start, int length); /* added */
+int SaveHobeta(char* fname, char* fhobname, int start, int length); /* added */
+int ReadLine(bool SplitByColon=true);
+EReturn ReadFile();
+EReturn ReadFile(char* pp, char* err); /* added */
+EReturn SkipFile();
+EReturn SkipFile(char* pp, char* err); /* added */
+void NewDest(char* newfilename);
+void SeekDest(long, int); /* added from new SjASM 0.39g */
+int ReadFileToCStringList(CStringList*& f, char* end);
+void WriteExp(char* n, aint v);
 
 //eof sjio.h
 

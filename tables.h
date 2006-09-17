@@ -1,6 +1,6 @@
 /* 
 
-  SjASMPlus Z80 Cross Assembler
+  SjASMPlus Z80 Cross Compiler
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
@@ -15,12 +15,12 @@
   subject to the following restrictions:
 
   1. The origin of this software must not be misrepresented; you must not claim
-     that you wrote the original software. If you use this software in a product,
-     an acknowledgment in the product documentation would be appreciated but is
-     not required.
+	 that you wrote the original software. If you use this software in a product,
+	 an acknowledgment in the product documentation would be appreciated but is
+	 not required.
 
   2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
+	 misrepresented as being the original software.
 
   3. This notice may not be removed or altered from any source distribution.
 
@@ -30,266 +30,293 @@
 using std::cout;
 using std::cerr;
 using std::endl;
-char *MaakLabNaam(char*);
-extern char *prevlab;
-int getLabelValue(char *&p, aint &val);
-int getLocaleLabelValue(char *&op,aint &val);
-#ifdef SECTIONS
-void PoolData();
-#endif
 
-class labtabentrycls {
+enum EStructureMembers { SMEMBUNKNOWN, SMEMBALIGN, SMEMBBYTE, SMEMBWORD, SMEMBBLOCK, SMEMBDWORD, SMEMBD24, SMEMBPARENOPEN, SMEMBPARENCLOSE };
+
+char* AddNewLabel(char*);
+extern char* PreviousIsLabel;
+int GetLabelValue(char*& p, aint& val);
+int GetLocalLabelValue(char*& op, aint& val);
+
+class CLabelTableEntry {
 public:
-  char *name;
-  char page; /* added */
-  bool isdefl; /* added */
-  unsigned char forwardref; /* added */
-  aint value,used;
-  labtabentrycls();
+	char* name;
+	char page; /* added */
+	bool IsDEFL; /* added */
+	unsigned char forwardref; /* added */
+	aint value, used;
+	CLabelTableEntry();
 };
 
-class labtabcls {
+class CLabelTable {
 public:
-  labtabcls();
-  int insert(char*,aint,bool,bool);
-  int update(char*,aint);
-  int zoek(char*,aint&);
-  void dump();
-  void dump4unreal(); /* added */
-  void dumpsym(); /* added from SjASM 0.39g */
+	CLabelTable();
+	int Insert(char*, aint, bool, bool);
+	int Update(char*, aint);
+	int zoek(char*, aint&);
+	void Dump();
+	void DumpForUnreal(); /* added */
+	void DumpSymbols(); /* added from SjASM 0.39g */
 private:
-  int hashtable[LABTABSIZE],nextlocation;
-  labtabentrycls labtab[LABTABSIZE];
-  int hash(char*);
+	int HashTable[LABTABSIZE], NextLocation;
+	CLabelTableEntry LabelTable[LABTABSIZE];
+	int Hash(char*);
 };
 
-class funtabentrycls {
+class CFunctionTableEntry {
 public:
-  char *name;
-  void (*funp)(void);
+	char* name;
+	void (*funp)(void);
 };
 
-class funtabcls {
+class CFunctionTable {
 public:
-  funtabcls();
-  int insert(char*,void(*)(void));
-  int insertd(char*,void(*)(void));
-  /*int zoek(char*);*/
-  int zoek(char*,bool=0);
-  int find(char*);
+	CFunctionTable();
+	int Insert(char*, void(*) (void));
+	int insertd(char*, void(*) (void));
+	/*int zoek(char*);*/
+	int zoek(char*, bool =0);
+	int Find(char*);
 private:
-  int hashtable[LABTABSIZE],nextlocation;
-  funtabentrycls funtab[LABTABSIZE];
-  int hash(char*);
+	int HashTable[LABTABSIZE], NextLocation;
+	CFunctionTableEntry funtab[LABTABSIZE];
+	int Hash(char*);
 };
 
-class loklabtabentrycls {
+class CLocalLabelTableEntry {
 public:
-  aint regel,nummer,value;
-  loklabtabentrycls *next,*prev;
-  loklabtabentrycls(aint,aint,loklabtabentrycls*);
+	aint regel, nummer, value;
+	CLocalLabelTableEntry* next, * prev;
+	CLocalLabelTableEntry(aint, aint, CLocalLabelTableEntry*);
 };
 
-class loklabtabcls {
+class CLocalLabelTable {
 public:
-  loklabtabcls();
-  aint zoekf(aint);
-  aint zoekb(aint);
-  void insert(aint,aint);
+	CLocalLabelTable();
+	aint zoekf(aint);
+	aint zoekb(aint);
+	void Insert(aint, aint);
 private:
-  loklabtabentrycls *first,*last;
+	CLocalLabelTableEntry* first, * last;
 };
 
-class adrlst {
+class CAddressList {
 public:
-  aint val;
-  adrlst *next;
-  adrlst() { next=0; }
-  adrlst(aint nval,adrlst*nnext) { val=nval; next=nnext; }
+	aint val;
+	CAddressList* next;
+	CAddressList() {
+		next = 0;
+	}
+	~CAddressList() {
+		if (next) delete next;
+	}
+	CAddressList(aint nval, CAddressList* nnext) {
+		val = nval; next = nnext;
+	}
 };
 
-class stringlst {
+class CStringList {
 public:
-  char *string;
-  stringlst *next;
-  stringlst() { next=0; }
-  stringlst(char*,stringlst*);
+	char* string;
+	CStringList* next;
+	CStringList() {
+		next = 0;
+	}
+	~CStringList() {
+		if (next) delete next;
+	}
+	CStringList(char*, CStringList*);
 };
 
-class definetabentrycls {
+class CDefineTableEntry {
 public:
-  char *naam, *vervanger;
-  stringlst *nss; /* added */
-  definetabentrycls *next;
-  definetabentrycls(char*,char*,stringlst* /*added*/,definetabentrycls*);
+	char* name, * value;
+	CStringList* nss; /* added */
+	CDefineTableEntry* next;
+	CDefineTableEntry(char*, char*, CStringList* /*added*/, CDefineTableEntry*);
 };
 
-class macdefinetabcls {
+class CMacroDefineTable {
 public:
-  void init();
-  void macroadd(char*,char*);
-  definetabentrycls *getdefs();
-  void setdefs(definetabentrycls *);
-  char *getverv(char*);
-  int bestaat(char*);
-  macdefinetabcls() { init(); }
+	void Init();
+	void AddMacro(char*, char*);
+	CDefineTableEntry* getdefs();
+	void setdefs(CDefineTableEntry*);
+	char* getverv(char*);
+	int FindDuplicate(char*);
+	CMacroDefineTable() {
+		Init();
+	}
 private:
-  int used[128];
-  definetabentrycls *defs;
+	int used[128];
+	CDefineTableEntry* defs;
 };
 
-class definetabcls {
+class CDefineTable {
 public:
-  stringlst *defarraylstp; /* added */
-  void init();
-  void add(char*,char*,stringlst* /*added*/);
-  char *getverv(char*);
-  int bestaat(char*);
-  definetabcls() { init(); }
+	CStringList* DefArrayList; /* added */
+	void Init();
+	void Add(char*, char*, CStringList* /*added*/);
+	char* Get(char*);
+	int FindDuplicate(char*);
+	int Replace(char*, char*); 
+	CDefineTable() {
+		Init();
+	}
 private:
-  definetabentrycls *defs[128];
+	CDefineTableEntry* defs[128];
 };
 
-class macrotabentrycls {
+class CMacroTableEntry {
 public:
-  char *naam;
-  stringlst *args, *body;
-  macrotabentrycls *next;
-  macrotabentrycls(char*,macrotabentrycls*);
+	char* naam;
+	CStringList* args, * body;
+	CMacroTableEntry* next;
+	CMacroTableEntry(char*, CMacroTableEntry*);
 };
 
-class macrotabcls {
+class CMacroTable {
 public:
-  void add(char*,char*&);
-  int emit(char*,char*&);
-  int bestaat(char*);
-  void init();
-  macrotabcls() { init(); }
+	void Add(char*, char*&);
+	int Emit(char*, char*&);
+	int FindDuplicate(char*);
+	void Init();
+	CMacroTable() {
+		Init();
+	}
 private:
-  int used[128];
-  macrotabentrycls *macs;
+	int used[128];
+	CMacroTableEntry* macs;
 };
 
-class structmembncls {
+class CStructureEntry1 {
 public:
-  char *naam;
-  aint offset;
-  structmembncls *next;
-  structmembncls(char*,aint);
+	char* naam;
+	aint offset;
+	CStructureEntry1* next;
+	CStructureEntry1(char*, aint);
 };
 
-class structmembicls {
+class CStructureEntry2 {
 public:
-  aint offset,len,def;
-  structmembs soort;
-  structmembicls *next;
-  structmembicls(aint,aint,aint,structmembs);
+	aint offset, len, def;
+	EStructureMembers type;
+	CStructureEntry2* next;
+	CStructureEntry2(aint, aint, aint, EStructureMembers);
 };
 
-class structcls {
+class CStructure {
 public:
-  char *naam,*id;
-  int binding;
-  int global;
-  aint noffset;
-  void addlabel(char*);
-  void addmemb(structmembicls*);
-  void copylabel(char*,aint);
-  void cpylabels(structcls*);
-  void copymemb(structmembicls*,aint);
-  void cpymembs(structcls*,char*&);
-  void deflab();
-  void emitlab(char*);
-  void emitmembs(char*&);
-  structcls *next;
-  structcls(char*,char*,int,int,int,structcls*);
+	char* naam, * id;
+	int binding;
+	int global;
+	aint noffset;
+	void AddLabel(char*);
+	void AddMember(CStructureEntry2*);
+	void CopyLabel(char*, aint);
+	void CopyLabels(CStructure*);
+	void CopyMember(CStructureEntry2*, aint);
+	void CopyMembers(CStructure*, char*&);
+	void deflab();
+	void emitlab(char*);
+	void emitmembs(char*&);
+	CStructure* next;
+	CStructure(char*, char*, int, int, int, CStructure*);
 private:
-  structmembncls *mnf,*mnl;
-  structmembicls *mbf,*mbl;
+	CStructureEntry1* mnf, * mnl;
+	CStructureEntry2* mbf, * mbl;
 };
 
-class structtabcls {
+class CStructureTable {
 public:
-  structcls* add(char*,int,int,int);
-  void init();
-  structtabcls() { init(); }
-  structcls *zoek(char*,int);
-  int bestaat(char*);
-  int emit(char*,char*,char*&,int);
+	CStructure* Add(char*, int, int, int);
+	void Init();
+	CStructureTable() {
+		Init();
+	}
+	CStructure* zoek(char*, int);
+	int FindDuplicate(char*);
+	int Emit(char*, char*, char*&, int);
 private:
-  structcls *strs[128];
+	CStructure* strs[128];
 };
 
-#ifdef SECTIONS
-class pooldataentrycls {
-public:
-  int wok;
-  aint regel, data, adres;
-  pooldataentrycls *next;
-};
-
-class pooldatacls {
-public:
-  pooldatacls();
-  void add(aint,aint,int);
-  int zoek(aint);
-  int zoeknext(aint&,int&);
-  void pool(aint,aint);
-  int zoekregel(aint,aint&,aint&,int&);
-private:
-  aint zoekdit;
-  pooldataentrycls *first, *last, *p, *pp, *zp;
-};
-
-class pooltabentrycls {
-public:
-  char *data;
-  aint regel;
-  pooltabentrycls *next;
-};
-
-class pooltabcls {
-public:
-  pooltabcls();
-  void add(char*);
-  void addlabel(char*);
-  void emit();
-private:
-  pooltabentrycls *first,*last;
-};
-#endif
-
-/* added */
-struct dupes {
+struct SRepeatStack {
 	int dupcount;
-	long gcurlin;
-	long lcurlin;
-	long curlin;
-	stringlst *lines;
-	stringlst *pointer;
-	char *lp;
+	long CurrentGlobalLine;
+	long CurrentLocalLine;
+	long CurrentLine;
+	CStringList* lines;
+	CStringList* pointer;
+	char* lp;
 	bool work;
 	int level;
 };
 /*
-class labtab2entrycls {
+class LabelTable2entrycls {
 public:
   char *name;
   aint value;
-  labtabentrycls();
+  CLabelTableEntry();
 };
 
 
-class labtab2cls {
+class LabelTable2cls {
 public:
-  labtab2cls();
+  LabelTable2cls();
   int replace(char*,aint);
   int count=0;
 private:
-  int hashtable[LABTABSIZE],nextlocation;
-  labtab2entrycls labtab[LABTABSIZE];
-  int hash(char*);
+  int HashTable[LABTABSIZE],NextLocation;
+  LabelTable2entrycls LabelTable[LABTABSIZE];
+  int Hash(char*);
 };
 */
+
+class CDevicePage {
+public:
+	CDevicePage(aint, aint /*, CDevicePage **/);
+	~CDevicePage();
+	aint Size;
+	aint Number;
+	char *RAM;
+	//CDevicePage* Next;
+private:
+};
+
+class CDeviceSlot {
+public:
+	CDeviceSlot(aint, aint, aint /*, CDeviceSlot **/);
+	~CDeviceSlot();
+	aint Address;
+	aint Size;
+	CDevicePage* Page;
+	aint Number;
+	//CDeviceSlot* Next;
+private:
+};
+
+class CDevice {
+public:
+	CDevice(char *, CDevice *);
+	~CDevice();
+	void AddSlot(aint adr, aint size);
+	void AddPage(aint size);
+	CDevicePage* GetPage(aint);
+	CDeviceSlot* GetSlot(aint);
+	char* ID;
+	CDevice* Next;
+	aint CurrentSlot;
+	aint CurrentPage;
+	aint SlotsCount;
+	aint PagesCount;
+private:
+	CDeviceSlot* Slots[256];
+	CDevicePage* Pages[256];
+};
+
+
+int LuaGetLabel(char *name);
+
 //eof tables.h
 

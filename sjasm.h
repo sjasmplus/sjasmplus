@@ -1,6 +1,6 @@
 /* 
 
-  SjASMPlus Z80 Cross Assembler
+  SjASMPlus Z80 Cross Compiler
 
   This is modified sources of SjASM by Aprisobal - aprisobal@tut.by
 
@@ -15,107 +15,88 @@
   subject to the following restrictions:
 
   1. The origin of this software must not be misrepresented; you must not claim
-     that you wrote the original software. If you use this software in a product,
-     an acknowledgment in the product documentation would be appreciated but is
-     not required.
+	 that you wrote the original software. If you use this software in a product,
+	 an acknowledgment in the product documentation would be appreciated but is
+	 not required.
 
   2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
+	 misrepresented as being the original software.
 
   3. This notice may not be removed or altered from any source distribution.
 
 */
 
-// sjasm.h
+#ifndef __SJASM
+#define __SJASM
 
-#ifndef SjINCLUDE
-#define SjINCLUDE
+enum EMemoryType { MT_NONE, MT_SIZE };
 
-#define MAXPASSES 5
-#define _CRT_SECURE_NO_DEPRECATE 1
+namespace Options {
+	extern char SymbolListFName[LINEMAX];
+	extern char ListingFName[LINEMAX];
+	extern char ExportFName[LINEMAX];
+	extern char DestionationFName[LINEMAX];
+	extern char RAWFName[LINEMAX];
+	extern char UnrealLabelListFName[LINEMAX];
 
-#ifdef WIN32
-#include <windows.h>
-#else
-#include "loose.h"
-#endif
-#include <stack> /* added */
-#include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::flush;
-using std::stack; /* added */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+	extern bool IsPseudoOpBOF;
+	extern bool IsAutoReloc;
+	extern bool IsLabelTableInListing;
+	extern bool IsReversePOP;
+	extern bool IsShowFullPath;
+	extern bool AddLabelListing;
 
-#define LINEMAX 1024//300
-#define LABMAX 70
-#define LABTABSIZE 32771
-#define FUNTABSIZE 4497
-#define SPECMAXPAGES 8 /* added */
-#define aint long
+	extern CStringList* IncludeDirsList;
 
-extern char filename[],*lp,line[],temp[],*tp,pline[],eline[],*bp;
-extern char llfilename[]; /* added */
-extern char mline[],sline[],sline2[]; /* added */
-extern int c_encoding; /* added */
-extern bool unreallabel,dirbol,displayinprocces,displayerror; /* added */
-extern int pass,labelnotfound,nerror,include,running,labellisting,listfile,donotlist,listdata,listmacro;
-extern int popreverse; /* added */
-extern int specmem,speccurpage,adrdisp,disp; /* added for spectrum mode */
-extern char *specram,*specramp; /* added for spectrum ram */
-extern int macronummer,lijst,reglenwidth,synerr,symfile/*from SjASM 0.39g*/;
-extern aint adres,mapadr,gcurlin,lcurlin,curlin,destlen,size,preverror,maxlin,comlin;
-extern FILE *input;
-extern void (*piCPUp)(void);
-extern char destfilename[],listfilename[],sourcefilename[],expfilename[],symfilename[]/*from SjASM 0.39g*/;
-extern char *modlabp,*vorlabp,*macrolabp;
+	//extern EMemoryType MemoryType;
+} // eof namespace Options
 
-extern FILE *listfp;
-extern FILE *unreallistfp; /* added */
+extern CDevice *Devices;
+extern CDevice *Device;
+extern CDeviceSlot *Slot;
+extern CDevicePage *Page;
+extern char* DeviceID;
 
-#ifdef SECTIONS
-enum sections { TEXT, DATA, POOL };
-extern sections section;
-#endif
-#ifdef METARM
-enum cpus { ARM, THUMB, Z80 };
-extern cpus cpu;
-#endif
-enum structmembs { SMEMBUNKNOWN,SMEMBALIGN,SMEMBBYTE,SMEMBWORD,SMEMBBLOCK, SMEMBDWORD, SMEMBD24, SMEMBPARENOPEN, SMEMBPARENCLOSE };
-enum encodes {ENCDOS,ENCWIN}; /* added */
-extern char *huidigzoekpad;
+// extend
+extern char filename[LINEMAX], * lp, line[LINEMAX], temp[LINEMAX], * tp, pline[LINEMAX2], ErrorLine[LINEMAX2], * bp;
+extern char mline[LINEMAX2], sline[LINEMAX2], sline2[LINEMAX2];
 
-void exitasm(int p); /* added */
-#include "reader.h"
-#include "tables.h"
-extern stringlst *lijstp;
-#include "sjio.h"
-extern stack<dupes> dupestack; /* added */
+extern char SourceFNames[128][MAX_PATH];
+extern int CurrentSourceFName;
 
-extern labtabcls labtab;
-extern loklabtabcls loklabtab;
-extern definetabcls definetab;
-extern macdefinetabcls macdeftab;
-extern macrotabcls macrotab;
-extern structtabcls structtab;
-extern adrlst *maplstp; /*from SjASM 0.39g*/
-extern stringlst *modlstp,*dirlstp;
-#ifdef SECTIONS
-extern pooldatacls pooldata;
-extern pooltabcls pooltab;
-#endif
+extern bool displayinprocces, displayerror; /* added */
+extern int ConvertEncoding; /* added */
+extern int pass, IsLabelNotFound, ErrorCount, WarningCount, IncludeLevel, IsRunning, IsListingFileOpened, donotlist, listdata, listmacro;
+extern int adrdisp, PseudoORG; /* added for spectrum mode */
+extern char* MemoryRAM, * MemoryPointer; /* added for spectrum ram */
+extern int MemoryCPage, MemoryPagesCount, StartAddress;
+extern aint MemorySize;
+extern int macronummer, lijst, reglenwidth, synerr;
+extern aint CurAddress, AddressOfMAP, CurrentGlobalLine, CurrentLocalLine, CurrentLine, destlen, size, PreviousErrorLine, maxlin, comlin;
 
-#include "parser.h"
-#include "piz80.h"
-#ifdef METARM
-#include "piarm.h"
-#include "pithumb.h"
-#endif
-#include "direct.h"
+extern void (*GetCPUInstruction)(void);
+extern char* ModuleName, * vorlabp, * macrolabp;
+
+extern FILE* FP_ListingFile; 
+
+enum EEncoding { ENCDOS, ENCWIN };
+extern char* CurrentDirectory;
+
+void ExitASM(int p);
+extern CStringList* lijstp;
+extern stack< SRepeatStack> RepeatStack;
+
+extern CLabelTable LabelTable;
+extern CLocalLabelTable LocalLabelTable;
+extern CDefineTable DefineTable;
+extern CMacroDefineTable MacroDefineTable;
+extern CMacroTable MacroTable;
+extern CStructureTable StructureTable;
+extern CAddressList* AddressList; /*from SjASM 0.39g*/
+extern CStringList* ModuleList;
+
+extern lua_State *LUA;
+extern int LuaLine;
 
 #endif
 //eof sjasm.h
