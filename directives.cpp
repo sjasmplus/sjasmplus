@@ -1494,10 +1494,32 @@ void dirSHELLEXEC() {
 	if (pass == LASTPASS) {
 		//cout << "Executing " << command << endl;
 #ifdef WIN32
+		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
+		ZeroMemory( &si, sizeof(si) );
+		si.cb = sizeof(si);
+		ZeroMemory( &pi, sizeof(pi) );
+
+		// Start the child process. 
+		if( !CreateProcess( NULL,   // No module name (use command line). 
+			command, // Command line. 
+			NULL,             // Process handle not inheritable. 
+			NULL,             // Thread handle not inheritable. 
+			FALSE,            // Set handle inheritance to FALSE. 
+			0,                // No creation flags. 
+			NULL,             // Use parent's environment block. 
+			NULL,             // Use parent's starting directory. 
+			&si,              // Pointer to STARTUPINFO structure.
+			&pi )             // Pointer to PROCESS_INFORMATION structure.
+		) {
+			Error( "[SHELLEXEC] Execution of command failed", command, PASS3 );
+		}
 		//system(command);
-		WinExec ( command, SW_SHOWNORMAL );
+		///WinExec ( command, SW_SHOWNORMAL );
 #else
-		system(command);
+		if (system(command) == -1) {
+			Error( "[SHELLEXEC] Execution of command failed", command, PASS3 );
+		}
 #endif
 	}
 	delete[] command;

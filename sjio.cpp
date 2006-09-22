@@ -55,7 +55,7 @@ char hd[] = {
 
 void Error(char* fout, char* bd, int type) {
 	char* ep = ErrorLine;
-	char count[25];
+	char* count;
 	int ln;
 	lua_Debug ar;
 
@@ -78,6 +78,7 @@ void Error(char* fout, char* bd, int type) {
 	PreviousErrorLine = CurrentLocalLine;
 	++ErrorCount;
 
+	count = new char[25];
 	SPRINTF1(count, 25, "%lu", ErrorCount);
 	DefineTable.Replace("_ERRORS", count);
 
@@ -121,7 +122,7 @@ void Error(char* fout, char* bd, int type) {
 
 void Warning(char* fout, char* bd, int type) {
 	char* ep = ErrorLine;
-	char count[25];
+	char* count;
 	int ln;
 	lua_Debug ar;
 
@@ -133,6 +134,7 @@ void Warning(char* fout, char* bd, int type) {
 	}
 
 	++WarningCount;
+	count = new char[25];
 	SPRINTF1(count, 25, "%lu", WarningCount);
 	DefineTable.Replace("_WARNINGS", count);
 	
