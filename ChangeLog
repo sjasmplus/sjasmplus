@@ -1,3 +1,9 @@
+2006-09-23  Aprisobal  <my@aprisobal.by>
+
+	* VERSION: 1.07 RC1bf
+	* Corrected bug with _ERRORS and _WARNINGS constants
+	* Added error message, when SHELLEXEC program execution failed
+
 2006-09-18  Aprisobal  <my@aprisobal.by>
 
 	* VERSION: 1.07 RC1
