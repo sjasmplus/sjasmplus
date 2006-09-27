@@ -1,3 +1,11 @@
+2006-09-28  Aprisobal  <my@aprisobal.by>
+
+	* VERSION: 1.07 RC2
+	* SAVESNA works and with device ZXSPECTRUM48
+	* Added new device PENTAGON128
+	* In ZXSPECTRUM48 device and others attributes has black ink and white
+	paper by default.
+
 2006-09-23  Aprisobal  <my@aprisobal.by>
 
 	* VERSION: 1.07 RC1bf
