@@ -35,8 +35,8 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 	if (!DeviceID) {
 		Error("zx.save_snapshot_sna128: only for real device emulation mode.", 0);
 		return 0;
-	} else if (strcmp(DeviceID, "ZXSPECTRUM128") && strcmp(DeviceID, "SCORPION256") && strcmp(DeviceID, "ATMTURBO512")) {
-		Error("zx.save_snapshot_sna128: device must be ZXSPECTRUM128, SCORPION256 or ATMTURBO512.", 0);
+	} else if (strcmp(DeviceID, "ZXSPECTRUM48") && strcmp(DeviceID, "ZXSPECTRUM128") && strcmp(DeviceID, "PENTAGON128") && strcmp(DeviceID, "SCORPION256") && strcmp(DeviceID, "ATMTURBO512")) {
+		Error("zx.save_snapshot_sna128: device must be ZXSPECTRUM48, ZXSPECTRUM128, PENTAGON128, SCORPION256 or ATMTURBO512.", 0);
 		return 0;
 	}
 
@@ -54,6 +54,7 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 	snbuf[23] = 0xff; //sp
 	snbuf[24] = 0x5F; //sp
 	snbuf[25] = 1; //im 1
+	snbuf[26] = 7; //border 7
 
 	if (fwrite(snbuf, 1, sizeof(snbuf) - 4, ff) != sizeof(snbuf) - 4) {
 		Error("Write error (disk full?)", fname, CATCHALL);
@@ -61,25 +62,47 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 		return 0;
 	}
 	
-	if (fwrite(Device->GetPage(5)->RAM, 1, Device->GetPage(5)->Size, ff) != Device->GetPage(5)->Size) {
-		Error("Write error (disk full?)", fname, CATCHALL);
-		fclose(ff);
-		return 0;
-	}
-	if (fwrite(Device->GetPage(2)->RAM, 1, Device->GetPage(2)->Size, ff) != Device->GetPage(2)->Size) {
-		Error("Write error (disk full?)", fname, CATCHALL);
-		fclose(ff);
-		return 0;
-	}
-	if (fwrite(Device->GetPage(0)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
-		Error("Write error (disk full?)", fname, CATCHALL);
-		fclose(ff);
-		return 0;
+	if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
+		if (fwrite(Device->GetPage(1)->RAM, 1, Device->GetPage(1)->Size, ff) != Device->GetPage(1)->Size) {
+			Error("Write error (disk full?)", fname, CATCHALL);
+			fclose(ff);
+			return 0;
+		}
+		if (fwrite(Device->GetPage(2)->RAM, 1, Device->GetPage(2)->Size, ff) != Device->GetPage(2)->Size) {
+			Error("Write error (disk full?)", fname, CATCHALL);
+			fclose(ff);
+			return 0;
+		}
+		if (fwrite(Device->GetPage(3)->RAM, 1, Device->GetPage(3)->Size, ff) != Device->GetPage(3)->Size) {
+			Error("Write error (disk full?)", fname, CATCHALL);
+			fclose(ff);
+			return 0;
+		}
+	} else {
+		if (fwrite(Device->GetPage(5)->RAM, 1, Device->GetPage(5)->Size, ff) != Device->GetPage(5)->Size) {
+			Error("Write error (disk full?)", fname, CATCHALL);
+			fclose(ff);
+			return 0;
+		}
+		if (fwrite(Device->GetPage(2)->RAM, 1, Device->GetPage(2)->Size, ff) != Device->GetPage(2)->Size) {
+			Error("Write error (disk full?)", fname, CATCHALL);
+			fclose(ff);
+			return 0;
+		}
+		if (fwrite(Device->GetPage(0)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
+			Error("Write error (disk full?)", fname, CATCHALL);
+			fclose(ff);
+			return 0;
+		}
 	}
 
 	snbuf[27] = char(start & 0x00FF); //pc
 	snbuf[28] = char(start >> 8); //pc
-	snbuf[29] = 0x10; //7ffd
+	if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
+		snbuf[29] = 0; //7ffd
+	} else {
+		snbuf[29] = 0x10; //7ffd
+	}
 	snbuf[30] = 0; //tr-dos
 	if (fwrite(snbuf + 27, 1, 4, ff) != 4) {
 		Error("Write error (disk full?)", fname, CATCHALL);
@@ -87,7 +110,16 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 		return 0;
 	}
 
-	if (DeviceID) {
+	//if (DeviceID) {
+	if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
+		for (int i = 0; i < 5; i++) {
+			if (fwrite(Device->GetPage(0)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
+				Error("Write error (disk full?)", fname, CATCHALL);
+				fclose(ff);
+				return 0;
+			}
+		}
+	} else {
 		for (int i = 0; i < 8; i++) {
 			if (i != 0 && i != 2 && i != 5) {
 				if (fwrite(Device->GetPage(i)->RAM, 1, Device->GetPage(i)->Size, ff) != Device->GetPage(i)->Size) {
@@ -97,7 +129,9 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 				}
 			}
 		}
-	}/* else {
+	}
+	//}
+	/* else {
 		char *buf = (char*) calloc(0x14000, sizeof(char));
 		if (buf == NULL) {
 			Error("No enough memory", 0, FATAL);

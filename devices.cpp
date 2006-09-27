@@ -50,7 +50,7 @@ void DeviceZXSpectrum48(CDevice **dev, CDevice *parent) {
 	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(3);
 
 	memcpy((*dev)->GetPage(1)->RAM + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
-	memset((*dev)->GetPage(1)->RAM + 6144, 7, 768);
+	memset((*dev)->GetPage(1)->RAM + 6144, 7*8, 768);
 
 	(*dev)->CurrentSlot = 3;
 }
@@ -73,7 +73,30 @@ void DeviceZXSpectrum128(CDevice **dev, CDevice *parent) {
 	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(0);
 
 	memcpy((*dev)->GetPage(5)->RAM + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
-	memset((*dev)->GetPage(5)->RAM + 6144, 7, 768);
+	memset((*dev)->GetPage(5)->RAM + 6144, 7*8, 768);
+
+	(*dev)->CurrentSlot = 3;
+}
+
+void DevicePentagon128(CDevice **dev, CDevice *parent) {
+	// add new device
+	*dev = new CDevice("PENTAGON128", parent);
+	(*dev)->AddSlot(0x0000, 0x4000);
+	(*dev)->AddSlot(0x4000, 0x4000);
+	(*dev)->AddSlot(0x8000, 0x4000);
+	(*dev)->AddSlot(0xC000, 0x4000);
+
+	for (int i=0;i<8;i++) {
+		(*dev)->AddPage(0x4000);
+	}
+
+	(*dev)->GetSlot(0)->Page = (*dev)->GetPage(7);
+	(*dev)->GetSlot(1)->Page = (*dev)->GetPage(5);
+	(*dev)->GetSlot(2)->Page = (*dev)->GetPage(2);
+	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(0);
+
+	memcpy((*dev)->GetPage(5)->RAM + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
+	memset((*dev)->GetPage(5)->RAM + 6144, 7*8, 768);
 
 	(*dev)->CurrentSlot = 3;
 }
@@ -96,7 +119,7 @@ void DeviceScorpion256(CDevice **dev, CDevice *parent) {
 	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(0);
 
 	memcpy((*dev)->GetPage(5)->RAM + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
-	memset((*dev)->GetPage(5)->RAM + 6144, 7, 768);
+	memset((*dev)->GetPage(5)->RAM + 6144, 7*8, 768);
 
 	(*dev)->CurrentSlot = 3;
 }
@@ -119,7 +142,7 @@ void DeviceATMTurbo512(CDevice **dev, CDevice *parent) {
 	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(0);
 
 	memcpy((*dev)->GetPage(5)->RAM + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
-	memset((*dev)->GetPage(5)->RAM + 6144, 7, 768);
+	memset((*dev)->GetPage(5)->RAM + 6144, 7*8, 768);
 
 	(*dev)->CurrentSlot = 3;
 }
@@ -154,6 +177,8 @@ int SetDevice(char *id) {
 				DeviceZXSpectrum48(dev, parent);
 			} else if (cmphstr(id, "zxspectrum128")) {
 				DeviceZXSpectrum128(dev, parent);
+			} else if (cmphstr(id, "pentagon128")) {
+				DevicePentagon128(dev, parent);
 			} else if (cmphstr(id, "scorpion256")) {
 				DeviceScorpion256(dev, parent);
 			} else if (cmphstr(id, "atmturbo512")) {

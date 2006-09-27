@@ -710,8 +710,8 @@ void dirSAVESNA() {
 		exec = false;
 	}
 
-	if (exec && strcmp(DeviceID, "ZXSPECTRUM128") && strcmp(DeviceID, "SCORPION256") && strcmp(DeviceID, "ATMTURBO512")) {
-		Error("[SAVESNA] Device must be ZXSPECTRUM128, SCORPION256 or ATMTURBO512.", 0);
+	if (exec && strcmp(DeviceID, "ZXSPECTRUM48") && strcmp(DeviceID, "ZXSPECTRUM128") && strcmp(DeviceID, "PENTAGON128") && strcmp(DeviceID, "SCORPION256") && strcmp(DeviceID, "ATMTURBO512")) {
+		Error("[SAVESNA] Device must be ZXSPECTRUM48, ZXSPECTRUM128, PENTAGON128, SCORPION256 or ATMTURBO512.", 0);
 		exec = false;
 	}
 	
