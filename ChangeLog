@@ -1,3 +1,10 @@
+2006-10-12  Aprisobal  <my@aprisobal.by>
+
+	* VERSION: 1.07 RC3
+	* SAVESNA can save 48kb snapshots
+	* Corrected DEFINE's bug.
+	* Corrected bug of incorrect line numbering.
+
 2006-09-28  Aprisobal  <my@aprisobal.by>
 
 	* VERSION: 1.07 RC2
