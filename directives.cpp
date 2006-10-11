@@ -1191,6 +1191,8 @@ void dirDEFINE() {
 	}
 
 	DefineTable.Add(id, lp, 0);
+
+	*(lp) = 0;
 }
 
 /* modified */

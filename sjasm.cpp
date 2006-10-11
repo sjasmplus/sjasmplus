@@ -349,7 +349,7 @@ int main(int argc, char **argv) {
 	int i = 1;
 
 	if (!Options::HideLogo) {
-		cout << "SjASMPlus Z80/R800 Cross-Assembler v1.07 RC2 (build 28-09-2006)" << endl;
+		cout << "SjASMPlus Z80/R800 Cross-Assembler v1.07 RC3 (build 12-10-2006)" << endl;
 	}
 	if (argc == 1) {
 		cout << "based on code of SjASM by Sjoerd Mastijn / http://www.xl2s.tk /" << endl;

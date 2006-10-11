@@ -821,9 +821,9 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
 				if (strlen(line) == LINEMAX - 1) {
 					Error("Line too long", 0, FATAL);
 				}
-				if (rlnewline) {
+				/*if (rlnewline) {
 					CurrentLocalLine++; CurrentLine++; CurrentGlobalLine++; rlnewline = false;
-				}
+				}*/
 			  	rlcolon = true;
 				if (Parse) {
 					ParseLine();

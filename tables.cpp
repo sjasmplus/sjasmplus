@@ -725,7 +725,9 @@ CDefineTableEntry::CDefineTableEntry(char* nname, char* nvalue, CStringList* nns
 	s1 = value; s2 = nvalue; SkipBlanks(s2);
 	while (*s2 && *s2 != '\n' && *s2 != '\r') {
 		*s1 = *s2; ++s1; ++s2;
-	} *s1 = 0;
+	} 
+	*s1 = 0;
+	//cout << nvalue << endl;
 	next = nnext;
 	nss = nnss;
 }
