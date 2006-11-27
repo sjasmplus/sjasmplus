@@ -1,3 +1,9 @@
+2006-11-28  Aprisobal  <my@aprisobal.by>
+
+	* VERSION: 1.07 RC4
+	* Corrected bug with SAVEBIN, SAVETRD and possible SAVESNA.
+	* Add Makefile to build under Linux, FreeBSD etc.
+
 2006-10-12  Aprisobal  <my@aprisobal.by>
 
 	* VERSION: 1.07 RC3
