@@ -764,8 +764,8 @@ void dirSAVEBIN() {
 			if (!ParseExpression(lp, val)) {
 				Error("[SAVEBIN] Syntax error", bp, PASS3); return;
 			} 
-			if (val < 0x4000) {
-				Error("[SAVEBIN] Values less than 4000h are not allowed", bp, PASS3); return;
+			if (val < 0) {
+				Error("[SAVEBIN] Values less than 0000h are not allowed", bp, PASS3); return;
 			} else if (val > 0xFFFF) {
 			  	Error("[SAVEBIN] Values more than FFFFh are not allowed", bp, PASS3); return;
 			}

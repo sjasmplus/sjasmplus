@@ -1,6 +1,6 @@
 /*
 ** Lua binding: sjasm
-** Generated automatically by tolua++-1.0.92 on 09/17/06 23:17:02.
+** Generated automatically by tolua++-1.0.92 on 11/28/06 23:23:07.
 */
 
 /* Exported function */

@@ -1044,7 +1044,9 @@ int SaveRAM(FILE* ff, int start, int length) {
 				return 0;
 			}
 			length -= save;
-			if (!length) {
+			start += save;
+			cout << "Start: " << start << " Length: " << length << endl;
+			if (length <= 0) {
 				return 1;
 			}
 		}
@@ -1206,7 +1208,7 @@ int SaveBinary(char* fname, int start, int length) {
 	if (length <= 0) {
 		length = 0x10000 - start;
 	}
-
+	//cout << "Start: " << start << " Length: " << length << endl;
 	if (!SaveRAM(ff, start, length)) {
 		fclose(ff);return 0;
 	}

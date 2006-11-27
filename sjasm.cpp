@@ -237,6 +237,8 @@ namespace Options {
 
 			if (!strcmp(c, "lstlab")) {
 				AddLabelListing = 1;
+			} else if (!strcmp(c, "help")) {
+				// nothing
 			} else if (!strcmp(c, "sym")) {
 				if (ps+1) {
 					STRCPY(SymbolListFName, LINEMAX, ps+1);
@@ -349,7 +351,7 @@ int main(int argc, char **argv) {
 	int i = 1;
 
 	if (!Options::HideLogo) {
-		cout << "SjASMPlus Z80/R800 Cross-Assembler v1.07 RC3 (build 12-10-2006)" << endl;
+		cout << "SjASMPlus Z80/R800 Cross-Assembler v1.07 RC4 (build 28-11-2006)" << endl;
 	}
 	if (argc == 1) {
 		cout << "based on code of SjASM by Sjoerd Mastijn / http://www.xl2s.tk /" << endl;

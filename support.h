@@ -70,4 +70,6 @@ long GetTickCount();
 
 #endif
 
+void LuaShellExec(char *command);
+
 //eof support.h

@@ -1,6 +1,6 @@
 /*
 ** Lua binding: sjasm
-** Generated automatically by tolua++-1.0.92 on 09/17/06 23:17:02.
+** Generated automatically by tolua++-1.0.92 on 11/28/06 23:23:07.
 */
 
 #ifndef __cplusplus
@@ -173,7 +173,7 @@ static int tolua_get_sj_error_count(lua_State* tolua_S)
 }
 #endif //#ifndef TOLUA_DISABLE
 
-/* function: WinExec */
+/* function: LuaShellExec */
 #ifndef TOLUA_DISABLE_tolua_sjasm_sj_shellexec00
 static int tolua_sjasm_sj_shellexec00(lua_State* tolua_S)
 {
@@ -181,17 +181,15 @@ static int tolua_sjasm_sj_shellexec00(lua_State* tolua_S)
  tolua_Error tolua_err;
  if (
      !tolua_isstring(tolua_S,1,0,&tolua_err) ||
-     !tolua_isnumber(tolua_S,2,1,&tolua_err) ||
-     !tolua_isnoobj(tolua_S,3,&tolua_err)
+     !tolua_isnoobj(tolua_S,2,&tolua_err)
  )
   goto tolua_lerror;
  else
 #endif
  {
-  char* lpCmdLine = ((char*)  tolua_tostring(tolua_S,1,0));
-  int uCmdShow = ((int)  tolua_tonumber(tolua_S,2,SW_SHOWNORMAL));
+  char* command = ((char*)  tolua_tostring(tolua_S,1,0));
   {
-   WinExec(lpCmdLine,uCmdShow);
+   LuaShellExec(command);
   }
  }
  return 0;
@@ -200,29 +198,6 @@ static int tolua_sjasm_sj_shellexec00(lua_State* tolua_S)
  tolua_error(tolua_S,"#ferror in function 'shellexec'.",&tolua_err);
  return 0;
 #endif
-}
-#endif //#ifndef TOLUA_DISABLE
-
-/* function: system */
-#ifndef TOLUA_DISABLE_tolua_sjasm_sj_shellexec01
-static int tolua_sjasm_sj_shellexec01(lua_State* tolua_S)
-{
- tolua_Error tolua_err;
- if (
-     !tolua_isstring(tolua_S,1,0,&tolua_err) ||
-     !tolua_isnoobj(tolua_S,2,&tolua_err)
- )
-  goto tolua_lerror;
- else
- {
-  char* command = ((char*)  tolua_tostring(tolua_S,1,0));
-  {
-   system(command);
-  }
- }
- return 0;
-tolua_lerror:
- return tolua_sjasm_sj_shellexec00(tolua_S);
 }
 #endif //#ifndef TOLUA_DISABLE
 
@@ -901,7 +876,6 @@ TOLUA_API int tolua_sjasm_open (lua_State* tolua_S)
    tolua_variable(tolua_S,"warning_count",tolua_get_sj_warning_count,NULL);
    tolua_variable(tolua_S,"error_count",tolua_get_sj_error_count,NULL);
    tolua_function(tolua_S,"shellexec",tolua_sjasm_sj_shellexec00);
-   tolua_function(tolua_S,"shellexec",tolua_sjasm_sj_shellexec01);
   tolua_endmodule(tolua_S);
   tolua_module(tolua_S,"zx",0);
   tolua_beginmodule(tolua_S,"zx");
