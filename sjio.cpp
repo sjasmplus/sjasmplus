@@ -450,7 +450,7 @@ void Emit(int byte) {
 					Error(buf, 0, FATAL);
 				}
 				*(MemoryPointer++) = (char) byte;
-				if ((MemoryPointer - Page->RAM) > Page->Size) {
+				if ((MemoryPointer - Page->RAM) >= Page->Size) {
 					++adrdisp; ++CurAddress;
 					CheckPage();
 					return;
@@ -464,7 +464,7 @@ void Emit(int byte) {
 
 				*(MemoryPointer++) = (char) byte;
 				
-				if ((MemoryPointer - Page->RAM) > Page->Size) {
+				if ((MemoryPointer - Page->RAM) >= Page->Size) {
 					++CurAddress; 
 					CheckPage();
 					return;
@@ -527,7 +527,7 @@ void EmitBlock(aint byte, aint len) {
 						Error("RAM limit exceeded", 0, FATAL);
 					}
 					*(MemoryPointer++) = (char) byte;
-					if ((MemoryPointer - Page->RAM) > Page->Size) {
+					if ((MemoryPointer - Page->RAM) >= Page->Size) {
 						++adrdisp; ++CurAddress;
 						CheckPage(); continue;
 					}
@@ -536,7 +536,7 @@ void EmitBlock(aint byte, aint len) {
 						Error("RAM limit exceeded", 0, FATAL);
 					}
 					*(MemoryPointer++) = (char) byte;
-					if ((MemoryPointer - Page->RAM) > Page->Size) {
+					if ((MemoryPointer - Page->RAM) >= Page->Size) {
 						++CurAddress;
 						CheckPage(); continue;
 					}
@@ -630,7 +630,7 @@ void BinIncFile(char* fname, int offset, int len) {
 							Error("RAM limit exceeded", 0, FATAL);
 						}
 						*(MemoryPointer++) = *bp;
-						if ((MemoryPointer - Page->RAM) > Page->Size) {
+						if ((MemoryPointer - Page->RAM) >= Page->Size) {
 							++adrdisp; ++CurAddress;
 							CheckPage(); continue;
 						}
@@ -639,7 +639,7 @@ void BinIncFile(char* fname, int offset, int len) {
 							Error("RAM limit exceeded", 0, FATAL);
 						}
 						*(MemoryPointer++) = *bp;
-						if ((MemoryPointer - Page->RAM) > Page->Size) {
+						if ((MemoryPointer - Page->RAM) >= Page->Size) {
 							++CurAddress;
 							CheckPage(); continue;
 						}
@@ -671,7 +671,7 @@ void BinIncFile(char* fname, int offset, int len) {
 								Error("RAM limit exceeded", 0, FATAL);
 							}
 							*(MemoryPointer++) = (char) WriteBuffer[leng++];
-							if ((MemoryPointer - Page->RAM) > Page->Size) {
+							if ((MemoryPointer - Page->RAM) >= Page->Size) {
 								++adrdisp; ++CurAddress;
 								CheckPage();
 							} else {
@@ -682,7 +682,7 @@ void BinIncFile(char* fname, int offset, int len) {
 								Error("RAM limit exceeded", 0, FATAL);
 							}
 							*(MemoryPointer++) = (char) WriteBuffer[leng++];
-							if ((MemoryPointer - Page->RAM) > Page->Size) {
+							if ((MemoryPointer - Page->RAM) >= Page->Size) {
 								++CurAddress;
 								CheckPage();
 							} else {
@@ -1045,7 +1045,7 @@ int SaveRAM(FILE* ff, int start, int length) {
 			}
 			length -= save;
 			start += save;
-			cout << "Start: " << start << " Length: " << length << endl;
+			//cout << "Start: " << start << " Length: " << length << endl;
 			if (length <= 0) {
 				return 1;
 			}
