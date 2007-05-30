@@ -63,7 +63,7 @@ END
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
 LANGUAGE 25, 1
 #pragma code_page(1251)
-#include "sjasmceppc.rc2"  // non-Microsoft Visual C++ edited resources
+//#include "sjasmceppc.rc2"  // non-Microsoft Visual C++ edited resources
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

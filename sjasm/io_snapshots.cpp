@@ -35,8 +35,8 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 	if (!DeviceID) {
 		Error("zx.save_snapshot_sna128: only for real device emulation mode.", 0);
 		return 0;
-	} else if (strcmp(DeviceID, "ZXSPECTRUM48") && strcmp(DeviceID, "ZXSPECTRUM128") && strcmp(DeviceID, "PENTAGON128") && strcmp(DeviceID, "SCORPION256") && strcmp(DeviceID, "ATMTURBO512")) {
-		Error("zx.save_snapshot_sna128: device must be ZXSPECTRUM48, ZXSPECTRUM128, PENTAGON128, SCORPION256 or ATMTURBO512.", 0);
+	} else if (strcmp(DeviceID, "ZXSPECTRUM48") && strcmp(DeviceID, "ZXSPECTRUM128") && strcmp(DeviceID, "PENTAGON128") && strcmp(DeviceID, "SCORPION256") && strcmp(DeviceID, "ATMTURBO512") && strcmp(DeviceID, "PENTAGON1024")) {
+		Error("zx.save_snapshot_sna128: device must be ZXSPECTRUM48, ZXSPECTRUM128, PENTAGON128, SCORPION256, ATMTURBO512 or PENTAGON1024.", 0);
 		return 0;
 	}
 

@@ -561,7 +561,7 @@ int GetBytes(char*& p, int e[], int add, int dc) {
 				 	e[t - 1] |= 128;
 				 }
 			/* (begin add) */
-		} else if (*p == 0x27) {
+		} else if ((*p == 0x27) && (!*(p+2) || *(p+2) != 0x27)) {
 		  	p++;
 			do {
 				if (!*p || *p == 0x27) {
@@ -572,9 +572,10 @@ int GetBytes(char*& p, int e[], int add, int dc) {
 				}
 		  		GetCharConstCharSingle(p, val); check8(val); e[t++] = (val + add) & 255;
 			} while (*p != 0x27);
-		  	++p; if (dc && t) {
-				 	e[t - 1] |= 128;
-				 }
+		  	++p;
+			if (dc && t) {
+				e[t - 1] |= 128;
+			}
 		  	/* (end add) */
 		} else {
 			if (ParseExpression(p, val)) {
@@ -785,7 +786,7 @@ EStructureMembers GetStructMemberId(char*& p) {
 }
 
 /* added */
-int getArray(char*& p, int e[], int add, int dc) {
+int GetArray(char*& p, int e[], int add, int dc) {
 	aint val;
 	int t = 0;
 	while ('o') {
@@ -811,7 +812,7 @@ int getArray(char*& p, int e[], int add, int dc) {
 				 	e[t - 1] |= 128;
 				 }
 			/* (begin add) */
-		} else if (*p == 0x27) {
+		} else if ((*p == 0x27) && (!*(p+2) || *(p+2) != 0x27)) {
 		  	p++;
 			do {
 				if (!*p || *p == 0x27) {
@@ -822,9 +823,10 @@ int getArray(char*& p, int e[], int add, int dc) {
 				}
 		  		GetCharConstCharSingle(p, val); check8(val); e[t++] = (val + add) & 255;
 			} while (*p != 0x27);
-		  	++p; if (dc && t) {
-				 	e[t - 1] |= 128;
-				 }
+		  	++p;
+			if (dc && t) {
+				 e[t - 1] |= 128;
+			}
 		  	/* (end add) */
 		} else {
 			if (ParseExpression(p, val)) {

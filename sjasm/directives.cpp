@@ -371,7 +371,6 @@ void dirPAGE() {
 		Error(buf, 0, CATCHALL); return;
 	}
 	Slot->Page = Device->GetPage(val);
-	//Page = Slot->Page;
 	CheckPage();
 }
 
@@ -423,7 +422,7 @@ void dirENDMAP() {
 void dirALIGN() {
 	aint val;
 	aint byte;
-	bool noexp;
+	bool noexp=false;
 	if (!ParseExpression(lp, val)) {
 		noexp = true;
 		val = 4;
@@ -723,8 +722,8 @@ void dirSAVESNA() {
 		exec = false;
 	}
 
-	if (exec && strcmp(DeviceID, "ZXSPECTRUM48") && strcmp(DeviceID, "ZXSPECTRUM128") && strcmp(DeviceID, "PENTAGON128") && strcmp(DeviceID, "SCORPION256") && strcmp(DeviceID, "ATMTURBO512")) {
-		Error("[SAVESNA] Device must be ZXSPECTRUM48, ZXSPECTRUM128, PENTAGON128, SCORPION256 or ATMTURBO512.", 0);
+	if (exec && strcmp(DeviceID, "ZXSPECTRUM48") && strcmp(DeviceID, "ZXSPECTRUM128") && strcmp(DeviceID, "PENTAGON128") && strcmp(DeviceID, "SCORPION256") && strcmp(DeviceID, "ATMTURBO512") && strcmp(DeviceID, "PENTAGON1024")) {
+		Error("[SAVESNA] Device must be ZXSPECTRUM48, ZXSPECTRUM128, PENTAGON128, SCORPION256, ATMTURBO512, PENTAGON1024.", 0);
 		exec = false;
 	}
 	

@@ -1,0 +1,588 @@
+# depslib dependency file v1.0
+1136901000 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lapi.c
+	<assert.h>
+	<math.h>
+	<stdarg.h>
+	<string.h>
+	"lua.h"
+	"lapi.h"
+	"ldebug.h"
+	"ldo.h"
+	"lfunc.h"
+	"lgc.h"
+	"lmem.h"
+	"lobject.h"
+	"lstate.h"
+	"lstring.h"
+	"ltable.h"
+	"ltm.h"
+	"lundump.h"
+	"lvm.h"
+
+1136901012 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lua.h
+	<stdarg.h>
+	<stddef.h>
+	"luaconf.h"
+
+1139597046 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\luaconf.h
+	<limits.h>
+	<stddef.h>
+	<unistd.h>
+	<io.h>
+	<stdio.h>
+	<stdio.h>
+	<readline/readline.h>
+	<readline/history.h>
+	<assert.h>
+	<math.h>
+	<unistd.h>
+
+1114453450 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lapi.h
+	"lobject.h"
+
+1137587854 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lobject.h
+	<stdarg.h>
+	"llimits.h"
+	"lua.h"
+
+1135707120 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\llimits.h
+	<limits.h>
+	<stddef.h>
+	"lua.h"
+
+1114453450 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\ldebug.h
+	"lstate.h"
+
+1139254078 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lstate.h
+	"lua.h"
+	"lobject.h"
+	"ltm.h"
+	"lzio.h"
+
+1118061024 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\ltm.h
+	"lobject.h"
+
+1116355754 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lzio.h
+	"lua.h"
+	"lmem.h"
+
+1114453450 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lmem.h
+	<stddef.h>
+	"llimits.h"
+	"lua.h"
+
+1124896548 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\ldo.h
+	"lobject.h"
+	"lstate.h"
+	"lzio.h"
+
+1114453450 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lfunc.h
+	"lobject.h"
+
+1124896548 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lgc.h
+	"lobject.h"
+
+1114453450 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lstring.h
+	"lgc.h"
+	"lobject.h"
+	"lstate.h"
+
+1136902386 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\ltable.h
+	"lobject.h"
+
+1131721392 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lundump.h
+	"lobject.h"
+	"lzio.h"
+
+1124733288 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lvm.h
+	"ldo.h"
+	"lobject.h"
+	"ltm.h"
+
+1137418940 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lauxlib.c
+	<ctype.h>
+	<errno.h>
+	<stdarg.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"lua.h"
+	"lauxlib.h"
+
+1135873930 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lauxlib.h
+	<stddef.h>
+	<stdio.h>
+	"lua.h"
+
+1137588552 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lbaselib.c
+	<ctype.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"lua.h"
+	"lauxlib.h"
+	"lualib.h"
+
+1135707120 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lualib.h
+	"lua.h"
+
+1135271996 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lcode.c
+	<stdlib.h>
+	"lua.h"
+	"lcode.h"
+	"ldebug.h"
+	"ldo.h"
+	"lgc.h"
+	"llex.h"
+	"lmem.h"
+	"lobject.h"
+	"lopcodes.h"
+	"lparser.h"
+	"ltable.h"
+
+1131482670 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lcode.h
+	"llex.h"
+	"lobject.h"
+	"lopcodes.h"
+	"lparser.h"
+
+1133973784 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\llex.h
+	"lobject.h"
+	"lzio.h"
+
+1133552528 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lopcodes.h
+	"llimits.h"
+
+1128344560 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lparser.h
+	"llimits.h"
+	"lobject.h"
+	"ltable.h"
+	"lzio.h"
+
+1135873930 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\ldblib.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"lua.h"
+	"lauxlib.h"
+	"lualib.h"
+
+1135271996 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\ldebug.c
+	<stdarg.h>
+	<stddef.h>
+	<string.h>
+	"lua.h"
+	"lapi.h"
+	"lcode.h"
+	"ldebug.h"
+	"ldo.h"
+	"lfunc.h"
+	"lobject.h"
+	"lopcodes.h"
+	"lstate.h"
+	"lstring.h"
+	"ltable.h"
+	"ltm.h"
+	"lvm.h"
+
+1135271996 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\ldo.c
+	<setjmp.h>
+	<stdlib.h>
+	<string.h>
+	"lua.h"
+	"ldebug.h"
+	"ldo.h"
+	"lfunc.h"
+	"lgc.h"
+	"lmem.h"
+	"lobject.h"
+	"lopcodes.h"
+	"lparser.h"
+	"lstate.h"
+	"lstring.h"
+	"ltable.h"
+	"ltm.h"
+	"lundump.h"
+	"lvm.h"
+	"lzio.h"
+
+1140108828 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\ldump.c
+	<stddef.h>
+	"lua.h"
+	"lobject.h"
+	"lstate.h"
+	"lundump.h"
+
+1135271996 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lfunc.c
+	<stddef.h>
+	"lua.h"
+	"lfunc.h"
+	"lgc.h"
+	"lmem.h"
+	"lobject.h"
+	"lstate.h"
+
+1135271996 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lgc.c
+	<string.h>
+	"lua.h"
+	"ldebug.h"
+	"ldo.h"
+	"lfunc.h"
+	"lgc.h"
+	"lmem.h"
+	"lobject.h"
+	"lstate.h"
+	"lstring.h"
+	"ltable.h"
+	"ltm.h"
+
+1135873930 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\linit.c
+	"lua.h"
+	"lualib.h"
+	"lauxlib.h"
+
+1138456752 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\liolib.c
+	<errno.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"lua.h"
+	"lauxlib.h"
+	"lualib.h"
+
+1139254096 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\llex.c
+	<ctype.h>
+	<locale.h>
+	<string.h>
+	"lua.h"
+	"ldo.h"
+	"llex.h"
+	"lobject.h"
+	"lparser.h"
+	"lstate.h"
+	"lstring.h"
+	"lzio.h"
+
+1125074192 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lmathlib.c
+	<stdlib.h>
+	<math.h>
+	"lua.h"
+	"lauxlib.h"
+	"lualib.h"
+
+1135607746 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lmem.c
+	<stddef.h>
+	"lua.h"
+	"ldebug.h"
+	"ldo.h"
+	"lmem.h"
+	"lobject.h"
+	"lstate.h"
+
+1135873930 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\loadlib.c
+	<stdlib.h>
+	<string.h>
+	"lauxlib.h"
+	"lobject.h"
+	"lua.h"
+	"lualib.h"
+	<dlfcn.h>
+	<windows.h>
+	<mach-o/dyld.h>
+
+1139597032 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lobject.c
+	<ctype.h>
+	<stdarg.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"lua.h"
+	"ldo.h"
+	"lmem.h"
+	"lobject.h"
+	"lstate.h"
+	"lstring.h"
+	"lvm.h"
+
+1131482736 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lopcodes.c
+	"lopcodes.h"
+
+1138373670 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\loslib.c
+	<errno.h>
+	<locale.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+	"lua.h"
+	"lauxlib.h"
+	"lualib.h"
+
+1135271996 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lparser.c
+	<string.h>
+	"lua.h"
+	"lcode.h"
+	"ldebug.h"
+	"ldo.h"
+	"lfunc.h"
+	"llex.h"
+	"lmem.h"
+	"lobject.h"
+	"lopcodes.h"
+	"lparser.h"
+	"lstate.h"
+	"lstring.h"
+
+1128627984 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lstate.c
+	<stddef.h>
+	"lua.h"
+	"ldebug.h"
+	"ldo.h"
+	"lfunc.h"
+	"lgc.h"
+	"llex.h"
+	"lmem.h"
+	"lstate.h"
+	"lstring.h"
+	"ltable.h"
+	"ltm.h"
+
+1135271996 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lstring.c
+	<string.h>
+	"lua.h"
+	"lmem.h"
+	"lobject.h"
+	"lstate.h"
+	"lstring.h"
+
+1135873930 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lstrlib.c
+	<ctype.h>
+	<stddef.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"lua.h"
+	"lauxlib.h"
+	"lualib.h"
+
+1137588542 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\ltable.c
+	<math.h>
+	<string.h>
+	"lua.h"
+	"ldebug.h"
+	"ldo.h"
+	"lgc.h"
+	"lmem.h"
+	"lobject.h"
+	"lstate.h"
+	"ltable.h"
+
+1130089094 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\ltablib.c
+	<stddef.h>
+	"lua.h"
+	"lauxlib.h"
+	"lualib.h"
+
+1136901000 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\ltm.c
+	<string.h>
+	"lua.h"
+	"lobject.h"
+	"lstate.h"
+	"lstring.h"
+	"ltable.h"
+	"ltm.h"
+
+1140108828 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lundump.c
+	<string.h>
+	"lua.h"
+	"ldebug.h"
+	"ldo.h"
+	"lfunc.h"
+	"lmem.h"
+	"lobject.h"
+	"lstring.h"
+	"lundump.h"
+	"lzio.h"
+
+1138049502 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lvm.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"lua.h"
+	"ldebug.h"
+	"ldo.h"
+	"lfunc.h"
+	"lgc.h"
+	"lobject.h"
+	"lopcodes.h"
+	"lstate.h"
+	"lstring.h"
+	"ltable.h"
+	"ltm.h"
+	"lvm.h"
+
+1117826128 d:\dev\hl\sjasmplus\sjasmplus\lua5.1\lzio.c
+	<string.h>
+	"lua.h"
+	"llimits.h"
+	"lmem.h"
+	"lstate.h"
+	"lzio.h"
+
+1160646696 d:\dev\hl\sjasmplus\sjasmplus\sjasm\devices.cpp
+	"sjdefs.h"
+
+1179091032 d:\dev\hl\sjasmplus\sjasmplus\sjasm\sjdefs.h
+	<windows.h>
+	<windows.h>
+	<assert.h>
+	"tconvert.h"
+	<stack>
+	<iostream>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<ctype.h>
+	<math.h>
+	"lua.h"
+	"lualib.h"
+	"lauxlib.h"
+	"tolua++.h"
+	"lua.h"
+	"lualib.h"
+	"lauxlib.h"
+	"tolua++.h"
+	"lua_lpack.h"
+	"devices.h"
+	"support.h"
+	"tables.h"
+	"reader.h"
+	"parser.h"
+	"z80.h"
+	"directives.h"
+	"sjio.h"
+	"io_snapshots.h"
+	"io_trd.h"
+	"sjasm.h"
+
+1177228805 d:\dev\hl\sjasmplus\sjasmplus\sjasm\tconvert.h
+	<tchar.h>
+	<windows.h>
+
+1146108820 d:\dev\hl\sjasmplus\sjasmplus\tolua++\tolua++.h
+	"lua.h"
+	"lauxlib.h"
+
+1157784790 d:\dev\hl\sjasmplus\sjasmplus\sjasm\lua_lpack.h
+	"lua.h"
+	"lualib.h"
+	"lauxlib.h"
+
+1158504348 d:\dev\hl\sjasmplus\sjasmplus\sjasm\devices.h
+
+1179080994 d:\dev\hl\sjasmplus\sjasmplus\sjasm\support.h
+	<time.h>
+	<sys/time.h>
+	<unistd.h>
+
+1177938282 d:\dev\hl\sjasmplus\sjasmplus\sjasm\tables.h
+
+1155680282 d:\dev\hl\sjasmplus\sjasmplus\sjasm\reader.h
+
+1157792157 d:\dev\hl\sjasmplus\sjasmplus\sjasm\parser.h
+
+1155247210 d:\dev\hl\sjasmplus\sjasmplus\sjasm\z80.h
+
+1158509187 d:\dev\hl\sjasmplus\sjasmplus\sjasm\directives.h
+
+1179090869 d:\dev\hl\sjasmplus\sjasmplus\sjasm\sjio.h
+
+1155725695 d:\dev\hl\sjasmplus\sjasmplus\sjasm\io_snapshots.h
+
+1157453350 d:\dev\hl\sjasmplus\sjasmplus\sjasm\io_trd.h
+
+1177938417 d:\dev\hl\sjasmplus\sjasmplus\sjasm\sjasm.h
+
+1179092897 d:\dev\hl\sjasmplus\sjasmplus\sjasm\directives.cpp
+	"sjdefs.h"
+
+1160646734 d:\dev\hl\sjasmplus\sjasmplus\sjasm\io_snapshots.cpp
+	"sjdefs.h"
+
+1177939365 d:\dev\hl\sjasmplus\sjasmplus\sjasm\io_trd.cpp
+	"sjdefs.h"
+
+1157746319 d:\dev\hl\sjasmplus\sjasmplus\sjasm\lua_lpack.c
+	<ctype.h>
+	<string.h>
+	"lua.h"
+	"lualib.h"
+	"lauxlib.h"
+
+1179085351 d:\dev\hl\sjasmplus\sjasmplus\sjasm\lua_sjasm.cpp
+	"stdlib.h"
+	"string.h"
+	"tolua++.h"
+	"sjdefs.h"
+
+1179771425 d:\dev\hl\sjasmplus\sjasmplus\sjasm\parser.cpp
+	"sjdefs.h"
+
+1180004789 d:\dev\hl\sjasmplus\sjasmplus\sjasm\reader.cpp
+	"sjdefs.h"
+
+1180426407 d:\dev\hl\sjasmplus\sjasmplus\sjasm\sjasm.cpp
+	"sjdefs.h"
+	"lua_sjasm.h"
+
+1179085351 d:\dev\hl\sjasmplus\sjasmplus\sjasm\lua_sjasm.h
+
+1179989969 d:\dev\hl\sjasmplus\sjasmplus\sjasm\sjio.cpp
+	"sjdefs.h"
+	<fcntl.h>
+
+1177939723 d:\dev\hl\sjasmplus\sjasmplus\sjasm\support.cpp
+	"sjdefs.h"
+
+1179088963 d:\dev\hl\sjasmplus\sjasmplus\sjasm\tables.cpp
+	"sjdefs.h"
+
+1179088526 d:\dev\hl\sjasmplus\sjasmplus\sjasm\z80.cpp
+	"sjdefs.h"
+
+1180465422 d:\dev\hl\sjasmplus\sjasmplus\sjasmwin32\sjasmplus.cbp.rc
+
+1179081022 d:\dev\hl\sjasmplus\sjasmplus\sjasmwin32\sjasmwin32.cpp
+	"../sjasm/sjdefs.h"
+
+1134958386 d:\dev\hl\sjasmplus\sjasmplus\tolua++\tolua_event.c
+	<stdio.h>
+	"tolua++.h"
+
+1134958386 d:\dev\hl\sjasmplus\sjasmplus\tolua++\tolua_is.c
+	"tolua++.h"
+	"lauxlib.h"
+	<stdlib.h>
+	<string.h>
+
+1142293070 d:\dev\hl\sjasmplus\sjasmplus\tolua++\tolua_map.c
+	"tolua++.h"
+	"tolua_event.h"
+	"lauxlib.h"
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+
+1063338014 d:\dev\hl\sjasmplus\sjasmplus\tolua++\tolua_event.h
+	"tolua++.h"
+
+1133004198 d:\dev\hl\sjasmplus\sjasmplus\tolua++\tolua_push.c
+	"tolua++.h"
+	"lauxlib.h"
+	<stdlib.h>
+
+1134423890 d:\dev\hl\sjasmplus\sjasmplus\tolua++\tolua_to.c
+	"tolua++.h"
+	<string.h>
+	<stdlib.h>
+

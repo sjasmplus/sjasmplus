@@ -457,7 +457,7 @@ void CheckPage() {
 	CDeviceSlot* S;
 	for (int i=0;i<Device->SlotsCount;i++) {
 		S = Device->GetSlot(i);
-		if (CurAddress >= S->Address  && CurAddress <= S->Address + S->Size) {
+		if (CurAddress >= S->Address && ((CurAddress < 65536 && CurAddress < S->Address + S->Size) || (CurAddress >= 65536 && CurAddress <= S->Address + S->Size))) {
 			if (PseudoORG) {
 				MemoryPointer = S->Page->RAM + (adrdisp - S->Address);
 				Page = S->Page;
@@ -469,10 +469,9 @@ void CheckPage() {
 			}
 		}
 	}
-
-	Warning("Error in CheckPage();", 0);
+	
+	Warning("Error in CheckPage(). Please, contact with the author of this program.", 0, FATAL);
 	ExitASM(1);
-	return;
 }
 
 /* modified */
@@ -504,8 +503,14 @@ void Emit(int byte) {
 					Error(buf, 0, FATAL);
 				}
 
+				//if (!nulled) {
 				*(MemoryPointer++) = (char) byte;
-				
+				//} else {
+				//	MemoryPointer++;
+				//}
+			/*	if (CurAddress > 0xFFFE || (CurAddress > 0x7FFE && CurAddress < 0x8001) || (CurAddress > 0xBFFE && CurAddress < 0xC001)) {
+					_COUT CurAddress _ENDL;
+				}*/
 				if ((MemoryPointer - Page->RAM) >= Page->Size) {
 					++CurAddress; 
 					CheckPage();
@@ -518,7 +523,15 @@ void Emit(int byte) {
 	if (PseudoORG) {
 		++adrdisp;
 	} /* added */
+
+	if (pass != LASTPASS && DeviceID && CurAddress >= 0x10000) {
+		char buf[1024];
+		SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
+		Error(buf, 0, FATAL);
+	}
+
 	++CurAddress;
+
 }
 
 void EmitByte(int byte) {
@@ -566,7 +579,9 @@ void EmitBlock(aint byte, aint len, bool nulled) {
 			if (DeviceID) {
 				if (PseudoORG) {
 					if (CurAddress >= 0x10000) {
-						Error("RAM limit exceeded", 0, FATAL);
+						char buf[1024];
+						SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
+						Error(buf, 0, FATAL);
 					}
 					if (!nulled) {
 						*(MemoryPointer++) = (char) byte;
@@ -579,7 +594,9 @@ void EmitBlock(aint byte, aint len, bool nulled) {
 					}
 				} else {
 					if (CurAddress >= 0x10000) {
-						Error("RAM limit exceeded", 0, FATAL);
+						char buf[1024];
+						SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
+						Error(buf, 0, FATAL);
 					}
 					if (!nulled) {
 						*(MemoryPointer++) = (char) byte;
@@ -597,6 +614,11 @@ void EmitBlock(aint byte, aint len, bool nulled) {
 		if (PseudoORG) {
 			++adrdisp;
 		} /* added */
+		if (pass != LASTPASS && DeviceID && CurAddress >= 0x10000) {
+			char buf[1024];
+			SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
+			Error(buf, 0, FATAL);
+		}
 		++CurAddress;
 	}
 }
@@ -677,7 +699,9 @@ void BinIncFile(char* fname, int offset, int len) {
 				if (DeviceID) {
 					if (PseudoORG) {
 						if (CurAddress >= 0x10000) {
-							Error("RAM limit exceeded", 0, FATAL);
+							char buf[1024];
+							SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
+							Error(buf, 0, FATAL);
 						}
 						*(MemoryPointer++) = *bp;
 						if ((MemoryPointer - Page->RAM) >= Page->Size) {
@@ -686,7 +710,9 @@ void BinIncFile(char* fname, int offset, int len) {
 						}
 					} else {
 						if (CurAddress >= 0x10000) {
-							Error("RAM limit exceeded", 0, FATAL);
+							char buf[1024];
+							SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
+							Error(buf, 0, FATAL);
 						}
 						*(MemoryPointer++) = *bp;
 						if ((MemoryPointer - Page->RAM) >= Page->Size) {
@@ -699,6 +725,11 @@ void BinIncFile(char* fname, int offset, int len) {
 			}
 			if (PseudoORG) {
 				++adrdisp;
+			}
+			if (pass != LASTPASS && DeviceID && CurAddress >= 0x10000) {
+				char buf[1024];
+				SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
+				Error(buf, 0, FATAL);
 			}
 			++CurAddress;
 		}
@@ -746,7 +777,15 @@ void BinIncFile(char* fname, int offset, int len) {
 			if (!DeviceID || pass != LASTPASS) {
 				if (PseudoORG) {
 					adrdisp += res;
-				} CurAddress += res;
+				}
+				for (int j=0;j < res;j++) {
+					if (pass != LASTPASS && DeviceID && CurAddress >= 0x10000) {
+						char buf[1024];
+						SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
+						Error(buf, 0, FATAL);
+					}
+					++CurAddress;
+				}
 			}
 		} while (res == DESTBUFLEN);
 	}

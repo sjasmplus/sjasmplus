@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
-  <title>SjASMPlus 1.07 Documentation [14.05.2007]</title>
+  <title>SjASMPlus 1.07 Documentation [31.05.2007]</title>
 
   <chapter>
     <title>Introduction</title>
@@ -98,13 +98,28 @@
       <para>Special thanks to Sjoerd Mastijn, the author of SjASM.</para>
 
       <para><emphasis>Aprisobal </emphasis>- main programming, documentation,
-      etc;</para>
+      etc.</para>
 
-      <para><emphasis>Kurles/HS/CPU</emphasis> - additional
-      programming;</para>
+      <para>Thanks to:<itemizedlist>
+          <listitem>
+            <para><emphasis>Kurles/HS/CPU</emphasis> - additional
+            programming;</para>
+          </listitem>
 
-      <para><emphasis>Krystian Wlosek &lt;kwlosek(at)gmail.com&gt;</emphasis>
-      - additional programming, Linux</para>
+          <listitem>
+            <para><emphasis>Krystian Wlosek
+            &lt;kwlosek(at)gmail.com&gt;</emphasis> - additional programming,
+            Linux;</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>Ric Horne &lt;Ric.Hohne@eads-ts.com&gt;</emphasis>
+            - bug fix patches.</para>
+          </listitem>
+        </itemizedlist></para>
+
+      <para>And big thanks to all people, who helped me in development of the
+      compiler!</para>
     </section>
 
     <section>
@@ -121,6 +136,18 @@
 
       <para><variablelist>
           <varlistentry>
+            <term>31.05.2006 - 1.07 RC5bf</term>
+
+            <listitem>
+              <para><programlisting>- Applied bugfix patches by Ric Hohne.
+- Important bugfix of memory leak.
+- Bugfix of strange crashes at several machines.
+- Added yet another sample for built-in LUA engine. See end of this file.
+- Added sources of CosmoCubes demo to the "examples" directory.</programlisting></para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term>13.05.2006 - 1.07 RC5</term>
 
             <listitem>
@@ -128,9 +155,8 @@
 - Corrected bug of RAM sizing.
 - Corrected bug of structures naming.</programlisting></para>
             </listitem>
-            
           </varlistentry>
-      
+
           <varlistentry>
             <term>02.12.2006 - 1.07 RC4bf</term>
 
@@ -220,11 +246,14 @@
           </listitem>
 
           <listitem>
-            <para>docs directory - documentation in various formats</para>
+            <para>documentation directory - documentation in various
+            formats</para>
           </listitem>
         </itemizedlist></para>
 
-      <para>DOS and FreeBSD versions has same files in their packages.</para>
+      <para>DOS and FreeBSD versions has same files in their packages.
+      <emphasis>Linux version</emphasis> you can compile using
+      <emphasis>Makefile</emphasis> from sources package.</para>
     </section>
 
     <section>
@@ -864,6 +893,15 @@ StartProg:
 
             <listitem>
               <para>Same as ZXSPECTRUM48, but have 32 pages (0-31) with size
+              4000h.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>PENTAGON1024</term>
+
+            <listitem>
+              <para>Same as ZXSPECTRUM48, but have 64 pages (0-63) with size
               4000h.</para>
             </listitem>
           </varlistentry>
@@ -1948,7 +1986,7 @@ START  .... ;something code
               <para><example>
                   <title></title>
 
-                  <para><programlisting>    SETDEVICE ZXSPECTRUM128
+                  <para><programlisting>    DEVICE ZXSPECTRUM128
     SLOT 3 ;from 0C000h to 0FFFFh
     PAGE 1 ;set page 1 to slot 3
     ORG 0C000h
@@ -2896,6 +2934,39 @@ DOT1 SDOT 0,0, 0,0,0     ; or 0,0,0,0,0 or {0,0,{0,0,0}}</programlisting>Only
      LUA
          savetape_mytype("tapefiles/myprogram.tape", _c("StartGameLabel"))
      ENDLUA</programlisting></para>
+        </example><example>
+          <title>Simple sample :)</title>
+
+          <para><programlisting>	LUA
+-- Function reads number from file &lt;fname&gt;, increases it, creates define "BUILD" with the number and saves the number to &lt;fname&gt;.
+-- With this function you can control count of compilations.
+	function increase_build(fname)
+		local fp
+		local build
+		fp = assert(io.open(fname, "rb"))
+		build = tonumber(fp:read("*all"))
+		assert(fp:close())
+		if type(build) == "nil" then
+		    build = 0
+		end
+		build = build + 1;
+		sj.insert_define("BUILD", build)
+		fp = assert(io.open(fname, "wb"))
+		assert(fp:write( build ))
+		assert(fp:flush())
+		assert(fp:close())
+	end
+
+-- Before using you must create empty file "build.txt"!
+	increase_build("build.txt")
+	
+-- Creates define "TIME" with current time
+	sj.insert_define("TIME", '"' .. os.date("%Y-%m-%d %H:%M:%S") .. '"')
+	ENDLUA
+	
+; print to console our time and build number
+	DISPLAY "Build time: ", TIME
+	DISPLAY "Build number: ", /D, BUILD</programlisting></para>
         </example></para>
 
       <para></para>

@@ -379,10 +379,13 @@ char* ReplaceDefine(char* lp) {
 		}
 
 		if (*lp == '"' || *lp == '\'') {
-			a = *lp; if (!comlin && !comnxtlin) {
-					 	*rp = *lp; ++rp;
-					 } ++lp;
-			if (a != '\'' || (*(lp - 2) != 'f' || *(lp - 3) != 'a') && (*(lp - 2) != 'F' && *(lp - 3) != 'A')) {
+			a = *lp;
+			if (!comlin && !comnxtlin) {
+				*rp = *lp; ++rp;
+			}
+			++lp;
+			
+			if (a != '\'' || (*(lp - 2) != 'f' || *(lp - 3) != 'a') && (*(lp - 2) != 'F' || *(lp - 3) != 'A')) {
 				while ('o') {
 					if (!*lp) {
 						*rp = 0; return nl;
@@ -393,16 +396,21 @@ char* ReplaceDefine(char* lp) {
 					if (*lp == a) {
 						if (!comlin && !comnxtlin) {
 							++rp;
-						} ++lp; break;
+						} 
+						++lp;
+						break;
 					}
 					if (*lp == '\\') {
-						++lp; if (!comlin && !comnxtlin) {
-							  	++rp; *rp = *lp;
-							  }
+						++lp;
+						if (!comlin && !comnxtlin) {
+							++rp;
+							*rp = *lp;
+						}
 					}
 					if (!comlin && !comnxtlin) {
 						++rp;
-					} ++lp;
+					} 
+					++lp;
 				}
 			}
 			continue;
@@ -410,20 +418,27 @@ char* ReplaceDefine(char* lp) {
 
 		if (comlin || comnxtlin) {
 			if (!*lp) {
-				*rp = 0; break;
-			} ++lp; continue;
+				*rp = 0;
+				break;
+			} 
+			++lp; 
+			continue;
 		}
 		if (!isalpha((unsigned char) * lp) && *lp != '_') {
 			if (!(*rp = *lp)) {
 				break;
-			} ++rp; ++lp; continue;
+			} 
+			++rp; 
+			++lp;
+			continue;
 		}
 
 		nid = GetID(lp); dr = 1;
 
 		if (!(ver = DefineTable.Get(nid))) {
 			if (!macrolabp || !(ver = MacroDefineTable.getverv(nid))) {
-				dr = 0; ver = nid;
+				dr = 0; 
+				ver = nid;
 			}
 		}
 
@@ -447,7 +462,8 @@ char* ReplaceDefine(char* lp) {
 			while (a && val) {
 				STRCPY(ver, LINEMAX, a->string); // very danger!
 				/*_COUT val _CMDL "-" _CMDL ver _ENDL;*/ 
-				a = a->next;val--;
+				a = a->next; 
+				val--;
 			}
 			if (val && !a) {
 				Error("Cell of array not found", 0, CATCHALL);break;
@@ -523,9 +539,10 @@ char* ReplaceDefineNext(char* lp) {
 		}
 
 		if (*lp == '"' || *lp == '\'') {
-			a = *lp; if (!comlin && !comnxtlin) {
-					 	*rp = *lp; ++rp;
-					 } ++lp;
+			a = *lp;
+			if (!comlin && !comnxtlin) {
+				*rp = *lp; ++rp;
+			 } ++lp;
 			if (a != '\'' || (*(lp - 2) != 'f' || *(lp - 3) != 'a') && (*(lp - 2) != 'F' && *(lp - 3) != 'A')) {
 				while ('o') {
 					if (!*lp) {

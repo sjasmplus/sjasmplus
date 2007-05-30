@@ -1,4 +1,4 @@
-/* 
+/*
 
   SjASMPlus Z80 Cross Compiler
 
@@ -52,7 +52,7 @@ namespace Options {
 
 	CStringsList* IncludeDirsList = 0;
 
-	
+
 } // eof namespace Options
 //EMemoryType MemoryType = MT_NONE;
 CDevice *Devices = 0;
@@ -77,7 +77,7 @@ int adrdisp = 0,PseudoORG = 0; /* added for spectrum ram */
 char* MemoryRAM, * MemoryPointer; /* added for spectrum ram */
 int MemoryCPage = 0, MemoryPagesCount = 0, StartAddress = 0;
 aint MemorySize = 0;
-int macronummer,lijst,reglenwidth,synerr = 1; 
+int macronummer,lijst,reglenwidth,synerr = 1;
 aint CurAddress,AddressOfMAP,CurrentGlobalLine,CurrentLocalLine,CurrentLine,destlen,size = (aint) - 1,PreviousErrorLine = (aint) - 1,maxlin = 0,comlin;
 char* CurrentDirectory;
 
@@ -129,10 +129,10 @@ void InitPass(int p) {
 	DefineTable.Init();
 	MacroDefineTable.Init();
 
-	// predefined 
+	// predefined
 	DefineTable.Replace("_SJASMPLUS", "1");
 	DefineTable.Replace("_VERSION", "\"1.07\"");
-	DefineTable.Replace("_RELEASE", "\"RC5\"");
+	DefineTable.Replace("_RELEASE", "\"RC5bf\"");
 	DefineTable.Replace("_ERRORS", "0");
 	DefineTable.Replace("_WARNINGS", "0");
 	//DefineTable.Replace("_MEMORY_TYPE", "\"NONE\"");
@@ -209,7 +209,7 @@ void ExitASM(int p) {
 
 namespace Options {
 #ifdef UNDER_CE
-	void GetOptions(_TCHAR**& argv, int& i) {
+	void GetOptions(_TCHAR* argv[], int& i) {
 #else
 	void GetOptions(char**& argv, int& i) {
 #endif
@@ -219,9 +219,9 @@ namespace Options {
 #ifdef UNDER_CE
 		while (argv[i] && *argv[i] == '-') {
 			if (*(argv[i] + 1) == '-') {
-				p = _tochar(argv[i++] + 2);
+				p = argv[i++] + 2;
 			} else {
-				p = _tochar(argv[i++] + 1);
+				p = argv[i++] + 1;
 			}
 #else
 		while (argv[i] && *argv[i] == '-') {
@@ -252,22 +252,22 @@ namespace Options {
 			} else if (!strcmp(c, "help")) {
 				// nothing
 			} else if (!strcmp(c, "sym")) {
-				if (ps+1) {
+				if ((ps)&&(ps+1)) {
 					STRCPY(SymbolListFName, LINEMAX, ps+1);
 				} else {
-					_COUT "No parameters found in " _CMDL argv[i] _ENDL;
+					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
 				}
 			} else if (!strcmp(c, "lst")) {
-				if (ps+1) {
+				if ((ps)&&(ps+1)) {
 					STRCPY(ListingFName, LINEMAX, ps+1);
 				} else {
-					_COUT "No parameters found in " _CMDL argv[i] _ENDL;
+					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
 				}
 			} else if (!strcmp(c, "exp")) {
-				if (ps+1) {
+				if ((ps)&&(ps+1)) {
 					STRCPY(ExportFName, LINEMAX, ps+1);
 				} else {
-					_COUT "No parameters found in " _CMDL argv[i] _ENDL;
+					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
 				}
 			/*} else if (!strcmp(c, "zxlab")) {
 				if (ps+1) {
@@ -276,10 +276,10 @@ namespace Options {
 					_COUT "No parameters found in " _CMDL argv[i] _ENDL;
 				}*/
 			} else if (!strcmp(c, "raw")) {
-				if (ps+1) {
+				if ((ps)&&(ps+1)) {
 					STRCPY(RAWFName, LINEMAX, ps+1);
 				} else {
-					_COUT "No parameters found in " _CMDL argv[i] _ENDL;
+					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
 				}
 			/*} else if (!strcmp(c, "zxsna")) {
 				if (ps+1) {
@@ -333,10 +333,10 @@ namespace Options {
 			} else if (!strcmp(c, "dirbol")) {
 				IsPseudoOpBOF = 1;
 			} else if (!strcmp(c, "inc")) {
-				if (ps+1) {
+				if ((ps)&&(ps+1)) {
 					IncludeDirsList = new CStringsList(ps+1, IncludeDirsList);
 				} else {
-					_COUT "No parameters found in " _CMDL argv[i] _ENDL;
+					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
 				}
 			} else if (*p == 'i' || *p == 'I') {
 				IncludeDirsList = new CStringsList(p+1, IncludeDirsList);
@@ -368,7 +368,7 @@ int main(int argc, char **argv) {
 	int i = 1;
 
 	if (!Options::HideLogo) {
-		_COUT "SjASMPlus Z80/R800 Cross-Assembler v1.07 RC5 (build 13-05-2007)" _ENDL;
+		_COUT "SjASMPlus Z80/R800 Cross-Assembler v1.07 RC5bf (build 31-05-2007)" _ENDL;
 	}
 	if (argc == 1) {
 		//MessageBox (NULL, TEXT ("No params"), TEXT ("SjASMPlus"), MB_OK | MB_ICONINFORMATION);
@@ -428,7 +428,7 @@ int main(int argc, char **argv) {
 	//MessageBox (NULL, TEXT ("D"), TEXT ("SjASMPlus"), MB_OK | MB_ICONINFORMATION);
 
 	tolua_sjasm_open(LUA);
-    
+
 	//MessageBox (NULL, TEXT ("E"), TEXT ("SjASMPlus"), MB_OK | MB_ICONINFORMATION);
 	// init vars
 	Options::DestionationFName[0] = 0;
@@ -462,9 +462,9 @@ int main(int argc, char **argv) {
 #endif
 		}
 	}
-	
+
 	if (!SourceFNames[0][0]) {
-		_COUT "No inputfile(s)" _ENDL; 
+		_COUT "No inputfile(s)" _ENDL;
 #ifdef UNDER_CE
 		return 0;
 #else
@@ -491,7 +491,7 @@ int main(int argc, char **argv) {
 		CheckPage();
 	}*/
 	base_encoding = ConvertEncoding;
-	
+
 	// init first pass
 	InitPass(1);
 
@@ -509,7 +509,7 @@ int main(int argc, char **argv) {
 
 	do {
 		pass++;
-		
+
 		/*if (Options::MemoryType) {
 			InitRAM();
 		}*/
@@ -529,7 +529,7 @@ int main(int argc, char **argv) {
 
 		if (pass != LASTPASS) {
 			_COUT "Pass " _CMDL pass _CMDL " complete (" _CMDL ErrorCount _CMDL " errors)" _ENDL;
-		} else { 
+		} else {
 			_COUT "Pass 3 complete" _ENDL;
 			Close();
 		}
@@ -540,7 +540,7 @@ int main(int argc, char **argv) {
 	pass = 9999; /* added for detect end of compiling */
 	if (Options::AddLabelListing) {
 		LabelTable.Dump();
-	} 
+	}
 
 	if (Options::UnrealLabelListFName[0]) {
 		LabelTable.DumpForUnreal();
@@ -553,7 +553,7 @@ int main(int argc, char **argv) {
 		if (StartAddress) {
 			SaveSNA_ZX(Options::ZX_SnapshotFName, StartAddress);
 		} else {
-			Warning("Snapshot not saved, because start address not found. Use END <Address> pseudo-op. Also you can use SAVESNA directive.", 0, ALL); 
+			Warning("Snapshot not saved, because start address not found. Use END <Address> pseudo-op. Also you can use SAVESNA directive.", 0, ALL);
 		}
 	}*/
 

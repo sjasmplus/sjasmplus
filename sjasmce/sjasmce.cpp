@@ -13,14 +13,18 @@
 void (*WriteUnicodeString)(wchar_t* String);
 void (*WriteEOF)(void);
 
-int SJASMCompileFiles() {
+int SJASMCompileFiles(int argc, wchar_t* argv[]) {
 	/*WriteUnicodeString(L"START");
 	_TCHAR* files[2];
 	files[0] = _totchar("programname");
 	files[1] = _totchar("\\My Documents\\SjASMPlus\\test.asm");
 	main(2, files);
 	WriteUnicodeString(L"STOP");*/
+	
+	/*for (int i=0;i<argc;i++) {
 
+	}*/
+	main(argc, argv);
 	return 0;
 }
 

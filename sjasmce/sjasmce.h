@@ -10,7 +10,7 @@
 #define SJASMCE_API __declspec(dllimport)
 #endif
 
-SJASMCE_API int SJASMCompileFiles(void);
+SJASMCE_API int SJASMCompileFiles(int argc, wchar_t* argv[]);
 
 SJASMCE_API void SJASMConsoleWriteUnicodeStringCallback(void (*Function)(wchar_t*));
 SJASMCE_API void SJASMConsoleWriteEOFCallback(void (*Function)(void));
