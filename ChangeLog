@@ -1,3 +1,12 @@
+2007-05-31  Aprisobal  <my@aprisobal.by>
+
+	* VERSION: 1.07 RC5bf
+	* Bugfix patches by Ric Hohne.
+	* Important bugfix of memory leak.
+	* Bugfix of strange crashes at several machines.
+	* Added yet another sample for built-in LUA engine. See end of this file.
+	* Added sources of CosmoCubes demo to the "examples" directory.
+
 2007-05-13  Aprisobal  <my@aprisobal.by>
 
 	* VERSION: 1.07 RC5
