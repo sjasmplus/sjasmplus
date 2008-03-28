@@ -669,7 +669,7 @@ void ParseLabel() {
 	IsLabelNotFound = 0;
 	if (isdigit((unsigned char) * tp)) {
 		if (NeedEQU() || NeedDEFL() || NeedField()) {
-			Error("Numberlabels only allowed as addresslabels", 0); 
+			Error("Number labels only allowed as address labels", 0); 
 			return;
 		}
 		val = atoi(tp); 
@@ -842,39 +842,36 @@ void ParseLine(bool parselabels) {
 
 /* added */
 void ParseLineSafe(bool parselabels) {
-	char* tmp, * tmp2;
+	char* tmp = NULL, * tmp2 = NULL;
 	char* rp = lp;
-	if (sline[0]) {
+	if (sline[0] > 0) {
 		tmp = STRDUP(sline);
 		if (tmp == NULL) {
 			Error("No enough memory!", 0, FATAL);
 		}
-	} else {
-		tmp = NULL;
 	}
-	if (sline2[0]) {
+	if (sline2[0] > 0) {
 		tmp2 = STRDUP(sline2);
 		if (tmp2 == NULL) {
 			Error("No enough memory!", 0, FATAL);
 		}
-	} else {
-		tmp2 = NULL;
 	}
 
+	CompiledCurrentLine++;
 	ParseLine(parselabels);
 
 	*sline = 0;
 	*sline2 = 0;
 
-	if (tmp2) {
+	if (tmp2 != NULL) {
 		STRCPY(sline2, LINEMAX2, tmp2);
+		delete[] tmp2;
 	}
-	if (tmp) {
+	if (tmp != NULL) {
 		STRCPY(sline, LINEMAX2, tmp);
+		delete[] tmp;
 	}
 	lp = rp;
-	delete[] tmp;
-	delete[] tmp2;
 }
 
 void ParseStructLabel(CStructure* st) {
@@ -894,7 +891,7 @@ void ParseStructLabel(CStructure* st) {
 			 }
 	tp = temp; SkipBlanks();
 	if (isdigit((unsigned char) * tp)) {
-		Error("[STRUCT] Numberlabels not allowed within structs", 0); return;
+		Error("[STRUCT] Number labels not allowed within structs", 0); return;
 	}
 	PreviousIsLabel = STRDUP(tp);
 	if (PreviousIsLabel == NULL) {
@@ -985,9 +982,10 @@ void ParseStructLine(CStructure* st) {
 	if (comlin) {
 		comlin += comnxtlin; return;
 	}
-	comlin += comnxtlin; if (!*lp) {
-						 	return;
-						 }
+	comlin += comnxtlin;
+	if (!*lp) {
+		return;
+	}
 	ParseStructLabel(st); if (SkipBlanks()) {
 						  	return;
 						  }

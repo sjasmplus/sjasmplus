@@ -78,7 +78,11 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 		//*(Device->GetPage(3)->RAM+0x3F3a) = char(start >> 8);
 	} else {
 		snbuf[23] = 0x00; //sp
-		snbuf[24] = 0x60; //sp
+		snbuf[24] = 0x40; //sp
+
+		Device->GetPage(5)->RAM[0] = 0xC3; // JP
+		Device->GetPage(5)->RAM[1] = char(start & 0x00FF); //pc
+		Device->GetPage(5)->RAM[2] = char(start >> 8); //pc
 	}
 	snbuf[25] = 1; //im 1
 	snbuf[26] = 7; //border 7

@@ -290,7 +290,7 @@ int SetDevice(char *id) {
 				DeviceScorpion256(dev, parent);
 			} else if (cmphstr(id, "atmturbo512")) {
 				DeviceATMTurbo512(dev, parent);
-			} else if (cmphstr(id, "pentagon1024")) {
+			} else if (cmphstr(id, "pentagon1024") || cmphstr(id, "atmturbo1024") || cmphstr(id, "scorpion1024")) {
 				DevicePentagon1024(dev, parent);
 			} else {
 				return false;
@@ -301,6 +301,8 @@ int SetDevice(char *id) {
 
 			DeviceID = (*dev)->ID;
 			Device = (*dev);
+
+			CheckPage();
 		}
 	}
 

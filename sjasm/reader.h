@@ -41,10 +41,10 @@ int comma(char*& p);
 int oparen(char*& p, char c);
 int cparen(char*& p);
 char* getparen(char* p);
-int check8(aint val); /* changes applied from SjASM 0.39g */
+int check8(aint val, bool error=true); /* changes applied from SjASM 0.39g */
 int check8o(long val); /* changes applied from SjASM 0.39g */
-int check16(aint val); /* changes applied from SjASM 0.39g */
-int check24(aint val); /* changes applied from SjASM 0.39g */
+int check16(aint val, bool error=true); /* changes applied from SjASM 0.39g */
+int check24(aint val, bool error=true); /* changes applied from SjASM 0.39g */
 int need(char*& p, char c);
 int need(char*& p, char* c);
 int needa(char*& p, char* c1, int r1, char* c2 = 0, int r2 = 0, char* c3 = 0, int r3 = 0);
@@ -54,7 +54,7 @@ int GetCharConstChar(char*& op, aint& val);
 int GetCharConstCharSingle(char*& op, aint& val); /* added */
 int GetBytes(char*& p, int e[], int add, int dc);
 int cmphstr(char*& p1, char* p2);
-char* GetFileName(char*& p);
+char* GetFileName(char*& p, bool convertslashes=false);
 char* GetHobetaFileName(char*& p); /* added */
 int needcomma(char*& p);
 int needbparen(char*& p);

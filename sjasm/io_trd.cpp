@@ -1,4 +1,4 @@
-/* 
+/*
 
   SjASMPlus Z80 Cross Compiler
 
@@ -156,10 +156,12 @@ int TRD_AddFile(char* fname, char* fhobname, int start, int length) {
 	for (i = 0; i != 9; hdr[i++] = 0x20) {
 		;
 	}
-	for (i = 0; i != 9; ++i) {
+	//for (i = 0; i != 9; ++i) {
+	for (i = 0; i < 9; ++i) {
+
 		if (*(fhobname + i) == 0) {
 			break;
-		} 
+		}
 		if (*(fhobname + i) != '.') {
 			hdr[i] = *(fhobname + i); continue;
 		} else if (*(fhobname + i + 1)) {
@@ -168,13 +170,19 @@ int TRD_AddFile(char* fname, char* fhobname, int start, int length) {
 		break;
 	}
 
-	if (hdr[8] == 'B') {
-		hdr[0x09] = (unsigned char)(length & 0xff);
-		hdr[0x0a] = (unsigned char)(length >> 8);
+	if (*(fhobname + i + 2) != 0 && *(fhobname + i + 3) != 0) {
+		hdr[0x09] = *(fhobname + i + 2);
+		hdr[0x0a] = *(fhobname + i + 3);
 	} else {
-		hdr[0x09] = (unsigned char)(start & 0xff);
-		hdr[0x0a] = (unsigned char)(start >> 8);
+		if (hdr[8] == 'B') {
+			hdr[0x09] = (unsigned char)(length & 0xff);
+			hdr[0x0a] = (unsigned char)(length >> 8);
+		} else {
+			hdr[0x09] = (unsigned char)(start & 0xff);
+			hdr[0x0a] = (unsigned char)(start >> 8);
+		}
 	}
+
 	hdr[0x0b] = (unsigned char)(length & 0xff);
 	hdr[0x0c] = (unsigned char)(length >> 8);
 	if (hdr[0x0b] == 0) {
@@ -193,7 +201,7 @@ int TRD_AddFile(char* fname, char* fhobname, int start, int length) {
 		Error("Write error", fname, CATCHALL); return 0;
 	}
 
-	trd[0] += hdr[0x0d]; 
+	trd[0] += hdr[0x0d];
 	if (trd[0] > 15) {
 		trd[1] += (trd[0] >> 4); trd[0] = (trd[0] & 15);
 	}

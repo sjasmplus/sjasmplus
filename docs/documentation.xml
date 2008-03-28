@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
-  <title>SjASMPlus 1.07 Documentation [31.05.2007]</title>
+  <title>SjASMPlus 1.07 Documentation [29.03.2008]</title>
 
   <chapter>
     <title>Introduction</title>
@@ -108,13 +108,23 @@
 
           <listitem>
             <para><emphasis>Krystian Wlosek
-            &lt;kwlosek(at)gmail.com&gt;</emphasis> - additional programming,
-            Linux;</para>
+            &lt;kwlosek(at)gmail.com&gt;</emphasis> - bug fix patches, Linux
+            makefile;</para>
           </listitem>
 
           <listitem>
             <para><emphasis>Ric Horne &lt;Ric.Hohne@eads-ts.com&gt;</emphasis>
             - bug fix patches.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>Breeze &lt;breeze@tut.by&gt;</emphasis> - bug fix
+            patches.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>psndcj &lt;psndcj.tbk@gmail.com&gt;</emphasis> -
+            beta-testing.</para>
           </listitem>
         </itemizedlist></para>
 
@@ -128,7 +138,7 @@
       <para>WWW: <ulink
       url="http://sjasmplus.sourceforge.net">http://sjasmplus.sourceforge.net</ulink></para>
 
-      <para>E-Mail: aprisobal(at)tut.by or aprisobal(at)gmail.com</para>
+      <para>E-Mail: my@aprisobal.by</para>
     </section>
 
     <section>
@@ -136,10 +146,22 @@
 
       <para><variablelist>
           <varlistentry>
-            <term>31.05.2006 - 1.07 RC5bf</term>
+            <term>27.03.2008 - 1.07 RC6</term>
 
             <listitem>
-              <para><programlisting>- Applied bugfix patches by Ric Hohne.
+              <para><programlisting>- Applied bugfix patches for SAVEHOB/SAVETRD pseudo-ops by Breeze.
+- Fixed memory leak in line parsing routine
+- Fixed 48k SNA snapshots saving routine
+- Added missing INF command 
+- Fixed code parser's invalid addressing of temporary labels in macros  </programlisting></para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>31.05.2007 - 1.07 RC5bf</term>
+
+            <listitem>
+              <para><programlisting>- Bugfix patches by Ric Hohne.
 - Important bugfix of memory leak.
 - Bugfix of strange crashes at several machines.
 - Added yet another sample for built-in LUA engine. See end of this file.
@@ -148,7 +170,7 @@
           </varlistentry>
 
           <varlistentry>
-            <term>13.05.2006 - 1.07 RC5</term>
+            <term>13.05.2007 - 1.07 RC5</term>
 
             <listitem>
               <para><programlisting>- ALIGN has new optional parameter.
@@ -210,13 +232,13 @@
 
             <listitem>
               <para><programlisting>- 3-pass design 
-- built-in Lua scripting engine 
-- changed command line keys 
-- documentation converted to HTML. 
-- added new directives: DEVICE, SLOT, SHELLEXEC 
-- added predefined constanst: _SJASMPLUS=1, _ERRORS and other 
-- changed output log format. 
-- and many many more.</programlisting></para>
+- Built-in Lua scripting engine 
+- Changed command line keys 
+- Documentation converted to HTML. 
+- Added new directives: DEVICE, SLOT, SHELLEXEC 
+- Added predefined constanst: _SJASMPLUS=1, _ERRORS and other 
+- Changed output log format. 
+- And many many more.</programlisting></para>
             </listitem>
           </varlistentry>
         </variablelist></para>
@@ -272,7 +294,6 @@
   --lstlab                 Enable label table in listing
   --sym=&lt;filename&gt;         Save symbols list to &lt;filename&gt;
   --exp=&lt;filename&gt;         Save exports to &lt;filename&gt; (see EXPORT pseudo-op)
- By output format (you can use it all in some time):
   --raw=&lt;filename&gt;         Save all output to &lt;filename&gt; ignoring OUTPUT pseudo-ops
   Note: use OUTPUT,LUA/ENDLUA and other pseudo-ops to control output
  Logging:
@@ -1706,8 +1727,8 @@ Kop3  # 6     ; Kop3=16</programlisting></para>
               scripts. See more in the chapter "<link
               linkend="c_lua_scripting">Lua scripting</link>".</para>
 
-              <para>Parameter is optional. It may be:<programlisting>PASS1  -  interpret Lua script in first pass only
-PASS2  -  interpret Lua script in second pass only (why?)
+              <para>Parameter is optional. It may be:<programlisting>PASS1  -  interpret Lua script in first pass only.
+PASS2  -  interpret Lua script in second pass only.
 PASS3  -  interpret Lua script in third pass only. By default.
 ALLPASS  -  interpret Lua script in all passes. It is need, if you generate some Z80 code.</programlisting></para>
 

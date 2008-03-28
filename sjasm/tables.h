@@ -37,6 +37,7 @@ char* AddNewLabel(char*);
 extern char* PreviousIsLabel;
 int GetLabelValue(char*& p, aint& val);
 int GetLocalLabelValue(char*& op, aint& val);
+int IsLabelUsed(char*& p, bool errors=true);
 
 class CLabelTableEntry {
 public:
@@ -53,7 +54,10 @@ public:
 	CLabelTable();
 	int Insert(char*, aint, bool, bool);
 	int Update(char*, aint);
-	int zoek(char*, aint&);
+	int GetValue(char*, aint&);
+	int Find(char*);
+	int Remove(char*);
+	void RemoveAll();
 	void Dump();
 	void DumpForUnreal(); /* added */
 	void DumpSymbols(); /* added from SjASM 0.39g */
@@ -159,7 +163,9 @@ public:
 	void Add(char*, char*, CStringsList* /*added*/);
 	char* Get(char*);
 	int FindDuplicate(char*);
-	int Replace(char*, char*); 
+	int Replace(char*, char*);
+	int Remove(char*);
+	void RemoveAll();
 	CDefineTable() {
 		Init();
 	}

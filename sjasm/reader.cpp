@@ -259,8 +259,8 @@ char* getinstr(char*& p) {
 }
 
 /* changes applied from SjASM 0.39g */
-int check8(aint val) {
-	if (val != (val & 255) && ~val > 127) {
+int check8(aint val, bool error) {
+	if (val != (val & 255) && ~val > 127 && error) {
 		Error("Bytes lost", 0); return 0;
 	}
 	return 1;
@@ -275,16 +275,16 @@ int check8o(long val) {
 }
 
 /* changes applied from SjASM 0.39g */
-int check16(aint val) {
-	if (val != (val & 65535) && ~val > 32767) {
+int check16(aint val, bool error) {
+	if (val != (val & 65535) && ~val > 32767 && error) {
 		Error("Bytes lost", 0); return 0;
 	}
 	return 1;
 }
 
 /* changes applied from SjASM 0.39g */
-int check24(aint val) {
-	if (val != (val & 16777215) && ~val > 8388607) {
+int check24(aint val, bool error) {
+	if (val != (val & 16777215) && ~val > 8388607 && error) {
 		Error("Bytes lost", 0); return 0;
 	}
 	return 1;
@@ -592,7 +592,7 @@ int GetBytes(char*& p, int e[], int add, int dc) {
 }
 
 /* modified */
-char* GetFileName(char*& p) {
+char* GetFileName(char*& p, bool convertslashes) {
 	int o = 0;
 	int o2 = 0;
 	char* fn, * np;
@@ -631,11 +631,11 @@ char* GetFileName(char*& p) {
 	*np = 0; 
 	for (np = fn; *np; ++np) {
 #if defined(WIN32) || defined(UNDER_CE)
-		if (*np == '/') {
+		if (*np == '/' && convertslashes) {
 			*np = '\\';
 		}
 #else
-		if (*np == '\\') {
+		if (*np == '\\' && convertslashes) {
 			*np = '/';
 		}
 #endif

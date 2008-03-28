@@ -1,4 +1,4 @@
-/* 
+/*
 
   SjASMPlus Z80 Cross Compiler
 
@@ -91,12 +91,12 @@ int ParseDirective(bool bol) {
 			Error("No enough memory!", 0, FATAL);
 		}
 		do {
-			STRCPY(line, LINEMAX, pp); 
+			STRCPY(line, LINEMAX, pp);
 			ParseLineSafe();
 		} while (--val);
 		STRCPY(line, LINEMAX, ml);
 		listmacro = olistmacro;
-		donotlist = 1; 
+		donotlist = 1;
 
 		delete[] ml;
 		return 1;
@@ -533,7 +533,7 @@ void dirINCBIN() {
 		if (!comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[INCBIN] Syntax error", bp, CATCHALL); return;
-			} 
+			}
 			if (val < 0) {
 				Error("[INCBIN] Negative values are not allowed", bp); return;
 			}
@@ -542,7 +542,7 @@ void dirINCBIN() {
 		if (comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[INCBIN] Syntax error", bp, CATCHALL); return;
-			} 
+			}
 			if (val < 0) {
 				Error("[INCBIN] Negative values are not allowed", bp); return;
 			}
@@ -566,7 +566,7 @@ void dirINCHOB() {
 		if (!comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[INCHOB] Syntax error", bp, CATCHALL); return;
-			} 
+			}
 			if (val < 0) {
 				Error("[INCHOB] Negative values are not allowed", bp); return;
 			}
@@ -575,7 +575,7 @@ void dirINCHOB() {
 		if (comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[INCHOB] Syntax error", bp, CATCHALL); return;
-			} 
+			}
 			if (val < 0) {
 				Error("[INCHOB] Negative values are not allowed", bp); return;
 			}
@@ -726,7 +726,7 @@ void dirSAVESNA() {
 		Error("[SAVESNA] Device must be ZXSPECTRUM48, ZXSPECTRUM128, PENTAGON128, SCORPION256, ATMTURBO512, PENTAGON1024.", 0);
 		exec = false;
 	}
-	
+
 	aint val;
 	char* fnaam;
 	int start = -1;
@@ -736,7 +736,7 @@ void dirSAVESNA() {
 		if (!comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[SAVESNA] Syntax error", bp, PASS3); return;
-			} 
+			}
 			if (val < 0) {
 				Error("[SAVESNA] Negative values are not allowed", bp, PASS3); return;
 			}
@@ -765,7 +765,7 @@ void dirSAVEBIN() {
 	} else if (pass != LASTPASS) {
 		exec = false;
 	}
-	
+
 	aint val;
 	char* fnaam;
 	int start = -1,length = -1;
@@ -775,7 +775,7 @@ void dirSAVEBIN() {
 		if (!comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[SAVEBIN] Syntax error", bp, PASS3); return;
-			} 
+			}
 			if (val < 0) {
 				Error("[SAVEBIN] Values less than 0000h are not allowed", bp, PASS3); return;
 			} else if (val > 0xFFFF) {
@@ -788,7 +788,7 @@ void dirSAVEBIN() {
 		if (comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[SAVEBIN] Syntax error", bp, PASS3); return;
-			} 
+			}
 			if (val < 0) {
 				Error("[SAVEBIN] Negative values are not allowed", bp, PASS3); return;
 			}
@@ -797,7 +797,7 @@ void dirSAVEBIN() {
 	} else {
 		Error("[SAVEBIN] Syntax error. No parameters", bp, PASS3); return;
 	}
-	
+
 	if (exec && !SaveBinary(fnaam, start, length)) {
 		Error("[SAVEBIN] Error writing file (Disk full?)", bp, CATCHALL); return;
 	}
@@ -836,7 +836,7 @@ void dirSAVEHOB() {
 		if (!comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[SAVEHOB] Syntax error", bp, PASS3); return;
-			} 
+			}
 			if (val < 0x4000) {
 				Error("[SAVEHOB] Values less than 4000h are not allowed", bp, PASS3); return;
 			} else if (val > 0xFFFF) {
@@ -849,7 +849,7 @@ void dirSAVEHOB() {
 		if (comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[SAVEHOB] Syntax error", bp, PASS3); return;
-			} 
+			}
 			if (val < 0) {
 				Error("[SAVEHOB] Negative values are not allowed", bp, PASS3); return;
 			}
@@ -893,7 +893,7 @@ void dirSAVETRD() {
 	} else if (pass != LASTPASS) {
 		exec = false;
 	}
-	
+
 	aint val;
 	char* fnaam, * fnaamh;
 	int start = -1,length = -1;
@@ -914,7 +914,7 @@ void dirSAVETRD() {
 		if (!comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[SAVETRD] Syntax error", bp, PASS3); return;
-			} 
+			}
 			//if (val < 0x4000) {
 			//	Error("[SAVETRD] Values less than 4000h are not allowed", bp, PASS3); return;
 			//} else
@@ -928,7 +928,7 @@ void dirSAVETRD() {
 		if (comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[SAVETRD] Syntax error", bp, PASS3); return;
-			} 
+			}
 			if (val < 0) {
 				Error("[SAVETRD] Negative values are not allowed", bp, PASS3); return;
 			}
@@ -1186,6 +1186,7 @@ void dirOUTPUT() {
 			Error("Syntax error", bp, CATCHALL);
 		}
 	}
+	//Options::NoDestinationFile = false;
 	if (pass == LASTPASS) {
 		NewDest(fnaam, mode);
 	}
@@ -1199,12 +1200,37 @@ void dirDEFINE() {
 	char* id;
 
 	if (!(id = GetID(lp))) {
-		Error("[DEFINE] Illegal define", 0); return;
+		Error("[DEFINE] Illegal syntax", 0); return;
 	}
 
 	DefineTable.Add(id, lp, 0);
 
 	*(lp) = 0;
+}
+
+/* added */
+void dirUNDEFINE() {
+	char* id;
+
+	if (!(id = GetID(lp)) && *lp != '*') {
+		Error("[UNDEFINE] Illegal syntax", 0); return;
+	}
+
+	if (*lp == '*') {
+		lp++;
+		if (pass == PASS1) {
+			LabelTable.RemoveAll();
+		}
+		DefineTable.RemoveAll();
+	} else if (DefineTable.FindDuplicate(id)) {
+		DefineTable.Remove(id);
+	} else if (LabelTable.Find(id)) {
+		if (pass == PASS1) {
+			LabelTable.Remove(id);
+		}
+	} else {
+		Warning("[UNDEFINE] Identifier not found", 0); return;
+	}
 }
 
 /* modified */
@@ -1315,9 +1341,7 @@ void dirIFNDEF() {
 void dirEXPORT() {
 	aint val;
 	char* n, * p;
-	if (pass != LASTPASS) {
-		return;
-	}
+	
 	if (!Options::ExportFName[0]) {
 		STRCPY(Options::ExportFName, LINEMAX, SourceFNames[CurrentSourceFName]);
 		if (!(p = strchr(Options::ExportFName, '.'))) {
@@ -1331,6 +1355,9 @@ void dirEXPORT() {
 	if (!(n = p = GetID(lp))) {
 		Error("[EXPORT] Syntax error", lp, CATCHALL); return;
 	}
+	if (pass != LASTPASS) {
+		return;
+	}
 	IsLabelNotFound = 0;
 
 	GetLabelValue(n, val);
@@ -1340,30 +1367,11 @@ void dirEXPORT() {
 	WriteExp(p, val);
 }
 
-int _printdec(char*& p, aint val) {
-	int size = 0;
-	for (int i = 10000; i != 0; i /= 10) {
-		if (!size) {
-			if (!(val / i)) {
-				continue;
-			}
-		}
-		size++;
-		*(p++) = (char) ((val / i) + '0');
-		val -= (val / i) * i;
-	}
-	if (!size) {
-		*(p++) = '0';++size;
-	}
-	return size;
-}
-
 /* added */
 void dirDISPLAY() {
-	
 	char decprint = 0;
 	char e[LINEMAX];
-	char* e1;
+	char* ep = e;
 	aint val;
 	int t = 0;
 	while (1) {
@@ -1408,24 +1416,36 @@ void dirDISPLAY() {
 			lp++;
 			do {
 				if (!*lp || *lp == '"') {
-					Error("[DISPLAY] Syntax error", line, PASS3); e[t] = 0; return;
+					Error("[DISPLAY] Syntax error", line, PASS3);
+					*ep = 0;
+					return;
 				}
 				if (t == 128) {
-					Error("[DISPLAY] Too many arguments", line, PASS3); e[t] = 0; return;
+					Error("[DISPLAY] Too many arguments", line, PASS3);
+					*ep = 0;
+					return;
 				}
-				GetCharConstChar(lp, val); check8(val); e[t++] = (char) (val & 255);
+				GetCharConstChar(lp, val);
+				check8(val);
+				*(ep++) = (char) (val & 255);
 			} while (*lp != '"');
 			++lp;
 		} else if (*lp == 0x27) {
 		  	lp++;
 			do {
 				if (!*lp || *lp == 0x27) {
-		  			Error("[DISPLAY] Syntax error", line, PASS3); e[t] = 0; return;
+		  			Error("[DISPLAY] Syntax error", line, PASS3);
+					*ep = 0;
+					return;
 				}
 				if (t == LINEMAX - 1) {
-		  			Error("[DISPLAY] Too many arguments", line, PASS3); e[t] = 0; return;
+		  			Error("[DISPLAY] Too many arguments", line, PASS3);
+					*ep = 0;
+					return;
 				}
-		  		GetCharConstCharSingle(lp, val); check8(val); e[t++] = (char) (val & 255);
+		  		GetCharConstCharSingle(lp, val);
+				check8(val);
+				*(ep++) = (char) (val & 255);
 			} while (*lp != 0x27);
 		  	++lp;
 		} else {
@@ -1437,21 +1457,28 @@ void dirDISPLAY() {
 					return;
 				} else {
 		  		  	displayinprocces = 0;
-		  		  	check16(val); 
 					if (decprint == 0 || decprint == 2) {
-		  		  		e[t++] = '0';e[t++] = 'x';PrintHEX16(e1 = &e[0] + t, val);
-		  		  		t += 4;
+		  		  		*(ep++) = '0';
+						*(ep++) = 'x';
+						if (val < 0x1000) {
+							PrintHEX16(ep, val);
+						} else {
+							PrintHEXAlt(ep, val);
+						}
 					}
 					if (decprint == 2) {
-						e[t++] = ',';
+						*(ep++) = ',';
+						*(ep++) = ' ';
 					}
 					if (decprint == 1 || decprint == 2) {
-						t += _printdec(e1 = &e[0] + t, val);
+						SPRINTF1(ep, (int)(&e[0] + LINEMAX - ep), "%d", val);
+						ep += strlen(ep);
 					}
 		  		  	decprint = 0;
 				}
 			} else {
-				Error("[DISPLAY] Syntax error", line, PASS3); return;
+				Error("[DISPLAY] Syntax error", line, PASS3);
+				return;
 			}
 		}
 		SkipBlanks(lp);
@@ -1460,13 +1487,13 @@ void dirDISPLAY() {
 		}
 		++lp;
 	}
-	e[t] = 0;
+	*ep = 0; // end line
 
 	if (pass != LASTPASS) {
 		// do none
 	} else {
 		_COUT "> " _CMDL e _ENDL;
-	}	
+	}
 }
 
 /* modified */
@@ -1503,10 +1530,21 @@ void dirASSERT() {
 }
 
 void dirSHELLEXEC() {
-	char* command;
-	command = GetFileName(lp);
+	char* command = NULL;
+	char* parameters = NULL;
+
+	command = GetFileName(lp, false);
+	if (comma(lp)) {
+		parameters = GetFileName(lp, false);
+	} else {
+		parameters = 0;
+	}
 	if (pass == LASTPASS) {
-		_COUT "Executing " _CMDL command _ENDL;
+		if (parameters) {
+			_COUT "Executing " _CMDL command _CMDL " " _CMDL parameters _ENDL;
+		} else {
+			_COUT "Executing " _CMDL command _ENDL;
+		}
 #if defined(WIN32) && !defined(UNDER_CE)
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
@@ -1514,19 +1552,47 @@ void dirSHELLEXEC() {
 		si.cb = sizeof(si);
 		ZeroMemory( &pi, sizeof(pi) );
 
-		// Start the child process. 
-		if( !CreateProcess( NULL,   // No module name (use command line). 
-			command, // Command line. 
-			NULL,             // Process handle not inheritable. 
-			NULL,             // Thread handle not inheritable. 
-			FALSE,            // Set handle inheritance to FALSE. 
-			0,                // No creation flags. 
-			NULL,             // Use parent's environment block. 
-			NULL,             // Use parent's starting directory. 
-			&si,              // Pointer to STARTUPINFO structure.
-			&pi )             // Pointer to PROCESS_INFORMATION structure.
-		) {
-			Error( "[SHELLEXEC] Execution of command failed", command, PASS3 );
+		// Start the child process.
+		if (parameters) {
+			if( !CreateProcess( command,   // No module name (use command line).
+				parameters, // Command line.
+				NULL,             // Process handle not inheritable.
+				NULL,             // Thread handle not inheritable.
+				TRUE,            // Set handle inheritance to FALSE.
+				0,                // No creation flags.
+				NULL,             // Use parent's environment block.
+				NULL,             // Use parent's starting directory.
+				&si,              // Pointer to STARTUPINFO structure.
+				&pi )             // Pointer to PROCESS_INFORMATION structure.
+				) {
+				temp[0] = 0;
+				STRCAT(temp, LINEMAX, command);
+				STRCAT(temp, LINEMAX, " ");
+				STRCAT(temp, LINEMAX, parameters);
+				Error( "[SHELLEXEC] Execution of command failed", temp, PASS3 );
+			} else {
+				CloseHandle(pi.hThread);
+				WaitForSingleObject(pi.hProcess, 500);
+				CloseHandle(pi.hProcess);
+			}
+		} else {
+			if( !CreateProcess( NULL,   // No module name (use command line).
+				command, // Command line.
+				NULL,             // Process handle not inheritable.
+				NULL,             // Thread handle not inheritable.
+				FALSE,            // Set handle inheritance to FALSE.
+				0,                // No creation flags.
+				NULL,             // Use parent's environment block.
+				NULL,             // Use parent's starting directory.
+				&si,              // Pointer to STARTUPINFO structure.
+				&pi )             // Pointer to PROCESS_INFORMATION structure.
+				) {
+				Error( "[SHELLEXEC] Execution of command failed", command, PASS3 );
+			} else {
+				CloseHandle(pi.hThread);
+				WaitForSingleObject(pi.hProcess, 500);
+				CloseHandle(pi.hProcess);
+			}
 		}
 		//system(command);
 		///WinExec ( command, SW_SHOWNORMAL );
@@ -1561,7 +1627,7 @@ void dirSHELLEXEC() {
 	char* command;
 	command = GetFileName(lp);
 	if (pass == LASTPASS) {
-		
+
 	}
 	delete[] command;
 }*/
@@ -1575,7 +1641,7 @@ void dirSTRUCT() {
 	if (*lp == '@') {
 		++lp; global = 1;
 	}
-	
+
 	if (!(naam = GetID(lp)) || !strlen(naam)) {
 		Error("[STRUCT] Illegal structure name", 0, PASS1); return;
 	}
@@ -1695,7 +1761,7 @@ void dirEDUP() {
 	CStringsList* s;
 	olistmacro = listmacro;
 	listmacro = 1;
-	ml = STRDUP(line); 
+	ml = STRDUP(line);
 	if (ml == NULL) {
 		Error("[EDUP/ENDR] No enough memory", 0, FATAL);
 	}
@@ -1704,14 +1770,14 @@ void dirEDUP() {
 	while (dup.dupcount--) {
 		CurrentGlobalLine = dup.CurrentGlobalLine;
 		CurrentLocalLine = dup.CurrentLocalLine;
-		s = dup.lines; 
+		s = dup.lines;
 		while (s) {
 			STRCPY(line, LINEMAX, s->string);
 			s = s->next;
 			ParseLineSafe();
 			CurrentLocalLine++;
 			CurrentGlobalLine++;
-			CurrentLine++;
+			CompiledCurrentLine++;
 		}
 	}
 	RepeatStack.pop();
@@ -1807,16 +1873,16 @@ void _lua_showerror() {
 	*(pos++) = 0;
 	//_COUT err _ENDL;
 	ln = atoi(err) + LuaLine;
-			
+
 	// print error and other actions
 	err = ErrorLine;
 	SPRINTF3(err, LINEMAX2, "%s(%lu): error: [LUA]%s", filename, ln, pos);
-			
+
 	if (!strchr(err, '\n')) {
 		STRCAT(err, LINEMAX2, "\n");
 	}
 
-	if (FP_ListingFile) {
+	if (FP_ListingFile != NULL) {
 		fputs(ErrorLine, FP_ListingFile);
 	}
 	_COUT ErrorLine _END;
@@ -1906,7 +1972,7 @@ void dirLUA() {
 			if (execute) {
 				if ((bp-buff) + (rp-lp-6) < 32760 && (rp-lp-6) > 0) {
 					STRNCPY(bp, 32768-(bp-buff)+1, lp, rp-lp-6);
-					bp += strlen(lp);
+					bp += rp-lp-6;
 					*(bp++) = '\n';
 					*(bp) = 0;
 				} else {
@@ -1928,13 +1994,12 @@ void dirLUA() {
 				return;
 			}
 		}
-		
+
 		ListFileSkip(line);
 	}
 
 	if (execute) {
 		LuaLine = ln;
-		//_COUT buff _ENDL;
 		luaMF.text = buff;
 		luaMF.size = strlen(luaMF.text);
 		error = lua_load(LUA, readMemFile, &luaMF, "script") || lua_pcall(LUA, 0, 0, 0);
@@ -1958,7 +2023,7 @@ void dirINCLUDELUA() {
 	char* fnaam;
 	fnaam = GetFileName(lp);
 	int error;
-	
+
 	if (pass != 1) {
 		return;
 	}
@@ -2040,6 +2105,7 @@ void InsertDirectives() {
 	DirectivesTable.insertd("ufnused", dirIFNUSED); /* added */
 	DirectivesTable.insertd("output", dirOUTPUT);
 	DirectivesTable.insertd("define", dirDEFINE);
+	DirectivesTable.insertd("undefine", dirUNDEFINE);
 	DirectivesTable.insertd("defarray", dirDEFARRAY); /* added */
 	DirectivesTable.insertd("ifdef", dirIFDEF);
 	DirectivesTable.insertd("ifndef", dirIFNDEF);
@@ -2090,7 +2156,7 @@ void InsertDirectives() {
 	DirectivesTable_dup.insertd("edup", dirEDUP); /* added */
 	DirectivesTable_dup.insertd("endm", dirENDM); /* added */
 	DirectivesTable_dup.insertd("endr", dirEDUP); /* added */
-	DirectivesTable_dup.insertd("rept", dirDUP); /* added */ 
+	DirectivesTable_dup.insertd("rept", dirDUP); /* added */
 }
 
 bool LuaSetPage(aint n) {

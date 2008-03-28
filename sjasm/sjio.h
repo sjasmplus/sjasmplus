@@ -63,6 +63,7 @@ void ReadBufLine(bool Parse=true, bool SplitByColon=true); /* added */
 void OpenDest();
 void PrintHEX32(char*& p, aint h);
 void PrintHEX16(char*& p, aint h); /* added */
+void PrintHEXAlt(char*& p, aint h); /* added */
 char* GetPath(char* fname, TCHAR** filenamebegin); /* added */
 void BinIncFile(char* fname, int offset, int length);
 int SaveRAM(FILE*, int, int);

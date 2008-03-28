@@ -95,7 +95,7 @@ extern "C" {
 #endif
 
 // global defines
-#define LINEMAX 1024
+#define LINEMAX 2048
 #define LINEMAX2 LINEMAX*2
 #ifdef DOS
 #define LABMAX 32

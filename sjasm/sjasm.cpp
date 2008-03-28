@@ -49,6 +49,7 @@ namespace Options {
 	bool IsShowFullPath = 0;
 	bool AddLabelListing = 0;
 	bool HideLogo = 0;
+	bool NoDestinationFile = 0;
 
 	CStringsList* IncludeDirsList = 0;
 
@@ -66,19 +67,21 @@ char filename[LINEMAX], * lp, line[LINEMAX], temp[LINEMAX], * tp, pline[LINEMAX2
 char mline[LINEMAX2], sline[LINEMAX2], sline2[LINEMAX2];
 
 char SourceFNames[128][MAX_PATH];
-int CurrentSourceFName=0;
-int SourceFNamesCount=0;
+int CurrentSourceFName = 0;
+int SourceFNamesCount = 0;
 
 bool displayerror,displayinprocces = 0;
 int ConvertEncoding = ENCWIN; /* added */
 
-int pass,IsLabelNotFound,ErrorCount,WarningCount,IncludeLevel = -1,IsRunning,IsListingFileOpened = 1,donotlist,listdata,listmacro;
+int pass = 0, IsLabelNotFound = 0, ErrorCount = 0, WarningCount = 0, IncludeLevel = -1;
+int IsRunning = 0, IsListingFileOpened = 1, donotlist = 0,listdata  = 0,listmacro  = 0;
 int adrdisp = 0,PseudoORG = 0; /* added for spectrum ram */
 char* MemoryRAM, * MemoryPointer; /* added for spectrum ram */
 int MemoryCPage = 0, MemoryPagesCount = 0, StartAddress = 0;
 aint MemorySize = 0;
-int macronummer,lijst,reglenwidth,synerr = 1;
-aint CurAddress,AddressOfMAP,CurrentGlobalLine,CurrentLocalLine,CurrentLine,destlen,size = (aint) - 1,PreviousErrorLine = (aint) - 1,maxlin = 0,comlin;
+int macronummer = 0, lijst = 0, reglenwidth = 0, synerr = 1;
+aint CurAddress = 0, AddressOfMAP = 0, CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;
+aint destlen = 0, size = (aint)-1,PreviousErrorLine = (aint)-1, maxlin = 0, comlin = 0;
 char* CurrentDirectory;
 
 void (*GetCPUInstruction)(void);
@@ -120,7 +123,10 @@ void InitPass(int p) {
 		reglenwidth = 7;
 	}
 	ModuleName = 0; vorlabp = "_"; macrolabp = 0; listmacro = 0;
-	pass = p; CurAddress = AddressOfMAP = 0; IsRunning = 1; CurrentGlobalLine = CurrentLocalLine = CurrentLine = 0;
+	pass = p;
+	CurAddress = AddressOfMAP = 0;
+	IsRunning = 1;
+	CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
 	PseudoORG = 0; adrdisp = 0; /* added */
 	PreviousAddress = 0; epadres = 0; macronummer = 0; lijst = 0; comlin = 0;
 	ModuleList = 0;
@@ -132,11 +138,9 @@ void InitPass(int p) {
 	// predefined
 	DefineTable.Replace("_SJASMPLUS", "1");
 	DefineTable.Replace("_VERSION", "\"1.07\"");
-	DefineTable.Replace("_RELEASE", "\"RC5bf\"");
+	DefineTable.Replace("_RELEASE", "6");
 	DefineTable.Replace("_ERRORS", "0");
 	DefineTable.Replace("_WARNINGS", "0");
-	//DefineTable.Replace("_MEMORY_TYPE", "\"NONE\"");
-	//DefineTable.Replace("_CURRENT_OUTPUT_FILE", "\"aaaa\"");
 }
 
 /* added */
@@ -214,7 +218,6 @@ namespace Options {
 	void GetOptions(char**& argv, int& i) {
 #endif
 		char* p, *ps;
-		//_COUT "Z";
 		char c[LINEMAX];
 #ifdef UNDER_CE
 		while (argv[i] && *argv[i] == '-') {
@@ -231,20 +234,12 @@ namespace Options {
 				p = argv[i++] + 1;
 			}
 #endif
-			//_COUT "C0";
 			memset(c, 0, LINEMAX); //todo
-			//_COUT "C1";
 			ps = STRSTR(p, "=");
-			//_COUT "C2";
 			if (ps != NULL) {
-				//_COUT "B1";
 				STRNCPY(c, LINEMAX, p, (int)(ps - p));
-				//_COUT c _CMDL "B2";
 			} else {
-				//c = *p++;
-				//_COUT "A1";
 				STRCPY(c, LINEMAX, p);
-				//_COUT "A2";
 			}
 
 			if (!strcmp(c, "lstlab")) {
@@ -281,18 +276,6 @@ namespace Options {
 				} else {
 					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
 				}
-			/*} else if (!strcmp(c, "zxsna")) {
-				if (ps+1) {
-					STRCPY(ZX_SnapshotFName, LINEMAX, ps+1);
-				} else {
-					_COUT "No parameters found in " _CMDL argv[i] _ENDL;
-				}*/
-			/*} else if (!strcmp(c, "zxtap")) {
-				if (ps+1) {
-					STRCPY(ZX_TapeFName, LINEMAX, ps+1);
-				} else {
-					_COUT "No parameters found in " _CMDL argv[i] _ENDL;
-				}*/
 			} else if (!strcmp(c, "fullpath")) {
 				IsShowFullPath = 1;
 			} else if (!strcmp(c, "reversepop")) {
@@ -301,35 +284,6 @@ namespace Options {
 				HideLogo = 1;
 			} else if (!strcmp(c, "dos866")) {
 				ConvertEncoding = ENCDOS;
-			/*} else if (!strcmp(c, "memtype")) {
-				if (ps+1) {
-					STRCPY(c, LINEMAX, ps+1);
-					if (!strcmp(c, "none")) {
-						MemoryType = MT_NONE;
-					} else if (!strcmp(c, "zx48")) {
-						MemoryType = MT_ZX48;
-					} else if (!strcmp(c, "zx128")) {
-						MemoryType = MT_ZX128;
-					} else if (!strcmp(c, "zx512")) {
-						MemoryType = MT_ZX512;
-					} else {
-						_COUT "Unrecognized parameter: " _CMDL c _ENDL;
-					}
-				} else {
-					_COUT "No parameters found in " _CMDL argv[i] _ENDL;
-				}*/
-			/*} else if (!strcmp(c, "ram")) {
-				if (ps+1) {
-					STRCPY(c, LINEMAX, ps+1);
-					if (!strcmp(c, "none")) {
-						MemorySize = 0;
-					} else {
-						MemorySize = atoi(c);
-						//_COUT "Unrecognized parameter: " _CMDL c _ENDL;
-					}
-				} else {
-					_COUT "No parameters found in " _CMDL argv[i] _ENDL;
-				}*/
 			} else if (!strcmp(c, "dirbol")) {
 				IsPseudoOpBOF = 1;
 			} else if (!strcmp(c, "inc")) {
@@ -344,7 +298,6 @@ namespace Options {
 				_COUT "Unrecognized option: " _CMDL c _ENDL;
 			}
 		}
-		///_COUT "X" _ENDL;
 	}
 }
 
@@ -368,12 +321,11 @@ int main(int argc, char **argv) {
 	int i = 1;
 
 	if (!Options::HideLogo) {
-		_COUT "SjASMPlus Z80/R800 Cross-Assembler v1.07 RC5bf (build 31-05-2007)" _ENDL;
+		_COUT "SjASMPlus Z80/R800 Cross-Assembler v1.07 RC6 (build 29-03-2008)" _ENDL;
 	}
 	if (argc == 1) {
-		//MessageBox (NULL, TEXT ("No params"), TEXT ("SjASMPlus"), MB_OK | MB_ICONINFORMATION);
 		_COUT "based on code of SjASM by Sjoerd Mastijn / http://www.xl2s.tk /" _ENDL;
-		_COUT "Copyright 2004-2007 by Aprisobal / http://sjasmplus.sf.net / aprisobal@tut.by /" _ENDL;
+		_COUT "Copyright 2004-2008 by Aprisobal / http://sjasmplus.sf.net / my@aprisobal.by /" _ENDL;
 		_COUT "\nUsage:\nsjasmplus [options] sourcefile(s)" _ENDL;
 		_COUT "\nOption flags as follows:" _ENDL;
 		_COUT "  --help                   Help information (you see it)" _ENDL;
@@ -384,22 +336,15 @@ int main(int argc, char **argv) {
 		_COUT "  --sym=<filename>         Save symbols list to <filename>" _ENDL;
 		_COUT "  --exp=<filename>         Save exports to <filename> (see EXPORT pseudo-op)" _ENDL;
 		//_COUT "  --autoreloc              Switch to autorelocation mode. See more in docs." _ENDL;
-		_COUT " By output format (you can use it all in some time):" _ENDL;
+		//_COUT " By output format (you can use it all in some time):" _ENDL;
 		_COUT "  --raw=<filename>         Save all output to <filename> ignoring OUTPUT pseudo-ops" _ENDL;
-		//_COUT "  --zxsna=<filename>       Save output to ZX-Spectrum 48/128 snapshot to <filename> (only if --mem)" _ENDL;
-		//_COUT "  --zxtap=<filename>       Save output to ZX-Spectrum 48/128 tape image to <filename> (only if --mem)" _ENDL;
-		//_COUT "  --zxtrd=<filename>       Save output to ZX-Spectrum disc image to <filename> (only if --mem)" _ENDL;
-		_COUT "  Note: use OUTPUT,LUA/ENDLUA and other pseudo-ops to control output" _ENDL;
-		//_COUT " By memory:" _ENDL;
-		//_COUT "  --mem=none (default)     Standard mode. Output controled by OUTPUT pseudo-op" _ENDL;
-		//_COUT "  --mem=64..4096           Switch to 64..4096kb memory mode" _ENDL;
+		//_COUT "  --nooutput               Do not generate *.out file" _ENDL;
+		_COUT "  Note: use OUTPUT, LUA/ENDLUA and other pseudo-ops to control output" _ENDL;
 		_COUT " Logging:" _ENDL;
 		_COUT "  --nologo                 Do not show startup message" _ENDL;
 		_COUT "  --msg=error              Show only error messages" _ENDL;
 		_COUT "  --msg=all                Show all messages (by default)" _ENDL;
 		_COUT "  --fullpath               Show full path to error file" _ENDL;
-		//_COUT " By functions from old 1.06 tree:" _ENDL;
-		//_COUT "  --zxlab=<filename>       Save labels list for Unreal ZX-Spectrum emulator to <filename>" _ENDL;
 		_COUT " Other:" _ENDL;
 		_COUT "  --reversepop             Enable reverse POP order (as in base SjASM version)" _ENDL;
 		_COUT "  --dirbol                 Enable processing directives from the beginning of line" _ENDL;
@@ -411,25 +356,14 @@ int main(int argc, char **argv) {
 #endif
 	}
 
-	//MessageBox (NULL, TEXT ("Have params"), TEXT ("SjASMPlus"), MB_OK | MB_ICONINFORMATION);
-
 	// init LUA
 	LUA = lua_open();
-
-	//MessageBox (NULL, TEXT ("A"), TEXT ("SjASMPlus"), MB_OK | MB_ICONINFORMATION);
-
 	lua_atpanic(LUA, (lua_CFunction)LuaFatalError);
-	//MessageBox (NULL, TEXT ("B"), TEXT ("SjASMPlus"), MB_OK | MB_ICONINFORMATION);
-
 	luaL_openlibs(LUA);
-	//MessageBox (NULL, TEXT ("C"), TEXT ("SjASMPlus"), MB_OK | MB_ICONINFORMATION);
 	luaopen_pack(LUA);
-
-	//MessageBox (NULL, TEXT ("D"), TEXT ("SjASMPlus"), MB_OK | MB_ICONINFORMATION);
 
 	tolua_sjasm_open(LUA);
 
-	//MessageBox (NULL, TEXT ("E"), TEXT ("SjASMPlus"), MB_OK | MB_ICONINFORMATION);
 	// init vars
 	Options::DestionationFName[0] = 0;
 	Options::ListingFName[0] = 0;
@@ -437,6 +371,7 @@ int main(int argc, char **argv) {
 	Options::SymbolListFName[0] = 0;
 	Options::ExportFName[0] = 0;
 	Options::RAWFName[0] = 0;
+	Options::NoDestinationFile = true; // not *.out files by default
 
 	// start counter
 	long dwStart;
@@ -449,14 +384,10 @@ int main(int argc, char **argv) {
 	// get arguments
 	Options::IncludeDirsList = new CStringsList(".", Options::IncludeDirsList);
 	while (argv[i]) {
-		//WriteOutput(argv[i]);
-		//WriteOutput("GetOption");
 		Options::GetOptions(argv, i);
 		if (argv[i]) {
 #ifdef UNDER_CE
-			//WriteOutput("Copy");
 			STRCPY(SourceFNames[SourceFNamesCount++], LINEMAX, _tochar(argv[i++]));
-			//WriteOutput("OK");
 #else
 			STRCPY(SourceFNames[SourceFNamesCount++], LINEMAX, argv[i++]);
 #endif
@@ -486,10 +417,6 @@ int main(int argc, char **argv) {
 	InitCPU();
 
 	// if memory type != none
-	/*if (DeviceID) {
-		CurAddress = 0x8000; // set default address, because <0x4000 not allowed
-		CheckPage();
-	}*/
 	base_encoding = ConvertEncoding;
 
 	// init first pass
@@ -510,10 +437,6 @@ int main(int argc, char **argv) {
 	do {
 		pass++;
 
-		/*if (Options::MemoryType) {
-			InitRAM();
-		}*/
-
 		InitPass(pass);
 
 		if (pass == LASTPASS) {
@@ -533,8 +456,6 @@ int main(int argc, char **argv) {
 			_COUT "Pass 3 complete" _ENDL;
 			Close();
 		}
-
-		//if (!LabelTable.checkonforward()) break;
 	} while (pass < 3);//MAXPASSES);
 
 	pass = 9999; /* added for detect end of compiling */
@@ -549,15 +470,8 @@ int main(int argc, char **argv) {
 	if (Options::SymbolListFName[0]) {
 		LabelTable.DumpSymbols();
 	}
-	/*if (Options::ZX_SnapshotFName[0]) {
-		if (StartAddress) {
-			SaveSNA_ZX(Options::ZX_SnapshotFName, StartAddress);
-		} else {
-			Warning("Snapshot not saved, because start address not found. Use END <Address> pseudo-op. Also you can use SAVESNA directive.", 0, ALL);
-		}
-	}*/
 
-	_COUT "Errors: " _CMDL ErrorCount _CMDL ", warnings: " _CMDL WarningCount _CMDL ", compiled: " _CMDL CurrentLine _CMDL " lines" _END;
+	_COUT "Errors: " _CMDL ErrorCount _CMDL ", warnings: " _CMDL WarningCount _CMDL ", compiled: " _CMDL CompiledCurrentLine _CMDL " lines" _END;
 
 	double dwCount;
 	dwCount = GetTickCount() - dwStart;

@@ -87,8 +87,8 @@ FILE* FP_UnrealList;
 
 int EB[1024 * 64],nEB = 0;
 char WriteBuffer[DESTBUFLEN];
-FILE* FP_Input, * FP_Output, * FP_RAW;
-FILE* FP_ListingFile,* FP_ExportFile = NULL;
+FILE* FP_Input = NULL, * FP_Output = NULL, * FP_RAW = NULL;
+FILE* FP_ListingFile = NULL,* FP_ExportFile = NULL;
 aint PreviousAddress,epadres,IsSkipErrors = 0;
 aint WBLength = 0;
 char hd[] = {
@@ -152,10 +152,12 @@ void Error(char* fout, char* bd, int type) {
 		STRCAT(ep, LINEMAX2, "\n");
 	}
 
-	if (FP_ListingFile) {
+	if (FP_ListingFile != NULL) {
 		fputs(ErrorLine, FP_ListingFile);
 	}
+
 	_COUT ErrorLine _END;
+
 	/*if (type==FATAL) exit(1);*/
 	if (type == FATAL) {
 		ExitASM(1);
@@ -201,7 +203,7 @@ void Warning(char* fout, char* bd, int type) {
 		STRCAT(ep, LINEMAX2, "\n");
 	}
 
-	if (FP_ListingFile) {
+	if (FP_ListingFile != NULL) {
 		fputs(ErrorLine, FP_ListingFile);
 	}
 	_COUT ErrorLine _END;
@@ -212,10 +214,10 @@ void WriteDest() {
 		return;
 	}
 	destlen += WBLength;
-	if (fwrite(WriteBuffer, 1, WBLength, FP_Output) != WBLength) {
+	if (FP_Output != NULL && fwrite(WriteBuffer, 1, WBLength, FP_Output) != WBLength) {
 		Error("Write error (disk full?)", 0, FATAL);
 	}
-	if (FP_RAW && fwrite(WriteBuffer, 1, WBLength, FP_RAW) != WBLength) {
+	if (FP_RAW != NULL && fwrite(WriteBuffer, 1, WBLength, FP_RAW) != WBLength) {
 		Error("Write error (disk full?)", 0, FATAL);
 	}
 	WBLength = 0;
@@ -288,6 +290,36 @@ void PrintHEX16(char*& p, aint h) {
 	*(p++) = hd[hh];
 }
 
+/* added */
+char hd2[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+};
+
+/* added */
+void PrintHEXAlt(char*& p, aint h) {
+	aint hh = h&0xffffffff;
+	if (hh >> 28 != 0) {
+		*(p++) = hd2[hh >> 28];
+	} 
+	hh &= 0xfffffff;
+	if (hh >> 24 != 0) {
+		*(p++) = hd2[hh >> 24];
+	} 
+	hh &= 0xffffff;
+	if (hh >> 20 != 0) {
+		*(p++) = hd2[hh >> 20];
+	}
+	hh &= 0xfffff;
+	if (hh >> 16 != 0) {
+		*(p++) = hd2[hh >> 16];
+	}
+	hh &= 0xffff;
+	*(p++) = hd2[hh >> 12]; hh &= 0xfff;
+	*(p++) = hd2[hh >> 8];  hh &= 0xff;
+	*(p++) = hd2[hh >> 4];  hh &= 0xf;
+	*(p++) = hd2[hh];
+}
+
 void listbytes3(int pad) {
 	int i = 0,t;
 	char* pp,* sp = pline + 3 + reglenwidth;
@@ -299,7 +331,7 @@ void listbytes3(int pad) {
 			PrintHEX8(pp, EB[i++]); --nEB; ++t;
 		}
 		*(pp++) = '\n'; *pp = 0;
-		if (FP_ListingFile) {
+		if (FP_ListingFile != NULL) {
 			fputs(pline, FP_ListingFile);
 		}
 		pad += 32;
@@ -312,7 +344,7 @@ void ListFile() {
 	if (pass != LASTPASS || !IsListingFileOpened || donotlist) {
 		donotlist = nEB = 0; return;
 	}
-	if (!Options::ListingFName[0] || !FP_ListingFile) {
+	if (!Options::ListingFName[0] || FP_ListingFile == NULL) {
 		return;
 	}
 	if (listmacro) {
@@ -372,7 +404,7 @@ void ListFileSkip(char* line) {
 		donotlist = nEB = 0;
 		return;
 	}
-	if (!Options::ListingFName[0] || !FP_ListingFile) {
+	if (!Options::ListingFName[0] || FP_ListingFile == NULL) {
 		return;
 	}
 	if (listmacro) {
@@ -888,7 +920,9 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
 					Error("Line too long", 0, FATAL);
 				}
 				//if (rlnewline) {
-					CurrentLocalLine++; CurrentLine++; CurrentGlobalLine++;
+					CurrentLocalLine++;
+					CompiledCurrentLine++;
+					CurrentGlobalLine++;
 				//}
 				rlsquotes = rldquotes = rlcomment = rlspace = rlcolon = false;
 				//_COUT line _ENDL;
@@ -933,7 +967,10 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
 						Error("Line too long", 0, FATAL);
 					}
 					if (rlnewline) {
-						CurrentLocalLine++; CurrentLine++; CurrentGlobalLine++; rlnewline = false;
+						CurrentLocalLine++;
+						CompiledCurrentLine++;
+						CurrentGlobalLine++;
+						rlnewline = false;
 					}
 					rlcolon = true; 
 					if (Parse) {
@@ -983,7 +1020,9 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
 	//for end line
 	if (feof(FP_Input) && RL_Readed <= 0 && line) {
 		if (rlnewline) {
-			CurrentLocalLine++; CurrentLine++; CurrentGlobalLine++;
+			CurrentLocalLine++;
+			CompiledCurrentLine++;
+			CurrentGlobalLine++;
 		}
 		rlsquotes = rldquotes = rlcomment = rlspace = rlcolon = false;
 		rlnewline = true;
@@ -1014,6 +1053,11 @@ void OpenUnrealList() {
 }
 
 void CloseDest() {
+	// simple check
+	if (FP_Output == NULL) {
+		return;
+	}
+
 	long pad;
 	if (WBLength) {
 		WriteDest();
@@ -1041,7 +1085,7 @@ void CloseDest() {
 
 void SeekDest(long offset, int method) {
 	WriteDest();
-	if (fseek(FP_Output, offset, method)) {
+	if (FP_Output != NULL && fseek(FP_Output, offset, method)) {
 		Error("File seek error (FORG)", 0, FATAL);
 	}
 }
@@ -1051,7 +1095,10 @@ void NewDest(char* newfilename) {
 }
 
 void NewDest(char* newfilename, int mode) {
+	// close file
 	CloseDest();
+
+	// and open new file
 	STRCPY(Options::DestionationFName, LINEMAX, newfilename);
 	OpenDest(mode);
 }
@@ -1065,13 +1112,14 @@ void OpenDest(int mode) {
 	if (mode != OUTPUT_TRUNCATE && !FileExists(Options::DestionationFName)) {
 		mode = OUTPUT_TRUNCATE;
 	}
-	if (!FOPEN_ISOK(FP_Output, Options::DestionationFName, mode == OUTPUT_TRUNCATE ? "wb" : "r+b")) {
+	if (!Options::NoDestinationFile && !FOPEN_ISOK(FP_Output, Options::DestionationFName, mode == OUTPUT_TRUNCATE ? "wb" : "r+b")) {
 		Error("Error opening file", Options::DestionationFName, FATAL);
 	}
-	if (Options::RAWFName[0] && !FOPEN_ISOK(FP_RAW, Options::RAWFName, "wb")) {
-		Warning("Error opening file", Options::RAWFName);
+	Options::NoDestinationFile = false;
+	if (FP_RAW == NULL && Options::RAWFName[0] && !FOPEN_ISOK(FP_RAW, Options::RAWFName, "wb")) {
+		Error("Error opening file", Options::RAWFName);
 	}
-	if (mode != OUTPUT_TRUNCATE) {
+	if (FP_Output != NULL && mode != OUTPUT_TRUNCATE) {
 		if (fseek(FP_Output, 0, mode == OUTPUT_REWIND ? SEEK_SET : SEEK_END)) {
 			Error("File seek error (OUTPUT)", 0, FATAL);
 		}
@@ -1090,15 +1138,17 @@ int FileExists(char* filename) {
 
 void Close() {
 	CloseDest();
-	if (FP_ExportFile) {
+	if (FP_ExportFile != NULL) {
 		fclose(FP_ExportFile);
 		FP_ExportFile = NULL;
 	}
-	if (FP_RAW) {
+	if (FP_RAW != NULL) {
 		fclose(FP_RAW);
+		FP_RAW = NULL;
 	}
-	if (FP_ListingFile) {
+	if (FP_ListingFile != NULL) {
 		fclose(FP_ListingFile);
+		FP_ListingFile = NULL;
 	}
 	//if (FP_UnrealList && pass == 9999) {
 	//	fclose(FP_UnrealList);
@@ -1313,7 +1363,9 @@ int SaveHobeta(char* fname, char* fhobname, int start, int length) {
 	for (i = 0; i != 8; header[i++] = 0x20) {
 		;
 	}
-	for (i = 0; i != 8; ++i) {
+	//for (i = 0; i != 8; ++i) {
+	for (i = 0; i < 9; ++i) {
+
 		if (*(fhobname + i) == 0) {
 			break;
 		}
@@ -1333,8 +1385,19 @@ int SaveHobeta(char* fname, char* fhobname, int start, int length) {
 		length = 0x10000 - start;
 	}
 
-	header[0x09] = (unsigned char)(start & 0xff);
-	header[0x0a] = (unsigned char)(start >> 8);
+	if (*(fhobname + i + 2) != 0 && *(fhobname + i + 3) != 0) {
+		header[0x09] = *(fhobname + i + 2);
+		header[0x0a] = *(fhobname + i + 3);
+	} else {
+		if (header[8] == 'B') {
+			header[0x09] = (unsigned char)(length & 0xff);
+			header[0x0a] = (unsigned char)(length >> 8);
+		} else {
+			header[0x09] = (unsigned char)(start & 0xff);
+			header[0x0a] = (unsigned char)(start >> 8);
+		}
+	}
+
 	header[0x0b] = (unsigned char)(length & 0xff);
 	header[0x0c] = (unsigned char)(length >> 8);
 	header[0x0d] = 0;
@@ -1525,16 +1588,17 @@ int ReadFileToCStringsList(CStringsList*& f, char* end) {
 
 void WriteExp(char* n, aint v) {
 	char lnrs[16],* l = lnrs;
-	if (!FP_ExportFile) {
+	if (FP_ExportFile == NULL) {
 		if (!FOPEN_ISOK(FP_ExportFile, Options::ExportFName, "w")) {
 			Error("Error opening file", Options::ExportFName, FATAL);
 		}
 	}
 	STRCPY(ErrorLine, LINEMAX2, n);
 	STRCAT(ErrorLine, LINEMAX2, ": EQU ");
+	STRCAT(ErrorLine, LINEMAX2, "0x");
 	PrintHEX32(l, v); *l = 0;
 	STRCAT(ErrorLine, LINEMAX2, lnrs);
-	STRCAT(ErrorLine, LINEMAX2, "h\n");
+	STRCAT(ErrorLine, LINEMAX2, "\n");
 	fputs(ErrorLine, FP_ExportFile);
 }
 

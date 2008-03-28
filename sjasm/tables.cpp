@@ -123,7 +123,7 @@ int GetLabelValue(char*& p, aint& val) {
 			}
 			np = temp; g = 1;
 			do {
-				if (LabelTable.zoek(np, val)) {
+				if (LabelTable.GetValue(np, val)) {
 					return 1;
 				}
 				IsLabelNotFound = oIsLabelNotFound;
@@ -168,11 +168,11 @@ int GetLabelValue(char*& p, aint& val) {
 		Error("Label too long", temp + len);
 		temp[LABMAX + len] = 0;
 	}
-	if (LabelTable.zoek(temp, val)) {
+	if (LabelTable.GetValue(temp, val)) {
 		return 1;
 	}
 	IsLabelNotFound = oIsLabelNotFound;
-	if (!l && !g && LabelTable.zoek(temp + len, val)) {
+	if (!l && !g && LabelTable.GetValue(temp + len, val)) {
 		return 1;
 	}
 	if (pass == LASTPASS) {
@@ -183,8 +183,8 @@ int GetLabelValue(char*& p, aint& val) {
 }
 
 int GetLocalLabelValue(char*& op, aint& val) {
-	aint nval;
-	int nummer;
+	aint nval = 0;
+	int nummer = 0;
 	char* p = op,naam[LINEMAX],* np,ch;
 	SkipBlanks(p);
 	np = naam;
@@ -223,8 +223,10 @@ int GetLocalLabelValue(char*& op, aint& val) {
 	return 1;
 }
 
-int IsLabelUsed(char*& p, aint& val) {
+/* not finished */
+int IsLabelUsed(char*& p, bool errors) {
 	char* mlp = macrolabp,* op = p;
+	aint val;
 	int g = 0,l = 0,oIsLabelNotFound = IsLabelNotFound,plen;
 	unsigned int len;
 	char* np;
@@ -245,19 +247,25 @@ int IsLabelUsed(char*& p, aint& val) {
 			STRCAT(temp, LINEMAX, macrolabp); STRCAT(temp, LINEMAX, ">");
 			len = strlen(temp); np = temp + len; plen = 0;
 			if (!isalpha((unsigned char) * p) && *p != '_') {
-				Error("Invalid labelname", temp); return 0;
+				if (errors) {
+					Error("Invalid labelname", temp);
+				}
+				return 0;
 			}
 			while (isalnum((unsigned char) * p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' || *p == '@') {
 				*np = *p; ++np; ++p;
 			}
 			*np = 0;
 			if (strlen(temp) > LABMAX + len) {
-				Error("Label too long", temp + len);
+				if (errors) {
+					Error("Label too long", temp + len);
+				}
 				temp[LABMAX + len] = 0;
 			}
 			np = temp; g = 1;
 			do {
-				if (LabelTable.zoek(np, val)) {
+				if (LabelTable.GetValue(np, val)) {
+					// we found it!
 					return 1;
 				}
 				IsLabelNotFound = oIsLabelNotFound;
@@ -285,31 +293,37 @@ int IsLabelUsed(char*& p, aint& val) {
 	}
 	temp[0] = 0;
 	if (!g && ModuleName) {
-		STRCAT(temp, LINEMAX, ModuleName); STRCAT(temp, LINEMAX, ".");
+		STRCAT(temp, LINEMAX, ModuleName);
+		STRCAT(temp, LINEMAX, ".");
 	}
 	if (l) {
-		STRCAT(temp, LINEMAX, vorlabp); STRCAT(temp, LINEMAX, ".");
+		STRCAT(temp, LINEMAX, vorlabp);
+		STRCAT(temp, LINEMAX, ".");
 	}
 	len = strlen(temp); np = temp + len;
 	if (!isalpha((unsigned char) * p) && *p != '_') {
-		Error("Invalid labelname", temp); return 0;
+		if (errors) {
+			Error("Invalid labelname", temp);
+		}
+		return 0;
 	}
 	while (isalnum((unsigned char) * p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' || *p == '@') {
 		*np = *p; ++np; ++p;
 	}
 	*np = 0;
 	if (strlen(temp) > LABMAX + len) {
-		Error("Label too long", temp + len);
+		if (errors) {
+			Error("Label too long", temp + len);
+		}
 		temp[LABMAX + len] = 0;
 	}
-	if (LabelTable.zoek(temp, val)) {
+	if (LabelTable.GetValue(temp, val)) {
 		return 1;
 	}
 	IsLabelNotFound = oIsLabelNotFound;
-	if (!l && !g && LabelTable.zoek(temp + len, val)) {
+	if (!l && !g && LabelTable.GetValue(temp + len, val)) {
 		return 1;
 	}
-	val = 0;
 	return 0;
 }
 
@@ -383,7 +397,7 @@ int CLabelTable::Update(char* nname, aint nvalue) {
 	return 1;
 }
 
-int CLabelTable::zoek(char* nname, aint& nvalue) {
+int CLabelTable::GetValue(char* nname, aint& nvalue) {
 	int tr, htr, otr;
 	otr = tr = Hash(nname);
 	while (htr = HashTable[tr]) {
@@ -411,6 +425,61 @@ int CLabelTable::zoek(char* nname, aint& nvalue) {
 	return 0;
 }
 
+int CLabelTable::Find(char* nname) {
+	int tr, htr, otr;
+	otr = tr = Hash(nname);
+	while (htr = HashTable[tr]) {
+		if (!strcmp((LabelTable[htr].name), nname)) {
+			if (LabelTable[htr].page == -1) {
+				return 0;
+			} else {
+				return 1;
+			}
+		}
+		if (++tr >= LABTABSIZE) {
+			tr = 0;
+		}
+		if (tr == otr) {
+			break;
+		}
+	}
+	return 0;
+}
+
+int CLabelTable::Remove(char* nname) {
+	int tr, htr, otr;
+	otr = tr = Hash(nname);
+	while (htr = HashTable[tr]) {
+		if (!strcmp((LabelTable[htr].name), nname)) {
+			*LabelTable[htr].name = 0;
+			LabelTable[htr].value = 0;
+			LabelTable[htr].used = 0;
+			LabelTable[htr].page = 0;
+			LabelTable[htr].forwardref = 0;
+
+			return 1;
+		}
+		if (++tr >= LABTABSIZE) {
+			tr = 0;
+		}
+		if (tr == otr) {
+			break;
+		}
+	}
+	return 0;
+}
+
+void CLabelTable::RemoveAll() {
+	for (int i = 1; i < NextLocation; ++i) {
+		*LabelTable[i].name = 0;
+		LabelTable[i].value = 0;
+		LabelTable[i].used = 0;
+		LabelTable[i].page = 0;
+		LabelTable[i].forwardref = 0;
+	}
+	NextLocation = 0;
+}
+
 int CLabelTable::Hash(char* s) {
 	char* ss = s;
 	unsigned int h = 0,g;
@@ -423,36 +492,13 @@ int CLabelTable::Hash(char* s) {
 	return h % LABTABSIZE;
 }
 
-/* added */
-char hd2[] = {
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-};
-
-/* added */
-void PrintHEX__(char*& p, aint h) {
-	aint hh = h&0xffffffff;
-	if (hh >> 28 != 0) {
-		*(p++) = hd2[hh >> 28];
-	} hh &= 0xfffffff;
-	if (hh >> 24 != 0) {
-		*(p++) = hd2[hh >> 24];
-	} hh &= 0xffffff;
-	if (hh >> 20 != 0) {
-		*(p++) = hd2[hh >> 20];
-	} hh &= 0xfffff;
-	if (hh >> 16 != 0) {
-		*(p++) = hd2[hh >> 16];
-	} hh &= 0xffff;
-	*(p++) = hd2[hh >> 12]; hh &= 0xfff;
-	*(p++) = hd2[hh >> 8];  hh &= 0xff;
-	*(p++) = hd2[hh >> 4];  hh &= 0xf;
-	*(p++) = hd2[hh];
-}
-
 void CLabelTable::Dump() {
 	char line[LINEMAX], * ep;
 	if (!IsListingFileOpened) {
 		IsListingFileOpened = 1; OpenList();
+	}
+	if (FP_ListingFile == NULL) {
+		return;
 	}
 	/*fputs("\nvalue      label\n",FP_ListingFile);*/
 	fputs("\nvalue   label\n", FP_ListingFile);
@@ -462,7 +508,7 @@ void CLabelTable::Dump() {
 		if (LabelTable[i].page != -1) {
 			ep = line; *ep = 0;
 			/*PrintHEX32(ep,LabelTable[i].value); *(ep++)=' ';*/
-			PrintHEX__(ep, LabelTable[i].value); *(ep++) = 'h'; *(ep++) = ' ';
+			PrintHEXAlt(ep, LabelTable[i].value); *(ep++) = 'h'; *(ep++) = ' ';
 			*(ep++) = LabelTable[i].used ? ' ' : 'X'; *(ep++) = ' ';
 			STRCPY(ep, LINEMAX, LabelTable[i].name);
 			STRCAT(line, LINEMAX, "\n");
@@ -475,7 +521,7 @@ void CLabelTable::Dump() {
 void CLabelTable::DumpForUnreal() {
 	char ln[LINEMAX], * ep;
 	int page;
-	if (!FP_UnrealList && !FOPEN_ISOK(FP_UnrealList, Options::UnrealLabelListFName, "w")) {
+	if (FP_UnrealList == NULL && !FOPEN_ISOK(FP_UnrealList, Options::UnrealLabelListFName, "w")) {
 		Error("Error opening file", Options::UnrealLabelListFName, FATAL);
 	}
 	for (int i = 1; i < NextLocation; ++i) {
@@ -505,7 +551,7 @@ void CLabelTable::DumpForUnreal() {
 			}
 			//*(ep++)='R';
 			*(ep++) = ':';
-			PrintHEX__(ep, lvalue);
+			PrintHEXAlt(ep, lvalue);
 			*(ep++) = ' ';
 			STRCPY(ep, LINEMAX-(ep-ln), LabelTable[i].name);
 			STRCAT(ln, LINEMAX, "\n");
@@ -527,10 +573,11 @@ void CLabelTable::DumpSymbols() {
 			STRCPY(ErrorLine, LINEMAX, LabelTable[i].name);
 			STRCAT(ErrorLine, LINEMAX2, ": equ ");
 			l = lnrs;
+			STRCAT(ErrorLine, LINEMAX2, "0x");
 			PrintHEX32(l, LabelTable[i].value);
 			*l = 0; 
 			STRCAT(ErrorLine, LINEMAX2, lnrs);
-			STRCAT(ErrorLine, LINEMAX2, "h\n");
+			STRCAT(ErrorLine, LINEMAX2, "\n");
 			fputs(ErrorLine, symfp);
 		}
 	}
@@ -652,11 +699,14 @@ int CFunctionTable::Hash(char* s) {
 
 /* modified */
 CLocalLabelTableEntry::CLocalLabelTableEntry(aint nnummer, aint nvalue, CLocalLabelTableEntry* n) {
-	regel = CurrentLine; nummer = nnummer; value = nvalue;
+	regel = CompiledCurrentLine;
+	nummer = nnummer;
+	value = nvalue;
 	//regel=CurrentLocalLine; nummer=nnummer; value=nvalue;
-	prev = n; next = NULL; if (n) {
-						   	n->next = this;
-						   }
+	prev = n; next = NULL;
+	if (n) {
+		n->next = this;
+	}
 }
 
 CLocalLabelTable::CLocalLabelTable() {
@@ -674,7 +724,7 @@ void CLocalLabelTable::Insert(aint nnummer, aint nvalue) {
 aint CLocalLabelTable::zoekf(aint nnum) {
 	CLocalLabelTableEntry* l = first;
 	while (l) {
-		if (l->regel <= CurrentLine) {
+		if (l->regel <= CompiledCurrentLine) {
 			l = l->next;
 		} else {
 			break;
@@ -695,7 +745,7 @@ aint CLocalLabelTable::zoekf(aint nnum) {
 aint CLocalLabelTable::zoekb(aint nnum) {
 	CLocalLabelTableEntry* l = last;
 	while (l) {
-		if (l->regel > CurrentLine) {
+		if (l->regel > CompiledCurrentLine) {
 			l = l->prev;
 		} else {
 			break;
@@ -782,6 +832,36 @@ int CDefineTable::Replace(char* name, char* value) {
 	}
 	defs[*name] = new CDefineTableEntry(name, value, 0, defs[*name]);
 	return 1;
+}
+
+int CDefineTable::Remove(char* name) {
+	CDefineTableEntry* p = defs[*name];
+	CDefineTableEntry* p2 = NULL;
+	while (p) {
+		if (!strcmp(name, p->name)) {
+			if (p2 != NULL) {
+				p2->next = p->next;
+			} else {
+				p = p->next;
+			}
+
+			return 1;
+		}
+		p2 = p;
+		p = p->next;
+	}
+	return 0;
+}
+
+void CDefineTable::RemoveAll() {
+	for (int i=0; i < 128; i++)
+	{
+		if (defs[i] != NULL)
+		{
+			delete defs[i];
+			defs[i] = NULL;
+		}
+	}
 }
 
 void CMacroDefineTable::Init() {
@@ -985,9 +1065,10 @@ int CMacroTable::Emit(char* naam, char*& p) {
 		}
 		*n = 0;
 		MacroDefineTable.AddMacro(a->string, ml);
-		SkipBlanks(p); a = a->next; if (a && *p != ',') {
-										Error("Not enough arguments for macro", naam); macrolabp = 0; return 1;
-									}
+		SkipBlanks(p); a = a->next;
+		if (a && *p != ',') {
+			Error("Not enough arguments for macro", naam); macrolabp = 0; return 1;
+		}
 		if (*p == ',') {
 			++p;
 		}
@@ -1279,7 +1360,7 @@ void CStructure::emitmembs(char*& p) {
 						   	--haakjes; ++p; comma(p);
 						   } break;
 		default:
-			Error("internalerror CStructure::emitmembs", 0, FATAL);
+			Error("Internal Error CStructure::emitmembs", 0, FATAL);
 		}
 		ip = ip->next;
 	}
@@ -1312,7 +1393,7 @@ CStructure* CStructureTable::Add(char* naam, int no, int idx, int gl) {
 	STRCAT(sn, LINEMAX, naam);
 	sp = sn;
 	if (FindDuplicate(sp)) {
-		Error("Duplicate structurename", naam, PASS1);
+		Error("Duplicate structure name", naam, PASS1);
 	}
 	strs[*sp] = new CStructure(naam, sp, idx, 0, gl, strs[*sp]);
 	if (no) {
@@ -1484,7 +1565,7 @@ CDevicePage::~CDevicePage() {
 int LuaGetLabel(char *name) {
 	aint val;
 
-	if (!LabelTable.zoek(name, val)) {
+	if (!LabelTable.GetValue(name, val)) {
 		return -1;
 	} else {
 		return val;

@@ -11,7 +11,7 @@ CFLAGS=-O2 -DLUA_USE_LINUX -DMAX_PATH=PATH_MAX -Ilua5.1 -Itolua++
 CXXFLAGS=$(CFLAGS)
 
 #for Linux
-#LDFLAGS="-ldl"
+LDFLAGS="-ldl"
 
 #sjasmplus object files
 OBJS=sjasm/devices.o sjasm/directives.o sjasm/io_snapshots.o sjasm/io_trd.o sjasm/lua_lpack.o sjasm/lua_sjasm.o \
@@ -28,7 +28,6 @@ lua5.1/lundump.o lua5.1/lvm.o lua5.1/lzio.o
 # tolua objects
 TOLUAOBJS=tolua++/tolua_event.o tolua++/tolua_is.o tolua++/tolua_map.o \
 tolua++/tolua_push.o tolua++/tolua_to.o
-
 
 all: $(LUAOBJS) $(TOLUAOBJS) $(OBJS)
 	$(GPP) -o $(EXE) $(LDFLAGS) $(CXXFLAGS) $(OBJS) $(LUAOBJS) $(TOLUAOBJS)

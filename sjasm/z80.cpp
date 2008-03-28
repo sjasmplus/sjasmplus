@@ -1437,6 +1437,14 @@ namespace Z80 {
 		EmitBytes(e);
 	}
 
+	void OpCode_INF() {
+		int e[3];
+		e[0] = 0xed;
+		e[1] = 0x70;
+		e[2] = -1;
+		EmitBytes(e);
+	}
+
 	/* modified */
 	void OpCode_JP() {
 		Z80Reg reg;
@@ -1533,8 +1541,8 @@ namespace Z80 {
 
 	/* modified */
 	void OpCode_JR() {
-		aint jrad;
-		int e[4], jmp;
+		aint jrad=0;
+		int e[4], jmp=0;
 		do {
 			/* added */
 			e[0] = e[1] = e[2] = e[3] = -1;
@@ -1563,14 +1571,20 @@ namespace Z80 {
 			default:
 				e[0] = 0x18; break;
 			}
+			/*if (CurAddress == 47030) {
+				_COUT "JUST BREAKPOINT" _ENDL;
+			}*/
 			if (!(GetAddress(lp, jrad))) {
 				jrad = CurAddress + 2;
 			}
 			jmp = jrad - CurAddress - 2;
 			if (jmp < -128 || jmp > 127) {
 				char el[LINEMAX];
+				/*if (pass == LASTPASS) {
+					_COUT "AAAAAAA:" _CMDL jmp _CMDL " " _CMDL jrad _CMDL " " _CMDL CurAddress _ENDL;
+				}*/
 				SPRINTF1(el, LINEMAX, "[JR] Target out of range (%i)", jmp);
-				Error(el, 0);
+				Error(el, 0, LASTPASS);
 				jmp = 0;
 			}
 			e[1] = jmp < 0 ? 256 + jmp : jmp;
@@ -4417,6 +4431,7 @@ namespace Z80 {
 		OpCodeTable.Insert("indr", OpCode_INDR);
 		OpCodeTable.Insert("ini", OpCode_INI);
 		OpCodeTable.Insert("inir", OpCode_INIR);
+		OpCodeTable.Insert("inf", OpCode_INF); // thanks to BREEZE
 		OpCodeTable.Insert("jp", OpCode_JP);
 		OpCodeTable.Insert("jr", OpCode_JR);
 		OpCodeTable.Insert("ld", OpCode_LD);

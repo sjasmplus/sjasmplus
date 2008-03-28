@@ -45,6 +45,7 @@ namespace Options {
 	extern bool IsReversePOP;
 	extern bool IsShowFullPath;
 	extern bool AddLabelListing;
+	extern bool NoDestinationFile;
 
 	extern CStringsList* IncludeDirsList;
 
@@ -72,7 +73,7 @@ extern char* MemoryRAM, * MemoryPointer; /* added for spectrum ram */
 extern int MemoryCPage, MemoryPagesCount, StartAddress;
 extern aint MemorySize;
 extern int macronummer, lijst, reglenwidth, synerr;
-extern aint CurAddress, AddressOfMAP, CurrentGlobalLine, CurrentLocalLine, CurrentLine, destlen, size, PreviousErrorLine, maxlin, comlin;
+extern aint CurAddress, AddressOfMAP, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine, destlen, size, PreviousErrorLine, maxlin, comlin;
 
 extern void (*GetCPUInstruction)(void);
 extern char* ModuleName, * vorlabp, * macrolabp;
