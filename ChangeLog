@@ -1,3 +1,12 @@
+2008-03-29  Aprisobal  <my@aprisobal.by>
+
+	* VERSION: 1.07 RC6
+	* Applied bugfix patches for SAVEHOB/SAVETRD pseudo-ops by Breeze.
+	* Fixed memory leak in line parsing routine.
+	* Fixed 48k SNA snapshots saving routine.
+	* Added missing INF instruction.
+	* Fixed code parser's invalid addressing of temporary labels in macros.
+
 2007-05-31  Aprisobal  <my@aprisobal.by>
 
 	* VERSION: 1.07 RC5bf
