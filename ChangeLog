@@ -1,3 +1,11 @@
+2008-04-02  Aprisobal  <my@aprisobal.by>
+
+	* VERSION: 1.07 RC7
+	* Another fix of 48k SNA snapshots saving routine.
+	* Added new UNDEFINE pseudo-op.  
+	* Added new IFUSED/IFNUSED pseudo-ops for labels (such IFDEF for defines).
+	* Fixed labels list dump rountine (--lstlab command line parameter).
+
 2008-03-29  Aprisobal  <my@aprisobal.by>
 
 	* VERSION: 1.07 RC6
