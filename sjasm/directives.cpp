@@ -466,7 +466,7 @@ void dirALIGN() {
 void dirMODULE() {
 	char* n;
 	ModuleList = new CStringsList(ModuleName, ModuleList);
-	if (ModuleName) {
+	if (ModuleName != NULL) {
 		delete[] ModuleName;
 	}
 	if (n = GetID(lp)) {
@@ -481,7 +481,17 @@ void dirMODULE() {
 
 void dirENDMODULE() {
 	if (ModuleList) {
-		ModuleName = ModuleList->string;
+		if (ModuleName != NULL) {
+			delete[] ModuleName;
+		}
+		if (ModuleList->string != NULL) {
+			ModuleName = STRDUP(ModuleList->string);
+			if (ModuleName == NULL) {
+				Error("No enough memory!", 0, FATAL);
+			}
+		} else {
+			ModuleName = NULL;
+		}
 		ModuleList = ModuleList->next;
 	} else {
 		Error("ENDMODULE without MODULE", 0);
@@ -1072,16 +1082,22 @@ void dirIFN() {
 }
 
 void dirIFUSED() {
-	aint val;
-	IsLabelNotFound = 0;
-	if (!ParseExpression(lp, val)) {
-		Error("[IFUSED] Syntax error", 0, CATCHALL); return;
+	char* id;
+	if (((id = GetID(lp)) == NULL || *id == 0) && LastParsedLabel == NULL) {
+		Error("[IFUSED] Syntax error", 0, CATCHALL);
+		return;
 	}
-	if (IsLabelNotFound) {
-		Error("[IFUSED] Forward reference", 0, ALL);
+	if (id == NULL || *id == 0) {
+		id = LastParsedLabel;
+	} else {
+		id = ValidateLabel(id);
+		if (id == NULL) {
+			Error("[IFUSED] Invalid label name", 0, CATCHALL);
+			return;
+		}
 	}
 
-	if (val) {
+	if (LabelTable.IsUsed(id)) {
 		ListFile();
 		switch (ReadFile(lp, "[IFUSED] No endif")) {
 		case ELSE:
@@ -1109,16 +1125,22 @@ void dirIFUSED() {
 }
 
 void dirIFNUSED() {
-	aint val;
-	IsLabelNotFound = 0;
-	if (!ParseExpression(lp, val)) {
-		Error("[IFNUSED] Syntax error", 0, CATCHALL); return;
+	char* id;
+	if (((id = GetID(lp)) == NULL || *id == 0) && LastParsedLabel == NULL) {
+		Error("[IFUSED] Syntax error", 0, CATCHALL);
+		return;
 	}
-	if (IsLabelNotFound) {
-		Error("[IFNUSED] Forward reference", 0, ALL);
+	if (id == NULL || *id == 0) {
+		id = LastParsedLabel;
+	} else {
+		id = ValidateLabel(id);
+		if (id == NULL) {
+			Error("[IFUSED] Invalid label name", 0, CATCHALL);
+			return;
+		}
 	}
 
-	if (!val) {
+	if (!LabelTable.IsUsed(id)) {
 		ListFile();
 		switch (ReadFile(lp, "[IFNUSED] No endif")) {
 		case ELSE:

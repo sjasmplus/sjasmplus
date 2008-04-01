@@ -715,13 +715,25 @@ void ParseLabel() {
 				++p; gl = 1;
 			}
 			if ((n = GetID(p)) && StructureTable.Emit(n, tp, p, gl)) {
-				lp = p; return;
+				lp = p;
+				return;
 			}
 			val = CurAddress;
 		}
 	  	ttp = tp;
-		if (!(tp = AddNewLabel(tp))) {
+		if (!(tp = ValidateLabel(tp))) {
 			return;
+		}
+		// Copy label name to last parsed label variable
+		if (!IsDEFL) {
+			if (LastParsedLabel != NULL) {
+				delete[] LastParsedLabel;
+				LastParsedLabel = NULL;
+			}
+			LastParsedLabel = STRDUP(tp);
+			if (LastParsedLabel == NULL) {
+				Error("No enough memory!", 0, FATAL);
+			}
 		}
 		if (pass == LASTPASS) {
 			if (IsDEFL && !LabelTable.Insert(tp, val, false, IsDEFL)) {
@@ -740,7 +752,7 @@ void ParseLabel() {
 	  			LabelTable.Update(tp, val);
 			}
 		} else if (pass == 2 && !LabelTable.Insert(tp, val, false, IsDEFL) && !LabelTable.Update(tp, val)) {
-				Error("Duplicate label", tp, PASS2);
+			Error("Duplicate label", tp, PASS2);
 		} else if (!LabelTable.Insert(tp, val, false, IsDEFL)) {
 			Error("Duplicate label", tp, PASS1);
 		}

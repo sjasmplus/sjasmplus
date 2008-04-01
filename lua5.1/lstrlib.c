@@ -815,6 +815,35 @@ static int str_format (lua_State *L) {
   return 1;
 }
 
+static int str_replace(lua_State *L) {
+	size_t l1, l2, l3;
+	const char *src = luaL_checklstring(L, 1, &l1);
+	const char *p = luaL_checklstring(L, 2, &l2);
+	const char *p2 = luaL_checklstring(L, 3, &l3);
+	const char *s2;
+	int n = 0;
+	int init = 0;
+
+	luaL_Buffer b;
+	luaL_buffinit(L, &b);
+
+	while (1) {
+		s2 = lmemfind(src+init, l1-init, p, l2);
+		if (s2) {
+			luaL_addlstring(&b, src+init, s2-(src+init));
+			luaL_addlstring(&b, p2, l3);
+			init = init + (s2-(src+init)) + l2;
+			n++;
+		} else {
+			luaL_addlstring(&b, src+init, l1-init);
+			break;
+		}
+	}
+
+	luaL_pushresult(&b);
+	lua_pushnumber(L, (lua_Number)n);  /* number of substitutions */
+	return 2;
+}
 
 static const luaL_Reg strlib[] = {
   {"byte", str_byte},
@@ -832,6 +861,7 @@ static const luaL_Reg strlib[] = {
   {"reverse", str_reverse},
   {"sub", str_sub},
   {"upper", str_upper},
+  {"replace", str_replace},
   {NULL, NULL}
 };
 

@@ -32,7 +32,7 @@
 
 char* PreviousIsLabel;
 
-char* AddNewLabel(char* naam) {
+char* ValidateLabel(char* naam) {
 	char* np = naam,* lp,* label,* mlp = macrolabp;
 	int p = 0,l = 0;
 	label = new char[LINEMAX];
@@ -54,13 +54,15 @@ char* AddNewLabel(char* naam) {
 	}
 	naam = np;
 	if (!isalpha((unsigned char) * np) && *np != '_') {
-		Error("Invalid labelname", naam); return 0;
+		Error("Invalid labelname", naam);
+		return 0;
 	}
 	while (*np) {
 		if (isalnum((unsigned char) * np) || *np == '_' || *np == '.' || *np == '?' || *np == '!' || *np == '#' || *np == '@') {
 			++np;
 		} else {
-			Error("Invalid labelname", naam); return 0;
+			Error("Invalid labelname", naam);
+			return 0;
 		}
 	}
 	if (strlen(naam) > LABMAX) {
@@ -90,38 +92,50 @@ char* AddNewLabel(char* naam) {
 }
 
 int GetLabelValue(char*& p, aint& val) {
-	char* mlp = macrolabp,* op = p;
-	int g = 0,l = 0,oIsLabelNotFound = IsLabelNotFound,plen;
+	char* mlp = macrolabp, *op = p;
+	int g = 0, l = 0, oIsLabelNotFound = IsLabelNotFound, plen;
 	unsigned int len;
 	char* np;
 	if (mlp && *p == '@') {
-		++op; mlp = 0;
+		++op;
+		mlp = 0;
 	}
 	if (mlp) {
 		switch (*p) {
 		case '@':
-			g = 1; ++p; break;
+			g = 1;
+			++p;
+			break;
 		case '.':
-			l = 1; ++p; break;
+			l = 1;
+			++p;
+			break;
 		default:
 			break;
 		}
 		temp[0] = 0;
 		if (l) {
-			STRCAT(temp, LINEMAX, macrolabp); STRCAT(temp, LINEMAX, ">");
-			len = strlen(temp); np = temp + len; plen = 0;
+			STRCAT(temp, LINEMAX, macrolabp);
+			STRCAT(temp, LINEMAX, ">");
+			len = strlen(temp);
+			np = temp + len;
+			plen = 0;
 			if (!isalpha((unsigned char) * p) && *p != '_') {
-				Error("Invalid labelname", temp); return 0;
+				Error("Invalid labelname", temp);
+				return 0;
 			}
 			while (isalnum((unsigned char) * p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' || *p == '@') {
-				*np = *p; ++np; ++p;
+				*np = *p;
+				++np;
+				++p;
 			}
 			*np = 0;
 			if (strlen(temp) > LABMAX + len) {
 				Error("Label too long", temp + len);
 				temp[LABMAX + len] = 0;
 			}
-			np = temp; g = 1;
+			np = temp;
+			g = 1;
 			do {
 				if (LabelTable.GetValue(np, val)) {
 					return 1;
@@ -143,9 +157,13 @@ int GetLabelValue(char*& p, aint& val) {
 	p = op;
 	switch (*p) {
 	case '@':
-		g = 1; ++p; break;
+		g = 1;
+		++p;
+		break;
 	case '.':
-		l = 1; ++p; break;
+		l = 1;
+		++p;
+		break;
 	default:
 		break;
 	}
@@ -340,6 +358,8 @@ int CLabelTable::Insert(char* nname, aint nvalue, bool undefined = false, bool I
 	if (NextLocation >= LABTABSIZE * 2 / 3) {
 		Error("Label table full", 0, FATAL);
 	}
+
+	// Find label in label table
 	int tr, htr;
 	tr = Hash(nname);
 	while (htr = HashTable[tr]) {
@@ -368,10 +388,11 @@ int CLabelTable::Insert(char* nname, aint nvalue, bool undefined = false, bool I
 	}
 	LabelTable[NextLocation].IsDEFL = IsDEFL; /* added */
 	LabelTable[NextLocation].value = nvalue;
-	LabelTable[NextLocation].used = -1;
 	if (!undefined) {
+		LabelTable[NextLocation].used = -1;
 		LabelTable[NextLocation].page = MemoryCPage;
 	} else {
+		LabelTable[NextLocation].used = 1;
 		LabelTable[NextLocation].page = -1;
 	} /* added */
 	++NextLocation;
@@ -402,13 +423,21 @@ int CLabelTable::GetValue(char* nname, aint& nvalue) {
 	otr = tr = Hash(nname);
 	while (htr = HashTable[tr]) {
 		if (!strcmp((LabelTable[htr].name), nname)) {
+			if (LabelTable[htr].used == -1 && pass != LASTPASS)
+			{
+				LabelTable[htr].used = 1;
+			}
+
 			if (LabelTable[htr].page == -1) {
-				IsLabelNotFound = 2; nvalue = 0; return 0;
+				IsLabelNotFound = 2;
+				nvalue = 0;
+				return 0;
 			} else {
 				nvalue = LabelTable[htr].value;
-				if (pass == LASTPASS - 1) {
-					++LabelTable[htr].used;
-				}
+				//if (pass == LASTPASS - 1) {
+					
+				//}
+				
 				return 1;
 			}
 		}
@@ -434,6 +463,27 @@ int CLabelTable::Find(char* nname) {
 				return 0;
 			} else {
 				return 1;
+			}
+		}
+		if (++tr >= LABTABSIZE) {
+			tr = 0;
+		}
+		if (tr == otr) {
+			break;
+		}
+	}
+	return 0;
+}
+
+int CLabelTable::IsUsed(char* nname) {
+	int tr, htr, otr;
+	otr = tr = Hash(nname);
+	while (htr = HashTable[tr]) {
+		if (!strcmp((LabelTable[htr].name), nname)) {
+			if (LabelTable[htr].used > 0) {
+				return 1;
+			} else {
+				return 0;
 			}
 		}
 		if (++tr >= LABTABSIZE) {
@@ -493,25 +543,35 @@ int CLabelTable::Hash(char* s) {
 }
 
 void CLabelTable::Dump() {
-	char line[LINEMAX], * ep;
+	char line[LINEMAX], *ep;
+
 	if (!IsListingFileOpened) {
-		IsListingFileOpened = 1; OpenList();
+		IsListingFileOpened = 1;
+		OpenList();
 	}
+
 	if (FP_ListingFile == NULL) {
 		return;
 	}
+
 	/*fputs("\nvalue      label\n",FP_ListingFile);*/
-	fputs("\nvalue   label\n", FP_ListingFile);
+	fputs("\nValue    Label\n", FP_ListingFile);
 	/*fputs("-------- - -----------------------------------------------------------\n",FP_ListingFile);*/
-	fputs("----- - -----------------------------------------------------------\n", FP_ListingFile);
+	fputs("------ - -----------------------------------------------------------\n", FP_ListingFile);
 	for (int i = 1; i < NextLocation; ++i) {
 		if (LabelTable[i].page != -1) {
-			ep = line; *ep = 0;
-			/*PrintHEX32(ep,LabelTable[i].value); *(ep++)=' ';*/
-			PrintHEXAlt(ep, LabelTable[i].value); *(ep++) = 'h'; *(ep++) = ' ';
-			*(ep++) = LabelTable[i].used ? ' ' : 'X'; *(ep++) = ' ';
-			STRCPY(ep, LINEMAX, LabelTable[i].name);
-			STRCAT(line, LINEMAX, "\n");
+			ep = line;
+			*(ep) = 0;
+			*(ep++) = '0';
+			*(ep++) = 'x';
+			PrintHEXAlt(ep, LabelTable[i].value);
+			*(ep++) = ' ';
+			*(ep++) = LabelTable[i].used > 0 ? ' ' : 'X';
+			*(ep++) = ' ';
+			STRCPY(ep, LINEMAX - (ep - &line[0]), LabelTable[i].name);
+			ep += strlen(LabelTable[i].name);
+			*(ep++) = '\n';
+			*(ep) = 0;
 			fputs(line, FP_ListingFile);
 		}
 	}
@@ -1228,7 +1288,7 @@ void CStructure::deflab() {
 	STRCPY(sn, LINEMAX, "@");
 	STRCAT(sn, LINEMAX, id);
 	op = p = sn;
-	p = AddNewLabel(p);
+	p = ValidateLabel(p);
 	if (pass == LASTPASS) {
 		if (!GetLabelValue(op, oval)) {
 			Error("Internal error. ParseLabel()", 0, FATAL);
@@ -1246,7 +1306,7 @@ void CStructure::deflab() {
 		STRCPY(ln, LINEMAX, sn);
 		STRCAT(ln, LINEMAX, np->naam);
 		op = ln;
-		if (!(p = AddNewLabel(ln))) {
+		if (!(p = ValidateLabel(ln))) {
 			Error("Illegal labelname", ln, PASS1);
 		}
 		if (pass == LASTPASS) {
@@ -1271,7 +1331,7 @@ void CStructure::emitlab(char* iid) {
 	CStructureEntry1* np = mnf;
 	STRCPY(sn, LINEMAX, iid);
 	op = p = sn;
-	p = AddNewLabel(p);
+	p = ValidateLabel(p);
 	if (pass == LASTPASS) {
 		if (!GetLabelValue(op, oval)) {
 			Error("Internal error. ParseLabel()", 0, FATAL);
@@ -1289,7 +1349,7 @@ void CStructure::emitlab(char* iid) {
 		STRCPY(ln, LINEMAX, sn);
 		STRCAT(ln, LINEMAX, np->naam);
 		op = ln;
-		if (!(p = AddNewLabel(ln))) {
+		if (!(p = ValidateLabel(ln))) {
 			Error("Illegal labelname", ln, PASS1);
 		}
 		if (pass == LASTPASS) {

@@ -33,7 +33,7 @@ using std::endl;
 
 enum EStructureMembers { SMEMBUNKNOWN, SMEMBALIGN, SMEMBBYTE, SMEMBWORD, SMEMBBLOCK, SMEMBDWORD, SMEMBD24, SMEMBPARENOPEN, SMEMBPARENCLOSE };
 
-char* AddNewLabel(char*);
+char* ValidateLabel(char*);
 extern char* PreviousIsLabel;
 int GetLabelValue(char*& p, aint& val);
 int GetLocalLabelValue(char*& op, aint& val);
@@ -45,7 +45,8 @@ public:
 	char page; /* added */
 	bool IsDEFL; /* added */
 	unsigned char forwardref; /* added */
-	aint value, used;
+	aint value;
+	char used;
 	CLabelTableEntry();
 };
 
@@ -57,6 +58,7 @@ public:
 	int GetValue(char*, aint&);
 	int Find(char*);
 	int Remove(char*);
+	int IsUsed(char*);
 	void RemoveAll();
 	void Dump();
 	void DumpForUnreal(); /* added */

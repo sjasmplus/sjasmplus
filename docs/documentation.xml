@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
-  <title>SjASMPlus 1.07 Documentation [29.03.2008]</title>
+  <title>SjASMPlus 1.07 Documentation [02.04.2008]</title>
 
   <chapter>
     <title>Introduction</title>
@@ -93,9 +93,10 @@
     </section>
 
     <section>
-      <title>Authors</title>
+      <title>Credits</title>
 
-      <para>Special thanks to Sjoerd Mastijn, the author of SjASM.</para>
+      <para>Special thanks to <emphasis>Sjoerd Mastijn</emphasis>, the author
+      of SjASM.</para>
 
       <para><emphasis>Aprisobal </emphasis>- main programming, documentation,
       etc.</para>
@@ -118,13 +119,28 @@
           </listitem>
 
           <listitem>
-            <para><emphasis>Breeze &lt;breeze@tut.by&gt;</emphasis> - bug fix
+            <para><emphasis>breeze &lt;breeze@tut.by&gt;</emphasis> - bug fix
             patches.</para>
           </listitem>
 
           <listitem>
             <para><emphasis>psndcj &lt;psndcj.tbk@gmail.com&gt;</emphasis> -
-            beta-testing.</para>
+            bug reporting, beta-testing.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>elfh &lt;elphecy@gmail.com&gt;</emphasis> - bug
+            reporting.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>bugsy &lt;bugsy@ya.ru&gt;</emphasis> - bug
+            reporting.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>skrju &lt;sq-@mail.ru&gt;</emphasis> - bug
+            reporting.</para>
           </listitem>
         </itemizedlist></para>
 
@@ -146,14 +162,25 @@
 
       <para><variablelist>
           <varlistentry>
+            <term>02.04.2008 - 1.07 RC7</term>
+
+            <listitem>
+              <para><programlisting>- Another fix of 48k SNA snapshots saving routine.
+- Added new UNDEFINE pseudo-op.  
+- Added new IFUSED/IFNUSED pseudo-ops for labels (such IFDEF for defines).
+- Fixed labels list dump rountine (--lstlab command line parameter).</programlisting></para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term>27.03.2008 - 1.07 RC6</term>
 
             <listitem>
               <para><programlisting>- Applied bugfix patches for SAVEHOB/SAVETRD pseudo-ops by Breeze.
-- Fixed memory leak in line parsing routine
-- Fixed 48k SNA snapshots saving routine
-- Added missing INF command 
-- Fixed code parser's invalid addressing of temporary labels in macros  </programlisting></para>
+- Fixed memory leak in line parsing routine.
+- Fixed 48k SNA snapshots saving routine.
+- Added missing INF command.
+- Fixed code parser's invalid addressing of temporary labels in macros.</programlisting></para>
             </listitem>
           </varlistentry>
 
@@ -273,9 +300,14 @@
           </listitem>
         </itemizedlist></para>
 
-      <para>DOS and FreeBSD versions has same files in their packages.
-      <emphasis>Linux version</emphasis> you can compile using
-      <emphasis>Makefile</emphasis> from sources package.</para>
+      <para>DOS and FreeBSD versions has same files in their packages.</para>
+
+      <para><emphasis>Linux version</emphasis> you can compile using
+      <emphasis>GCC</emphasis> and <emphasis>Makefile</emphasis> from sources
+      package.</para>
+
+      <para>MacOS X version you can compile using <emphasis>XCode</emphasis>
+      package and included <emphasis>Makefile</emphasis>.</para>
     </section>
 
     <section>
@@ -1505,7 +1537,8 @@ A                 ; M1.A
     MODULE M2
 A                 ; M2.A
     ENDMODULE
-B                 ; M1.B</programlisting></para>
+B                 ; M1.B
+    ENDMODULE</programlisting></para>
                 </example></para>
             </listitem>
           </varlistentry>
@@ -1804,7 +1837,28 @@ Kip                ; label Kip</programlisting></para>
               <para>Set the program counter to a specific address.<example>
                   <title></title>
 
-                  <para><programlisting>    ORG 100h</programlisting></para>
+                  <para><programlisting>    ORG 100h ; or 0x100, or $100, or #100
+
+    ; useful macro that padding code
+    MACRO PADORG addr
+         ; add padding
+         IF $ &lt; addr
+         BLOCK addr-$
+         ENDIF
+         ORG addr
+    ENDM
+
+    MACRO PADORG2 addr
+         ; add padding + display warning
+         IF $ &gt; addr
+           ; no padding
+           DISPLAY /L, "Warning! PADORG failed! ", $, " is more than ", addr
+         ELSE
+           ; add padding
+           BLOCK addr-$
+         ENDIF
+         ORG addr
+    ENDM</programlisting></para>
                 </example></para>
             </listitem>
           </varlistentry>
@@ -1964,16 +2018,18 @@ START  .... ;something code
           </varlistentry>
 
           <varlistentry>
-            <term>SHELLEXEC &lt;filename&gt;</term>
+            <term>SHELLEXEC &lt;filename&gt;[, &lt;parameters&gt;]</term>
 
             <listitem>
-              <para>Execute external program.<example>
+              <para>Execute external program &lt;filename&gt; using optional
+              command line &lt;parameters&gt;.<example>
                   <title></title>
 
                   <para><programlisting>    OUTPUT "mybin.bin"
     ;some code
     IF ((_ERRORS = 0) + (_WARNINGS = 0))
-        SHELLEXEC "x:/mydeveloping/bin2tap.exe mybin.bin"
+        SHELLEXEC "x:/mydeveloping/bin2tap.exe mybin.bin mytap.tap"
+       ; or SHELLEXEC "x:/mydeveloping/bin2tap.exe","mybin.bin mytap.tap"
     ENDIF</programlisting></para>
                 </example></para>
             </listitem>
@@ -2024,6 +2080,41 @@ START  .... ;something code
 
             <listitem>
               <para>Synonym of <link linkend="po_disp">DISP</link>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>UNDEFINE &lt;id&gt;</term>
+
+            <listitem>
+              <para>Removes the identifier defined by <link
+              linkend="po_define">DEFINE</link></para>
+
+              <para><example>
+                  <title></title>
+
+                  <para><programlisting>    DEFINE Release 1
+
+    IFDEF Release
+      DISPLAY "Building release version"
+    ENDIF
+
+    UNDEFINE Release
+
+    IFNDEF Release
+      DISPLAY "It's works!"
+    ENDIF
+
+    IFDEF _SJASMPLUS
+      DISPLAY "Yes, it's the sjasmplus!"
+    ENDIF
+
+    UNDEFINE *  ; undefine all identifiers
+
+    IFNDEF _SJASMPLUS
+      DISPLAY "It's not the sjasmplus??"
+    ENDIF</programlisting></para>
+                </example></para>
             </listitem>
           </varlistentry>
 
@@ -2084,7 +2175,7 @@ START  .... ;something code
               NOT labels.</para>
 
               <para><example>
-                  <title>lab</title>
+                  <title>Example</title>
 
                   <para><programlisting>    IFDEF MSX_LEAN_AND_MEAN
         CALL InitOwnMM
@@ -2103,7 +2194,7 @@ START  .... ;something code
               are NOT labels.</para>
 
               <para><example>
-                  <title></title>
+                  <title>Example</title>
 
                   <para><programlisting>1   IN A,(0C4H)
     AND 2
@@ -2111,6 +2202,67 @@ START  .... ;something code
         JR NC,1B
     ENDIF</programlisting></para>
                 </example></para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>IFUSED &lt;label&gt;</term>
+
+            <listitem>
+              <para>The condition is true if there is an label used somewhere
+              in the code. You can create libraries of useful functions using
+              IFUSED pseudo-op</para>
+
+              <para><example>
+                  <title>Example</title>
+
+                  <para><programlisting>    OUTPUT "TEST.OUT"
+
+    CALL LABEL3 ; LABEL3 - yes
+    LD A,(LABEL1) ; LABEL1 - yes
+
+    IFUSED LABEL1
+LABEL1:
+    DB 1
+    ENDIF
+
+    IFUSED LABEL2
+LABEL2:
+    DB 2
+    ENDIF
+
+    IFUSED LABEL3
+LABEL3:
+    DB 3
+    ENDIF
+
+    IFUSED LABEL4
+LABEL4:
+    DB 4
+    ENDIF
+
+    LD A,LABEL2 ; LABEL2 - yes
+
+    RET
+
+; Output will contain bytes from LABEL1 to LABEL3 (1, 2, 3), but not contain from LABEL4, because this label is not used.
+
+; Alternative syntax:
+LABEL5:
+    IFUSED ; sjasmplus will use name of previous label, i.e. LABEL5
+
+    ENDIF
+    </programlisting></para>
+                </example></para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>IFNUSED &lt;label&gt;</term>
+
+            <listitem>
+              <para>The condition is true if there is an label
+              <emphasis>not</emphasis> used somewhere in the code.</para>
             </listitem>
           </varlistentry>
 
@@ -2206,13 +2358,13 @@ Main
 
 ; use '!' to include '!' and '&gt;' in those strings.
 
-  UseLess &lt;5, 6 !&gt; 3&gt;
+    UseLess &lt;5, 6 !&gt; 3&gt;
 ; expands to:
-  DB 5, 6 &gt; 3
+    DB 5, 6 &gt; 3
 
-  UseLess &lt;"Kip!!",3&gt;
+    UseLess &lt;"Kip!!",3&gt;
 ; expands to:
-  DB "Kip!",3</programlisting></para>
+    DB "Kip!",3</programlisting></para>
         </example></para>
 
       <para></para>
@@ -2439,7 +2591,7 @@ DOT1 SDOT 0,0, 0,0,0     ; or 0,0,0,0,0 or {0,0,{0,0,0}}</programlisting>Only
           <title>Hello World!</title>
 
           <para><programlisting>    LUA
-        print "Hello World!"
+        print ("Hello World!")
     ENDLUA</programlisting></para>
         </example></para>
     </section>

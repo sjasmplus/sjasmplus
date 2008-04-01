@@ -93,7 +93,7 @@ unsigned char BASin48Vars[] = {
 
 unsigned char BASin48SP[] = {
   0xb1,0x33,0xe0,0x5c,0xc2,0x02,0x4d,0x00,0xdc,0x5c,0x00,0x80,0x2b,
-  0x2d,0x54,0x00,0xff,0x7f,0x2b,0x2d,0x65,0x33,0x00,0x00,0xed,0x10,
+  0x2d,0x54,0x00,0x2b,0x2d,0x2b,0x2d,0x65,0x33,0x00,0x00,0xed,0x10,
   0x0d,0x00,0x09,0x00,0x85,0x1c,0x10,0x1c,0x52,0x1b,0x76,0x1b,0x03,
   0x13,0x00,0x3e,0x00,0x3c,0x42,0x42,0x7e,0x42,0x42,0x00,0x00,0x7c,
   0x42,0x7c,0x42,0x42,0x7c,0x00,0x00,0x3c,0x42,0x40,0x40,0x42,0x3c,
@@ -151,13 +151,15 @@ void DeviceZXSpectrum128(CDevice **dev, CDevice *parent) {
 		(*dev)->AddPage(0x4000);
 	}
 
-	(*dev)->GetSlot(0)->Page = (*dev)->GetPage(7);
+	(*dev)->GetSlot(0)->Page = (*dev)->GetPage(0);
 	(*dev)->GetSlot(1)->Page = (*dev)->GetPage(5);
 	(*dev)->GetSlot(2)->Page = (*dev)->GetPage(2);
-	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(0);
+	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(7);
 
 	memcpy((*dev)->GetPage(5)->RAM + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
 	memset((*dev)->GetPage(5)->RAM + 6144, 7*8, 768);
+
+	memcpy((*dev)->GetSlot(3)->Page->RAM + 0x4000-sizeof(BASin48SP), BASin48SP, sizeof(BASin48SP));
 
 	(*dev)->CurrentSlot = 3;
 }
@@ -174,13 +176,15 @@ void DevicePentagon128(CDevice **dev, CDevice *parent) {
 		(*dev)->AddPage(0x4000);
 	}
 
-	(*dev)->GetSlot(0)->Page = (*dev)->GetPage(7);
+	(*dev)->GetSlot(0)->Page = (*dev)->GetPage(0);
 	(*dev)->GetSlot(1)->Page = (*dev)->GetPage(5);
 	(*dev)->GetSlot(2)->Page = (*dev)->GetPage(2);
-	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(0);
+	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(7);
 
 	memcpy((*dev)->GetPage(5)->RAM + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
 	memset((*dev)->GetPage(5)->RAM + 6144, 7*8, 768);
+
+	memcpy((*dev)->GetPage(7)->RAM + 0x4000-sizeof(BASin48SP), BASin48SP, sizeof(BASin48SP));
 
 	(*dev)->CurrentSlot = 3;
 }
@@ -197,10 +201,10 @@ void DeviceScorpion256(CDevice **dev, CDevice *parent) {
 		(*dev)->AddPage(0x4000);
 	}
 
-	(*dev)->GetSlot(0)->Page = (*dev)->GetPage(7);
+	(*dev)->GetSlot(0)->Page = (*dev)->GetPage(0);
 	(*dev)->GetSlot(1)->Page = (*dev)->GetPage(5);
 	(*dev)->GetSlot(2)->Page = (*dev)->GetPage(2);
-	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(0);
+	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(7);
 
 	memcpy((*dev)->GetPage(5)->RAM + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
 	memset((*dev)->GetPage(5)->RAM + 6144, 7*8, 768);
@@ -220,10 +224,10 @@ void DeviceATMTurbo512(CDevice **dev, CDevice *parent) {
 		(*dev)->AddPage(0x4000);
 	}
 
-	(*dev)->GetSlot(0)->Page = (*dev)->GetPage(7);
+	(*dev)->GetSlot(0)->Page = (*dev)->GetPage(0);
 	(*dev)->GetSlot(1)->Page = (*dev)->GetPage(5);
 	(*dev)->GetSlot(2)->Page = (*dev)->GetPage(2);
-	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(0);
+	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(7);
 
 	memcpy((*dev)->GetPage(5)->RAM + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
 	memset((*dev)->GetPage(5)->RAM + 6144, 7*8, 768);
@@ -243,10 +247,10 @@ void DevicePentagon1024(CDevice **dev, CDevice *parent) {
 		(*dev)->AddPage(0x4000);
 	}
 
-	(*dev)->GetSlot(0)->Page = (*dev)->GetPage(7);
+	(*dev)->GetSlot(0)->Page = (*dev)->GetPage(0);
 	(*dev)->GetSlot(1)->Page = (*dev)->GetPage(5);
 	(*dev)->GetSlot(2)->Page = (*dev)->GetPage(2);
-	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(0);
+	(*dev)->GetSlot(3)->Page = (*dev)->GetPage(7);
 
 	memcpy((*dev)->GetPage(5)->RAM + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
 	memset((*dev)->GetPage(5)->RAM + 6144, 7*8, 768);
@@ -290,7 +294,7 @@ int SetDevice(char *id) {
 				DeviceScorpion256(dev, parent);
 			} else if (cmphstr(id, "atmturbo512")) {
 				DeviceATMTurbo512(dev, parent);
-			} else if (cmphstr(id, "pentagon1024") || cmphstr(id, "atmturbo1024") || cmphstr(id, "scorpion1024")) {
+			} else if (cmphstr(id, "pentagon1024")) {
 				DevicePentagon1024(dev, parent);
 			} else {
 				return false;

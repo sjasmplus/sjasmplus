@@ -76,7 +76,7 @@ extern int macronummer, lijst, reglenwidth, synerr;
 extern aint CurAddress, AddressOfMAP, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine, destlen, size, PreviousErrorLine, maxlin, comlin;
 
 extern void (*GetCPUInstruction)(void);
-extern char* ModuleName, * vorlabp, * macrolabp;
+extern char* ModuleName, * vorlabp, * macrolabp, * LastParsedLabel;
 
 extern FILE* FP_ListingFile; 
 

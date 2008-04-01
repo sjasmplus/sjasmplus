@@ -1,4 +1,4 @@
-/* 
+/*
 
   SjASMPlus Z80 Cross Compiler
 
@@ -70,19 +70,28 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 		snbuf[21] = 0x54; //af
 		snbuf[22] = 0x00; //af
 
-		snbuf[23] = 0x2D; //sp
-		snbuf[24] = 0xFF; //sp
-		*(Device->GetPage(3)->RAM+0x3F2B+16) = char(start & 0x00FF);
-		*(Device->GetPage(3)->RAM+0x3F2C+16) = char(start >> 8);
-		//*(Device->GetPage(3)->RAM+0x3F39) = char(start & 0x00FF);
-		//*(Device->GetPage(3)->RAM+0x3F3a) = char(start >> 8);
-	} else {
-		snbuf[23] = 0x00; //sp
-		snbuf[24] = 0x40; //sp
+		if (Device->GetPage(3)->RAM[0x3F2D] == (char)0xb1 &&
+			Device->GetPage(3)->RAM[0x3F2E] == (char)0x33 &&
+			Device->GetPage(3)->RAM[0x3F2F] == (char)0xe0 &&
+			Device->GetPage(3)->RAM[0x3F30] == (char)0x5c) {
 
-		Device->GetPage(5)->RAM[0] = 0xC3; // JP
-		Device->GetPage(5)->RAM[1] = char(start & 0x00FF); //pc
-		Device->GetPage(5)->RAM[2] = char(start >> 8); //pc
+			snbuf[23] = 0x2D;// + 16; //sp
+			snbuf[24] = 0xFF; //sp
+
+			Device->GetPage(3)->RAM[0x3F2D + 16] = char(start & 0x00FF); //pc
+			Device->GetPage(3)->RAM[0x3F2E + 16] = char(start >> 8); //pc
+		} else {
+			Warning("[SAVESNA] RAM <0x4000-0x4001> will be overriden due to 48k snapshot imperfect format.", NULL, LASTPASS);
+
+			snbuf[23] = 0x00; //sp
+			snbuf[24] = 0x40; //sp
+
+			Device->GetPage(1)->RAM[0] = char(start & 0x00FF); //pc
+			Device->GetPage(1)->RAM[1] = char(start >> 8); //pc
+		}
+	} else {
+		snbuf[23] = 0X00; //sp
+		snbuf[24] = 0x60; //sp
 	}
 	snbuf[25] = 1; //im 1
 	snbuf[26] = 7; //border 7
@@ -92,7 +101,7 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 		fclose(ff);
 		return 0;
 	}
-	
+
 	if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
 		if (fwrite(Device->GetPage(1)->RAM, 1, Device->GetPage(1)->Size, ff) != Device->GetPage(1)->Size) {
 			Error("Write error (disk full?)", fname, CATCHALL);
@@ -120,7 +129,7 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 			fclose(ff);
 			return 0;
 		}
-		if (fwrite(Device->GetPage(0)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
+		if (fwrite(Device->GetPage(7)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
 			Error("Write error (disk full?)", fname, CATCHALL);
 			fclose(ff);
 			return 0;
@@ -128,11 +137,11 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 	}
 
 	if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
-		//snbuf[29] = 0x10; //7ffd
+
 	} else {
 		snbuf[27] = char(start & 0x00FF); //pc
 		snbuf[28] = char(start >> 8); //pc
-		snbuf[29] = 0x10; //7ffd
+		snbuf[29] = 0x17; //7ffd
 		snbuf[30] = 0; //tr-dos
 		if (fwrite(snbuf + 27, 1, 4, ff) != 4) {
 			Error("Write error (disk full?)", fname, CATCHALL);
@@ -152,7 +161,7 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 		}*/
 	} else {
 		for (int i = 0; i < 8; i++) {
-			if (i != 0 && i != 2 && i != 5) {
+			if (i != 7 && i != 2 && i != 5) {
 				if (fwrite(Device->GetPage(i)->RAM, 1, Device->GetPage(i)->Size, ff) != Device->GetPage(i)->Size) {
 					Error("Write error (disk full?)", fname, CATCHALL);
 					fclose(ff);
