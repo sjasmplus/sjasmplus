@@ -1,3 +1,10 @@
+2008-04-03  Aprisobal  <my@aprisobal.by>
+
+	* VERSIOB 1.07 Stable
+	* Added new SAVETAP pseudo-op. It's support up to 1024kb ZX-Spectrum's
+	RAM.
+	* Added new --nofakes commandline parameter.
+
 2008-04-02  Aprisobal  <my@aprisobal.by>
 
 	* VERSION: 1.07 RC7
