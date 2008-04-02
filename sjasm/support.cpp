@@ -34,6 +34,17 @@
 
 #endif
 
+// http://legacy.imatix.com/html/sfl/sfl282.htm
+char* strpad(char* string, char ch, aint length) {
+	int cursize;
+	cursize = strlen (string);          /*  Get current length of string     */
+	while (cursize < length)            /*  Pad until at desired length      */
+		string [cursize++] = ch;
+
+	string [cursize++] = '\0';          /*  Add terminating null             */
+	return (string);                    /*    and return to caller           */
+}
+
 #if !defined (_MSC_VER) || defined (UNDER_CE)
 
 void GetCurrentDirectory(int whatever, char* pad) {

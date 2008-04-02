@@ -50,6 +50,7 @@ namespace Options {
 	bool AddLabelListing = 0;
 	bool HideLogo = 0;
 	bool NoDestinationFile = 0;
+	bool FakeInstructions = 1;
 
 	CStringsList* IncludeDirsList = 0;
 
@@ -77,7 +78,7 @@ int pass = 0, IsLabelNotFound = 0, ErrorCount = 0, WarningCount = 0, IncludeLeve
 int IsRunning = 0, IsListingFileOpened = 1, donotlist = 0,listdata  = 0,listmacro  = 0;
 int adrdisp = 0,PseudoORG = 0; /* added for spectrum ram */
 char* MemoryRAM=NULL, * MemoryPointer=NULL; /* added for spectrum ram */
-int MemoryCPage = 0, MemoryPagesCount = 0, StartAddress = 0;
+int MemoryCPage = 0, MemoryPagesCount = 0, StartAddress = -1;
 aint MemorySize = 0;
 int macronummer = 0, lijst = 0, reglenwidth = 0, synerr = 1;
 aint CurAddress = 0, AddressOfMAP = 0, CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;
@@ -148,7 +149,7 @@ void InitPass(int p) {
 	// predefined
 	DefineTable.Replace("_SJASMPLUS", "1");
 	DefineTable.Replace("_VERSION", "\"1.07\"");
-	DefineTable.Replace("_RELEASE", "7");
+	DefineTable.Replace("_RELEASE", "0");
 	DefineTable.Replace("_ERRORS", "0");
 	DefineTable.Replace("_WARNINGS", "0");
 }
@@ -248,6 +249,8 @@ namespace Options {
 				IsReversePOP = 1;
 			} else if (!strcmp(c, "nologo")) {
 				HideLogo = 1;
+			} else if (!strcmp(c, "nofakes")) {
+				FakeInstructions = 0;
 			} else if (!strcmp(c, "dos866")) {
 				ConvertEncoding = ENCDOS;
 			} else if (!strcmp(c, "dirbol")) {
@@ -284,7 +287,7 @@ int main(int argc, char **argv) {
 	char buf[MAX_PATH];
 	int base_encoding; /* added */
 	char* p;
-	char* logo = "SjASMPlus Z80 Cross-Assembler v1.07 RC7 (build 02-04-2008)";
+	char* logo = "SjASMPlus Z80 Cross-Assembler v1.07 Stable (build 04-04-2008)";
 	int i = 1;
 
 	if (argc == 1) {
@@ -313,6 +316,7 @@ int main(int argc, char **argv) {
 		_COUT " Other:" _ENDL;
 		_COUT "  --reversepop             Enable reverse POP order (as in base SjASM version)" _ENDL;
 		_COUT "  --dirbol                 Enable processing directives from the beginning of line" _ENDL;
+		_COUT "  --nofakes                Disable fake instructions" _ENDL;
 		_COUT "  --dos866                 Encode from Windows codepage to DOS 866 (Cyrillic)" _ENDL;
 #ifdef UNDER_CE
 		return false;

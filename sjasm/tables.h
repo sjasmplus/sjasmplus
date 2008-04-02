@@ -37,7 +37,6 @@ char* ValidateLabel(char*);
 extern char* PreviousIsLabel;
 int GetLabelValue(char*& p, aint& val);
 int GetLocalLabelValue(char*& op, aint& val);
-int IsLabelUsed(char*& p, bool errors=true);
 
 class CLabelTableEntry {
 public:
@@ -250,16 +249,28 @@ private:
 };
 
 struct SRepeatStack {
-	int dupcount;
+	int RepeatCount;
 	long CurrentGlobalLine;
 	long CurrentLocalLine;
 	long CurrentLine;
-	CStringsList* lines;
-	CStringsList* pointer;
+	CStringsList* Lines;
+	CStringsList* Pointer;
+	bool IsInWork;
+	int Level;
 	char* lp;
-	bool work;
-	int level;
 };
+
+struct SConditionalStack {
+	long CurrentGlobalLine;
+	long CurrentLocalLine;
+	long CurrentLine;
+	CStringsList* Lines;
+	CStringsList* Pointer;
+	bool IsInWork;
+	int Level;
+	char* lp;
+};
+
 /*
 class LabelTable2entrycls {
 public:

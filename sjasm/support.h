@@ -40,6 +40,8 @@ void WriteOutput(_TCHAR* String);
 void WriteOutputEOF();
 #endif
 
+char* strpad(char* string, char ch, aint length);
+
 #if defined (_MSC_VER) && !defined (UNDER_CE)
 
 #define STRDUP _strdup

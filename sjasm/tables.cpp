@@ -169,10 +169,12 @@ int GetLabelValue(char*& p, aint& val) {
 	}
 	temp[0] = 0;
 	if (!g && ModuleName) {
-		STRCAT(temp, LINEMAX, ModuleName); STRCAT(temp, LINEMAX, ".");
+		STRCAT(temp, LINEMAX, ModuleName);
+		STRCAT(temp, LINEMAX, ".");
 	}
 	if (l) {
-		STRCAT(temp, LINEMAX, vorlabp); STRCAT(temp, LINEMAX, ".");
+		STRCAT(temp, LINEMAX, vorlabp);
+		STRCAT(temp, LINEMAX, ".");
 	}
 	len = strlen(temp); np = temp + len;
 	if (!isalpha((unsigned char) * p) && *p != '_') {
@@ -239,110 +241,6 @@ int GetLocalLabelValue(char*& op, aint& val) {
 	}
 	op = p; val = nval;
 	return 1;
-}
-
-/* not finished */
-int IsLabelUsed(char*& p, bool errors) {
-	char* mlp = macrolabp,* op = p;
-	aint val;
-	int g = 0,l = 0,oIsLabelNotFound = IsLabelNotFound,plen;
-	unsigned int len;
-	char* np;
-	if (mlp && *p == '@') {
-		++op; mlp = 0;
-	}
-	if (mlp) {
-		switch (*p) {
-		case '@':
-			g = 1; ++p; break;
-		case '.':
-			l = 1; ++p; break;
-		default:
-			break;
-		}
-		temp[0] = 0;
-		if (l) {
-			STRCAT(temp, LINEMAX, macrolabp); STRCAT(temp, LINEMAX, ">");
-			len = strlen(temp); np = temp + len; plen = 0;
-			if (!isalpha((unsigned char) * p) && *p != '_') {
-				if (errors) {
-					Error("Invalid labelname", temp);
-				}
-				return 0;
-			}
-			while (isalnum((unsigned char) * p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' || *p == '@') {
-				*np = *p; ++np; ++p;
-			}
-			*np = 0;
-			if (strlen(temp) > LABMAX + len) {
-				if (errors) {
-					Error("Label too long", temp + len);
-				}
-				temp[LABMAX + len] = 0;
-			}
-			np = temp; g = 1;
-			do {
-				if (LabelTable.GetValue(np, val)) {
-					// we found it!
-					return 1;
-				}
-				IsLabelNotFound = oIsLabelNotFound;
-				while ('o') {
-					if (*np == '>') {
-						g = 0; break;
-					}
-					if (*np == '.') {
-						++np; break;
-					}
-					++np;
-				}
-			} while (g);
-		}
-	}
-
-	p = op;
-	switch (*p) {
-	case '@':
-		g = 1; ++p; break;
-	case '.':
-		l = 1; ++p; break;
-	default:
-		break;
-	}
-	temp[0] = 0;
-	if (!g && ModuleName) {
-		STRCAT(temp, LINEMAX, ModuleName);
-		STRCAT(temp, LINEMAX, ".");
-	}
-	if (l) {
-		STRCAT(temp, LINEMAX, vorlabp);
-		STRCAT(temp, LINEMAX, ".");
-	}
-	len = strlen(temp); np = temp + len;
-	if (!isalpha((unsigned char) * p) && *p != '_') {
-		if (errors) {
-			Error("Invalid labelname", temp);
-		}
-		return 0;
-	}
-	while (isalnum((unsigned char) * p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' || *p == '@') {
-		*np = *p; ++np; ++p;
-	}
-	*np = 0;
-	if (strlen(temp) > LABMAX + len) {
-		if (errors) {
-			Error("Label too long", temp + len);
-		}
-		temp[LABMAX + len] = 0;
-	}
-	if (LabelTable.GetValue(temp, val)) {
-		return 1;
-	}
-	IsLabelNotFound = oIsLabelNotFound;
-	if (!l && !g && LabelTable.GetValue(temp + len, val)) {
-		return 1;
-	}
-	return 0;
 }
 
 CLabelTableEntry::CLabelTableEntry() {

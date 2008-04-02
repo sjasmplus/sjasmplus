@@ -1,8 +1,8 @@
 /*
 
-  SjASMPlus Z80 Cross Compiler
+  SjASMPlus Z80 Cross Assembler
 
-  Copyright (c) 2004-2006 Aprisobal
+  Copyright (c) 2004-2008 Aprisobal
 
   This software is provided 'as-is', without any express or implied warranty.
   In no event will the authors be held liable for any damages arising from the
@@ -33,10 +33,10 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 
 	// for Lua
 	if (!DeviceID) {
-		Error("zx.save_snapshot_sna128: only for real device emulation mode.", 0);
+		Error("[SAVESNA] Only for real device emulation mode.", 0);
 		return 0;
-	} else if (strcmp(DeviceID, "ZXSPECTRUM48") && strcmp(DeviceID, "ZXSPECTRUM128") && strcmp(DeviceID, "PENTAGON128") && strcmp(DeviceID, "SCORPION256") && strcmp(DeviceID, "ATMTURBO512") && strcmp(DeviceID, "PENTAGON1024")) {
-		Error("zx.save_snapshot_sna128: device must be ZXSPECTRUM48, ZXSPECTRUM128, PENTAGON128, SCORPION256, ATMTURBO512 or PENTAGON1024.", 0);
+	} else if (!IsZXSpectrumDevice(DeviceID)) {
+		Error("[SAVESNA] Device must be ZXSPECTRUM48 or ZXSPECTRUM128.", 0);
 		return 0;
 	}
 
@@ -129,7 +129,7 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 			fclose(ff);
 			return 0;
 		}
-		if (fwrite(Device->GetPage(7)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
+		if (fwrite(Device->GetPage(Device->GetSlot(3)->Page->Number)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
 			Error("Write error (disk full?)", fname, CATCHALL);
 			fclose(ff);
 			return 0;
@@ -141,7 +141,7 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 	} else {
 		snbuf[27] = char(start & 0x00FF); //pc
 		snbuf[28] = char(start >> 8); //pc
-		snbuf[29] = 0x17; //7ffd
+		snbuf[29] = 0x10 + Device->GetSlot(3)->Page->Number; //7ffd
 		snbuf[30] = 0; //tr-dos
 		if (fwrite(snbuf + 27, 1, 4, ff) != 4) {
 			Error("Write error (disk full?)", fname, CATCHALL);
@@ -161,7 +161,7 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 		}*/
 	} else {
 		for (int i = 0; i < 8; i++) {
-			if (i != 7 && i != 2 && i != 5) {
+			if (i != Device->GetSlot(3)->Page->Number && i != 2 && i != 5) {
 				if (fwrite(Device->GetPage(i)->RAM, 1, Device->GetPage(i)->Size, ff) != Device->GetPage(i)->Size) {
 					Error("Write error (disk full?)", fname, CATCHALL);
 					fclose(ff);
@@ -184,7 +184,10 @@ int SaveSNA_ZX(char* fname, unsigned short start) {
 		}
 	}*/
 
-	if (!strcmp(DeviceID, "ATMTURBO512") || !strcmp(DeviceID, "SCORPION256")) {
+	if (!strcmp(DeviceID, "SCORPION256") || 
+		!strcmp(DeviceID, "ATMTURBO512") || 
+		!strcmp(DeviceID, "PENTAGON1024") || 
+		!strcmp(DeviceID, "ATMTURBO1024")) {
 		Warning("Only 128kb will be written to snapshot", fname);
 	}
 

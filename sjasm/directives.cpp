@@ -515,7 +515,7 @@ void dirEND() {
 	} else {
 		lp = p;
 	}
-	_COUT "A" _ENDL;
+	
 	IsRunning = 0;
 }
 
@@ -732,8 +732,8 @@ void dirSAVESNA() {
 		exec = false;
 	}
 
-	if (exec && strcmp(DeviceID, "ZXSPECTRUM48") && strcmp(DeviceID, "ZXSPECTRUM128") && strcmp(DeviceID, "PENTAGON128") && strcmp(DeviceID, "SCORPION256") && strcmp(DeviceID, "ATMTURBO512") && strcmp(DeviceID, "PENTAGON1024")) {
-		Error("[SAVESNA] Device must be ZXSPECTRUM48, ZXSPECTRUM128, PENTAGON128, SCORPION256, ATMTURBO512, PENTAGON1024.", 0);
+	if (exec && !IsZXSpectrumDevice(DeviceID)) {
+		Error("[SAVESNA] Device must be ZXSPECTRUM48 or ZXSPECTRUM128.", 0);
 		exec = false;
 	}
 
@@ -743,7 +743,7 @@ void dirSAVESNA() {
 
 	fnaam = GetFileName(lp);
 	if (comma(lp)) {
-		if (!comma(lp)) {
+		if (!comma(lp) && StartAddress < 0) {
 			if (!ParseExpression(lp, val)) {
 				Error("[SAVESNA] Syntax error", bp, PASS3); return;
 			}
@@ -752,15 +752,67 @@ void dirSAVESNA() {
 			}
 			start = val;
 		} else {
-		  	Error("[SAVESNA] Syntax error. No parameters", bp, PASS3); return;
+			Error("[SAVESNA] Syntax error. No parameters", bp, PASS3); return;
 		}
-	} else {
+	} else if (StartAddress < 0) {
 		Error("[SAVESNA] Syntax error. No parameters", bp, PASS3); return;
+	} else {
+		start = StartAddress;
 	}
+
 	if (exec && !SaveSNA_ZX(fnaam, start)) {
 		Error("[SAVESNA] Error writing file (Disk full?)", bp, CATCHALL); return;
 	}
+
 	delete[] fnaam;
+}
+
+/* added */
+void dirSAVETAP() {
+	bool exec = true;
+
+	if (!DeviceID) {
+		if (pass == LASTPASS) {
+			Error("SAVETAP only allowed in real device emulation mode (See DEVICE)", 0);
+		}
+		exec = false;
+	} else if (pass != LASTPASS) {
+		exec = false;
+	}
+
+	if (exec && !IsZXSpectrumDevice(DeviceID)) {
+		Error("[SAVETAP] Device must be ZXSPECTRUM48, ZXSPECTRUM128, ZXSPECTRUM256, ZXSPECTRUM512 or ZXSPECTRUM1024.", 0);
+		exec = false;
+	}
+
+	aint val;
+	char* filename;
+	int start = -1;
+
+	filename = GetFileName(lp);
+	if (comma(lp)) {
+		if (!comma(lp)) {
+			if (!ParseExpression(lp, val)) {
+				Error("[SAVETAP] Syntax error", bp, PASS3); return;
+			}
+			if (val < 0) {
+				Error("[SAVETAP] Negative values are not allowed", bp, PASS3); return;
+			}
+			start = val;
+		} else {
+		  	Error("[SAVETAP] Syntax error. No parameters", bp, PASS3); return;
+		}
+	} else if (StartAddress < 0) {
+		Error("[SAVETAP] Syntax error. No parameters", bp, PASS3); return;
+	} else {
+		start = StartAddress;
+	}
+
+	if (exec && !SaveTAP_ZX(filename, start)) {
+		Error("[SAVETAP] Error writing file (Disk full?)", bp, CATCHALL); return;
+	}
+
+	delete[] filename;
 }
 
 /* added */
@@ -1011,36 +1063,33 @@ void dirIF() {
 
 	if (val) {
 		ListFile();
-		/*switch (ReadFile()) {*/
 		switch (ReadFile(lp, "[IF] No endif")) {
-			/*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
 		case ELSE:
 			if (SkipFile(lp, "[IF] No endif") != ENDIF) {
 				Error("[IF] No endif", 0);
-			} break;
+			}
+			break;
 		case ENDIF:
 			break;
-			/*default: Error("No endif!",0); break;*/
 		default:
-			Error("[IF] No endif!", 0); break;
+			Error("[IF] No endif!", 0);
+			break;
 		}
 	} else {
 		ListFile();
-		/*switch (SkipFile()) {*/
 		switch (SkipFile(lp, "[IF] No endif")) {
-			/*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
 		case ELSE:
 			if (ReadFile(lp, "[IF] No endif") != ENDIF) {
 				Error("[IF] No endif", 0);
-			} break;
+			}
+			break;
 		case ENDIF:
 			break;
-			/*default: Error("No endif!",0); break;*/
 		default:
-			Error("[IF] No endif!", 0); break;
+			Error("[IF] No endif!", 0);
+			break;
 		}
 	}
-	/**lp=0;*/
 }
 
 /* added */
@@ -1724,11 +1773,11 @@ void dirDUP() {
 
 	if (!RepeatStack.empty()) {
 		SRepeatStack& dup = RepeatStack.top();
-		if (!dup.work) {
+		if (!dup.IsInWork) {
 			if (!ParseExpression(lp, val)) {
 				Error("[DUP/REPT] Syntax error", 0, CATCHALL); return;
 			}
-			dup.level++;
+			dup.Level++;
 			return;
 		}
 	}
@@ -1744,15 +1793,15 @@ void dirDUP() {
 	}
 
 	SRepeatStack dup;
-	dup.dupcount = val;
-	dup.level = 0;
+	dup.RepeatCount = val;
+	dup.Level = 0;
 
-	dup.lines = new CStringsList(lp, NULL);
-	dup.pointer = dup.lines;
+	dup.Lines = new CStringsList(lp, NULL);
+	dup.Pointer = dup.Lines;
 	dup.lp = lp; //чтобы брать код перед EDUP
 	dup.CurrentGlobalLine = CurrentGlobalLine;
 	dup.CurrentLocalLine = CurrentLocalLine;
-	dup.work = false;
+	dup.IsInWork = false;
 	RepeatStack.push(dup);
 }
 
@@ -1764,8 +1813,8 @@ void dirEDUP() {
 
 	if (!RepeatStack.empty()) {
 		SRepeatStack& dup = RepeatStack.top();
-		if (!dup.work && dup.level) {
-			dup.level--;
+		if (!dup.IsInWork && dup.Level) {
+			dup.Level--;
 			return;
 		}
 	}
@@ -1773,13 +1822,13 @@ void dirEDUP() {
 	long gcurln, lcurln;
 	char* ml;
 	SRepeatStack& dup = RepeatStack.top();
-	dup.work = true;
-	dup.pointer->string = new char[LINEMAX];
-	if (dup.pointer->string == NULL) {
+	dup.IsInWork = true;
+	dup.Pointer->string = new char[LINEMAX];
+	if (dup.Pointer->string == NULL) {
 		Error("[EDUP/ENDR] No enough memory!", 0, FATAL);
 	}
-	*dup.pointer->string = 0;
-	STRNCAT(dup.pointer->string, LINEMAX, dup.lp, lp - dup.lp - 4); //чтобы взять код перед EDUP/ENDR/ENDM
+	*dup.Pointer->string = 0;
+	STRNCAT(dup.Pointer->string, LINEMAX, dup.lp, lp - dup.lp - 4); //чтобы взять код перед EDUP/ENDR/ENDM
 	CStringsList* s;
 	olistmacro = listmacro;
 	listmacro = 1;
@@ -1789,10 +1838,10 @@ void dirEDUP() {
 	}
 	gcurln = CurrentGlobalLine;
 	lcurln = CurrentLocalLine;
-	while (dup.dupcount--) {
+	while (dup.RepeatCount--) {
 		CurrentGlobalLine = dup.CurrentGlobalLine;
 		CurrentLocalLine = dup.CurrentLocalLine;
-		s = dup.lines;
+		s = dup.Lines;
 		while (s) {
 			STRCPY(line, LINEMAX, s->string);
 			s = s->next;
@@ -2113,6 +2162,7 @@ void InsertDirectives() {
 	DirectivesTable.insertd("inctrd", dirINCTRD); /* added */
 	DirectivesTable.insertd("insert", dirINCBIN); /* added */
 	DirectivesTable.insertd("savesna", dirSAVESNA); /* added */
+	DirectivesTable.insertd("savetap", dirSAVETAP); /* added */
 	DirectivesTable.insertd("savehob", dirSAVEHOB); /* added */
 	DirectivesTable.insertd("savebin", dirSAVEBIN); /* added */
 	DirectivesTable.insertd("emptytrd", dirEMPTYTRD); /* added */

@@ -110,10 +110,10 @@ void Error(char* fout, char* bd, int type) {
 	if (type == PASS1 && pass != 1) {
 		return;
 	}
-	if (type == PASS3 && pass < 3) {
+	if ((type == CATCHALL || type == PASS3) && pass < 3) {
 		return;
 	}
-	if ((type == CATCHALL || type == SUPPRESS || type == PASS2) && pass < 2) {
+	if ((type == SUPPRESS || type == PASS2) && pass < 2) {
 		return;
 	}
 	IsSkipErrors = (type == SUPPRESS);
@@ -1529,12 +1529,15 @@ EReturn SkipFile(char* pp, char* err) {
 			if (iflevel) {
 				--iflevel;
 			} else {
-				lp = ReplaceDefine(p);return ENDIF;
+				lp = ReplaceDefine(p);
+				return ENDIF;
 			}
 		}
 		if (cmphstr(p, "else")) {
 			if (!iflevel) {
-				ListFile(); lp = ReplaceDefine(p);return ELSE;
+				ListFile();
+				lp = ReplaceDefine(p);
+				return ELSE;
 			}
 		}
 		ListFileSkip(line);

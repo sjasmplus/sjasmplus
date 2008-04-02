@@ -1,4 +1,4 @@
-/* 
+/*
 
   SjASMPlus Z80 Cross Compiler
 
@@ -30,8 +30,8 @@
 
 #include "sjdefs.h"
 
-int replacedefineteller = 0,comnxtlin;
-char dirDEFl[] = "def",dirDEFu[] = "DEF"; /* added for ReplaceDefine */
+int replacedefineteller = 0, comnxtlin;
+char dirDEFl[] = "def", dirDEFu[] = "DEF"; /* added for ReplaceDefine */
 
 /* modified */
 int ParseExpPrim(char*& p, aint& nval) {
@@ -41,37 +41,51 @@ int ParseExpPrim(char*& p, aint& nval) {
 		return 0;
 	}
 	if (*p == '(') {
-		++p; res = ParseExpression(p, nval);
+		++p;
+		res = ParseExpression(p, nval);
 		if (!need(p, ')')) {
-				Error("')' expected", 0); return 0;
+				Error("')' expected", 0);
+				return 0;
 		 }
 	} else if (DeviceID && *p == '{') {
-	  	++p; res = ParseExpression(p, nval); 
+	  	++p; res = ParseExpression(p, nval);
 		/*if (nval < 0x4000) {
 			Error("Address in {..} must be more than 4000h", 0); return 0;
 		} */
 		if (nval > 0xFFFE) {
 			Error("Address in {..} must be less than FFFEh", 0); return 0;
-		} 
+		}
 		if (!need(p, '}')) {
 			Error("'}' expected", 0); return 0;
 		}
+
 	  	nval = (aint) (MemGetByte(nval) + (MemGetByte(nval + 1) << 8));
+
 	  	return 1;
 	} else if (isdigit((unsigned char) * p) || (*p == '#' && isalnum((unsigned char) * (p + 1))) || (*p == '$' && isalnum((unsigned char) * (p + 1))) || *p == '%') {
 	  	res = GetConstant(p, nval);
 	} else if (isalpha((unsigned char) * p) || *p == '_' || *p == '.' || *p == '@') {
 	  	res = GetLabelValue(p, nval);
 	} else if (*p == '?' && (isalpha((unsigned char) * (p + 1)) || *(p + 1) == '_' || *(p + 1) == '.' || *(p + 1) == '@')) {
-	  	++p; res = GetLabelValue(p, nval);
+	  	++p;
+		res = GetLabelValue(p, nval);
 	} else if (DeviceID && *p == '$' && *(p + 1) == '$') {
-		++p; ++p; nval = Page->Number; return 1;
+		++p;
+		++p;
+		nval = Page->Number;
+
+		return 1;
 	} else if (*p == '$') {
-		++p; nval = CurAddress; return 1;
+		++p;
+		nval = CurAddress;
+
+		return 1;
 	} else if (!(res = GetCharConst(p, nval))) {
 		if (synerr) {
 			Error("Syntax error", p, CATCHALL);
-		} return 0;
+		}
+		
+		return 0;
 	}
 	return res;
 }
@@ -342,7 +356,7 @@ int ParseExpression(char*& p, aint& nval) {
 	if (ParseExpLogOr(p, nval)) {
 		return 1;
 	}
-	nval = 0; 
+	nval = 0;
 	return 0;
 }
 
@@ -384,7 +398,7 @@ char* ReplaceDefine(char* lp) {
 				*rp = *lp; ++rp;
 			}
 			++lp;
-			
+
 			if (a != '\'' || (*(lp - 2) != 'f' || *(lp - 3) != 'a') && (*(lp - 2) != 'F' || *(lp - 3) != 'A')) {
 				while ('o') {
 					if (!*lp) {
@@ -396,7 +410,7 @@ char* ReplaceDefine(char* lp) {
 					if (*lp == a) {
 						if (!comlin && !comnxtlin) {
 							++rp;
-						} 
+						}
 						++lp;
 						break;
 					}
@@ -409,7 +423,7 @@ char* ReplaceDefine(char* lp) {
 					}
 					if (!comlin && !comnxtlin) {
 						++rp;
-					} 
+					}
 					++lp;
 				}
 			}
@@ -420,15 +434,15 @@ char* ReplaceDefine(char* lp) {
 			if (!*lp) {
 				*rp = 0;
 				break;
-			} 
-			++lp; 
+			}
+			++lp;
 			continue;
 		}
 		if (!isalpha((unsigned char) * lp) && *lp != '_') {
 			if (!(*rp = *lp)) {
 				break;
-			} 
-			++rp; 
+			}
+			++rp;
 			++lp;
 			continue;
 		}
@@ -437,7 +451,7 @@ char* ReplaceDefine(char* lp) {
 
 		if (!(ver = DefineTable.Get(nid))) {
 			if (!macrolabp || !(ver = MacroDefineTable.getverv(nid))) {
-				dr = 0; 
+				dr = 0;
 				ver = nid;
 			}
 		}
@@ -461,8 +475,8 @@ char* ReplaceDefine(char* lp) {
 			val++;
 			while (a && val) {
 				STRCPY(ver, LINEMAX, a->string); // very danger!
-				/*_COUT val _CMDL "-" _CMDL ver _ENDL;*/ 
-				a = a->next; 
+				/*_COUT val _CMDL "-" _CMDL ver _ENDL;*/
+				a = a->next;
 				val--;
 			}
 			if (val && !a) {
@@ -669,10 +683,10 @@ void ParseLabel() {
 	IsLabelNotFound = 0;
 	if (isdigit((unsigned char) * tp)) {
 		if (NeedEQU() || NeedDEFL() || NeedField()) {
-			Error("Number labels only allowed as address labels", 0); 
+			Error("Number labels only allowed as address labels", 0);
 			return;
 		}
-		val = atoi(tp); 
+		val = atoi(tp);
 		//_COUT CurrentLine _CMDL " " _CMDL val _CMDL " " _CMDL CurAddress _ENDL;
 		if (pass == 1) {
 			LocalLabelTable.Insert(val, CurAddress);
@@ -709,7 +723,7 @@ void ParseLabel() {
 			}
 		} else {
 			int gl = 0;
-			char* p = lp,* n; 
+			char* p = lp,* n;
 			SkipBlanks(p);
 			if (*p == '@') {
 				++p; gl = 1;
@@ -741,15 +755,18 @@ void ParseLabel() {
 			}
 			if (!GetLabelValue(ttp, oval)) {
 				Error("Internal error. ParseLabel()", 0, FATAL);
-			}	
+			}
 	  		/*if (val!=oval) Error("Label has different value in pass 2",temp);*/
 			if (!IsDEFL && val != oval) {
-				char buf[1024];
-				SPRINTF2(buf, LINEMAX, "%lu != %lu", val, oval); 
+				char* buf = new char[LINEMAX];
+
+				SPRINTF2(buf, LINEMAX, "previous value %lu not equal %lu", oval, val);
 	  			Warning("Label has different value in pass 3", buf);
 				//_COUT "" _CMDL filename _CMDL ":" _CMDL CurrentLocalLine _CMDL ":(DEBUG)  " _CMDL "Label has different value in pass 2: ";
 	  			//_COUT val _CMDL "!=" _CMDL oval _ENDL;
 	  			LabelTable.Update(tp, val);
+
+				delete[] buf;
 			}
 		} else if (pass == 2 && !LabelTable.Insert(tp, val, false, IsDEFL) && !LabelTable.Update(tp, val)) {
 			Error("Duplicate label", tp, PASS2);
@@ -762,7 +779,7 @@ void ParseLabel() {
 int ParseMacro() {
 	int gl = 0,r;
 	char* p = lp,* n;
-	SkipBlanks(p); 
+	SkipBlanks(p);
 	if (*p == '@') {
 		gl = 1; ++p;
 	}
@@ -800,13 +817,13 @@ void ParseLine(bool parselabels) {
 	/* (begin add) */
 	if (!RepeatStack.empty()) {
 		SRepeatStack& dup = RepeatStack.top();
-		if (!dup.work) {
+		if (!dup.IsInWork) {
 			lp = line;
 			CStringsList* f;
 			f = new CStringsList(lp, NULL);
-			dup.pointer->next = f;
-			dup.pointer = f;
-			dup.lp = lp;	 
+			dup.Pointer->next = f;
+			dup.Pointer = f;
+			dup.lp = lp;
 			ParseDirective_REPT();
 			return;
 		}
@@ -847,7 +864,7 @@ void ParseLine(bool parselabels) {
 		ListFile(); return;
 	}
 	if (*lp) {
-		Error("Unexpected", lp);
+		Error("Unexpected", lp, LASTPASS);
 	}
 	ListFile();
 }
@@ -980,8 +997,8 @@ void ParseStructMember(CStructure* st) {
 				break;
 			}
 			/* end add */
-			lp = pp; 
-			st->CopyLabels(s); 
+			lp = pp;
+			st->CopyLabels(s);
 			st->CopyMembers(s, lp);
 		}
 		break;
@@ -1026,7 +1043,7 @@ void LuaParseLine(char *str) {
 		Error("No enough memory!", 0, FATAL);
 	}
 
-	STRCPY(line, LINEMAX, str); 
+	STRCPY(line, LINEMAX, str);
 	ParseLineSafe();
 
 	STRCPY(line, LINEMAX, ml);
@@ -1040,7 +1057,7 @@ void LuaParseCode(char *str) {
 		Error("No enough memory!", 0, FATAL);
 	}
 
-	STRCPY(line, LINEMAX, str); 
+	STRCPY(line, LINEMAX, str);
 	ParseLineSafe(false);
 
 	STRCPY(line, LINEMAX, ml);

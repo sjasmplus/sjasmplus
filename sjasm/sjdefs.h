@@ -119,6 +119,7 @@ extern "C" {
 #include "sjio.h"
 #include "io_snapshots.h"
 #include "io_trd.h"
+#include "io_tape.h"
 #include "sjasm.h"
 
 #endif

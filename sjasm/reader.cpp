@@ -133,7 +133,8 @@ int NeedDEFL() {
 	char* olp = lp;
 	SkipBlanks();
 	if (*lp == '=') {
-		++lp; return 1;
+		++lp;
+		return 1;
 	}
 	if (*lp == '.') {
 		++lp;
@@ -363,54 +364,79 @@ int getval(int p) {
 int GetConstant(char*& op, aint& val) {
 	aint base,pb = 1,v,oval;
 	char* p = op,* p2,* p3;
-	SkipBlanks(p); p3 = p;
+
+	SkipBlanks(p);
+
+	p3 = p;
 	val = 0;
+
 	switch (*p) {
 	case '#':
 	case '$':
 		++p;
 		while (isalnum((unsigned char) * p)) {
 			if ((v = getval(*p)) >= 16) {
-				Error("Digit not in base", op); return 0;
+				Error("Digit not in base", op);
+				return 0;
 			}
-			oval = val; val = val * 16 + v; ++p; if (oval > val) {
-												 	Error("Overflow", 0, SUPPRESS);
-												 }
+			oval = val;
+			val = val * 16 + v;
+			++p;
+			if (oval > val) {
+				Error("Overflow", 0, SUPPRESS);
+			}
 		}
+
 		if (p - p3 < 2) {
-			Error("Syntax error", op, CATCHALL); return 0;
+			Error("Syntax error", op, CATCHALL);
+			return 0;
 		}
-		op = p; return 1;
+
+		op = p;
+
+		return 1;
 	case '%':
 		++p;
 		while (isdigit((unsigned char) * p)) {
 			if ((v = getval(*p)) >= 2) {
-				Error("Digit not in base", op); return 0;
+				Error("Digit not in base", op);
+				return 0;
 			}
-			oval = val; val = val * 2 + v; ++p; if (oval > val) {
-													Error("Overflow", 0, SUPPRESS);
-												}
+			oval = val; val = val * 2 + v; ++p;
+			if (oval > val) {
+				Error("Overflow", 0, SUPPRESS);
+			}
 		}
 		if (p - p3 < 2) {
-			Error("Syntax error", op, CATCHALL); return 0;
+			Error("Syntax error", op, CATCHALL);
+			return 0;
 		}
-		op = p; return 1;
+
+		op = p;
+		
+		return 1;
 	case '0':
 		++p;
 		if (*p == 'x' || *p == 'X') {
 			++p;
 			while (isalnum((unsigned char) * p)) {
 				if ((v = getval(*p)) >= 16) {
-					Error("Digit not in base", op); return 0;
+					Error("Digit not in base", op);
+					return 0;
 				}
-				oval = val; val = val * 16 + v; ++p; if (oval > val) {
-													 	Error("Overflow", 0, SUPPRESS);
-													 }
+				oval = val; val = val * 16 + v; ++p;
+				if (oval > val) {
+					Error("Overflow", 0, SUPPRESS);
+				}
 			}
 			if (p - p3 < 3) {
-				Error("Syntax error", op, CATCHALL); return 0;
+				Error("Syntax error", op, CATCHALL);
+				return 0;
 			}
-			op = p; return 1;
+
+			op = p;
+
+			return 1;
 		}
 	default:
 		while (isalnum((unsigned char) * p)) {
@@ -451,7 +477,9 @@ int GetConstant(char*& op, aint& val) {
 									   }
 			pb *= base;
 		} while (p-- != p3);
+
 		op = p2;
+
 		return 1;
 	}
 }
@@ -468,33 +496,47 @@ int GetCharConstChar(char*& op, aint& val) {
 		return 1;
 	case 'n':
 	case 'N':
-		val = 10; return 1;
+		val = 10;
+		return 1;
 	case 't':
 	case 'T':
-		val = 9; return 1;
+		val = 9;
+		return 1;
 	case 'v':
 	case 'V':
-		val = 11; return 1;
+		val = 11;
+		return 1;
 	case 'b':
 	case 'B':
-		val = 8; return 1;
+		val = 8;
+		return 1;
 	case 'r':
 	case 'R':
-		val = 13; return 1;
+		val = 13;
+		return 1;
 	case 'f':
 	case 'F':
-		val = 12; return 1;
+		val = 12;
+		return 1;
 	case 'a':
 	case 'A':
-		val = 7; return 1;
+		val = 7;
+		return 1;
 	case 'e':
 	case 'E':
-		val = 27; return 1;
+		val = 27;
+		return 1;
 	case 'd':
 	case 'D':
-		val = 127; return 1;
+		val = 127;
+		return 1;
 	default:
-		--op; val = '\\'; Error("Unknown escape", op); return 1;
+		--op;
+		val = '\\';
+
+		Error("Unknown escape", op);
+
+		return 1;
 	}
 	return 0;
 }
@@ -565,14 +607,22 @@ int GetBytes(char*& p, int e[], int add, int dc) {
 		  	p++;
 			do {
 				if (!*p || *p == 0x27) {
-					Error("Syntax error", p, SUPPRESS); e[t] = -1; return t;
+					Error("Syntax error", p, SUPPRESS);
+					e[t] = -1;
+					return t;
 				}
 				if (t == 128) {
-		  			Error("Too many arguments", p, SUPPRESS); e[t] = -1; return t;
+		  			Error("Too many arguments", p, SUPPRESS);
+					e[t] = -1;
+					return t;
 				}
-		  		GetCharConstCharSingle(p, val); check8(val); e[t++] = (val + add) & 255;
+		  		GetCharConstCharSingle(p, val);
+				check8(val);
+				e[t++] = (val + add) & 255;
 			} while (*p != 0x27);
+
 		  	++p;
+
 			if (dc && t) {
 				e[t - 1] |= 128;
 			}
@@ -581,14 +631,18 @@ int GetBytes(char*& p, int e[], int add, int dc) {
 			if (ParseExpression(p, val)) {
 				check8(val); e[t++] = (val + add) & 255;
 			} else {
-				Error("Syntax error", p, SUPPRESS); break;
+				Error("Syntax error", p, SUPPRESS);
+				break;
 			}
 		}
-		SkipBlanks(p); if (*p != ',') {
-					   	break;
-					   } ++p;
+		SkipBlanks(p);
+		if (*p != ',') {
+			break;
+		}
+		++p;
 	}
-	e[t] = -1; return t;
+	e[t] = -1;
+	return t;
 }
 
 /* modified */

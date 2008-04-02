@@ -46,6 +46,7 @@ namespace Options {
 	extern bool IsShowFullPath;
 	extern bool AddLabelListing;
 	extern bool NoDestinationFile;
+	extern bool FakeInstructions;
 
 	extern CStringsList* IncludeDirsList;
 

@@ -151,6 +151,7 @@ static int tolua_sjasm_sj_insert_label00(lua_State* tolua_S)
 static int tolua_get_sj_unsigned_current_address(lua_State* tolua_S)
 {
   tolua_pushnumber(tolua_S,(lua_Number)CurAddress);
+  CheckPage();
  return 1;
 }
 #endif //#ifndef TOLUA_DISABLE
@@ -881,7 +882,7 @@ TOLUA_API int tolua_sjasm_open (lua_State* tolua_S)
   tolua_beginmodule(tolua_S,"zx");
    tolua_function(tolua_S,"trdimage_create",tolua_sjasm_zx_trdimage_create00);
    tolua_function(tolua_S,"trdimage_add_file",tolua_sjasm_zx_trdimage_add_file00);
-   tolua_function(tolua_S,"save_snapshot_sna128",tolua_sjasm_zx_save_snapshot_sna12800);
+   tolua_function(tolua_S,"save_snapshot_sna",tolua_sjasm_zx_save_snapshot_sna12800);
   tolua_endmodule(tolua_S);
   tolua_module(tolua_S,"sj",1);
   tolua_beginmodule(tolua_S,"sj");

@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
-  <title>SjASMPlus 1.07 Documentation [02.04.2008]</title>
+  <title>SjASMPlus 1.07 Documentation [03.04.2008]</title>
 
   <chapter>
     <title>Introduction</title>
@@ -162,6 +162,15 @@
 
       <para><variablelist>
           <varlistentry>
+            <term>03.04.2008 - 1.07 Stable</term>
+
+            <listitem>
+              <para><programlisting>- Added new SAVETAP pseudo-op. It's support up to 1024kb ZX-Spectrum's RAM.
+- Added new --nofakes commandline parameter.</programlisting></para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term>02.04.2008 - 1.07 RC7</term>
 
             <listitem>
@@ -179,7 +188,7 @@
               <para><programlisting>- Applied bugfix patches for SAVEHOB/SAVETRD pseudo-ops by Breeze.
 - Fixed memory leak in line parsing routine.
 - Fixed 48k SNA snapshots saving routine.
-- Added missing INF command.
+- Added missing INF instruction.
 - Fixed code parser's invalid addressing of temporary labels in macros.</programlisting></para>
             </listitem>
           </varlistentry>
@@ -336,6 +345,7 @@
  Other:
   --reversepop             Enable reverse POP order (as in base SjASM version)
   --dirbol                 Enable processing directives from the beginning of line
+  --nofakes                Disable fake instructions
   --dos866                 Encode from Windows codepage to DOS 866 (Cyrillic)</programlisting></para>
     </section>
 
@@ -873,7 +883,7 @@ or    x or y   bitwise or
       <para>In this mode the compiler compiling program to virtual memory (as
       at MSX's WB-ASS2, ZX-Spectrum's GENS, ZEUS, ALASM etc). After this all
       you can use new pseudo-ops as <link linkend="s_pseudoops">SAVEBIN,
-      SAVEHOB, SAVETRD, PAGE, SLOT, LABELSLIST</link> and use special
+      SAVEHOB, SAVETRD, SAVETAP,PAGE, SLOT, LABELSLIST</link> and use special
       functions in <link linkend="c_lua_scripting">Lua scripts</link>.</para>
 
       <para><example>
@@ -895,6 +905,8 @@ StartProg:
     DEVICE ZXSPECTRUM128
 
     SAVESNA "snapshotname.sna",StartProg
+
+    SAVETAP "tapefile.tap",StartProg
  </programlisting></para>
         </example>Predefined devices:<variablelist>
           <varlistentry>
@@ -919,43 +931,34 @@ StartProg:
             <term>ZXSPECTRUM128</term>
 
             <listitem>
-              <para>Same as ZXSPECTRUM48, but have 8 pages (0-7) with size
-              4000h.</para>
+              <para>Has 8 RAM pages (0-7) with size 4000h.</para>
             </listitem>
           </varlistentry>
 
           <varlistentry>
-            <term>PENTAGON128</term>
+            <term>ZXSPECTRUM256</term>
 
             <listitem>
-              <para>Same as ZXSPECTRUM128</para>
+              <para>Same as russian clone Scorption 256. Has 16 RAM pages
+              (0-15) with size 4000h.</para>
             </listitem>
           </varlistentry>
 
           <varlistentry>
-            <term>SCORPION256</term>
+            <term>ZXSPECTRUM512</term>
 
             <listitem>
-              <para>Same as ZXSPECTRUM48, but have 16 pages (0-15) with size
-              4000h.</para>
+              <para>Same as russian clones ATM Turbo 512 and Pentagon 512. Has
+              32 RAM pages (0-31) with size 4000h.</para>
             </listitem>
           </varlistentry>
 
           <varlistentry>
-            <term>ATMTURBO512</term>
+            <term>ZXSPECTRUM1024</term>
 
             <listitem>
-              <para>Same as ZXSPECTRUM48, but have 32 pages (0-31) with size
-              4000h.</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term>PENTAGON1024</term>
-
-            <listitem>
-              <para>Same as ZXSPECTRUM48, but have 64 pages (0-63) with size
-              4000h.</para>
+              <para>Same as russian clones ATM Turbo 2 and Pentagon 1024 SL.
+              Has 64 RAM pages (0-63) with size 4000h.</para>
             </listitem>
           </varlistentry>
         </variablelist></para>
@@ -1002,13 +1005,13 @@ StartProg:
           </varlistentry>
 
           <varlistentry>
-            <term>_RELEASE = "releasename"</term>
+            <term>_RELEASE = releasenumber</term>
 
             <listitem>
               <para><example>
                   <title></title>
 
-                  <para><programlisting>   IF _RELEASE = "RC1"
+                  <para><programlisting>   IF _RELEASE = 1 ; 0 - is stable version
      ;code for Release Candidate 1
    ELSE
      ;code for other version
@@ -1999,6 +2002,27 @@ START  .... ;something code
           </varlistentry>
 
           <varlistentry>
+            <term>SAVETAP &lt;filename&gt;,&lt;startadressofprogram&gt;</term>
+
+            <listitem>
+              <para><emphasis>Work only in real device emulation mode. See
+              <link linkend="po_device">DEVICE</link>.</emphasis></para>
+
+              <para>Save the tape file for emulators of ZX-Spectrum. Generated
+              tape file supports ZX-Spectrum clones with extended RAM such as
+              ATM Turbo 512, etc.<example>
+                  <title></title>
+
+                  <para><programlisting>    DEVICE ZXSPECTRUM48
+    ORG $8000
+START  .... ;something code
+    RET
+    SAVETAP "game.tap",START ;save tape file to file game.tap. Start address is START ($8000)</programlisting></para>
+                </example></para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><anchor id="po_savetrd" />SAVETRD
             &lt;filenameoftrdimage&gt;,&lt;filename_in_trdos&gt;,&lt;startadress&gt;,&lt;lengthofcode&gt;</term>
 
@@ -2842,13 +2866,13 @@ DOT1 SDOT 0,0, 0,0,0     ; or 0,0,0,0,0 or {0,0,{0,0,0}}</programlisting>Only
           </varlistentry>
 
           <varlistentry>
-            <term>[void] zx.save_snapshot_sna128("filename.sna",
+            <term>[void] zx.save_snapshot_sna("filename.sna",
             startaddressofprogram)</term>
 
             <listitem>
               <para>Save snapshot of memory in SNA format. <emphasis>Work only
-              in real device emulation mode and only for ZXSPECTRUM128 and
-              better..</emphasis></para>
+              in real device emulation mode and only for ZXSPECTRUM48 and
+              ZXSPECTRUM128..</emphasis></para>
             </listitem>
           </varlistentry>
         </variablelist></para>
