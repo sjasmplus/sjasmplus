@@ -38,4 +38,4 @@ all: $(LUAOBJS) $(TOLUAOBJS) $(OBJS)
 	$(GPP) $(CFLAGS) -o $@ -c $<
 
 clean:
-	rm -vf *.o *.o lua5.1/*.o tolua++/*.o *~ $(EXE)
+	rm -vf sjasm/*.o lua5.1/*.o tolua++/*.o *~ $(EXE)
