@@ -14,8 +14,10 @@ CXXFLAGS=$(CFLAGS)
 LDFLAGS="-ldl"
 
 #sjasmplus object files
-OBJS=sjasm/devices.o sjasm/directives.o sjasm/io_snapshots.o sjasm/io_trd.o sjasm/lua_lpack.o sjasm/lua_sjasm.o \
-sjasm/parser.o sjasm/reader.o sjasm/sjasm.o sjasm/sjio.o sjasm/support.o sjasm/tables.o sjasm/z80.o
+OBJS=sjasm/devices.o sjasm/directives.o sjasm/io_snapshots.o sjasm/io_trd.o \
+sjasm/io_tape.o sjasm/lua_lpack.o sjasm/lua_sjasm.o sjasm/parser.o \
+sjasm/reader.o sjasm/sjasm.o sjasm/sjio.o sjasm/support.o sjasm/tables.o \
+sjasm/z80.o
 
 #liblua objects
 LUAOBJS= lua5.1/lapi.o lua5.1/lauxlib.o lua5.1/lbaselib.o lua5.1/lcode.o lua5.1/ldblib.o \
