@@ -69,11 +69,13 @@ extern int CurrentSourceFName;
 extern bool displayinprocces, displayerror; /* added */
 extern int ConvertEncoding; /* added */
 extern int pass, IsLabelNotFound, ErrorCount, WarningCount, IncludeLevel, IsRunning, IsListingFileOpened, donotlist, listdata, listmacro;
+//physical address, disp != org mode flag
 extern int adrdisp, PseudoORG; /* added for spectrum mode */
 extern char* MemoryRAM, * MemoryPointer; /* added for spectrum ram */
 extern int MemoryCPage, MemoryPagesCount, StartAddress;
 extern aint MemorySize;
 extern int macronummer, lijst, reglenwidth, synerr;
+//$, ...
 extern aint CurAddress, AddressOfMAP, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine, destlen, size, PreviousErrorLine, maxlin, comlin;
 
 extern void (*GetCPUInstruction)(void);

@@ -493,16 +493,11 @@ void CheckPage() {
 	CDeviceSlot* S;
 	for (int i=0;i<Device->SlotsCount;i++) {
 		S = Device->GetSlot(i);
-		if (CurAddress >= S->Address && ((CurAddress < 65536 && CurAddress < S->Address + S->Size) || (CurAddress >= 65536 && CurAddress <= S->Address + S->Size))) {
-			if (PseudoORG) {
-				MemoryPointer = S->Page->RAM + (adrdisp - S->Address);
-				Page = S->Page;
-				return;
-			} else {
-				MemoryPointer = S->Page->RAM + (CurAddress - S->Address);
-				Page = S->Page;
-				return;
-			}
+		int realAddr = PseudoORG ? adrdisp : CurAddress;
+		if (realAddr >= S->Address && ((realAddr < 65536 && realAddr < S->Address + S->Size) || (realAddr >= 65536 && realAddr <= S->Address + S->Size))) {
+			MemoryPointer = S->Page->RAM + (realAddr - S->Address);
+			Page = S->Page;
+			return;
 		}
 	}
 	
