@@ -346,10 +346,6 @@ int main(int argc, char **argv) {
 	Options::RAWFName[0] = 0;
 	Options::NoDestinationFile = true; // not *.out files by default
 
-	// start counter
-	long dwStart;
-	dwStart = GetTickCount();
-
 	// get current directory
 	GetCurrentDirectory(MAX_PATH, buf);
 	CurrentDirectory = buf;
@@ -449,16 +445,7 @@ int main(int argc, char **argv) {
 		LabelTable.DumpSymbols();
 	}
 
-	_COUT "Errors: " _CMDL ErrorCount _CMDL ", warnings: " _CMDL WarningCount _CMDL ", compiled: " _CMDL CompiledCurrentLine _CMDL " lines" _END;
-
-	double dwCount;
-	dwCount = GetTickCount() - dwStart;
-	if (dwCount < 0) {
-		dwCount = 0;
-	}
-	printf(", work time: %.3f seconds", dwCount / 1000);
-
-	_COUT "" _ENDL;
+	_COUT "Errors: " _CMDL ErrorCount _CMDL ", warnings: " _CMDL WarningCount _CMDL ", compiled: " _CMDL CompiledCurrentLine _CMDL " lines" _ENDL;
 
 #ifndef UNDER_CE
 	cout << flush;

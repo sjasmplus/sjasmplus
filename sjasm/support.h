@@ -72,9 +72,6 @@ char* strpad(char* string, char ch, aint length);
 void GetCurrentDirectory(int, char*);
 int SearchPath(char*, char*, char*, int, char*, char**);
 char* strset(char* str, char val);
-#ifndef WIN32
-long GetTickCount();
-#endif
 
 #ifdef UNDER_CE
 #define STRDUP _strdup

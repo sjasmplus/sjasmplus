@@ -113,14 +113,6 @@ char* strset(char* str, char val) {
 	return str;
 }
 
-#ifndef WIN32
-long GetTickCount() {
-	struct timeval tv1[1];
-	gettimeofday(tv1, 0);
-	return tv1->tv_usec / 1000;
-}
-#endif
-
 #endif
 
 void LuaShellExec(char *command) {
