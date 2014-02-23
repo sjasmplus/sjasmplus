@@ -1,0 +1,6 @@
+Pass 1 complete (0 errors)
+Pass 2 complete (0 errors)
+wrong_index_offset.asm(4): error: Syntax error: —50) 
+wrong_index_offset.asm(4): error: Operand expected
+Pass 3 complete
+Errors: 2, warnings: 0, compiled: 5 lines
