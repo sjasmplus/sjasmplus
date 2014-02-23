@@ -84,21 +84,23 @@ int cmphstr(char*& p1, const char* p2) {
 	}
 }
 
-int White() {
-	return (*lp && *lp <= ' ');
+int White(char c) {
+  return isspace(c);
 }
 
-int SkipBlanks() {
-	while (*lp && *lp <= ' ') {
-		++lp;
-	}
-	return (*lp == 0);
+int White() {
+  return White(*lp);
 }
 
 void SkipBlanks(char*& p) {
-	while (*p && *p <= ' ') {
-		++p;
-	}
+  while (*p && *p <= ' ') {
+    ++p;
+  }
+}
+
+int SkipBlanks() {
+  SkipBlanks(lp);
+	return (*lp == 0);
 }
 
 /* added */
