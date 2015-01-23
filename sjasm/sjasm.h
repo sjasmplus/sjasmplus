@@ -71,7 +71,7 @@ extern int pass, IsLabelNotFound, ErrorCount, WarningCount, IncludeLevel, IsRunn
 //physical address, disp != org mode flag
 extern int adrdisp, PseudoORG; /* added for spectrum mode */
 extern char* MemoryPointer; /* added for spectrum ram */
-extern int MemoryPagesCount, StartAddress;
+extern int StartAddress;
 extern aint MemorySize;
 extern int macronummer, lijst, reglenwidth, synerr;
 //$, ...
