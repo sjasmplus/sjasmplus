@@ -1,0 +1,17 @@
+01   0000                     device zxspectrum128
+02   0000             
+03   0000                     org #8000
+04   8000             
+05   8000                     MACRO WAVEOUT reg, data
+06   8000~                    LD A,reg
+07   8000~                    OUT (7EH),A
+08   8000~                    LD A,data
+09   8000~                    OUT (7FH),A
+10   8000                     ENDM
+11   8000             
+12   8000                     WAVEOUT 2,17
+12   8000 3E 02       >        LD A,reg
+12   8002 D3 7E       >        OUT (7EH),A
+12   8004 3E 11       >        LD A,data
+12   8006 D3 7F       >        OUT (7FH),A
+13   8008             
