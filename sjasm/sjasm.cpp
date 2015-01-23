@@ -76,7 +76,7 @@ int ConvertEncoding = ENCWIN; /* added */
 int pass = 0, IsLabelNotFound = 0, ErrorCount = 0, WarningCount = 0, IncludeLevel = -1;
 int IsRunning = 0, IsListingFileOpened = 1, donotlist = 0,listdata  = 0,listmacro  = 0;
 int adrdisp = 0,PseudoORG = 0; /* added for spectrum ram */
-char* MemoryRAM=NULL, * MemoryPointer=NULL; /* added for spectrum ram */
+char* MemoryPointer=NULL; /* added for spectrum ram */
 int MemoryCPage = 0, MemoryPagesCount = 0, StartAddress = -1;
 aint MemorySize = 0;
 int macronummer = 0, lijst = 0, reglenwidth = 0, synerr = 1;
