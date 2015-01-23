@@ -74,6 +74,7 @@ int ParseDirective(bool bol) {
 			Error(".X must be positive integer", 0, CATCHALL); lp = olp; return 0;
 		}
 
+        char mline[LINEMAX2];
 		int olistmacro;	char* ml;
 		char* pp = mline; *pp = 0;
 		STRCPY(pp, LINEMAX2, " ");
