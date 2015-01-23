@@ -1334,7 +1334,7 @@ void CStructure::deflab() {
 		}
 	} else {
 		if (!LabelTable.Insert(p, noffset)) {
-			Error("Duplicate label", tp, PASS1);
+            Error("Duplicate label", 0, PASS1);
 		}
 	}
 	free(p);
@@ -1355,7 +1355,7 @@ void CStructure::deflab() {
 			}
 		} else {
 			if (!LabelTable.Insert(p, np->offset)) {
-				Error("Duplicate label", tp, PASS1);
+                Error("Duplicate label", 0, PASS1);
 			}
 		}
 		free(p);
@@ -1379,7 +1379,7 @@ void CStructure::emitlab(char* iid) {
 		}
 	} else {
 		if (!LabelTable.Insert(p, CurAddress)) {
-			Error("Duplicate label", tp, PASS1);
+            Error("Duplicate label", 0, PASS1);
 		}
 	}
 	free(p);
@@ -1400,7 +1400,7 @@ void CStructure::emitlab(char* iid) {
 			}
 		} else {
 			if (!LabelTable.Insert(p, np->offset + CurAddress)) {
-				Error("Duplicate label", tp, PASS1);
+                Error("Duplicate label", 0, PASS1);
 			}
 		}
 		free(p);
