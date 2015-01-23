@@ -273,7 +273,7 @@ int CLabelTable::Insert(const char* nname, aint nvalue, bool undefined = false, 
 			} else {
 				//if label already added as used
 				LabelTable[htr].value = nvalue;
-				LabelTable[htr].page = MemoryCPage;
+                LabelTable[htr].page = 0;
 				LabelTable[htr].IsDEFL = IsDEFL; /* added */
 				return 1;
 			}
@@ -290,7 +290,7 @@ int CLabelTable::Insert(const char* nname, aint nvalue, bool undefined = false, 
 	LabelTable[NextLocation].value = nvalue;
 	if (!undefined) {
 		LabelTable[NextLocation].used = -1;
-		LabelTable[NextLocation].page = MemoryCPage;
+        LabelTable[NextLocation].page = 0;
 	} else {
 		LabelTable[NextLocation].used = 1;
 		LabelTable[NextLocation].page = -1;
