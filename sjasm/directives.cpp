@@ -1590,33 +1590,25 @@ void dirDISPLAY() {
 			} while (*lp != 0x27);
 		  	++lp;
 		} else {
-		  	displayerror = 0;displayinprocces = 1;
 			if (ParseExpression(lp, val)) {
-				if (displayerror) {
-					displayinprocces = 0;
-					Error("[DISPLAY] Bad argument", line, PASS3);
-					return;
-				} else {
-		  		  	displayinprocces = 0;
-					if (decprint == 0 || decprint == 2) {
-		  		  		*(ep++) = '0';
-						*(ep++) = 'x';
-						if (val < 0x1000) {
-							PrintHEX16(ep, val);
-						} else {
-							PrintHEXAlt(ep, val);
-						}
-					}
-					if (decprint == 2) {
-						*(ep++) = ',';
-						*(ep++) = ' ';
-					}
-					if (decprint == 1 || decprint == 2) {
-						SPRINTF1(ep, (int)(&e[0] + LINEMAX - ep), "%d", val);
-						ep += strlen(ep);
-					}
-		  		  	decprint = 0;
-				}
+                if (decprint == 0 || decprint == 2) {
+                    *(ep++) = '0';
+                    *(ep++) = 'x';
+                    if (val < 0x1000) {
+                        PrintHEX16(ep, val);
+                    } else {
+                        PrintHEXAlt(ep, val);
+                    }
+                }
+                if (decprint == 2) {
+                    *(ep++) = ',';
+                    *(ep++) = ' ';
+                }
+                if (decprint == 1 || decprint == 2) {
+                    SPRINTF1(ep, (int)(&e[0] + LINEMAX - ep), "%d", val);
+                    ep += strlen(ep);
+                }
+                decprint = 0;
 			} else {
 				Error("[DISPLAY] Syntax error", line, PASS3);
 				return;
