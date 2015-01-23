@@ -78,7 +78,6 @@ int IsRunning = 0, IsListingFileOpened = 1, donotlist = 0,listdata  = 0,listmacr
 int adrdisp = 0,PseudoORG = 0; /* added for spectrum ram */
 char* MemoryPointer=NULL; /* added for spectrum ram */
 int StartAddress = -1;
-aint MemorySize = 0;
 int macronummer = 0, lijst = 0, reglenwidth = 0, synerr = 1;
 aint CurAddress = 0, AddressOfMAP = 0, CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;
 aint destlen = 0, size = (aint)-1,PreviousErrorLine = (aint)-1, maxlin = 0, comlin = 0;

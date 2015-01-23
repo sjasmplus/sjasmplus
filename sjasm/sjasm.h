@@ -72,7 +72,6 @@ extern int pass, IsLabelNotFound, ErrorCount, WarningCount, IncludeLevel, IsRunn
 extern int adrdisp, PseudoORG; /* added for spectrum mode */
 extern char* MemoryPointer; /* added for spectrum ram */
 extern int StartAddress;
-extern aint MemorySize;
 extern int macronummer, lijst, reglenwidth, synerr;
 //$, ...
 extern aint CurAddress, AddressOfMAP, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine, destlen, size, PreviousErrorLine, maxlin, comlin;
