@@ -67,7 +67,7 @@ extern char SourceFNames[128][MAX_PATH];
 extern int CurrentSourceFName;
 
 extern int ConvertEncoding; /* added */
-extern int pass, IsLabelNotFound, ErrorCount, WarningCount, IncludeLevel, IsRunning, IsListingFileOpened, donotlist, listdata, listmacro;
+extern int pass, IsLabelNotFound, ErrorCount, WarningCount, IncludeLevel, IsRunning, IsListingFileOpened, donotlist, listmacro;
 //physical address, disp != org mode flag
 extern int adrdisp, PseudoORG; /* added for spectrum mode */
 extern char* MemoryPointer; /* added for spectrum ram */

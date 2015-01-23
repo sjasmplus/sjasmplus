@@ -356,7 +356,6 @@ void ListFile() {
 	epadres = CurAddress;
 	PreviousAddress = (aint) - 1;
 	nEB = 0;
-	listdata = 0;
 }
 
 void ListFileSkip(char* line) {
@@ -394,7 +393,6 @@ void ListFileSkip(char* line) {
 	epadres = CurAddress;
 	PreviousAddress = (aint) - 1;
 	nEB = 0;
-	listdata = 0;
 }
 
 /* added */
