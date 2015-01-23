@@ -194,7 +194,7 @@ namespace Options {
 			}
 
 			memset(c, 0, LINEMAX); //todo
-			ps = STRSTR(p, "=");
+			ps = strstr(p, "=");
 			if (ps != NULL) {
 				STRNCPY(c, LINEMAX, p, (int)(ps - p));
 			} else {
