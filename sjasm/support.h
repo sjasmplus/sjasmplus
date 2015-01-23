@@ -45,7 +45,6 @@ char* strpad(char* string, char ch, aint length);
 #if defined (_MSC_VER) && !defined (UNDER_CE)
 
 #define STRDUP _strdup
-#define STRSET(str, sizeInBytes, c) _strset_s(str, sizeInBytes, c)
 #define STRCAT(strDestination, sizeInBytes, strSource) strcat_s(strDestination, sizeInBytes, strSource)
 #define STRCPY(strDestination, sizeInBytes, strSource) strcpy_s(strDestination, sizeInBytes, strSource)
 #define STRNCPY(strDestination, sizeInBytes, strSource, count) strncpy_s(strDestination, sizeInBytes, strSource, count)
@@ -71,14 +70,12 @@ char* strpad(char* string, char ch, aint length);
 #endif
 void GetCurrentDirectory(int, char*);
 int SearchPath(char*, char*, char*, int, char*, char**);
-char* strset(char* str, char val);
 
 #ifdef UNDER_CE
 #define STRDUP _strdup
 #else
 #define STRDUP strdup
 #endif
-#define STRSET(str, sizeInBytes, c) strset(str, c)
 #define STRCAT(strDestination, sizeInBytes, strSource) strcat(strDestination, strSource)
 #define STRCPY(strDestination, sizeInBytes, strSource) strcpy(strDestination, strSource)
 #define STRNCPY(strDestination, sizeInBytes, strSource, count) strncpy(strDestination, strSource, count)

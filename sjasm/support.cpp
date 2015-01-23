@@ -79,40 +79,6 @@ int SearchPath(char* oudzp, char* filename, char* whatever, int maxlen, char* ni
 	return 0;
 }
 
-char* strset(char* str, char val) {
-	//non-aligned
-	char* pByte = str;
-	while (((unsigned long)pByte) & 3) {
-		if (*pByte) {
-			*pByte++ = val;
-		} else {
-			return str;
-		}
-	}
-
-	//4-byte aligned
-	unsigned long* pBlock = (unsigned long*) pByte;
-	unsigned long a;
-	unsigned long dwVal = val | val << 8 | val << 16 | val << 24;
-	for (; ;) {
-		a = *pBlock;
-		a &= 0x7f7f7f7f;
-		a -= 0x01010101;
-		if (a & 0x80808080) {
-			break;
-		} else {
-			*pBlock++ = dwVal;
-		}
-	}
-
-	//non-aligned
-	pByte = (char*) pBlock;
-	while (*pByte) {
-		*pByte++ = val;
-	}
-	return str;
-}
-
 #endif
 
 void LuaShellExec(char *command) {
