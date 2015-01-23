@@ -183,28 +183,16 @@ void ExitASM(int p) {
 }
 
 namespace Options {
-#ifdef UNDER_CE
-	void GetOptions(_TCHAR* argv[], int& i) {
-#else
 	void GetOptions(char**& argv, int& i) {
-#endif
 		char* p, *ps;
 		char c[LINEMAX];
-#ifdef UNDER_CE
 		while (argv[i] && *argv[i] == '-') {
 			if (*(argv[i] + 1) == '-') {
 				p = argv[i++] + 2;
 			} else {
 				p = argv[i++] + 1;
 			}
-#else
-		while (argv[i] && *argv[i] == '-') {
-			if (*(argv[i] + 1) == '-') {
-				p = argv[i++] + 2;
-			} else {
-				p = argv[i++] + 1;
-			}
-#endif
+
 			memset(c, 0, LINEMAX); //todo
 			ps = STRSTR(p, "=");
 			if (ps != NULL) {
@@ -279,15 +267,7 @@ void LuaFatalError(lua_State *L) {
 }
 
 
-#ifdef UNDER_CE
-int main(int argc, _TCHAR* argv[]) {
-#else
-#ifdef WIN32
 int main(int argc, char* argv[]) {
-#else
-int main(int argc, char **argv) {
-#endif
-#endif
 	char buf[MAX_PATH];
 	int base_encoding; /* added */
 	char* p;
@@ -322,11 +302,7 @@ int main(int argc, char **argv) {
 		_COUT "  --dirbol                 Enable processing directives from the beginning of line" _ENDL;
 		_COUT "  --nofakes                Disable fake instructions" _ENDL;
 		_COUT "  --dos866                 Encode from Windows codepage to DOS 866 (Cyrillic)" _ENDL;
-#ifdef UNDER_CE
-		return false;
-#else
-		exit(1);
-#endif
+		return 1;
 	}
 
 	// init LUA
@@ -355,11 +331,7 @@ int main(int argc, char **argv) {
 	while (argv[i]) {
 		Options::GetOptions(argv, i);
 		if (argv[i]) {
-#ifdef UNDER_CE
-			STRCPY(SourceFNames[SourceFNamesCount++], LINEMAX, _tochar(argv[i++]));
-#else
 			STRCPY(SourceFNames[SourceFNamesCount++], LINEMAX, argv[i++]);
-#endif
 		}
 	}
 
@@ -369,11 +341,7 @@ int main(int argc, char **argv) {
 
 	if (!SourceFNames[0][0]) {
 		_COUT "No inputfile(s)" _ENDL;
-#ifdef UNDER_CE
-		return 0;
-#else
-		exit(1);
-#endif
+		return 1;
 	}
 
 	if (!Options::DestionationFName[0]) {
@@ -447,9 +415,7 @@ int main(int argc, char **argv) {
 
 	_COUT "Errors: " _CMDL ErrorCount _CMDL ", warnings: " _CMDL WarningCount _CMDL ", compiled: " _CMDL CompiledCurrentLine _CMDL " lines" _ENDL;
 
-#ifndef UNDER_CE
 	cout << flush;
-#endif
 
 	// free RAM
 	if (Devices) {

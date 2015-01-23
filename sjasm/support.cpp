@@ -30,10 +30,6 @@
 
 #include "sjdefs.h"
 
-#ifdef UNDER_CE
-
-#endif
-
 // http://legacy.imatix.com/html/sfl/sfl282.htm
 char* strpad(char* string, char ch, aint length) {
 	int cursize;
@@ -45,7 +41,7 @@ char* strpad(char* string, char ch, aint length) {
 	return (string);                    /*    and return to caller           */
 }
 
-#if !defined (_MSC_VER) || defined (UNDER_CE)
+#if !defined (_MSC_VER)
 
 void GetCurrentDirectory(int whatever, char* pad) {
 	pad[0] = 0;
@@ -82,26 +78,11 @@ int SearchPath(char* oudzp, char* filename, char* whatever, int maxlen, char* ni
 #endif
 
 void LuaShellExec(char *command) {
-#ifdef UNDER_CE
-	//_wsystem(_towchar(command));
-	SHELLEXECUTEINFO info;
-	info.cbSize = sizeof(SHELLEXECUTEINFO);
-	info.fMask = NULL;
-    info.hwnd = NULL;
-    info.lpVerb = NULL;
-    info.lpFile = _totchar(command);
-    info.lpParameters = NULL;
-    info.lpDirectory = NULL;
-    info.nShow = SW_MAXIMIZE;
-    info.hInstApp = NULL;
-	ShellExecuteEx(&info);
-#else
 #ifdef WIN32
 
 	WinExec(command, SW_SHOWNORMAL);
 #else	
 	system(command);
-#endif
 #endif
 }
 

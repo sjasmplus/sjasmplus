@@ -166,7 +166,6 @@
 		<Unit filename="sjasm\support.h" />
 		<Unit filename="sjasm\tables.cpp" />
 		<Unit filename="sjasm\tables.h" />
-		<Unit filename="sjasm\tconvert.h" />
 		<Unit filename="sjasm\z80.cpp" />
 		<Unit filename="sjasm\z80.h" />
 		<Unit filename="sjasmwin32\sjasmplus.cbp.rc">
