@@ -1,0 +1,7 @@
+duplicated_label.asm(5): error: Duplicate label: lab
+Pass 1 complete (1 errors)
+Pass 2 complete (1 errors)
+duplicated_label.asm(4): warning: Label has different value in pass 3: previous value 32769 not equal 32768
+duplicated_label.asm(5): warning: Label has different value in pass 3: previous value 32768 not equal 32769
+Pass 3 complete
+Errors: 1, warnings: 2, compiled: 6 lines
