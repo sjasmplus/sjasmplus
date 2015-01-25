@@ -93,7 +93,7 @@ int White() {
 }
 
 void SkipBlanks(char*& p) {
-  while (*p && *p <= ' ') {
+  while (*p && *p > 0 && *p <= ' ') {
     ++p;
   }
 }

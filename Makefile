@@ -7,7 +7,7 @@ C++=$(GPP)
 
 EXE=sjasmplus
 
-CFLAGS=-O2 -DLUA_USE_LINUX -DMAX_PATH=PATH_MAX -Ilua5.1 -Itolua++ -g -funsigned-char
+CFLAGS=-O2 -DLUA_USE_LINUX -DMAX_PATH=PATH_MAX -Ilua5.1 -Itolua++ -g
 CXXFLAGS=$(CFLAGS)
 
 #for Linux
