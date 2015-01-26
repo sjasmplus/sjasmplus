@@ -30,116 +30,126 @@
 
 #include "sjdefs.h"
 
+namespace {
+    const char HELP[] = "help";
+    const char LSTLAB[] = "lstlab";
+    const char SYM[] = "sym";
+    const char LST[] = "lst";
+    const char EXP[] = "exp";
+    const char RAW[] = "raw";
+    const char FULLPATH[] = "fullpath";
+    const char REVERSEPOP[] = "reversepop";
+    const char NOLOGO[] = "nologo";
+    const char NOFAKES[] = "nofakes";
+    const char DOS866[] = "dos866";
+    const char DIRBOL[] = "dirbol";
+    const char INC[] = "inc";
+}
+
 namespace Options {
-	char SymbolListFName[LINEMAX];
-	char ListingFName[LINEMAX];
-	char ExportFName[LINEMAX];
-	char DestionationFName[LINEMAX];
-	char RAWFName[LINEMAX];
-	char UnrealLabelListFName[LINEMAX];
+    Filename SymbolListFName;
+    Filename ListingFName;
+    Filename ExportFName;
+    Filename DestionationFName;
+    Filename RAWFName;
+    Filename UnrealLabelListFName;
 
-	bool IsPseudoOpBOF = 0;
-	bool IsReversePOP = 0;
-	bool IsShowFullPath = 0;
-	bool AddLabelListing = 0;
-	bool HideLogo = 0;
-	bool NoDestinationFile = 0;
-	bool FakeInstructions = 1;
+    bool IsPseudoOpBOF = false;
+    bool IsReversePOP = false;
+    bool IsShowFullPath = false;
+    bool AddLabelListing = false;
+    bool HideLogo = false;
+    bool NoDestinationFile = false;
+    bool FakeInstructions = true;
 
-	CStringsList* IncludeDirsList = 0;
+    std::list<std::string> IncludeDirsList;
 
-    void GetOptions(char**& argv, int& i) {
-		char* p, *ps;
-		char c[LINEMAX];
+    void GetOptions(const char* argv[], int& i) {
 		while (argv[i] && *argv[i] == '-') {
-			if (*(argv[i] + 1) == '-') {
-				p = argv[i++] + 2;
-			} else {
-				p = argv[i++] + 1;
-			}
+            //TODO: do not support single-dashed options
+            const std::string option(argv[i][1] == '-' ? argv[i++] + 2 : argv[i++] + 1);
+            const std::string::size_type eqPos = option.find("=");
+            const std::string& optName = option.substr(0, eqPos);
+            const std::string& optValue = eqPos != std::string::npos ? option.substr(eqPos + 1) : std::string();
 
-			memset(c, 0, LINEMAX); //todo
-			ps = strstr(p, "=");
-			if (ps != NULL) {
-				STRNCPY(c, LINEMAX, p, (int)(ps - p));
-			} else {
-				STRCPY(c, LINEMAX, p);
-			}
-
-			if (!strcmp(c, "lstlab")) {
+            if (optName == HELP) {
+                //TODO: fix behaviour
+                //nothing
+            } else if (optName == LSTLAB) {
 				AddLabelListing = 1;
-			} else if (!strcmp(c, "help")) {
-				// nothing
-			} else if (!strcmp(c, "sym")) {
-				if ((ps)&&(ps+1)) {
-					STRCPY(SymbolListFName, LINEMAX, ps+1);
+            } else if (optName == FULLPATH) {
+                IsShowFullPath = 1;
+            } else if (optName == REVERSEPOP) {
+                IsReversePOP = 1;
+            } else if (optName == NOLOGO) {
+                HideLogo = 1;
+            } else if (optName == NOFAKES) {
+                FakeInstructions = 0;
+            } else if (optName == DOS866) {
+                ConvertEncoding = ENCDOS;
+            } else if (optName == DIRBOL) {
+                IsPseudoOpBOF = 1;
+            } else if (option.size() > 1 && (option[0] == 'i' || option[0] == 'I')) {
+                IncludeDirsList.push_front(option.substr(1));
+            } else if (optName == SYM) {
+                if (!optValue.empty()) {
+                    SymbolListFName = Filename(optValue);
 				} else {
+                    //TODO: fail
 					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
 				}
-			} else if (!strcmp(c, "lst")) {
-				if ((ps)&&(ps+1)) {
-					STRCPY(ListingFName, LINEMAX, ps+1);
+            } else if (optName == LST) {
+                if (!optValue.empty()) {
+                    ListingFName = Filename(optValue);
 				} else {
+                    //TODO: fail
 					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
 				}
-			} else if (!strcmp(c, "exp")) {
-				if ((ps)&&(ps+1)) {
-					STRCPY(ExportFName, LINEMAX, ps+1);
+            } else if (optName == EXP) {
+                if (!optValue.empty()) {
+                    ExportFName = Filename(optValue);
 				} else {
+                    //TODO: fail
 					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
 				}
-			} else if (!strcmp(c, "raw")) {
-				if ((ps)&&(ps+1)) {
-					STRCPY(RAWFName, LINEMAX, ps+1);
+            } else if (optName == RAW) {
+                if (!optValue.empty()) {
+                    RAWFName = Filename(optValue);
 				} else {
+                    //TODO: fail
 					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
 				}
-			} else if (!strcmp(c, "fullpath")) {
-				IsShowFullPath = 1;
-			} else if (!strcmp(c, "reversepop")) {
-				IsReversePOP = 1;
-			} else if (!strcmp(c, "nologo")) {
-				HideLogo = 1;
-			} else if (!strcmp(c, "nofakes")) {
-				FakeInstructions = 0;
-			} else if (!strcmp(c, "dos866")) {
-				ConvertEncoding = ENCDOS;
-			} else if (!strcmp(c, "dirbol")) {
-				IsPseudoOpBOF = 1;
-			} else if (!strcmp(c, "inc")) {
-				if ((ps)&&(ps+1)) {
-					IncludeDirsList = new CStringsList(ps+1, IncludeDirsList);
+            } else if (optName == INC) {
+                if (!optValue.empty()) {
+                    IncludeDirsList.push_front(optValue);
 				} else {
+                    //TODO: fail
 					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
 				}
-			} else if (*p == 'i' || *p == 'I') {
-				IncludeDirsList = new CStringsList(p+1, IncludeDirsList);
-			} else {
-				_COUT "Unrecognized option: " _CMDL c _ENDL;
-			}
-		}
+            } else {
+                _COUT "Unrecognized option: " _CMDL option _ENDL;
+            }
+        }
 	}
 
     void ShowHelp() {
         _COUT "\nOption flags as follows:" _ENDL;
-        _COUT "  --help                   Help information (you see it)" _ENDL;
-        _COUT "  -i<path> or -I<path> or --inc=<path>" _ENDL;
+        _COUT "  --" _CMDL HELP _CMDL "                   Help information (you see it)" _ENDL;
+        _COUT "  -i<path> or -I<path> or --" _CMDL INC _CMDL "=<path>" _ENDL;
         _COUT "                           Include path" _ENDL;
-        _COUT "  --lst=<filename>         Save listing to <filename>" _ENDL;
-        _COUT "  --lstlab                 Enable label table in listing" _ENDL;
-        _COUT "  --sym=<filename>         Save symbols list to <filename>" _ENDL;
-        _COUT "  --exp=<filename>         Save exports to <filename> (see EXPORT pseudo-op)" _ENDL;
-        _COUT "  --raw=<filename>         Save all output to <filename> ignoring OUTPUT pseudo-ops" _ENDL;
+        _COUT "  --" _CMDL LST _CMDL "=<filename>         Save listing to <filename>" _ENDL;
+        _COUT "  --" _CMDL LSTLAB _CMDL "                 Enable label table in listing" _ENDL;
+        _COUT "  --" _CMDL SYM _CMDL "=<filename>         Save symbols list to <filename>" _ENDL;
+        _COUT "  --" _CMDL EXP _CMDL "=<filename>         Save exports to <filename> (see EXPORT pseudo-op)" _ENDL;
+        _COUT "  --" _CMDL RAW _CMDL "=<filename>         Save all output to <filename> ignoring OUTPUT pseudo-ops" _ENDL;
         _COUT "  Note: use OUTPUT, LUA/ENDLUA and other pseudo-ops to control output" _ENDL;
         _COUT " Logging:" _ENDL;
-        _COUT "  --nologo                 Do not show startup message" _ENDL;
-        _COUT "  --msg=error              Show only error messages" _ENDL;
-        _COUT "  --msg=all                Show all messages (by default)" _ENDL;
-        _COUT "  --fullpath               Show full path to error file" _ENDL;
+        _COUT "  --" _CMDL NOLOGO _CMDL "                 Do not show startup message" _ENDL;
+        _COUT "  --" _CMDL FULLPATH _CMDL "               Show full path to error file" _ENDL;
         _COUT " Other:" _ENDL;
-        _COUT "  --reversepop             Enable reverse POP order (as in base SjASM version)" _ENDL;
-        _COUT "  --dirbol                 Enable processing directives from the beginning of line" _ENDL;
-        _COUT "  --nofakes                Disable fake instructions" _ENDL;
-        _COUT "  --dos866                 Encode from Windows codepage to DOS 866 (Cyrillic)" _ENDL;
+        _COUT "  --" _CMDL REVERSEPOP _CMDL "             Enable reverse POP order (as in base SjASM version)" _ENDL;
+        _COUT "  --" _CMDL DIRBOL _CMDL "                 Enable processing directives from the beginning of line" _ENDL;
+        _COUT "  --" _CMDL NOFAKES _CMDL "                Disable fake instructions" _ENDL;
+        _COUT "  --" _CMDL DOS866 _CMDL "                 Encode from Windows codepage to DOS 866 (Cyrillic)" _ENDL;
     }
 } // eof namespace Options

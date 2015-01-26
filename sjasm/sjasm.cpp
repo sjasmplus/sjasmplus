@@ -160,10 +160,9 @@ void LuaFatalError(lua_State *L) {
 }
 
 
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
 	char buf[MAX_PATH];
 	int base_encoding; /* added */
-	char* p;
 	const char* logo = "SjASMPlus Z80 Cross-Assembler v1.07 RC8 (build 06-11-2008)";
 	int i = 1;
 
@@ -185,12 +184,6 @@ int main(int argc, char* argv[]) {
 	tolua_sjasm_open(LUA);
 
 	// init vars
-	Options::DestionationFName[0] = 0;
-	Options::ListingFName[0] = 0;
-	Options::UnrealLabelListFName[0] = 0;
-	Options::SymbolListFName[0] = 0;
-	Options::ExportFName[0] = 0;
-	Options::RAWFName[0] = 0;
 	Options::NoDestinationFile = true; // not *.out files by default
 
 	// get current directory
@@ -198,7 +191,7 @@ int main(int argc, char* argv[]) {
 	CurrentDirectory = buf;
 
 	// get arguments
-	Options::IncludeDirsList = new CStringsList((char *)".", Options::IncludeDirsList);
+    Options::IncludeDirsList.push_front(".");
 	while (argv[i]) {
 		Options::GetOptions(argv, i);
 		if (argv[i]) {
@@ -215,14 +208,8 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	if (!Options::DestionationFName[0]) {
-		STRCPY(Options::DestionationFName, LINEMAX, SourceFNames[0]);
-		if (!(p = strchr(Options::DestionationFName, '.'))) {
-			p = Options::DestionationFName;
-		} else {
-			*p = 0;
-		}
-		STRCAT(p, LINEMAX-(p-Options::DestionationFName), ".out");
+    if (Options::DestionationFName.empty()) {
+        Options::DestionationFName = Filename(SourceFNames[0]).WithExtension("out");
 	}
 
 	// init some vars
@@ -276,11 +263,11 @@ int main(int argc, char* argv[]) {
 
 	Close();
 
-	if (Options::UnrealLabelListFName[0]) {
+    if (!Options::UnrealLabelListFName.empty()) {
 		LabelTable.DumpForUnreal();
 	}
 
-	if (Options::SymbolListFName[0]) {
+    if (!Options::SymbolListFName.empty()) {
 		LabelTable.DumpSymbols();
 	}
 

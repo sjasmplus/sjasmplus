@@ -1110,7 +1110,7 @@ void dirLABELSLIST() {
 	if (!(*opt)) {
 		Error("[LABELSLIST] Syntax error. No parameters", bp, CATCHALL); return;
 	}
-	STRCPY(Options::UnrealLabelListFName, LINEMAX, opt);
+    Options::UnrealLabelListFName = Filename(opt);
 	delete[] opt;
 }
 
@@ -1484,15 +1484,9 @@ void dirEXPORT() {
 	aint val;
 	char* n, * p;
 	
-	if (!Options::ExportFName[0]) {
-		STRCPY(Options::ExportFName, LINEMAX, SourceFNames[CurrentSourceFName]);
-		if (!(p = strchr(Options::ExportFName, '.'))) {
-			p = Options::ExportFName;
-		} else {
-			*p = 0;
-		}
-		STRCAT(p, LINEMAX, ".exp");
-		Warning("[EXPORT] Filename for exportfile was not indicated. Output will be in", Options::ExportFName);
+    if (Options::ExportFName.empty()) {
+        Options::ExportFName = Filename(SourceFNames[CurrentSourceFName]).WithExtension("exp");
+        Warning("[EXPORT] Filename for exportfile was not indicated. Output will be in", Options::ExportFName.c_str());
 	}
 	if (!(n = p = GetID(lp))) {
 		Error("[EXPORT] Syntax error", lp, CATCHALL); return;

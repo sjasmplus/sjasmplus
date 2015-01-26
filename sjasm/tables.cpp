@@ -481,8 +481,8 @@ void CLabelTable::Dump() {
 void CLabelTable::DumpForUnreal() {
 	char ln[LINEMAX], * ep;
 	int page;
-	if (FP_UnrealList == NULL && !FOPEN_ISOK(FP_UnrealList, Options::UnrealLabelListFName, "w")) {
-		Error("Error opening file", Options::UnrealLabelListFName, FATAL);
+    if (FP_UnrealList == NULL && !FOPEN_ISOK(FP_UnrealList, Options::UnrealLabelListFName.c_str(), "w")) {
+        Error("Error opening file", Options::UnrealLabelListFName.c_str(), FATAL);
 	}
 	for (int i = 1; i < NextLocation; ++i) {
 		if (LabelTable[i].page != -1) {
@@ -525,8 +525,8 @@ void CLabelTable::DumpForUnreal() {
 void CLabelTable::DumpSymbols() {
 	FILE* symfp;
 	char lnrs[16], * l;
-	if (!FOPEN_ISOK(symfp, Options::SymbolListFName, "w")) {
-		Error("Error opening file", Options::SymbolListFName, FATAL);
+    if (!FOPEN_ISOK(symfp, Options::SymbolListFName.c_str(), "w")) {
+        Error("Error opening file", Options::SymbolListFName.c_str(), FATAL);
 	}
 	for (int i = 1; i < NextLocation; ++i) {
 		if (isalpha(LabelTable[i].name[0])) {

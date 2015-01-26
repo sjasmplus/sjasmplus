@@ -29,13 +29,38 @@
 #ifndef __OPTIONS
 #define __OPTIONS
 
+#include <string>
+#include <list>
+
+class Filename {
+    std::string Content;
+public:
+    Filename() {}
+    Filename(const Filename& rh) : Content(rh.Content) {}
+    explicit Filename(const std::string& rh) : Content(rh) {}
+    explicit Filename(const char* rh) : Content(rh) {}
+
+    Filename WithExtension(const std::string& ext) const {
+        const std::string::size_type dotPos = Content.find_first_of('.');
+        return Filename(Content.substr(0, dotPos) + '.' + ext);
+    }
+
+    bool empty() const {
+        return Content.empty();
+    }
+
+    const char* c_str() const {
+        return Content.c_str();
+    }
+};
+
 namespace Options {
-	extern char SymbolListFName[LINEMAX];
-	extern char ListingFName[LINEMAX];
-	extern char ExportFName[LINEMAX];
-	extern char DestionationFName[LINEMAX];
-	extern char RAWFName[LINEMAX];
-	extern char UnrealLabelListFName[LINEMAX];
+    extern Filename SymbolListFName;
+    extern Filename ListingFName;
+    extern Filename ExportFName;
+    extern Filename DestionationFName;
+    extern Filename RAWFName;
+    extern Filename UnrealLabelListFName;
 
 	extern bool IsPseudoOpBOF;
 	extern bool IsReversePOP;
@@ -45,9 +70,9 @@ namespace Options {
     extern bool NoDestinationFile;
 	extern bool FakeInstructions;
 
-	extern CStringsList* IncludeDirsList;
+    extern std::list<std::string> IncludeDirsList;
 
-    void GetOptions(char**& argv, int& argc);
+    void GetOptions(const char* argv[], int& argc);
     void ShowHelp();
 } // eof namespace Options
 

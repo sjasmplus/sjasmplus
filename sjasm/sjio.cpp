@@ -306,7 +306,7 @@ void ListFile() {
 	if (pass != LASTPASS || !IsListingFileOpened || donotlist) {
 		donotlist = nEB = 0; return;
 	}
-	if (!Options::ListingFName[0] || FP_ListingFile == NULL) {
+    if (Options::ListingFName.empty() || FP_ListingFile == NULL) {
 		return;
 	}
 	if (listmacro) {
@@ -365,7 +365,7 @@ void ListFileSkip(char* line) {
 		donotlist = nEB = 0;
 		return;
 	}
-	if (!Options::ListingFName[0] || FP_ListingFile == NULL) {
+    if (Options::ListingFName.empty() || FP_ListingFile == NULL) {
 		return;
 	}
 	if (listmacro) {
@@ -573,12 +573,10 @@ char* GetPath(char* fname, TCHAR** filenamebegin) {
 		if (fname[0] == '<') {
 			fname++;
 		}
-		CStringsList* dir = Options::IncludeDirsList;
-		while (dir) {
-			if (SearchPath(dir->string, fname, NULL, MAX_PATH, fullFilePath, filenamebegin)) {
+        for (std::list<std::string>::const_iterator it = Options::IncludeDirsList.begin(), lim = Options::IncludeDirsList.end(); it != lim; ++it) {
+            if (SearchPath(it->c_str(), fname, NULL, MAX_PATH, fullFilePath, filenamebegin)) {
 				g = 1; break;
 			}
-			dir = dir->next;
 		}
 	}
 	if (!g) {
@@ -955,9 +953,9 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
 
 /* modified */
 void OpenList() {
-	if (Options::ListingFName[0]) {
-		if (!FOPEN_ISOK(FP_ListingFile, Options::ListingFName, "w")) {
-			Error("Error opening file", Options::ListingFName, FATAL);
+    if (!Options::ListingFName.empty()) {
+        if (!FOPEN_ISOK(FP_ListingFile, Options::ListingFName.c_str(), "w")) {
+            Error("Error opening file", Options::ListingFName.c_str(), FATAL);
 		}
 	}
 }
@@ -1016,7 +1014,7 @@ void NewDest(char* newfilename, int mode) {
 	CloseDest();
 
 	// and open new file
-	STRCPY(Options::DestionationFName, LINEMAX, newfilename);
+    Options::DestionationFName = Filename(newfilename);
 	OpenDest(mode);
 }
 
@@ -1026,15 +1024,15 @@ void OpenDest() {
 
 void OpenDest(int mode) {
 	destlen = 0;
-	if (mode != OUTPUT_TRUNCATE && !FileExists(Options::DestionationFName)) {
+    if (mode != OUTPUT_TRUNCATE && !FileExists(Options::DestionationFName.c_str())) {
 		mode = OUTPUT_TRUNCATE;
 	}
-	if (!Options::NoDestinationFile && !FOPEN_ISOK(FP_Output, Options::DestionationFName, mode == OUTPUT_TRUNCATE ? "wb" : "r+b")) {
-		Error("Error opening file", Options::DestionationFName, FATAL);
+    if (!Options::NoDestinationFile && !FOPEN_ISOK(FP_Output, Options::DestionationFName.c_str(), mode == OUTPUT_TRUNCATE ? "wb" : "r+b")) {
+        Error("Error opening file", Options::DestionationFName.c_str(), FATAL);
 	}
 	Options::NoDestinationFile = false;
-	if (FP_RAW == NULL && Options::RAWFName[0] && !FOPEN_ISOK(FP_RAW, Options::RAWFName, "wb")) {
-		Error("Error opening file", Options::RAWFName);
+    if (FP_RAW == NULL && !Options::RAWFName.empty() && !FOPEN_ISOK(FP_RAW, Options::RAWFName.c_str(), "wb")) {
+        Error("Error opening file", Options::RAWFName.c_str());
 	}
 	if (FP_Output != NULL && mode != OUTPUT_TRUNCATE) {
 		if (fseek(FP_Output, 0, mode == OUTPUT_REWIND ? SEEK_SET : SEEK_END)) {
@@ -1043,7 +1041,7 @@ void OpenDest(int mode) {
 	}
 }
 
-int FileExists(char* filename) {
+int FileExists(const char* filename) {
 	int exists = 0;
 	FILE* test;
 	if (FOPEN_ISOK(test, filename, "r")) {
@@ -1396,8 +1394,8 @@ int ReadFileToCStringsList(CStringsList*& f, const char* end) {
 void WriteExp(char* n, aint v) {
 	char lnrs[16],* l = lnrs;
 	if (FP_ExportFile == NULL) {
-		if (!FOPEN_ISOK(FP_ExportFile, Options::ExportFName, "w")) {
-			Error("Error opening file", Options::ExportFName, FATAL);
+        if (!FOPEN_ISOK(FP_ExportFile, Options::ExportFName.c_str(), "w")) {
+            Error("Error opening file", Options::ExportFName.c_str(), FATAL);
 		}
 	}
 	STRCPY(ErrorLine, LINEMAX2, n);
