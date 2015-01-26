@@ -29,30 +29,6 @@
 #ifndef __SJASM
 #define __SJASM
 
-enum EMemoryType { MT_NONE, MT_SIZE };
-
-namespace Options {
-	extern char SymbolListFName[LINEMAX];
-	extern char ListingFName[LINEMAX];
-	extern char ExportFName[LINEMAX];
-	extern char DestionationFName[LINEMAX];
-	extern char RAWFName[LINEMAX];
-	extern char UnrealLabelListFName[LINEMAX];
-
-	extern bool IsPseudoOpBOF;
-	extern bool IsAutoReloc;
-	extern bool IsLabelTableInListing;
-	extern bool IsReversePOP;
-	extern bool IsShowFullPath;
-	extern bool AddLabelListing;
-	extern bool NoDestinationFile;
-	extern bool FakeInstructions;
-
-	extern CStringsList* IncludeDirsList;
-
-	//extern EMemoryType MemoryType;
-} // eof namespace Options
-
 extern CDevice *Devices;
 extern CDevice *Device;
 extern CDeviceSlot *Slot;
