@@ -264,7 +264,7 @@ int main(int argc, const char* argv[]) {
 	Close();
 
     if (!Options::UnrealLabelListFName.empty()) {
-		LabelTable.DumpForUnreal();
+        LabelTable.DumpForUnreal(Options::UnrealLabelListFName);
 	}
 
     if (!Options::SymbolListFName.empty()) {

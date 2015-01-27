@@ -262,48 +262,42 @@ void CLabelTable::Dump() {
 	}
 }
 
-/* added */
-void CLabelTable::DumpForUnreal() {
-	char ln[LINEMAX], * ep;
-	int page;
-    if (FP_UnrealList == NULL && !FOPEN_ISOK(FP_UnrealList, Options::UnrealLabelListFName.c_str(), "w")) {
-        Error("Error opening file", Options::UnrealLabelListFName.c_str(), FATAL);
+void CLabelTable::DumpForUnreal(const Filename& file) const {
+    std::ofstream stream(file.c_str());
+    if (!stream) {
+        Error("Error opening file", file.c_str(), FATAL);
+    }
+    char buf[9];
+    for (int i = 1; i < NextLocation; ++i) {
+        const CLabelTableEntry& label = LabelTable[i];
+        if (!label.page == -1) {
+            continue;
+        }
+        aint lvalue = label.value;
+        int page = 0;
+        if (lvalue >= 0 && lvalue < 0x4000) {
+            page = -1;
+        } else if (lvalue >= 0x4000 && lvalue < 0x8000) {
+            page = 5;
+            lvalue -= 0x4000;
+        } else if (lvalue >= 0x8000 && lvalue < 0xc000) {
+            page = 2;
+            lvalue -= 0x8000;
+        } else {
+            lvalue -= 0xc000;
+        }
+        if (page != -1) {
+            stream << '0' << char('0' + page);
+        }
+        stream << ':';
+        {
+            char* p = buf;
+            PrintHEXAlt(p, lvalue);
+            *p = 0;
+        }
+        stream << buf;
+        stream << ' ' << label.name << std::endl;
 	}
-	for (int i = 1; i < NextLocation; ++i) {
-		if (LabelTable[i].page != -1) {
-			page = LabelTable[i].page;
-			int lvalue = LabelTable[i].value;
-			if (lvalue >= 0 && lvalue < 0x4000) {
-				page = -1;
-			} else if (lvalue >= 0x4000 && lvalue < 0x8000) {
-				page = 5;
-				lvalue -= 0x4000;
-			} else if (lvalue >= 0x8000 && lvalue < 0xc000) {
-				page = 2;
-				lvalue -= 0x8000;
-			} else {
-				lvalue -= 0xc000;
-			}
-			ep = ln;
-			if (page != -1) {
-				*(ep++) = '0';
-				*(ep++) = page + '0';
-			} else if (page > 9) {
-				*(ep++) = ((int)fmod((float)page, 7)) + '0';
-				*(ep++) = ((int)floor((float)(page / 10))) + '0';
-			} else {
-				continue;
-			}
-			//*(ep++)='R';
-			*(ep++) = ':';
-			PrintHEXAlt(ep, lvalue);
-			*(ep++) = ' ';
-			STRCPY(ep, LINEMAX-(ep-ln), LabelTable[i].name);
-			STRCAT(ln, LINEMAX, "\n");
-			fputs(ln, FP_UnrealList);
-		}
-	}
-	fclose(FP_UnrealList);
 }
 
 void CLabelTable::DumpSymbols(const Filename& file) const {
@@ -311,7 +305,7 @@ void CLabelTable::DumpSymbols(const Filename& file) const {
     if (!stream) {
         Error("Error opening file", file.c_str(), FATAL);
 	}
-    char buf[9];
+    char buf[9] = {0};
 	for (int i = 1; i < NextLocation; ++i) {
         const CLabelTableEntry& label = LabelTable[i];
         if (isalpha(label.name[0])) {

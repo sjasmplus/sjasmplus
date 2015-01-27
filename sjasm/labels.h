@@ -53,7 +53,7 @@ public:
     bool IsUsed(const char* name);
 	void RemoveAll();
 	void Dump();
-	void DumpForUnreal(); /* added */
+    void DumpForUnreal(const Filename& file) const;
     void DumpSymbols(const Filename& file) const;
 private:
 	int HashTable[LABTABSIZE], NextLocation;

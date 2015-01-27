@@ -1,5 +1,9 @@
         device zxspectrum128
         
+        org #0
+label0  ld hl,$
+        jp label0
+        
         org #4000
 label1  ld hl,$
         jp label1
