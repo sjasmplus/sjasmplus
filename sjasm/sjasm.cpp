@@ -268,7 +268,7 @@ int main(int argc, const char* argv[]) {
 	}
 
     if (!Options::SymbolListFName.empty()) {
-		LabelTable.DumpSymbols();
+        LabelTable.DumpSymbols(Options::SymbolListFName);
 	}
 
 	_COUT "Errors: " _CMDL ErrorCount _CMDL ", warnings: " _CMDL WarningCount _CMDL ", compiled: " _CMDL CompiledCurrentLine _CMDL " lines" _ENDL;

@@ -31,6 +31,8 @@
 #include "sjdefs.h"
 #include "labels.h"
 
+#include <fstream>
+
 CLabelTableEntry::CLabelTableEntry() {
 	name = NULL; value = used = 0;
 }
@@ -304,27 +306,20 @@ void CLabelTable::DumpForUnreal() {
 	fclose(FP_UnrealList);
 }
 
-/* from SjASM 0.39g */
-void CLabelTable::DumpSymbols() {
-	FILE* symfp;
-	char lnrs[16], * l;
-    if (!FOPEN_ISOK(symfp, Options::SymbolListFName.c_str(), "w")) {
-        Error("Error opening file", Options::SymbolListFName.c_str(), FATAL);
+void CLabelTable::DumpSymbols(const Filename& file) const {
+    std::ofstream stream(file.c_str());
+    if (!stream) {
+        Error("Error opening file", file.c_str(), FATAL);
 	}
+    char buf[9];
 	for (int i = 1; i < NextLocation; ++i) {
-		if (isalpha(LabelTable[i].name[0])) {
-			STRCPY(ErrorLine, LINEMAX, LabelTable[i].name);
-			STRCAT(ErrorLine, LINEMAX2, ": equ ");
-			l = lnrs;
-			STRCAT(ErrorLine, LINEMAX2, "0x");
-			PrintHEX32(l, LabelTable[i].value);
-			*l = 0; 
-			STRCAT(ErrorLine, LINEMAX2, lnrs);
-			STRCAT(ErrorLine, LINEMAX2, "\n");
-			fputs(ErrorLine, symfp);
+        const CLabelTableEntry& label = LabelTable[i];
+        if (isalpha(label.name[0])) {
+            char* p = buf;
+            PrintHEX32(p, label.value);
+            stream << label.name << ": equ 0x" << buf << std::endl;
 		}
 	}
-	fclose(symfp);
 }
 
 //eof labels.cpp

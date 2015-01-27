@@ -29,6 +29,8 @@
 #ifndef __LABELS
 #define __LABELS
 
+#include "options.h"
+
 class CLabelTableEntry {
 public:
   const char* name;
@@ -52,7 +54,7 @@ public:
 	void RemoveAll();
 	void Dump();
 	void DumpForUnreal(); /* added */
-	void DumpSymbols(); /* added from SjASM 0.39g */
+    void DumpSymbols(const Filename& file) const;
 private:
 	int HashTable[LABTABSIZE], NextLocation;
 	CLabelTableEntry LabelTable[LABTABSIZE];
