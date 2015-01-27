@@ -29,7 +29,7 @@
 #ifndef __LABELS
 #define __LABELS
 
-#include "options.h"
+#include "filename.h"
 
 class CLabelTableEntry {
 public:
