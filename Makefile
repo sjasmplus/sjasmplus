@@ -1,17 +1,21 @@
 # Makefile for sjasmplus created by Tygrys' hands.
 
-GCC=gcc
-CC=$(GCC)
-GPP=g++
-C++=$(GPP)
+GCC?=gcc
+CC?=$(GCC)
+GPP?=g++
+C++?=$(GPP)
 
 EXE=sjasmplus
 
-CFLAGS=-O2 -DLUA_USE_LINUX -DMAX_PATH=PATH_MAX -Ilua5.1 -Itolua++ -g
-CXXFLAGS=$(CFLAGS)
-
-#for Linux
-LDFLAGS="-ldl"
+CFLAGS=-O2 -DMAX_PATH=PATH_MAX -Ilua5.1 -Itolua++ -g
+SYS=$(shell $(GCC) -dumpmachine)
+ifeq (,$(findstring mingw, $(SYS)))
+ CFLAGS+=-DLUA_USE_LINUX
+ LDFLAGS=-Wl,--no-as-needed -ldl
+else
+ EXE=sjasmplus.exe
+ LDFLAGS=-static
+endif
 
 #sjasmplus object files
 OBJS=sjasm/devices.o sjasm/directives.o sjasm/io_snapshots.o sjasm/io_trd.o \
@@ -35,9 +39,11 @@ all: $(LUAOBJS) $(TOLUAOBJS) $(OBJS)
 	$(GPP) -o $(EXE) $(LDFLAGS) $(CXXFLAGS) $(OBJS) $(LUAOBJS) $(TOLUAOBJS)
 
 .c.o:
-	$(GCC) $(CFLAGS) -o $@ -c $< 
+	$(GCC) $(CFLAGS) -o $@ -c $< -MMD
 .cpp.o:
-	$(GPP) $(CFLAGS) -o $@ -c $<
+	$(GPP) $(CFLAGS) -o $@ -c $< -MMD
 
 clean:
-	rm -vf sjasm/*.o lua5.1/*.o tolua++/*.o *~ $(EXE)
+	rm -vf sjasm/*.o sjasm/*.d lua5.1/*.o lua5.1/*.d tolua++/*.o tolua++/*.d *~ $(EXE)
+
+include $(wildcard sjasm/*.d lua5.1/*.d tolua++/*.d)
