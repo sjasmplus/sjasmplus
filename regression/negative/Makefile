@@ -8,5 +8,5 @@ results = $(patsubst %$(SRC_SUFFIX),%$(OUT_SUFFIX),$(tests))
 all: $(results)
 
 #only negative result is acceptable
-%$(OUT_SUFFIX): %$(SRC_SUFFIX) $(SJASM)
+%$(OUT_SUFFIX): %$(SRC_SUFFIX)
 	! $(SJASM) --nologo $< 2>&1 > $@
