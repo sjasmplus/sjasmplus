@@ -96,6 +96,7 @@ extern "C" {
 #include "io_tape.h"
 #include "sjasm.h"
 #include "options.h"
+#include "labels.h"
 
 #endif
 //eof sjdefs.h

@@ -31,42 +31,14 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+#include "labels.h"
+
 enum EStructureMembers { SMEMBUNKNOWN, SMEMBALIGN, SMEMBBYTE, SMEMBWORD, SMEMBBLOCK, SMEMBDWORD, SMEMBD24, SMEMBPARENOPEN, SMEMBPARENCLOSE };
 
 char* ValidateLabel(char*);
 extern char* PreviousIsLabel;
 int GetLabelValue(char*& p, aint& val);
 int GetLocalLabelValue(char*& op, aint& val);
-
-class CLabelTableEntry {
-public:
-	char* name;
-	char page; /* added */
-	bool IsDEFL; /* added */
-	unsigned char forwardref; /* added */
-	aint value;
-	char used;
-	CLabelTableEntry();
-};
-
-class CLabelTable {
-public:
-	CLabelTable();
-	int Insert(const char*, aint, bool, bool);
-	int Update(char*, aint);
-	int GetValue(char*, aint&);
-	int Find(char*);
-	int Remove(char*);
-	int IsUsed(char*);
-	void RemoveAll();
-	void Dump();
-	void DumpForUnreal(); /* added */
-	void DumpSymbols(); /* added from SjASM 0.39g */
-private:
-	int HashTable[LABTABSIZE], NextLocation;
-	CLabelTableEntry LabelTable[LABTABSIZE];
-	int Hash(const char*);
-};
 
 class CFunctionTableEntry {
 public:
