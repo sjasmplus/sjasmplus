@@ -48,7 +48,7 @@ int SourceFNamesCount = 0;
 int ConvertEncoding = ENCWIN; /* added */
 
 int pass = 0, IsLabelNotFound = 0, ErrorCount = 0, WarningCount = 0, IncludeLevel = -1;
-int IsRunning = 0, IsListingFileOpened = 1, donotlist = 0,listmacro  = 0;
+int IsRunning = 0, donotlist = 0,listmacro  = 0;
 int adrdisp = 0,PseudoORG = 0; /* added for spectrum ram */
 char* MemoryPointer=NULL; /* added for spectrum ram */
 int StartAddress = -1;

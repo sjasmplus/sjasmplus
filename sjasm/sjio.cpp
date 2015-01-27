@@ -303,7 +303,7 @@ void listbytes3(int pad) {
 void ListFile() {
 	char* pp = pline;
 	aint pad;
-	if (pass != LASTPASS || !IsListingFileOpened || donotlist) {
+    if (pass != LASTPASS || donotlist) {
 		donotlist = nEB = 0; return;
 	}
     if (Options::ListingFName.empty() || FP_ListingFile == NULL) {
@@ -361,7 +361,7 @@ void ListFile() {
 void ListFileSkip(char* line) {
 	char* pp = pline;
 	aint pad;
-	if (pass != LASTPASS || !IsListingFileOpened || donotlist) {
+    if (pass != LASTPASS || donotlist) {
 		donotlist = nEB = 0;
 		return;
 	}

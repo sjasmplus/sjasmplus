@@ -233,11 +233,6 @@ int CLabelTable::Hash(const char* s) {
 void CLabelTable::Dump() {
 	char line[LINEMAX], *ep;
 
-	if (!IsListingFileOpened) {
-		IsListingFileOpened = 1;
-		OpenList();
-	}
-
 	if (FP_ListingFile == NULL) {
 		return;
 	}
