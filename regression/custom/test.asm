@@ -1,11 +1,19 @@
         device zxspectrum128
+        
+        org #4000
+label1  ld hl,$
+        jp label1
 
         org #8000
-        ld hl,0
-incl    push hl
-        ld de,16384
-        ld bc,6144
-        ldir
-        pop hl
-        inc l
-        jr nz,incl
+label2  ld hl,$        
+        jp label2
+        
+        org #c000
+label3  ld hl,$
+        jp label3
+
+        org #d000,1
+label4  ld hl,$
+        jp label4
+
+        LABELSLIST test.lbl
