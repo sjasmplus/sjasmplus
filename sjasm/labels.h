@@ -52,7 +52,7 @@ public:
     bool Remove(const char* name);
     bool IsUsed(const char* name);
 	void RemoveAll();
-	void Dump();
+    void Dump(std::ostream& str) const;
     void DumpForUnreal(const Filename& file) const;
     void DumpSymbols(const Filename& file) const;
 private:

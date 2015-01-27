@@ -232,32 +232,22 @@ int CLabelTable::Hash(const char* s) {
 	return h % LABTABSIZE;
 }
 
-void CLabelTable::Dump() {
-	char line[LINEMAX], *ep;
-
-	if (FP_ListingFile == NULL) {
-		return;
-	}
-
-	/*fputs("\nvalue      label\n",FP_ListingFile);*/
-	fputs("\nValue    Label\n", FP_ListingFile);
-	/*fputs("-------- - -----------------------------------------------------------\n",FP_ListingFile);*/
-	fputs("------ - -----------------------------------------------------------\n", FP_ListingFile);
+void CLabelTable::Dump(std::ostream& str) const {
+    str << std::endl
+        << "Value    Label" << std::endl
+        << "------ - -----------------------------------------------------------" << std::endl;
+    char buf[9];
 	for (int i = 1; i < NextLocation; ++i) {
-		if (LabelTable[i].page != -1) {
-			ep = line;
-			*(ep) = 0;
-			*(ep++) = '0';
-			*(ep++) = 'x';
-			PrintHEXAlt(ep, LabelTable[i].value);
-			*(ep++) = ' ';
-			*(ep++) = LabelTable[i].used > 0 ? ' ' : 'X';
-			*(ep++) = ' ';
-			STRCPY(ep, LINEMAX - (ep - &line[0]), LabelTable[i].name);
-			ep += strlen(LabelTable[i].name);
-			*(ep++) = '\n';
-			*(ep) = 0;
-			fputs(line, FP_ListingFile);
+        const CLabelTableEntry& label = LabelTable[i];
+        if (label.page != -1) {
+            {
+                char* p = buf;
+                PrintHEXAlt(p, label.value);
+                *p = 0;
+            }
+            str << "0x" << buf
+                << (label.used > 0 ? "   " : " X ") << label.name
+                << std::endl;
 		}
 	}
 }

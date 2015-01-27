@@ -31,6 +31,8 @@
 #include "sjdefs.h"
 #include "lua_sjasm.h"
 
+#include <sstream>
+
 CDevice *Devices = 0;
 CDevice *Device = 0;
 CDeviceSlot *Slot = 0;
@@ -258,7 +260,10 @@ int main(int argc, const char* argv[]) {
 
 	pass = 9999; /* added for detect end of compiling */
 	if (Options::AddLabelListing) {
-		LabelTable.Dump();
+        //TODO: remove when FP_ListingFile will be stream
+        std::ostringstream buf;
+        LabelTable.Dump(buf);
+        fputs(buf.str().c_str(), FP_ListingFile);
 	}
 
 	Close();
