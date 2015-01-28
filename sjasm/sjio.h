@@ -39,7 +39,7 @@ extern aint PreviousAddress, epadres;
 #define OUTPUT_REWIND 1
 #define OUTPUT_APPEND 2
 
-extern FILE* FP_UnrealList, * FP_Input; /* added */
+extern FILE* FP_Input; /* added */
 
 void OpenDest(int); /* added from new SjASM 0.39g */
 void NewDest(const char* newfilename, int mode); /* added from new SjASM 0.39g */
@@ -58,7 +58,6 @@ void OpenFile(const char* nfilename);
 void IncludeFile(const char* nfilename); /* added */
 void Close();
 void OpenList();
-void OpenUnrealList(); /* added */
 void ReadBufLine(bool Parse = true, bool SplitByColon = true); /* added */
 void OpenDest();
 void PrintHEX32(char*& p, aint h);

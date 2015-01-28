@@ -41,8 +41,6 @@ int RL_Readed;
 bool rldquotes = false,rlsquotes = false,rlspace = false,rlcomment = false,rlcolon = false,rlnewline = true;
 char* rlpbuf, * rlppos;
 
-FILE* FP_UnrealList;
-
 int EB[1024 * 64],nEB = 0;
 char WriteBuffer[DESTBUFLEN];
 FILE* FP_Input = NULL, * FP_Output = NULL, * FP_RAW = NULL;
@@ -958,13 +956,6 @@ void OpenList() {
             Error("Error opening file", Options::ListingFName.c_str(), FATAL);
 		}
 	}
-}
-
-/* added */
-void OpenUnrealList() {
-	/*if (!FP_UnrealList && Options::UnrealLabelListFName && !FOPEN_ISOK(FP_UnrealList, Options::UnrealLabelListFName, "w")) {
-		Error("Error opening file", Options::UnrealLabelListFName, FATAL);
-	}*/
 }
 
 void CloseDest() {
