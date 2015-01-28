@@ -28,7 +28,7 @@
 
 #include "sjdefs.h"
 
-int SaveSNA_ZX(char* fname, unsigned short start) {
+int SaveSNA_ZX(const char* fname, unsigned short start) {
 	unsigned char snbuf[31];
 
 	// for Lua

@@ -31,8 +31,8 @@
 #ifndef __IO_TRD
 #define __IO_TRD
 
-int TRD_SaveEmpty(char* fname);
-int TRD_AddFile(char* fname, char* fhobname, int start, int length, int autostart); //autostart added by boo_boo 19_0ct_2008
+int TRD_SaveEmpty(const char* fname);
+int TRD_AddFile(const char* fname, const char* fhobname, int start, int length, int autostart); //autostart added by boo_boo 19_0ct_2008
 struct STRDOSSectorHeader {
 	unsigned char c, s, n, l;
 	unsigned short crc;

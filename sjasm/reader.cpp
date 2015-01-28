@@ -29,6 +29,7 @@
 // reader.cpp
 
 #include "sjdefs.h"
+#include <algorithm>
 
 /* modified */
 int cmphstr(char*& p1, const char* p2) {
@@ -647,96 +648,47 @@ int GetBytes(char*& p, int e[], int add, int dc) {
 	return t;
 }
 
-/* modified */
-char* GetFileName(char*& p, bool convertslashes) {
-	int o = 0;
-	int o2 = 0;
-	char* fn, * np;
-	fn = np = new char[LINEMAX];
-	if (np == NULL) {
-		Error("No enough memory!", 0, FATAL);
-	}
-	*fn = 0;
-	SkipBlanks(p);
-	if (!(*p)) {
-		return fn;
-	}
-	if (*p == '"') {
-		o = 1; ++p;
-	} else if (*p == '<') {
-		o = 2; ++p;
-	}
-	if (*p && strstr(p, ":")) {
-		o2 = 1;
-	} /* added */
-	/* while (!White() && *p!='"' && *p!='>') { *np=*p; ++np; ++p; } */
-	while (*p && *p != '"' && *p != '>' && !(o == 0 && o2 == 1 && *p == ':')) {
-		*np = *p; ++np; ++p;
-	}
-	if (*p && o == 1) {
-		if (*p == '"') {
-			++p;
-		} else {
-			Error("No closing '\"'", 0);
-		}
-	} else if (*p && o == 2 && *p != '>') {
-		Error("No closing '>'", 0);
-	} else if (*p) {
-		++p;
-	}
-	*np = 0; 
-	for (np = fn; *np; ++np) {
+Filename GetFileName(char*& p, bool convertslashes) {
+    SkipBlanks(p);
+    if (!*p) {
+        return Filename();
+    }
+    char limiter = '\0';
+
+    if (*p == '"') {
+        limiter = '"';
+        ++p;
+    } else if (*p == '<') {
+        limiter = '>';
+        ++p;
+    }
+    //TODO: research strange ':' logic
+    std::string result;
+    while (*p && *p != limiter) {
+        result += *p++;
+    }
+    if (*p) {
+        if (*p != limiter) {
+            Error((std::string("No closing '") + limiter + "'").c_str(), 0);
+        }
+        ++p;
+    }
+    if (convertslashes) {
 #if defined(WIN32)
-		if (*np == '/' && convertslashes) {
-			*np = '\\';
-		}
+        const char FROM = '/';
+        const char TO = '\\';
 #else
-		if (*np == '\\' && convertslashes) {
-			*np = '/';
-		}
+        const char FROM = '\\';
+        const char TO = '/';
 #endif
-	}
-	return fn;
+        std::replace(result.begin(), result.end(), FROM, TO);
+    }
+    return Filename(result);
 }
 
-/* added */
-char* GetHobetaFileName(char*& p) {
-	int o = 0;
-	int o2 = 0;
-	char* fn, * np;
-	np = fn = new char[LINEMAX];
-	if (np == NULL) {
-		Error("No enough memory!", 0, FATAL);
-	}
-	*fn = 0;
-	SkipBlanks(p);
-	if (!(*p)) {
-		return fn;
-	}
-	if (*p == '"') {
-		o = 1; ++p;
-	} else if (*p == '<') {
-		o = 2; ++p;
-	}
-	if (*p && strstr(p, ":")) {
-		o2 = 1;
-	} /* added */
-	while (*p && !White() && *p != '"' && *p != '>' && !(o == 0 && o2 == 1 && *p == ':')) {
-		*np = *p; ++np; ++p;
-	}
-	if (*p && o == 1) {
-		if (*p == '"') {
-			++p;
-		} else {
-			Error("No closing '\"'", 0);
-		}
-	} else if (*p && o == 2 && *p != '>') {
-		Error("No closing '>'", 0);
-	} else if (*p) {
-		++p;
-	}
-	*np = 0; 
-	return fn;
+Filename GetHobetaFileName(char*& p) {
+    //TODO: the only difference really is forbidden space symbols- support it at least now
+    return GetFileName(p);
 }
 
 int needcomma(char*& p) {

@@ -28,7 +28,7 @@
 
 #include "sjdefs.h"
 
-int TRD_SaveEmpty(char* fname) {
+int TRD_SaveEmpty(const char* fname) {
 	FILE* ff;
 	int i;
 	unsigned char* buf;
@@ -80,7 +80,7 @@ int TRD_SaveEmpty(char* fname) {
 	return 1;
 }
 
-int TRD_AddFile(char* fname, char* fhobname, int start, int length, int autostart) { //autostart added by boo_boo 19_0ct_2008
+int TRD_AddFile(const char* fname, const char* fhobname, int start, int length, int autostart) { //autostart added by boo_boo 19_0ct_2008
 	FILE* ff;
 	unsigned char hdr[16], trd[31], abin[4];
 	int i,secs,pos = 0;

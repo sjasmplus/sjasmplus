@@ -565,7 +565,7 @@ void EmitBlock(aint byte, aint len, bool nulled) {
 	}
 }
 
-char* GetPath(char* fname, TCHAR** filenamebegin) {
+char* GetPath(const char* fname, TCHAR** filenamebegin) {
 	int g = 0;
 	char* kip, fullFilePath[MAX_PATH];
 	g = SearchPath(CurrentDirectory, fname, NULL, MAX_PATH, fullFilePath, filenamebegin);
@@ -592,7 +592,7 @@ char* GetPath(char* fname, TCHAR** filenamebegin) {
 	return kip;
 }
 
-void BinIncFile(char* fname, int offset, int len) {
+void BinIncFile(const char* fname, int offset, int len) {
 	char* bp;
 	FILE* bif;
 	int res;
@@ -733,7 +733,7 @@ void BinIncFile(char* fname, int offset, int len) {
 	fclose(bif);
 }
 
-void OpenFile(char* nfilename) {
+void OpenFile(const char* nfilename) {
 	char ofilename[LINEMAX];
 	char* oCurrentDirectory, * fullpath;
 	TCHAR* filenamebegin;
@@ -782,7 +782,7 @@ void OpenFile(char* nfilename) {
 }
 
 /* added */
-void IncludeFile(char* nfilename) {
+void IncludeFile(const char* nfilename) {
 	FILE* oFP_Input = FP_Input;
 	FP_Input = 0;
 
@@ -1005,11 +1005,11 @@ void SeekDest(long offset, int method) {
 	}
 }
 
-void NewDest(char* newfilename) {
+void NewDest(const char* newfilename) {
 	NewDest(newfilename, OUTPUT_TRUNCATE);
 }
 
-void NewDest(char* newfilename, int mode) {
+void NewDest(const char* newfilename, int mode) {
 	// close file
 	CloseDest();
 
@@ -1136,7 +1136,7 @@ unsigned char MemGetByte(unsigned int address) {
 }
 
 
-int SaveBinary(char* fname, int start, int length) {
+int SaveBinary(const char* fname, int start, int length) {
 	FILE* ff;
 	if (!FOPEN_ISOK(ff, fname, "wb")) {
 		Error("Error opening file", fname, FATAL);
@@ -1158,7 +1158,7 @@ int SaveBinary(char* fname, int start, int length) {
 }
 
 
-int SaveHobeta(char* fname, char* fhobname, int start, int length) {
+int SaveHobeta(const char* fname, const char* fhobname, int start, int length) {
 	unsigned char header[0x11];
 	int i;
 	for (i = 0; i != 8; header[i++] = 0x20) {
