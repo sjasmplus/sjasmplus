@@ -1100,6 +1100,43 @@ int SaveRAM(FILE* ff, int start, int length) {
 	return 1;
 }
 
+void* SaveRAM(void* dst, int start, int length) {
+    if (!DeviceID) {
+        return 0;
+    }
+
+    if (length + start > 0xFFFF) {
+        length = -1;
+    }
+    if (length <= 0) {
+        length = 0x10000 - start;
+    }
+
+    unsigned char* target = static_cast<unsigned char*>(dst);
+    aint save = 0;
+
+    CDeviceSlot* S;
+    for (int i=0;i<Device->SlotsCount;i++) {
+        S = Device->GetSlot(i);
+        if (start >= S->Address  && start < S->Address + S->Size) {
+            if (length < S->Size - (start - S->Address)) {
+                save = length;
+            } else {
+                save = S->Size - (start - S->Address);
+            }
+            std::memcpy(target, S->Page->RAM + (start - S->Address), save);
+            target += save;
+            length -= save;
+            start += save;
+            if (length <= 0) {
+                break;
+            }
+        }
+    }
+
+    return target;
+}
+
 unsigned int MemGetWord(unsigned int address) {
 	if (pass != LASTPASS) {
 		return 0;
@@ -1140,81 +1177,6 @@ int SaveBinary(const char* fname, int start, int length) {
 		length = 0x10000 - start;
 	}
 	//_COUT "Start: " _CMDL start _CMDL " Length: " _CMDL length _ENDL;
-	if (!SaveRAM(ff, start, length)) {
-		fclose(ff);return 0;
-	}
-
-	fclose(ff);
-	return 1;
-}
-
-
-int SaveHobeta(const char* fname, const char* fhobname, int start, int length) {
-	unsigned char header[0x11];
-	int i;
-	for (i = 0; i != 8; header[i++] = 0x20) {
-		;
-	}
-	//for (i = 0; i != 8; ++i) {
-	for (i = 0; i < 9; ++i) {
-
-		if (*(fhobname + i) == 0) {
-			break;
-		}
-		if (*(fhobname + i) != '.') {
-			header[i] = *(fhobname + i);continue;
-		} else if (*(fhobname + i + 1)) {
-			header[8] = *(fhobname + i + 1);
-		}
-		break;
-	}
-
-
-	if (length + start > 0xFFFF) {
-		length = -1;
-	}
-	if (length <= 0) {
-		length = 0x10000 - start;
-	}
-
-	if (*(fhobname + i + 2) != 0 && *(fhobname + i + 3) != 0) {
-		header[0x09] = *(fhobname + i + 2);
-		header[0x0a] = *(fhobname + i + 3);
-	} else {
-		if (header[8] == 'B') {
-			header[0x09] = (unsigned char)(length & 0xff);
-			header[0x0a] = (unsigned char)(length >> 8);
-		} else {
-			header[0x09] = (unsigned char)(start & 0xff);
-			header[0x0a] = (unsigned char)(start >> 8);
-		}
-	}
-
-	header[0x0b] = (unsigned char)(length & 0xff);
-	header[0x0c] = (unsigned char)(length >> 8);
-	header[0x0d] = 0;
-	if (header[0x0b] == 0) {
-		header[0x0e] = header[0x0c];
-	} else {
-		header[0x0e] = header[0x0c] + 1;
-	}
-	length = header[0x0e] * 0x100;
-	int chk = 0;
-	for (i = 0; i <= 14; chk = chk + (header[i] * 257) + i,i++) {
-		;
-	}
-	header[0x0f] = (unsigned char)(chk & 0xff);
-	header[0x10] = (unsigned char)(chk >> 8);
-
-	FILE* ff;
-	if (!FOPEN_ISOK(ff, fname, "wb")) {
-		Error("Error opening file", fname, FATAL);
-	}
-
-	if (fwrite(header, 1, 17, ff) != 17) {
-		fclose(ff);return 0;
-	}
-
 	if (!SaveRAM(ff, start, length)) {
 		fclose(ff);return 0;
 	}

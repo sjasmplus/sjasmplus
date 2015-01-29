@@ -672,24 +672,23 @@ void dirINCHOB() {
 /* added */
 void dirINCTRD() {
 	aint val;
-    char* fnaamh2;
-	char hobeta[12], hdr[17];
+    char hdr[16];
 	int offset = -1,length = -1,res,i;
 	FILE* ff;
 
     const Filename& fnaam = GetFileName(lp);
-    Filename fnaamh;
+    HobetaFilename fnaamh;
 	if (comma(lp)) {
 		if (!comma(lp)) {
 			fnaamh = GetHobetaFileName(lp);
-            if (fnaamh.empty()) {
-				Error("[INCTRD] Syntax error", bp, CATCHALL); return;
-			}
 		} else {
 			Error("[INCTRD] Syntax error", bp, CATCHALL); return;
 		}
 	}
-	if (comma(lp)) {
+    if (fnaamh.Empty()) {
+        Error("[INCTRD] Syntax error", bp, CATCHALL); return;
+    }
+    if (comma(lp)) {
 		if (!comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[INCTRD] Syntax error", bp, CATCHALL); return;
@@ -709,27 +708,9 @@ void dirINCTRD() {
 			length = val;
 		}
 	}
-	// get spectrum filename
-	for (i = 0; i != 8; hobeta[i++] = 0x20) {
-		;
-	}
-	for (i = 8; i != 11; hobeta[i++] = 0) {
-		;
-	}
-    const char* hoName = fnaamh.c_str();
-	for (i = 0; i != 9; i++) {
-        if (!*(hoName + i)) {
-			break;
-		}
-        if (*(hoName + i) != '.') {
-            hobeta[i] = *(hoName + i); continue;
-        } else if (*(hoName + i + 1)) {
-            hobeta[8] = *(hoName + i + 1);
-		}
-		break;
-	}
+    //TODO: extract code to io_trd
 	// open TRD
-    fnaamh2 = GetPath(fnaam.c_str(), NULL);
+    char* fnaamh2 = GetPath(fnaam.c_str(), NULL);
     if (!FOPEN_ISOK(ff, fnaamh2, "rb")) {
         Error("[INCTRD] Error opening file", fnaam.c_str(), FATAL);
 	}
@@ -737,11 +718,10 @@ void dirINCTRD() {
 	fseek(ff, 0, SEEK_SET);
 	for (i = 0; i < 128; i++) {
 		res = fread(hdr, 1, 16, ff);
-		hdr[16] = 0;
 		if (res != 16) {
             Error("[INCTRD] Read error", fnaam.c_str(), CATCHALL); return;
 		}
-		if (strstr(hdr, hobeta) != NULL) {
+        if (0 == std::memcmp(hdr, fnaamh.GetTrDosEntry(), fnaamh.GetTrdDosEntrySize())) {
 			i = 0; break;
 		}
 	}
@@ -925,19 +905,18 @@ void dirSAVEHOB() {
 
     //TODO: hobeta filename is mandatory
     const Filename& fnaam = GetFileName(lp);
-    Filename fnaamh;
+    HobetaFilename fnaamh;
 	if (comma(lp)) {
 		if (!comma(lp)) {
 			fnaamh = GetHobetaFileName(lp);
-            if (fnaamh.empty()) {
-				Error("[SAVEHOB] Syntax error", bp, PASS3); return;
-			}
 		} else {
 		  	Error("[SAVEHOB] Syntax error. No parameters", bp, PASS3); return;
 		}
 	}
-
-	if (comma(lp)) {
+    if (fnaamh.Empty()) {
+        Error("[SAVEHOB] Syntax error", bp, PASS3); return;
+    }
+    if (comma(lp)) {
 		if (!comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[SAVEHOB] Syntax error", bp, PASS3); return;
@@ -963,7 +942,7 @@ void dirSAVEHOB() {
 	} else {
 		Error("[SAVEHOB] Syntax error. No parameters", bp, PASS3); return;
 	}
-    if (exec && !SaveHobeta(fnaam.c_str(), fnaamh.c_str(), start, length)) {
+    if (exec && !SaveHobeta(fnaam, fnaamh, start, length)) {
 		Error("[SAVEHOB] Error writing file (Disk full?)", bp, CATCHALL); return;
 	}
 }
@@ -978,7 +957,7 @@ void dirEMPTYTRD() {
     if (fnaam.empty()) {
 		Error("[EMPTYTRD] Syntax error", bp, CATCHALL); return;
 	}
-    TRD_SaveEmpty(fnaam.c_str());
+    TRD_SaveEmpty(fnaam);
 }
 
 /* added */
@@ -999,19 +978,18 @@ void dirSAVETRD() {
 
     //TODO: make fnaamh mandatory
     const Filename& fnaam = GetFileName(lp);
-    Filename fnaamh;
+    HobetaFilename fnaamh;
 	if (comma(lp)) {
 		if (!comma(lp)) {
 			fnaamh = GetHobetaFileName(lp);
-            if (fnaamh.empty()) {
-				Error("[SAVETRD] Syntax error", bp, PASS3); return;
-			}
 		} else {
 		  	Error("[SAVETRD] Syntax error. No parameters", bp, PASS3); return;
 		}
 	}
-
-	if (comma(lp)) {
+    if (fnaamh.Empty()) {
+        Error("[SAVETRD] Syntax error. Filename should not be empty", bp, PASS3); return;
+    }
+    if (comma(lp)) {
 		if (!comma(lp)) {
 			if (!ParseExpression(lp, val)) {
 				Error("[SAVETRD] Syntax error", bp, PASS3); return;
@@ -1050,17 +1028,17 @@ void dirSAVETRD() {
 	}
 
 	if (exec) {
-        TRD_AddFile(fnaam.c_str(), fnaamh.c_str(), start, length, autostart);
+        TRD_AddFile(fnaam, fnaamh, start, length, autostart);
 	}
 }
 
 /* added */
 void dirENCODING() {
-    //TODO: make and use more generic function
-    const Filename& enc = GetHobetaFileName(lp);
+    const std::string& enc = GetString(lp);
     if (enc.empty()) {
 		Error("[ENCODING] Syntax error. No parameters", bp, CATCHALL); return;
 	}
+    //TODO: make compare function or type
     std::string lowercased;
     for (const char* p = enc.c_str(); *p; ++p) {
         lowercased += std::tolower(*p);

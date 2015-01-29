@@ -648,10 +648,10 @@ int GetBytes(char*& p, int e[], int add, int dc) {
 	return t;
 }
 
-Filename GetFileName(char*& p, bool convertslashes) {
+std::string GetString(char*& p) {
     SkipBlanks(p);
     if (!*p) {
-        return Filename();
+        return std::string();
     }
     char limiter = '\0';
 
@@ -667,12 +667,17 @@ Filename GetFileName(char*& p, bool convertslashes) {
     while (*p && *p != limiter) {
         result += *p++;
     }
+    if (*p != limiter) {
+        Error((std::string("No closing '") + limiter + "'").c_str(), 0);
+    }
     if (*p) {
-        if (*p != limiter) {
-            Error((std::string("No closing '") + limiter + "'").c_str(), 0);
-        }
         ++p;
     }
+    return result;
+}
+
+Filename GetFileName(char*& p, bool convertslashes) {
+    std::string result = GetString(p);
     if (convertslashes) {
 #if defined(WIN32)
         const char FROM = '/';
@@ -686,9 +691,9 @@ Filename GetFileName(char*& p, bool convertslashes) {
     return Filename(result);
 }
 
-Filename GetHobetaFileName(char*& p) {
-    //TODO: the only difference really is forbidden space symbols- support it at least now
-    return GetFileName(p);
+HobetaFilename GetHobetaFileName(char*& p) {
+    const std::string& result = GetString(p);
+    return HobetaFilename(result);
 }
 
 int needcomma(char*& p) {

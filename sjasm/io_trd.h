@@ -31,16 +31,20 @@
 #ifndef __IO_TRD
 #define __IO_TRD
 
-int TRD_SaveEmpty(const char* fname);
-int TRD_AddFile(const char* fname, const char* fhobname, int start, int length, int autostart); //autostart added by boo_boo 19_0ct_2008
-struct STRDOSSectorHeader {
-	unsigned char c, s, n, l;
-	unsigned short crc;
-	unsigned char c1, c2; // correct CRCs in address and data
-	unsigned char* data, * id;
-	unsigned datlen; 
-	unsigned crcd;
-};
+#include "filename.h"
+
+int TRD_SaveEmpty(const Filename& fname);
+int TRD_AddFile(const Filename& fname, const HobetaFilename& fhobname, int start, int length, int autostart);
+int SaveHobeta(const Filename& fname, const HobetaFilename& fhobname, int start, int length);
+
+//lua adapters
+inline int TRD_SaveEmpty(char* fname) {
+    return TRD_SaveEmpty(Filename(fname));
+}
+
+inline int TRD_AddFile(char* fname, char* fhobname, int start, int length, int autostart) {
+    return TRD_AddFile(Filename(fname), HobetaFilename(fhobname), start, length, autostart);
+}
 
 #endif
 

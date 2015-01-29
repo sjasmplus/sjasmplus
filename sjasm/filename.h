@@ -30,6 +30,7 @@
 #define __FILENAME
 
 #include <string>
+#include <cstring>
 
 class Filename {
     std::string Content;
@@ -37,7 +38,7 @@ public:
     Filename() {}
     Filename(const Filename& rh) : Content(rh.Content) {}
     explicit Filename(const std::string& rh) : Content(rh) {}
-    explicit Filename(const char* rh) : Content(rh) {}
+    //explicit Filename(const char* rh) : Content(rh) {}
 
     Filename WithExtension(const std::string& ext) const {
         const std::string::size_type dotPos = Content.find_first_of('.');
@@ -46,6 +47,47 @@ public:
 
     bool empty() const {
         return Content.empty();
+    }
+
+    const char* c_str() const {
+        return Content.c_str();
+    }
+};
+
+class HobetaFilename {
+    std::string Content;
+    static const char FILLER = ' ';
+    static const std::size_t NAME_SIZE = 8;
+    static const std::size_t MIN_TYPE_SIZE = 1;
+    static const std::size_t MAX_TYPE_SIZE = 3;
+public:
+    HobetaFilename() : Content(NAME_SIZE + MIN_TYPE_SIZE, FILLER) {}
+    HobetaFilename(const HobetaFilename& rh) : Content(rh.Content) {}
+    explicit HobetaFilename(const std::string& rh) {
+        const std::string::size_type dotPos = rh.find_first_of('.');
+        Content = rh.substr(0, dotPos);
+        Content.resize(NAME_SIZE, FILLER);
+        if (dotPos != std::string::npos) {
+            Content += rh.substr(dotPos + 1, MAX_TYPE_SIZE);
+        } else {
+            Content.append(MIN_TYPE_SIZE, FILLER);
+        }
+    }
+
+    std::string GetType() const {
+        return Content.substr(NAME_SIZE);
+    }
+
+    bool Empty() const {
+        return Content.empty();
+    }
+
+    const void* GetTrDosEntry() const {
+        return Content.data();
+    }
+
+    std::size_t GetTrdDosEntrySize() const {
+        return Content.size();
     }
 
     const char* c_str() const {

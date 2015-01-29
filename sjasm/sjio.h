@@ -66,10 +66,10 @@ void PrintHEXAlt(char*& p, aint h); /* added */
 char* GetPath(const char* fname, TCHAR** filenamebegin); /* added */
 void BinIncFile(const char* fname, int offset, int length);
 int SaveRAM(FILE*, int, int);
+void* SaveRAM(void* dst, int start, int size);
 unsigned char MemGetByte(unsigned int address); /* added */
 unsigned int MemGetWord(unsigned int address); /* added */
 int SaveBinary(const char* fname, int start, int length); /* added */
-int SaveHobeta(const char* fname, const char* fhobname, int start, int length); /* added */
 int ReadLine(bool SplitByColon = true);
 EReturn ReadFile();
 EReturn ReadFile(const char* pp, const char* err); /* added */
