@@ -31,6 +31,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+#include "defines.h"
 #include "labels.h"
 
 enum EStructureMembers { SMEMBUNKNOWN, SMEMBALIGN, SMEMBBYTE, SMEMBWORD, SMEMBBLOCK, SMEMBDWORD, SMEMBD24, SMEMBPARENOPEN, SMEMBPARENCLOSE };
@@ -139,23 +140,6 @@ private:
 
 	int used[128];
 	CDefineTableEntry* defs;
-};
-
-class CDefineTable {
-public:
-	CStringsList* DefArrayList; /* added */
-	void Init();
-	void Add(char*, char*, CStringsList* /*added*/);
-	char* Get(char*);
-	int FindDuplicate(char*);
-	int Replace(const char*, const char*);
-	int Remove(char*);
-	void RemoveAll();
-	CDefineTable() {
-		Init();
-	}
-private:
-	CDefineTableEntry* defs[128];
 };
 
 class CMacroTableEntry {

@@ -18,7 +18,7 @@ else
 endif
 
 #sjasmplus object files
-OBJS=sjasm/devices.o sjasm/directives.o sjasm/io_snapshots.o sjasm/io_trd.o \
+OBJS=sjasm/defines.o sjasm/devices.o sjasm/directives.o sjasm/io_snapshots.o sjasm/io_trd.o \
 sjasm/io_tape.o sjasm/labels.o sjasm/lua_lpack.o sjasm/lua_sjasm.o sjasm/options.o sjasm/parser.o \
 sjasm/reader.o sjasm/sjasm.o sjasm/sjio.o sjasm/support.o sjasm/tables.o \
 sjasm/z80.o
