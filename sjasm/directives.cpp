@@ -903,7 +903,6 @@ void dirSAVEHOB() {
 		exec = false;
 	}
 
-    //TODO: hobeta filename is mandatory
     const Filename& fnaam = GetFileName(lp);
     HobetaFilename fnaamh;
 	if (comma(lp)) {
@@ -976,7 +975,6 @@ void dirSAVETRD() {
 	aint val;
 	int start = -1,length = -1,autostart = -1; //autostart added by boo_boo 19_0ct_2008
 
-    //TODO: make fnaamh mandatory
     const Filename& fnaam = GetFileName(lp);
     HobetaFilename fnaamh;
 	if (comma(lp)) {
@@ -1606,17 +1604,10 @@ void dirASSERT() {
 }
 
 void dirSHELLEXEC() {
-    //TODO: use more generic function
-    const Filename& command = GetFileName(lp, false);
-    Filename parameters;
-	if (comma(lp)) {
-		parameters = GetFileName(lp, false);
-    }
+    const std::string& command = GetString(lp);
+    const std::string& parameters = comma(lp) ? GetString(lp) : std::string();
 	if (pass == LASTPASS) {
-        std::string log;
-        log += command.c_str();
-        log += ' ';
-        log += parameters.c_str();
+        const std::string log = command + ' ' + parameters;
         _COUT "Executing " _CMDL log _ENDL;
 #if defined(WIN32)
 		STARTUPINFO si;

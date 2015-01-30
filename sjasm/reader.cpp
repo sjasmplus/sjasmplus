@@ -676,18 +676,8 @@ std::string GetString(char*& p) {
     return result;
 }
 
-Filename GetFileName(char*& p, bool convertslashes) {
-    std::string result = GetString(p);
-    if (convertslashes) {
-#if defined(WIN32)
-        const char FROM = '/';
-        const char TO = '\\';
-#else
-        const char FROM = '\\';
-        const char TO = '/';
-#endif
-        std::replace(result.begin(), result.end(), FROM, TO);
-    }
+Filename GetFileName(char*& p) {
+    const std::string& result = GetString(p);
     return Filename(result);
 }
 

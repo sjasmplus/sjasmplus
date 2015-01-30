@@ -57,7 +57,7 @@ int GetCharConstCharSingle(char*& op, aint& val); /* added */
 int GetBytes(char*& p, int e[], int add, int dc);
 int cmphstr(char*& p1, const char* p2);
 std::string GetString(char*& p);
-Filename GetFileName(char*& p, bool convertslashes=false);
+Filename GetFileName(char*& p);
 HobetaFilename GetHobetaFileName(char*& p);
 int needcomma(char*& p);
 int needbparen(char*& p);
