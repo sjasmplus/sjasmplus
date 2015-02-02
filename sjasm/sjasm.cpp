@@ -55,7 +55,7 @@ int adrdisp = 0,PseudoORG = 0; /* added for spectrum ram */
 char* MemoryPointer=NULL; /* added for spectrum ram */
 int StartAddress = -1;
 int macronummer = 0, lijst = 0, reglenwidth = 0, synerr = 1;
-aint CurAddress = 0, AddressOfMAP = 0, CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;
+aint CurAddress = 0, CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;
 aint destlen = 0, size = (aint)-1,PreviousErrorLine = (aint)-1, maxlin = 0, comlin = 0;
 char* CurrentDirectory=NULL;
 
@@ -70,7 +70,6 @@ CDefineTable DefineTable;
 CMacroDefineTable MacroDefineTable;
 CMacroTable MacroTable;
 CStructureTable StructureTable;
-CAddressList* AddressList = 0; /* from SjASM 0.39g */
 CStringsList* ModuleList = NULL;
 
 lua_State *LUA;
@@ -112,7 +111,7 @@ void InitPass(int p) {
 	macrolabp = NULL;
 	listmacro = 0;
 	pass = p;
-	CurAddress = AddressOfMAP = 0;
+    CurAddress = 0;
 	IsRunning = 1;
 	CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
 	PseudoORG = 0; adrdisp = 0; /* added */
@@ -134,9 +133,6 @@ void InitPass(int p) {
 void FreeRAM() {
 	if (Devices) {
 		delete Devices;
-	}
-	if (AddressList) {
-		delete AddressList;
 	}
 	if (ModuleList) {
 		delete ModuleList;

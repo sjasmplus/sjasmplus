@@ -36,7 +36,6 @@ int SkipBlanks();
 void SkipBlanks(char*& p);
 int NeedEQU();
 int NeedDEFL(); /* added */
-int NeedField();
 char* GetID(char*& p);
 char* getinstr(char*& p);
 int comma(char*& p);

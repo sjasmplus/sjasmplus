@@ -40,17 +40,7 @@ int ParseDirective(bool bol) {
 	char* n;
 	bp = lp;
 	if (!(n = getinstr(lp))) {
-		if (*lp == '#' && *(lp + 1) == '#') {
-			lp += 2;
-			aint val;
-			synerr = 0; if (!ParseExpression(lp, val)) {
-							val = 4;
-						} synerr = 1;
-			AddressOfMAP += ((~AddressOfMAP + 1) & (val - 1));
-			return 1;
-		} else {
-			lp = olp;  return 0;
-		}
+        lp = olp;  return 0;
 	}
 
 	if (DirectivesTable.zoek(n, bol)) {
@@ -114,17 +104,7 @@ int ParseDirective_REPT() {
 	char* n;
 	bp = lp;
 	if (!(n = getinstr(lp))) {
-		if (*lp == '#' && *(lp + 1) == '#') {
-			lp += 2;
-			aint val;
-			synerr = 0; if (!ParseExpression(lp, val)) {
-							val = 4;
-						} synerr = 1;
-			AddressOfMAP += ((~AddressOfMAP + 1) & (val - 1));
-			return 1;
-		} else {
-			lp = olp;  return 0;
-		}
+        lp = olp;  return 0;
 	}
 
 	if (DirectivesTable_dup.zoek(n)) {
@@ -397,28 +377,6 @@ void dirSLOT() {
 	Slot = Device->GetSlot(val);
 	Device->CurrentSlot = Slot->Number;
 	CheckPage();
-}
-
-void dirMAP() {
-	AddressList = new CAddressList(AddressOfMAP, AddressList); /* from SjASM 0.39g */
-	aint val;
-	IsLabelNotFound = 0;
-	if (ParseExpression(lp, val)) {
-		AddressOfMAP = val;
-	} else {
-		Error("[MAP] Syntax error", 0, CATCHALL);
-	}
-	if (IsLabelNotFound) {
-		Error("[MAP] Forward reference", 0, ALL);
-	}
-}
-
-void dirENDMAP() {
-	if (AddressList) {
-		AddressOfMAP = AddressList->val; AddressList = AddressList->next;
-	} else {
-		Error("ENDMAP without MAP", 0);
-	}
 }
 
 void dirALIGN() {
@@ -2099,7 +2057,6 @@ void InsertDirectives() {
 	DirectivesTable.insertd("d24", dirD24);
 	DirectivesTable.insertd("org", dirORG);
 	DirectivesTable.insertd("fpos",dirFORG);
-	DirectivesTable.insertd("map", dirMAP);
 	DirectivesTable.insertd("align", dirALIGN);
 	DirectivesTable.insertd("module", dirMODULE);
 	//DirectivesTable.insertd("z80", dirZ80);
@@ -2153,7 +2110,6 @@ void InsertDirectives() {
 	DirectivesTable.insertd("defm", dirBYTE); /* added */
 	DirectivesTable.insertd("endmod", dirENDMODULE);
 	DirectivesTable.insertd("endmodule", dirENDMODULE);
-	DirectivesTable.insertd("endmap", dirENDMAP); /* added from SjASM 0.39g */
 	DirectivesTable.insertd("rept", dirDUP);
 	DirectivesTable.insertd("dup", dirDUP); /* added */
 	DirectivesTable.insertd("disp", dirDISP); /* added */

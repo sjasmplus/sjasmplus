@@ -50,7 +50,7 @@ extern char* MemoryPointer; /* added for spectrum ram */
 extern int StartAddress;
 extern int macronummer, lijst, reglenwidth, synerr;
 //$, ...
-extern aint CurAddress, AddressOfMAP, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine, destlen, size, PreviousErrorLine, maxlin, comlin;
+extern aint CurAddress, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine, destlen, size, PreviousErrorLine, maxlin, comlin;
 
 extern void (*GetCPUInstruction)(void);
 extern char* ModuleName, * vorlabp, * macrolabp, * LastParsedLabel;
@@ -70,7 +70,6 @@ extern CDefineTable DefineTable;
 extern CMacroDefineTable MacroDefineTable;
 extern CMacroTable MacroTable;
 extern CStructureTable StructureTable;
-extern CAddressList* AddressList; /*from SjASM 0.39g*/
 extern CStringsList* ModuleList;
 
 extern lua_State *LUA;

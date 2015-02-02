@@ -78,21 +78,6 @@ private:
 	CLocalLabelTableEntry* first, * last;
 };
 
-class CAddressList {
-public:
-	aint val;
-	CAddressList* next;
-	CAddressList() {
-		next = 0;
-	}
-	~CAddressList() {
-		if (next) delete next;
-	}
-	CAddressList(aint nval, CAddressList* nnext) {
-		val = nval; next = nnext;
-	}
-};
-
 class CStringsList {
 public:
 	char* string;
