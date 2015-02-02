@@ -1,4 +1,5 @@
         device zxspectrum128
+        OUTPUT test.out
         
         org #0
 label0  ld hl,$

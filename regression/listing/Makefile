@@ -8,4 +8,4 @@ results = $(patsubst %$(SRC_SUFFIX),%$(LST_SUFFIX),$(tests))
 all: $(results)
 
 %$(LST_SUFFIX): %$(SRC_SUFFIX)
-	$(SJASM) --nologo --lst=$@ $<
+	$(SJASM) --nologo --lstlab --lst=$@ $<

@@ -1,27 +1,28 @@
 01   0000                     device zxspectrum128
-02   0000                     
-03   0000                     org #0
-04   0000 21 00 00    label0  ld hl,$
-05   0003 C3 00 00            jp label0
-06   0006                     
-07   0006                     org #4000
-08   4000 21 00 40    label1  ld hl,$
-09   4003 C3 00 40            jp label1
-10   4006             
-11   4006                     org #8000
-12   8000 21 00 80    label2  ld hl,$        
-13   8003 C3 00 80            jp label2
-14   8006                     
-15   8006                     org #c000
-16   C000 21 00 C0    label3  ld hl,$
-17   C003 C3 00 C0            jp label3
-18   C006             
-19   C006                     org #d000,1
-20   D000 21 00 D0    label4  ld hl,$
-21   D003 C3 00 D0            jp label4
-22   D006             
-23   D006                     LABELSLIST test.lbl
-24   D006             
+02   0000                     OUTPUT test.out
+03   0000                     
+04   0000                     org #0
+05   0000 21 00 00    label0  ld hl,$
+06   0003 C3 00 00            jp label0
+07   0006                     
+08   0006                     org #4000
+09   4000 21 00 40    label1  ld hl,$
+10   4003 C3 00 40            jp label1
+11   4006             
+12   4006                     org #8000
+13   8000 21 00 80    label2  ld hl,$        
+14   8003 C3 00 80            jp label2
+15   8006                     
+16   8006                     org #c000
+17   C000 21 00 C0    label3  ld hl,$
+18   C003 C3 00 C0            jp label3
+19   C006             
+20   C006                     org #d000,1
+21   D000 21 00 D0    label4  ld hl,$
+22   D003 C3 00 D0            jp label4
+23   D006             
+24   D006                     LABELSLIST test.lbl
+25   D006             
 
 Value    Label
 ------ - -----------------------------------------------------------

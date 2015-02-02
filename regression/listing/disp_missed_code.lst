@@ -36,3 +36,10 @@
 35   801E             
 36   801E                     savebin "disp_missed_code.bin",start,len
 37   801E             
+
+Value    Label
+------ - -----------------------------------------------------------
+0x7FF1   start
+0x1EB8   wdn
+0x1EBE   wdy
+0x002D   len
