@@ -72,11 +72,8 @@ char* ValidateLabel(char* naam) {
 	if (mlp && l) {
 		STRCAT(lp, LINEMAX, macrolabp); STRCAT(lp, LINEMAX, ">");
 	} else {
-		if (!p && ModuleName) {
-			//int len1=strlen(lp);
-			//int len2=strlen(ModuleName);
-			STRCAT(lp, LINEMAX, ModuleName);
-			STRCAT(lp, LINEMAX, ".");
+        if (!p && !Modules.IsEmpty()) {
+            STRCAT(lp, LINEMAX, Modules.GetPrefix().c_str());
 		}
 		if (l) {
 			STRCAT(lp, LINEMAX, vorlabp); STRCAT(lp, LINEMAX, ".");
@@ -169,9 +166,8 @@ int GetLabelValue(char*& p, aint& val) {
 		break;
 	}
 	temp[0] = 0;
-	if (!g && ModuleName) {
-		STRCAT(temp, LINEMAX, ModuleName);
-		STRCAT(temp, LINEMAX, ".");
+    if (!g && !Modules.IsEmpty()) {
+        STRCAT(temp, LINEMAX, Modules.GetPrefix().c_str());
 	}
 	if (l) {
 		STRCAT(temp, LINEMAX, vorlabp);
@@ -1108,9 +1104,8 @@ void CStructureTable::Init() {
 CStructure* CStructureTable::Add(char* naam, int no, int idx, int gl) {
 	char sn[LINEMAX], * sp;
 	sn[0] = 0;
-	if (!gl && ModuleName) {
-		STRCPY(sn, LINEMAX, ModuleName);
-		STRCAT(sn, LINEMAX, ".");
+    if (!gl && !Modules.IsEmpty()) {
+        STRCPY(sn, LINEMAX, Modules.GetPrefix().c_str());
 	}
 	//sp = STRCAT(sn, LINEMAX, naam); //mmmm
 	STRCAT(sn, LINEMAX, naam);
@@ -1128,23 +1123,18 @@ CStructure* CStructureTable::Add(char* naam, int no, int idx, int gl) {
 CStructure* CStructureTable::zoek(const char* naam, int gl) {
 	char sn[LINEMAX], * sp;
 	sn[0] = 0;
-	if (!gl && ModuleName) {
-		STRCPY(sn, LINEMAX, ModuleName);
-		STRCAT(sn, LINEMAX, ".");
-	}
-	//sp = STRCAT(sn, LINEMAX, naam); //mmm
-	STRCAT(sn, LINEMAX, naam);
-	sp = sn;
-	CStructure* p = strs[*sp];
+    const std::string& name = naam;
+    const std::string& fullName = gl ? name : name + Modules.GetPrefix();
+    CStructure* p = strs[fullName[0]];
 	while (p) {
-		if (!strcmp(sp, p->id)) {
+        if (fullName == p->id) {
 			return p;
 		} p = p->next;
 	}
-	if (!gl && ModuleName) {
-		sp += 1 + strlen(ModuleName); p = strs[*sp];
+    if (!gl && name != fullName) {
+        p = strs[name[0]];
 		while (p) {
-			if (!strcmp(sp, p->id)) {
+            if (name == p->id) {
 				return p;
 			} p = p->next;
 		}

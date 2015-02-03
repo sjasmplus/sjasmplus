@@ -30,7 +30,6 @@
 
 #include "sjdefs.h"
 #include "lua_sjasm.h"
-
 #include <sstream>
 
 CDevice *Devices = 0;
@@ -61,7 +60,7 @@ char* CurrentDirectory=NULL;
 
 void (*GetCPUInstruction)(void);
 
-char* ModuleName=NULL, * vorlabp=NULL, * macrolabp=NULL, * LastParsedLabel=NULL;
+char* vorlabp=NULL, * macrolabp=NULL, * LastParsedLabel=NULL;
 stack<SRepeatStack> RepeatStack; /* added */
 CStringsList* lijstp = 0;
 CLabelTable LabelTable;
@@ -70,7 +69,7 @@ CDefineTable DefineTable;
 CMacroDefineTable MacroDefineTable;
 CMacroTable MacroTable;
 CStructureTable StructureTable;
-CStringsList* ModuleList = NULL;
+ModulesList Modules;
 
 lua_State *LUA;
 int LuaLine=-1;
@@ -96,11 +95,6 @@ void InitPass(int p) {
 	if (maxlin > 999999) {
 		reglenwidth = 7;
 	}
-	if (ModuleName != NULL) {
-		free(ModuleName);
-		ModuleName = NULL;
-	}
-	ModuleName = NULL;
 	if (LastParsedLabel != NULL) {
 		free(LastParsedLabel);
 		LastParsedLabel = NULL;
@@ -116,7 +110,6 @@ void InitPass(int p) {
 	CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
 	PseudoORG = 0; adrdisp = 0; /* added */
 	PreviousAddress = 0; epadres = 0; macronummer = 0; lijst = 0; comlin = 0;
-	ModuleList = NULL;
 	StructureTable.Init();
 	MacroTable.Init();
 	DefineTable.Init();
@@ -133,9 +126,6 @@ void InitPass(int p) {
 void FreeRAM() {
 	if (Devices) {
 		delete Devices;
-	}
-	if (ModuleList) {
-		delete ModuleList;
 	}
 	if (lijstp) {
 		delete lijstp;

@@ -94,9 +94,10 @@ extern "C" {
 #include "io_snapshots.h"
 #include "io_trd.h"
 #include "io_tape.h"
-#include "sjasm.h"
 #include "options.h"
 #include "labels.h"
+#include "modules.h"
+#include "sjasm.h"
 
 #endif
 //eof sjdefs.h

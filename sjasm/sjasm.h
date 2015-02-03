@@ -53,7 +53,7 @@ extern int macronummer, lijst, reglenwidth, synerr;
 extern aint CurAddress, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine, destlen, size, PreviousErrorLine, maxlin, comlin;
 
 extern void (*GetCPUInstruction)(void);
-extern char* ModuleName, * vorlabp, * macrolabp, * LastParsedLabel;
+extern char* vorlabp, * macrolabp, * LastParsedLabel;
 
 extern FILE* FP_ListingFile; 
 
@@ -70,10 +70,11 @@ extern CDefineTable DefineTable;
 extern CMacroDefineTable MacroDefineTable;
 extern CMacroTable MacroTable;
 extern CStructureTable StructureTable;
-extern CStringsList* ModuleList;
 
 extern lua_State *LUA;
 extern int LuaLine;
+
+extern ModulesList Modules;
 
 #endif
 //eof sjasm.h
