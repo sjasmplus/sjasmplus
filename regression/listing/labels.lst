@@ -1,0 +1,20 @@
+01   0000                     device zxspectrum128
+02   0000             
+03   0000                     org #8000
+04   8000 18 01               jr label
+05   8002 00          .label  nop
+06   8003 C9          label   ret
+07   8004             
+08   8004                     module mod
+09   8004 04 80       label   dw label
+10   8006 03 80       .label  dw @label
+11   8008 06 80               dw .label
+12   800A                     endmod
+13   800A             
+
+Value    Label
+------ - -----------------------------------------------------------
+0x8003   label
+0x8002 X _.label
+0x8004   mod.label
+0x8006   mod.label.label
