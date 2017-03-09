@@ -45,7 +45,7 @@ bool has_screen_changes();
 aint remove_unused_space(unsigned char* ram, aint length);
 aint detect_ram_start(unsigned char* ram, aint length);
 
-int SaveTAP_ZX(char* fname, unsigned short start) {
+int SaveTAP_ZX(const char* fname, unsigned short start) {
 	// for Lua
 	if (!DeviceID) {
 		Error("[SAVETAP] Only for real device emulation mode.", 0);

@@ -1,0 +1,9 @@
+#result
+/sjasmplus
+/sjasmplus.exe
+
+#objects
+*.o
+
+#depends
+*.d

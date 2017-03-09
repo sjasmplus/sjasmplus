@@ -50,17 +50,7 @@ namespace Z80 {
 		char* n;
 		bp = lp;
 		if (!(n = getinstr(lp))) {
-			if (*lp == '#' && *(lp + 1) == '#') {
-				lp += 2;
-				aint val;
-				synerr = 0; if (!ParseExpression(lp, val)) {
-								val = 4;
-							} synerr = 1;
-				AddressOfMAP += ((~AddressOfMAP + 1) & (val - 1));
-				return;
-			} else {
-				Error("Unrecognized instruction", lp, LASTPASS); return;
-			}
+            Error("Unrecognized instruction", lp, LASTPASS); return;
 		}
 		if (!OpCodeTable.zoek(n)) {
 			Error("Unrecognized instruction", bp, LASTPASS); *lp = 0;

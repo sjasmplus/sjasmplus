@@ -28,24 +28,11 @@
 
 // support.h
 
-#ifdef UNDER_CE
-void WriteOutput(char Char);
-void WriteOutput(char* String);
-void WriteOutput(int Number);
-void WriteOutput(float Number);
-void WriteOutput(unsigned char Number);
-void WriteOutput(long Number);
-void WriteOutput(unsigned long Number);
-void WriteOutput(_TCHAR* String);
-void WriteOutputEOF();
-#endif
-
 char* strpad(char* string, char ch, aint length);
 
-#if defined (_MSC_VER) && !defined (UNDER_CE)
+#if defined (_MSC_VER)
 
 #define STRDUP _strdup
-#define STRSET(str, sizeInBytes, c) _strset_s(str, sizeInBytes, c)
 #define STRCAT(strDestination, sizeInBytes, strSource) strcat_s(strDestination, sizeInBytes, strSource)
 #define STRCPY(strDestination, sizeInBytes, strSource) strcpy_s(strDestination, sizeInBytes, strSource)
 #define STRNCPY(strDestination, sizeInBytes, strSource, count) strncpy_s(strDestination, sizeInBytes, strSource, count)
@@ -55,33 +42,19 @@ char* strpad(char* string, char ch, aint length);
 #define SPRINTF2(buffer, sizeOfBuffer, format, arg1, arg2) sprintf_s(buffer, sizeOfBuffer, format, arg1, arg2)
 #define SPRINTF3(buffer, sizeOfBuffer, format, arg1, arg2, arg3) sprintf_s(buffer, sizeOfBuffer, format, arg1, arg2, arg3)
 #define STRNCAT(strDest, bufferSizeInBytes, strSource, count) strncat_s(strDest, bufferSizeInBytes, strSource, count)
-#define STRSTR(str, strSearch) strstr(str, strSearch)
 
 #else
 
-#ifdef UNDER_CE
-#include <time.h>
-#else
 #include <sys/time.h>
 #include <unistd.h>
-#endif
 
 #ifndef TCHAR
 #define TCHAR char
 #endif
 void GetCurrentDirectory(int, char*);
 int SearchPath(char*, char*, char*, int, char*, char**);
-char* strset(char* str, char val);
-#ifndef WIN32
-long GetTickCount();
-#endif
 
-#ifdef UNDER_CE
-#define STRDUP _strdup
-#else
 #define STRDUP strdup
-#endif
-#define STRSET(str, sizeInBytes, c) strset(str, c)
 #define STRCAT(strDestination, sizeInBytes, strSource) strcat(strDestination, strSource)
 #define STRCPY(strDestination, sizeInBytes, strSource) strcpy(strDestination, strSource)
 #define STRNCPY(strDestination, sizeInBytes, strSource, count) strncpy(strDestination, strSource, count)
@@ -91,7 +64,6 @@ long GetTickCount();
 #define SPRINTF2(buffer, sizeOfBuffer, format, arg1, arg2) sprintf(buffer, format, arg1, arg2)
 #define SPRINTF3(buffer, sizeOfBuffer, format, arg1, arg2, arg3) sprintf(buffer, format, arg1, arg2, arg3)
 #define STRNCAT(strDest, bufferSizeInBytes, strSource, count) strncat(strDest, strSource, count)
-#define STRSTR(str, strSearch) strstr(str, strSearch)
 
 #endif
 

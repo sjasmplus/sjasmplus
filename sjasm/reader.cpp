@@ -29,6 +29,7 @@
 // reader.cpp
 
 #include "sjdefs.h"
+#include <algorithm>
 
 /* modified */
 int cmphstr(char*& p1, const char* p2) {
@@ -84,21 +85,23 @@ int cmphstr(char*& p1, const char* p2) {
 	}
 }
 
-int White() {
-	return (*lp && *lp <= ' ');
+int White(char c) {
+  return isspace(c);
 }
 
-int SkipBlanks() {
-	while (*lp && *lp <= ' ') {
-		++lp;
-	}
-	return (*lp == 0);
+int White() {
+  return White(*lp);
 }
 
 void SkipBlanks(char*& p) {
-	while (*p && *p <= ' ') {
-		++p;
-	}
+  while (*p && *p > 0 && *p <= ' ') {
+    ++p;
+  }
+}
+
+int SkipBlanks() {
+  SkipBlanks(lp);
+	return (*lp == 0);
 }
 
 /* added */
@@ -140,22 +143,6 @@ int NeedDEFL() {
 		++lp;
 	}
 	if (cmphstr(lp, "defl")) {
-		return 1;
-	}
-	lp = olp;
-	return 0;
-}
-
-int NeedField() {
-	char* olp = lp;
-	SkipBlanks();
-	if (*lp == '#') {
-		++lp; return 1;
-	}
-	if (*lp == '.') {
-		++lp;
-	}
-	if (cmphstr(lp, "field")) {
 		return 1;
 	}
 	lp = olp;
@@ -645,96 +632,42 @@ int GetBytes(char*& p, int e[], int add, int dc) {
 	return t;
 }
 
-/* modified */
-char* GetFileName(char*& p, bool convertslashes) {
-	int o = 0;
-	int o2 = 0;
-	char* fn, * np;
-	fn = np = new char[LINEMAX];
-	if (np == NULL) {
-		Error("No enough memory!", 0, FATAL);
-	}
-	*fn = 0;
-	SkipBlanks(p);
-	if (!(*p)) {
-		return fn;
-	}
-	if (*p == '"') {
-		o = 1; ++p;
-	} else if (*p == '<') {
-		o = 2; ++p;
-	}
-	if (*p && strstr(p, ":")) {
-		o2 = 1;
-	} /* added */
-	/* while (!White() && *p!='"' && *p!='>') { *np=*p; ++np; ++p; } */
-	while (*p && *p != '"' && *p != '>' && !(o == 0 && o2 == 1 && *p == ':')) {
-		*np = *p; ++np; ++p;
-	}
-	if (*p && o == 1) {
-		if (*p == '"') {
-			++p;
-		} else {
-			Error("No closing '\"'", 0);
-		}
-	} else if (*p && o == 2 && *p != '>') {
-		Error("No closing '>'", 0);
-	} else if (*p) {
-		++p;
-	}
-	*np = 0; 
-	for (np = fn; *np; ++np) {
-#if defined(WIN32) || defined(UNDER_CE)
-		if (*np == '/' && convertslashes) {
-			*np = '\\';
-		}
-#else
-		if (*np == '\\' && convertslashes) {
-			*np = '/';
-		}
-#endif
-	}
-	return fn;
+std::string GetString(char*& p) {
+    SkipBlanks(p);
+    if (!*p) {
+        return std::string();
+    }
+    char limiter = '\0';
+
+    if (*p == '"') {
+        limiter = '"';
+        ++p;
+    } else if (*p == '<') {
+        limiter = '>';
+        ++p;
+    }
+    //TODO: research strange ':' logic
+    std::string result;
+    while (*p && *p != limiter) {
+        result += *p++;
+    }
+    if (*p != limiter) {
+        Error((std::string("No closing '") + limiter + "'").c_str(), 0);
+    }
+    if (*p) {
+        ++p;
+    }
+    return result;
 }
 
-/* added */
-char* GetHobetaFileName(char*& p) {
-	int o = 0;
-	int o2 = 0;
-	char* fn, * np;
-	np = fn = new char[LINEMAX];
-	if (np == NULL) {
-		Error("No enough memory!", 0, FATAL);
-	}
-	*fn = 0;
-	SkipBlanks(p);
-	if (!(*p)) {
-		return fn;
-	}
-	if (*p == '"') {
-		o = 1; ++p;
-	} else if (*p == '<') {
-		o = 2; ++p;
-	}
-	if (*p && strstr(p, ":")) {
-		o2 = 1;
-	} /* added */
-	while (*p && !White() && *p != '"' && *p != '>' && !(o == 0 && o2 == 1 && *p == ':')) {
-		*np = *p; ++np; ++p;
-	}
-	if (*p && o == 1) {
-		if (*p == '"') {
-			++p;
-		} else {
-			Error("No closing '\"'", 0);
-		}
-	} else if (*p && o == 2 && *p != '>') {
-		Error("No closing '>'", 0);
-	} else if (*p) {
-		++p;
-	}
-	*np = 0; 
-	return fn;
+Filename GetFileName(char*& p) {
+    const std::string& result = GetString(p);
+    return Filename(result);
+}
+
+HobetaFilename GetHobetaFileName(char*& p) {
+    const std::string& result = GetString(p);
+    return HobetaFilename(result);
 }
 
 int needcomma(char*& p) {

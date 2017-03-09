@@ -30,10 +30,6 @@
 
 #include "sjdefs.h"
 
-#ifdef UNDER_CE
-
-#endif
-
 // http://legacy.imatix.com/html/sfl/sfl282.htm
 char* strpad(char* string, char ch, aint length) {
 	int cursize;
@@ -45,7 +41,7 @@ char* strpad(char* string, char ch, aint length) {
 	return (string);                    /*    and return to caller           */
 }
 
-#if !defined (_MSC_VER) || defined (UNDER_CE)
+#if !defined (_MSC_VER)
 
 void GetCurrentDirectory(int whatever, char* pad) {
 	pad[0] = 0;
@@ -79,71 +75,14 @@ int SearchPath(char* oudzp, char* filename, char* whatever, int maxlen, char* ni
 	return 0;
 }
 
-char* strset(char* str, char val) {
-	//non-aligned
-	char* pByte = str;
-	while (((unsigned long)pByte) & 3) {
-		if (*pByte) {
-			*pByte++ = val;
-		} else {
-			return str;
-		}
-	}
-
-	//4-byte aligned
-	unsigned long* pBlock = (unsigned long*) pByte;
-	unsigned long a;
-	unsigned long dwVal = val | val << 8 | val << 16 | val << 24;
-	for (; ;) {
-		a = *pBlock;
-		a &= 0x7f7f7f7f;
-		a -= 0x01010101;
-		if (a & 0x80808080) {
-			break;
-		} else {
-			*pBlock++ = dwVal;
-		}
-	}
-
-	//non-aligned
-	pByte = (char*) pBlock;
-	while (*pByte) {
-		*pByte++ = val;
-	}
-	return str;
-}
-
-#ifndef WIN32
-long GetTickCount() {
-	struct timeval tv1[1];
-	gettimeofday(tv1, 0);
-	return tv1->tv_usec / 1000;
-}
-#endif
-
 #endif
 
 void LuaShellExec(char *command) {
-#ifdef UNDER_CE
-	//_wsystem(_towchar(command));
-	SHELLEXECUTEINFO info;
-	info.cbSize = sizeof(SHELLEXECUTEINFO);
-	info.fMask = NULL;
-    info.hwnd = NULL;
-    info.lpVerb = NULL;
-    info.lpFile = _totchar(command);
-    info.lpParameters = NULL;
-    info.lpDirectory = NULL;
-    info.nShow = SW_MAXIMIZE;
-    info.hInstApp = NULL;
-	ShellExecuteEx(&info);
-#else
 #ifdef WIN32
 
 	WinExec(command, SW_SHOWNORMAL);
 #else	
 	system(command);
-#endif
 #endif
 }
 

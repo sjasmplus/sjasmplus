@@ -28,13 +28,14 @@
 
 // reader.h
 
+#include "filename.h"
+
 int White();
 void SkipParam(char*&); /* added */
 int SkipBlanks();
 void SkipBlanks(char*& p);
 int NeedEQU();
 int NeedDEFL(); /* added */
-int NeedField();
 char* GetID(char*& p);
 char* getinstr(char*& p);
 int comma(char*& p);
@@ -54,8 +55,9 @@ int GetCharConstChar(char*& op, aint& val);
 int GetCharConstCharSingle(char*& op, aint& val); /* added */
 int GetBytes(char*& p, int e[], int add, int dc);
 int cmphstr(char*& p1, const char* p2);
-char* GetFileName(char*& p, bool convertslashes=false);
-char* GetHobetaFileName(char*& p); /* added */
+std::string GetString(char*& p);
+Filename GetFileName(char*& p);
+HobetaFilename GetHobetaFileName(char*& p);
 int needcomma(char*& p);
 int needbparen(char*& p);
 int islabchar(char p);

@@ -30,49 +30,7 @@
 
 #include "sjdefs.h"
 
-#ifndef UNDER_CE
 #include <fcntl.h>
-#else
-//******************************************************************************
-//***** FCNTL.H functions
-//******************************************************************************
-
-#ifndef _O_RDONLY       // do not redefine existing FCNTL.H constants
-
-#define _O_RDONLY 0x0000   // open for reading only
-#define _O_WRONLY 0x0001   // open for writing only
-#define _O_RDWR   0x0002   // open for reading and writing
-#define _O_APPEND 0x0008   // writes done at eof
-
-#define _O_CREAT  0x0100   // create and open file
-#define _O_TRUNC  0x0200   // open and truncate
-#define _O_EXCL   0x0400   // open only if file doesn't already exist
-
-
-//# define _O_TEXT    0x4000   // file mode is text (translated)
-#define _O_BINARY 0x8000   // file mode is binary (untranslated)
-
-#endif // _O_RDONLY (and alikes...) undefined
-
-#ifndef O_RDONLY        // do not redefine existing FCNTL.H constants
-
-#define O_RDONLY  _O_RDONLY
-#define O_WRONLY  _O_WRONLY
-#define O_RDWR    _O_RDWR
-#define O_APPEND  _O_APPEND
-#define O_CREAT   _O_CREAT
-#define O_TRUNC   _O_TRUNC
-#define O_EXCL    _O_EXCL
-#define O_TEXT    _O_TEXT
-#define O_BINARY  _O_BINARY
-//#define O_RAW      _O_BINARY
-//#define O_TEMPORARY   _O_TEMPORARY
-//#define O_NOINHERIT   _O_NOINHERIT
-//#define O_SEQUENTIAL  _O_SEQUENTIAL
-//#define O_RANDOM   _O_RANDOM
-
-#endif // O_RDONLY (and other old-fashioned constants) undefined
-#endif
 //#include <sys/types.h>
 //#include <sys/stat.h>
 
@@ -82,8 +40,6 @@ char rlbuf[4096 * 2]; //x2 to prevent errors
 int RL_Readed;
 bool rldquotes = false,rlsquotes = false,rlspace = false,rlcomment = false,rlcolon = false,rlnewline = true;
 char* rlpbuf, * rlppos;
-
-FILE* FP_UnrealList;
 
 int EB[1024 * 64],nEB = 0;
 char WriteBuffer[DESTBUFLEN];
@@ -345,10 +301,10 @@ void listbytes3(int pad) {
 void ListFile() {
 	char* pp = pline;
 	aint pad;
-	if (pass != LASTPASS || !IsListingFileOpened || donotlist) {
+    if (pass != LASTPASS || donotlist) {
 		donotlist = nEB = 0; return;
 	}
-	if (!Options::ListingFName[0] || FP_ListingFile == NULL) {
+    if (Options::ListingFName.empty() || FP_ListingFile == NULL) {
 		return;
 	}
 	if (listmacro) {
@@ -398,17 +354,16 @@ void ListFile() {
 	epadres = CurAddress;
 	PreviousAddress = (aint) - 1;
 	nEB = 0;
-	listdata = 0;
 }
 
 void ListFileSkip(char* line) {
 	char* pp = pline;
 	aint pad;
-	if (pass != LASTPASS || !IsListingFileOpened || donotlist) {
+    if (pass != LASTPASS || donotlist) {
 		donotlist = nEB = 0;
 		return;
 	}
-	if (!Options::ListingFName[0] || FP_ListingFile == NULL) {
+    if (Options::ListingFName.empty() || FP_ListingFile == NULL) {
 		return;
 	}
 	if (listmacro) {
@@ -436,7 +391,6 @@ void ListFileSkip(char* line) {
 	epadres = CurAddress;
 	PreviousAddress = (aint) - 1;
 	nEB = 0;
-	listdata = 0;
 }
 
 /* added */
@@ -444,65 +398,15 @@ void CheckPage() {
 	if (!DeviceID) {
 		return;
 	}
-	/*
-	int addadr = 0;
-	switch (Slot->Number) {
-	case 0:
-		addadr = 0x8000;
-		break;
-	case 1:
-		addadr = 0xc000;
-		break;
-	case 2:
-		addadr = 0x4000;
-		break;
-	case 3:
-		addadr = 0x10000;
-		break;
-	case 4:
-		addadr = 0x14000;
-		break;
-	case 5:
-		addadr = 0x0000;
-		break;
-	case 6:
-		addadr = 0x18000;
-		break;
-	case 7:
-		addadr = 0x1c000;
-		break;
-	}
-	if (MemoryCPage > 7) {
-		addadr = 0x4000 * MemoryCPage;
-	}
-	if (PseudoORG) {
-		if (adrdisp < 0xC000) {
-			addadr = adrdisp - 0x4000;
-		} else {
-			addadr += adrdisp - 0xC000;
-		}
-	} else {
-		if (CurAddress < 0xC000) {
-			addadr = CurAddress - 0x4000;
-		} else {
-			addadr += CurAddress - 0xC000;
-		}
-	}
-	MemoryPointer = MemoryRAM + addadr;*/
 
 	CDeviceSlot* S;
 	for (int i=0;i<Device->SlotsCount;i++) {
 		S = Device->GetSlot(i);
-		if (CurAddress >= S->Address && ((CurAddress < 65536 && CurAddress < S->Address + S->Size) || (CurAddress >= 65536 && CurAddress <= S->Address + S->Size))) {
-			if (PseudoORG) {
-				MemoryPointer = S->Page->RAM + (adrdisp - S->Address);
-				Page = S->Page;
-				return;
-			} else {
-				MemoryPointer = S->Page->RAM + (CurAddress - S->Address);
-				Page = S->Page;
-				return;
-			}
+		int realAddr = PseudoORG ? adrdisp : CurAddress;
+		if (realAddr >= S->Address && ((realAddr < 65536 && realAddr < S->Address + S->Size) || (realAddr >= 65536 && realAddr <= S->Address + S->Size))) {
+			MemoryPointer = S->Page->RAM + (realAddr - S->Address);
+			Page = S->Page;
+			return;
 		}
 	}
 	
@@ -659,7 +563,7 @@ void EmitBlock(aint byte, aint len, bool nulled) {
 	}
 }
 
-char* GetPath(char* fname, TCHAR** filenamebegin) {
+char* GetPath(const char* fname, TCHAR** filenamebegin) {
 	int g = 0;
 	char* kip, fullFilePath[MAX_PATH];
 	g = SearchPath(CurrentDirectory, fname, NULL, MAX_PATH, fullFilePath, filenamebegin);
@@ -667,12 +571,10 @@ char* GetPath(char* fname, TCHAR** filenamebegin) {
 		if (fname[0] == '<') {
 			fname++;
 		}
-		CStringsList* dir = Options::IncludeDirsList;
-		while (dir) {
-			if (SearchPath(dir->string, fname, NULL, MAX_PATH, fullFilePath, filenamebegin)) {
+        for (std::list<std::string>::const_iterator it = Options::IncludeDirsList.begin(), lim = Options::IncludeDirsList.end(); it != lim; ++it) {
+            if (SearchPath(it->c_str(), fname, NULL, MAX_PATH, fullFilePath, filenamebegin)) {
 				g = 1; break;
 			}
-			dir = dir->next;
 		}
 	}
 	if (!g) {
@@ -688,7 +590,7 @@ char* GetPath(char* fname, TCHAR** filenamebegin) {
 	return kip;
 }
 
-void BinIncFile(char* fname, int offset, int len) {
+void BinIncFile(const char* fname, int offset, int len) {
 	char* bp;
 	FILE* bif;
 	int res;
@@ -829,7 +731,7 @@ void BinIncFile(char* fname, int offset, int len) {
 	fclose(bif);
 }
 
-void OpenFile(char* nfilename) {
+void OpenFile(const char* nfilename) {
 	char ofilename[LINEMAX];
 	char* oCurrentDirectory, * fullpath;
 	TCHAR* filenamebegin;
@@ -878,7 +780,7 @@ void OpenFile(char* nfilename) {
 }
 
 /* added */
-void IncludeFile(char* nfilename) {
+void IncludeFile(const char* nfilename) {
 	FILE* oFP_Input = FP_Input;
 	FP_Input = 0;
 
@@ -1049,18 +951,11 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
 
 /* modified */
 void OpenList() {
-	if (Options::ListingFName[0]) {
-		if (!FOPEN_ISOK(FP_ListingFile, Options::ListingFName, "w")) {
-			Error("Error opening file", Options::ListingFName, FATAL);
+    if (!Options::ListingFName.empty()) {
+        if (!FOPEN_ISOK(FP_ListingFile, Options::ListingFName.c_str(), "w")) {
+            Error("Error opening file", Options::ListingFName.c_str(), FATAL);
 		}
 	}
-}
-
-/* added */
-void OpenUnrealList() {
-	/*if (!FP_UnrealList && Options::UnrealLabelListFName && !FOPEN_ISOK(FP_UnrealList, Options::UnrealLabelListFName, "w")) {
-		Error("Error opening file", Options::UnrealLabelListFName, FATAL);
-	}*/
 }
 
 void CloseDest() {
@@ -1101,16 +996,16 @@ void SeekDest(long offset, int method) {
 	}
 }
 
-void NewDest(char* newfilename) {
+void NewDest(const char* newfilename) {
 	NewDest(newfilename, OUTPUT_TRUNCATE);
 }
 
-void NewDest(char* newfilename, int mode) {
+void NewDest(const char* newfilename, int mode) {
 	// close file
 	CloseDest();
 
 	// and open new file
-	STRCPY(Options::DestionationFName, LINEMAX, newfilename);
+    Options::DestionationFName = Filename(newfilename);
 	OpenDest(mode);
 }
 
@@ -1120,15 +1015,15 @@ void OpenDest() {
 
 void OpenDest(int mode) {
 	destlen = 0;
-	if (mode != OUTPUT_TRUNCATE && !FileExists(Options::DestionationFName)) {
+    if (mode != OUTPUT_TRUNCATE && !FileExists(Options::DestionationFName.c_str())) {
 		mode = OUTPUT_TRUNCATE;
 	}
-	if (!Options::NoDestinationFile && !FOPEN_ISOK(FP_Output, Options::DestionationFName, mode == OUTPUT_TRUNCATE ? "wb" : "r+b")) {
-		Error("Error opening file", Options::DestionationFName, FATAL);
+    if (!Options::NoDestinationFile && !FOPEN_ISOK(FP_Output, Options::DestionationFName.c_str(), mode == OUTPUT_TRUNCATE ? "wb" : "r+b")) {
+        Error("Error opening file", Options::DestionationFName.c_str(), FATAL);
 	}
 	Options::NoDestinationFile = false;
-	if (FP_RAW == NULL && Options::RAWFName[0] && !FOPEN_ISOK(FP_RAW, Options::RAWFName, "wb")) {
-		Error("Error opening file", Options::RAWFName);
+    if (FP_RAW == NULL && !Options::RAWFName.empty() && !FOPEN_ISOK(FP_RAW, Options::RAWFName.c_str(), "wb")) {
+        Error("Error opening file", Options::RAWFName.c_str());
 	}
 	if (FP_Output != NULL && mode != OUTPUT_TRUNCATE) {
 		if (fseek(FP_Output, 0, mode == OUTPUT_REWIND ? SEEK_SET : SEEK_END)) {
@@ -1137,7 +1032,7 @@ void OpenDest(int mode) {
 	}
 }
 
-int FileExists(char* filename) {
+int FileExists(const char* filename) {
 	int exists = 0;
 	FILE* test;
 	if (FOPEN_ISOK(test, filename, "r")) {
@@ -1203,75 +1098,43 @@ int SaveRAM(FILE* ff, int start, int length) {
 	}
 
 	return 1;
-/*
-	// $4000-$7FFF
-	if (start < 0x8000) {
-		save = length;
-		addadr = start - 0x4000;
-		if (save + start > 0x8000) {
-			save = 0x8000 - start;
-			length -= save;
-			start = 0x8000;
-		} else {
-			length = 0;
-		}
-		if (fwrite(MemoryRAM + addadr, 1, save, ff) != save) {
-			return 0;
-		}
-	}
+}
 
-	// $8000-$BFFF
-	if (length > 0 && start < 0xC000) {
-		save = length;
-		addadr = start - 0x4000;
-		if (save + start > 0xC000) {
-			save = 0xC000 - start;
-			length -= save;
-			start = 0xC000;
-		} else {
-			length = 0;
-		}
-		if (fwrite(MemoryRAM + addadr, 1, save, ff) != save) {
-			return 0;
-		}
-	}
+void* SaveRAM(void* dst, int start, int length) {
+    if (!DeviceID) {
+        return 0;
+    }
 
-	// $C000-$FFFF
-	if (length > 0) {
-		if (Options::MemoryType == MT_ZX48) {
-			addadr = start;
-		} else {
-			switch (MemoryCPage) {
-			case 0:
-				addadr = 0x8000;
-				break;
-			case 1:
-				addadr = 0xc000;
-				break;
-			case 2:
-				addadr = 0x4000;
-				break;
-			case 3:
-				addadr = 0x10000;
-				break;
-			case 4:
-				addadr = 0x14000;
-				break;
-			case 5:
-				addadr = 0x0000;
-				break;
-			default:
-				addadr = 0x4000*MemoryCPage;
-				break;
-			}
-			addadr += start - 0xC000;
-		}
-		save = length;
-		if (fwrite(MemoryRAM + addadr, 1, save, ff) != save) {
-			return 0;
-		}
-	}
-	return 1;*/
+    if (length + start > 0xFFFF) {
+        length = -1;
+    }
+    if (length <= 0) {
+        length = 0x10000 - start;
+    }
+
+    unsigned char* target = static_cast<unsigned char*>(dst);
+    aint save = 0;
+
+    CDeviceSlot* S;
+    for (int i=0;i<Device->SlotsCount;i++) {
+        S = Device->GetSlot(i);
+        if (start >= S->Address  && start < S->Address + S->Size) {
+            if (length < S->Size - (start - S->Address)) {
+                save = length;
+            } else {
+                save = S->Size - (start - S->Address);
+            }
+            std::memcpy(target, S->Page->RAM + (start - S->Address), save);
+            target += save;
+            length -= save;
+            start += save;
+            if (length <= 0) {
+                break;
+            }
+        }
+    }
+
+    return target;
 }
 
 unsigned int MemGetWord(unsigned int address) {
@@ -1298,55 +1161,10 @@ unsigned char MemGetByte(unsigned int address) {
 	Warning("Error with MemGetByte!", 0);
 	ExitASM(1);
 	return 0;
-	
-	/*// $4000-$7FFF
-	if (address < 0x8000) {
-		return MemoryRAM[address - 0x4000];
-	}
-	// $8000-$BFFF
-	else if (address < 0xC000) {
-		return MemoryRAM[address - 0x8000];
-	}
-		// $C000-$FFFF
-	else {*/
-		/*unsigned int addadr = 0;
-		if (Options::MemoryType == MT_ZX48) {
-			return MemoryRAM[address];
-		} else {
-			switch (MemoryCPage) {
-			case 0:
-				addadr = 0x8000;
-				break;
-			case 1:
-				addadr = 0xc000;
-				break;
-			case 2:
-				addadr = 0x4000;
-				break;
-			case 3:
-				addadr = 0x10000;
-				break;
-			case 4:
-				addadr = 0x14000;
-				break;
-			case 5:
-				addadr = 0x0000;
-				break;
-			default:
-				addadr = 0x4000*MemoryCPage;
-				break;
-			}
-			addadr += address - 0xC000;*/
-			/*if (MemoryRAM[addadr]) {
-				return 0;
-			}*/
-			//return MemoryRAM[addadr];
-		//}
-	//}
 }
 
 
-int SaveBinary(char* fname, int start, int length) {
+int SaveBinary(const char* fname, int start, int length) {
 	FILE* ff;
 	if (!FOPEN_ISOK(ff, fname, "wb")) {
 		Error("Error opening file", fname, FATAL);
@@ -1359,81 +1177,6 @@ int SaveBinary(char* fname, int start, int length) {
 		length = 0x10000 - start;
 	}
 	//_COUT "Start: " _CMDL start _CMDL " Length: " _CMDL length _ENDL;
-	if (!SaveRAM(ff, start, length)) {
-		fclose(ff);return 0;
-	}
-
-	fclose(ff);
-	return 1;
-}
-
-
-int SaveHobeta(char* fname, char* fhobname, int start, int length) {
-	unsigned char header[0x11];
-	int i;
-	for (i = 0; i != 8; header[i++] = 0x20) {
-		;
-	}
-	//for (i = 0; i != 8; ++i) {
-	for (i = 0; i < 9; ++i) {
-
-		if (*(fhobname + i) == 0) {
-			break;
-		}
-		if (*(fhobname + i) != '.') {
-			header[i] = *(fhobname + i);continue;
-		} else if (*(fhobname + i + 1)) {
-			header[8] = *(fhobname + i + 1);
-		}
-		break;
-	}
-
-
-	if (length + start > 0xFFFF) {
-		length = -1;
-	}
-	if (length <= 0) {
-		length = 0x10000 - start;
-	}
-
-	if (*(fhobname + i + 2) != 0 && *(fhobname + i + 3) != 0) {
-		header[0x09] = *(fhobname + i + 2);
-		header[0x0a] = *(fhobname + i + 3);
-	} else {
-		if (header[8] == 'B') {
-			header[0x09] = (unsigned char)(length & 0xff);
-			header[0x0a] = (unsigned char)(length >> 8);
-		} else {
-			header[0x09] = (unsigned char)(start & 0xff);
-			header[0x0a] = (unsigned char)(start >> 8);
-		}
-	}
-
-	header[0x0b] = (unsigned char)(length & 0xff);
-	header[0x0c] = (unsigned char)(length >> 8);
-	header[0x0d] = 0;
-	if (header[0x0b] == 0) {
-		header[0x0e] = header[0x0c];
-	} else {
-		header[0x0e] = header[0x0c] + 1;
-	}
-	length = header[0x0e] * 0x100;
-	int chk = 0;
-	for (i = 0; i <= 14; chk = chk + (header[i] * 257) + i,i++) {
-		;
-	}
-	header[0x0f] = (unsigned char)(chk & 0xff);
-	header[0x10] = (unsigned char)(chk >> 8);
-
-	FILE* ff;
-	if (!FOPEN_ISOK(ff, fname, "wb")) {
-		Error("Error opening file", fname, FATAL);
-	}
-
-	if (fwrite(header, 1, 17, ff) != 17) {
-		fclose(ff);return 0;
-	}
-
 	if (!SaveRAM(ff, start, length)) {
 		fclose(ff);return 0;
 	}
@@ -1604,8 +1347,8 @@ int ReadFileToCStringsList(CStringsList*& f, const char* end) {
 void WriteExp(char* n, aint v) {
 	char lnrs[16],* l = lnrs;
 	if (FP_ExportFile == NULL) {
-		if (!FOPEN_ISOK(FP_ExportFile, Options::ExportFName, "w")) {
-			Error("Error opening file", Options::ExportFName, FATAL);
+        if (!FOPEN_ISOK(FP_ExportFile, Options::ExportFName.c_str(), "w")) {
+            Error("Error opening file", Options::ExportFName.c_str(), FATAL);
 		}
 	}
 	STRCPY(ErrorLine, LINEMAX2, n);

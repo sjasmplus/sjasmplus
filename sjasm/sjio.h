@@ -39,11 +39,11 @@ extern aint PreviousAddress, epadres;
 #define OUTPUT_REWIND 1
 #define OUTPUT_APPEND 2
 
-extern FILE* FP_UnrealList, * FP_Input; /* added */
+extern FILE* FP_Input; /* added */
 
 void OpenDest(int); /* added from new SjASM 0.39g */
-void NewDest(char* newfilename, int mode); /* added from new SjASM 0.39g */
-int FileExists(char* filename); /* added from new SjASM 0.39g */
+void NewDest(const char* newfilename, int mode); /* added from new SjASM 0.39g */
+int FileExists(const char* filename); /* added from new SjASM 0.39g */
 void Error(const char*, const char*, int = PASS2);
 void Warning(const char*, const char*, int = PASS2);
 void ListFile();
@@ -54,23 +54,22 @@ void EmitWord(int word);
 void EmitBytes(int* bytes);
 void EmitWords(int* words);
 void EmitBlock(aint byte, aint len, bool nulled = false);
-void OpenFile(char* nfilename);
-void IncludeFile(char* nfilename); /* added */
+void OpenFile(const char* nfilename);
+void IncludeFile(const char* nfilename); /* added */
 void Close();
 void OpenList();
-void OpenUnrealList(); /* added */
 void ReadBufLine(bool Parse = true, bool SplitByColon = true); /* added */
 void OpenDest();
 void PrintHEX32(char*& p, aint h);
 void PrintHEX16(char*& p, aint h); /* added */
 void PrintHEXAlt(char*& p, aint h); /* added */
-char* GetPath(char* fname, TCHAR** filenamebegin); /* added */
-void BinIncFile(char* fname, int offset, int length);
+char* GetPath(const char* fname, TCHAR** filenamebegin); /* added */
+void BinIncFile(const char* fname, int offset, int length);
 int SaveRAM(FILE*, int, int);
+void* SaveRAM(void* dst, int start, int size);
 unsigned char MemGetByte(unsigned int address); /* added */
 unsigned int MemGetWord(unsigned int address); /* added */
-int SaveBinary(char* fname, int start, int length); /* added */
-int SaveHobeta(char* fname, char* fhobname, int start, int length); /* added */
+int SaveBinary(const char* fname, int start, int length); /* added */
 int ReadLine(bool SplitByColon = true);
 EReturn ReadFile();
 EReturn ReadFile(const char* pp, const char* err); /* added */
