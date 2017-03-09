@@ -7,3 +7,7 @@
 
 #depends
 *.d
+
+.idea
+build
+cmake-build-debug
