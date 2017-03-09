@@ -1644,7 +1644,7 @@ void dirDUP() {
 
 	dup.Lines = new CStringsList(lp, NULL);
 	dup.Pointer = dup.Lines;
-	dup.lp = lp; //чтобы брать код перед EDUP
+	dup.lp = lp; //С‡С‚РѕР±С‹ Р±СЂР°С‚СЊ РєРѕРґ РїРµСЂРµРґ EDUP
 	dup.CurrentGlobalLine = CurrentGlobalLine;
 	dup.CurrentLocalLine = CurrentLocalLine;
 	dup.IsInWork = false;
@@ -1674,7 +1674,7 @@ void dirEDUP() {
 		Error("[EDUP/ENDR] No enough memory!", 0, FATAL);
 	}
 	*dup.Pointer->string = 0;
-	STRNCAT(dup.Pointer->string, LINEMAX, dup.lp, lp - dup.lp - 4); //чтобы взять код перед EDUP/ENDR/ENDM
+	STRNCAT(dup.Pointer->string, LINEMAX, dup.lp, lp - dup.lp - 4); //С‡С‚РѕР±С‹ РІР·СЏС‚СЊ РєРѕРґ РїРµСЂРµРґ EDUP/ENDR/ENDM
 	CStringsList* s;
 	olistmacro = listmacro;
 	listmacro = 1;
