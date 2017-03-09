@@ -960,7 +960,7 @@ void OpenList() {
 
 void CloseDest() {
 	// simple check
-	if (FP_Output == NULL) {
+	if (FP_Output == NULL && FP_RAW == NULL) {
 		return;
 	}
 
