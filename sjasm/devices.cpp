@@ -164,7 +164,7 @@ int SetDevice(char *id) {
 	CDevice** dev;
 	CDevice* parent;
 
-	if (!id || cmphstr(id, "none")) {
+	if (id == nullptr) {
 		DeviceID = 0; return true;
 	}
 
@@ -215,7 +215,7 @@ int SetDevice(char *id) {
 
 char* GetDeviceName() {
 	if (!DeviceID) {
-		return "NONE";
+		return nullptr;
 	} else {
 		return DeviceID;
 	}

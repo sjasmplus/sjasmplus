@@ -37,7 +37,7 @@ void CDefineTable::Init() {
     }
 }
 
-void CDefineTable::Add(char* name, char* value, CStringsList* nss/*added*/) {
+void CDefineTable::Add(const char *name, const char *value, CStringsList * nss/*added*/) {
     if (FindDuplicate(name)) {
         Error("Duplicate define", name);
     }
@@ -59,7 +59,7 @@ char* CDefineTable::Get(char* name) {
     return NULL;
 }
 
-int CDefineTable::FindDuplicate(char* name) {
+int CDefineTable::FindDuplicate(const char *name) {
     CDefineTableEntry* p = defs[*name];
     while (p) {
         if (!strcmp(name, p->name)) {

@@ -36,9 +36,9 @@ class CDefineTable {
 public:
     CStringsList* DefArrayList; /* added */
     void Init();
-    void Add(char*, char*, CStringsList* /*added*/);
+    void Add(const char *, const char *, CStringsList * /*added*/);
     char* Get(char*);
-    int FindDuplicate(char*);
+    int FindDuplicate(const char *);
     int Replace(const char*, const char*);
     int Remove(char*);
     void RemoveAll();

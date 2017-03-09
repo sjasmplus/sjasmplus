@@ -1020,7 +1020,7 @@ void ParseStructLine(CStructure* st) {
 unsigned long LuaCalculate(char *str) {
 	aint val;
 	if (!ParseExpression(str, val)) {
-		return NULL;
+		return 0;
 	} else {
 		return val;
 	}

@@ -1166,7 +1166,7 @@ int CStructureTable::Emit(char* naam, char* l, char*& p, int gl) {
 }
 
 
-CDevice::CDevice(char *name, CDevice *n) {
+CDevice::CDevice(const char *name, CDevice *n) {
 	ID = STRDUP(name);
 	Next = NULL;
 	if (n) {

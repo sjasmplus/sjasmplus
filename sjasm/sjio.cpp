@@ -1233,7 +1233,7 @@ EReturn ReadFile(const char* pp, const char* err) {
 }
 
 
-EReturn SkipFile(char* pp, char* err) {
+EReturn SkipFile(const char *pp, const char *err) {
 	CStringsList* ol;
 	char* p;
 	int iflevel = 0;
