@@ -29,6 +29,14 @@
 #ifndef __SJDEFS
 #define __SJDEFS
 
+#ifndef MAX_PATH  // defined on Windows
+  #ifdef PATH_MAX // defined on Unix
+    #define MAX_PATH PATH_MAX
+  #else
+    #define MAX_PATH 0x1000
+  #endif
+#endif
+
 // not used
 #define MAXPASSES 3
 

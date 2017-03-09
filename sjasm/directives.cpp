@@ -1543,7 +1543,7 @@ void dirSHELLEXEC() {
 		///WinExec ( command, SW_SHOWNORMAL );
 #else
         if (system(command.c_str()) == -1) {
-			Error( "[SHELLEXEC] Execution of command failed", command, PASS3 );
+			Error( "[SHELLEXEC] Execution of command failed", command.c_str(), PASS3 );
 		}
 #endif
 	}

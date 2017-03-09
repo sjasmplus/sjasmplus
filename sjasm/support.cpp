@@ -47,7 +47,7 @@ void GetCurrentDirectory(int whatever, char* pad) {
 	pad[0] = 0;
 }
 
-int SearchPath(char* oudzp, char* filename, char* whatever, int maxlen, char* nieuwzp, char** ach) {
+int SearchPath(const char *oudzp, const char *filename, const char *whatever, int maxlen, char *nieuwzp, char **ach) {
 	FILE* fp;
 	char* p, * f;
 	if (filename[0] == '/') {
