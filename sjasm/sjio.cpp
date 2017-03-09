@@ -827,6 +827,9 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
 					}
 				} else if (*rlpbuf == '\r') {
 					rlpbuf++;RL_Readed--;
+                    if (*rlpbuf && *rlpbuf == '\n') {
+                        rlpbuf++;RL_Readed--;
+                    }
 				}
 				*rlppos = 0;
 				if (strlen(line) == LINEMAX - 1) {
