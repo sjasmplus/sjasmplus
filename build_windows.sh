@@ -13,5 +13,5 @@ rm -rf ${BUILD_DIR}
 mkdir ${BUILD_DIR}
 cd ${BUILD_DIR}
 
-${TARGET}-cmake -D CMAKE_EXE_LINKER_FLAGS="-static" ..
+${TARGET}-cmake -D CMAKE_EXE_LINKER_FLAGS="-static" -D CMAKE_BUILD_TYPE="Release" ..
 make
