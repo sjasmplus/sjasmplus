@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 3.7)
 project(sjasmplus)
 
+SET(SJASMPLUS_VERSION 20170311)
+
 set(CMAKE_CXX_STANDARD 14)
+
+configure_file(
+        "${PROJECT_SOURCE_DIR}/sjasmplus_conf.h.in"
+        "${PROJECT_BINARY_DIR}/sjasmplus_conf.h"
+)
+include_directories(${PROJECT_BINARY_DIR})
 
 set(SOURCE_FILES
         lua5.1/lapi.c

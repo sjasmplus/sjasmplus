@@ -30,6 +30,7 @@
 
 #include "sjdefs.h"
 #include "lua_sjasm.h"
+#include <sjasmplus_conf.h>
 #include <sstream>
 
 CDevice *Devices = 0;
@@ -151,7 +152,7 @@ void LuaFatalError(lua_State *L) {
 int main(int argc, const char* argv[]) {
 	char buf[MAX_PATH];
 	int base_encoding; /* added */
-	const char* logo = "SjASMPlus Z80 Cross-Assembler v1.07 RC8 (build 06-11-2008)";
+	const char* logo = "SjASMPlus Z80 Cross-Assembler v."SJASMPLUS_VERSION;
 	int i = 1;
 
 	if (argc == 1) {
