@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.7)
 project(sjasmplus)
 
-SET(SJASMPLUS_VERSION 20170311)
+SET(SJASMPLUS_VERSION 20170311+dev)
 
 set(CMAKE_CXX_STANDARD 14)
 
