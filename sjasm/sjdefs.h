@@ -30,6 +30,7 @@
 #define __SJDEFS
 
 #ifndef MAX_PATH  // defined on Windows
+#include <limits.h>
   #ifdef PATH_MAX // defined on Unix
     #define MAX_PATH PATH_MAX
   #else
