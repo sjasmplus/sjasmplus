@@ -601,10 +601,6 @@ void dirINCHOB() {
         fs::ifstream IFSH(fnaamh, std::ios::binary);
         try {
             IFSH.seekg(0x0b, std::ios::beg);
-        } catch (std::ifstream::failure& e) {
-            Error("[INCHOB] Hobeta file has wrong format", fnaam.c_str(), FATAL);
-        }
-        try {
             IFSH.read((char *)len, 2);
         } catch (std::ifstream::failure& e) {
             Error("[INCHOB] Hobeta file has wrong format", fnaam.c_str(), FATAL);
