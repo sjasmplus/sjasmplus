@@ -127,7 +127,7 @@ void InitPass(int p) {
 
     // predefined
     DefineTable.Replace("_SJASMPLUS", "1");
-    DefineTable.Replace("_VERSION", "\"1.07\"");
+    DefineTable.Replace("_VERSION", "\"" SJASMPLUS_VERSION "\"");
     DefineTable.Replace("_RELEASE", "0");
     DefineTable.Replace("_ERRORS", "0");
     DefineTable.Replace("_WARNINGS", "0");
