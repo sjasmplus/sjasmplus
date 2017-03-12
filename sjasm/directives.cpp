@@ -597,21 +597,26 @@ void dirINCHOB() {
 
     //used for implicit format check
     fnaamh = getAbsPath(fnaam);
-    if (!FOPEN_ISOK(ff, fnaamh.c_str(), "rb")) {
+    try {
+        fs::ifstream IFSH(fnaamh, std::ios::binary);
+        try {
+            IFSH.seekg(0x0b, std::ios::beg);
+        } catch (std::ifstream::failure& e) {
+            Error("[INCHOB] Hobeta file has wrong format", fnaam.c_str(), FATAL);
+        }
+        try {
+            IFSH.read((char *)len, 2);
+        } catch (std::ifstream::failure& e) {
+            Error("[INCHOB] Hobeta file has wrong format", fnaam.c_str(), FATAL);
+        }
+        IFSH.close();
+    } catch (std::ifstream::failure& e) {
         Error("[INCHOB] Error opening file", fnaam.c_str(), FATAL);
-    }
-    if (fseek(ff, 0x0b, 0)) {
-        Error("[INCHOB] Hobeta file has wrong format", fnaam.c_str(), FATAL);
-    }
-    res = fread(len, 1, 2, ff);
-    if (res != 2) {
-        Error("[INCHOB] Hobeta file has wrong format", fnaam.c_str(), FATAL);
     }
     if (length == -1) {
         length = len[0] + (len[1] << 8);
     }
-    fclose(ff);
-    BinIncFile(fnaam.c_str(), offset, length);
+    BinIncFile(fnaam, offset, length);
 }
 
 /* added */
