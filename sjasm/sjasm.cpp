@@ -258,10 +258,7 @@ int main(int argc, const char *argv[]) {
 
     pass = 9999; /* added for detect end of compiling */
     if (Options::AddLabelListing) {
-        //TODO: remove when FP_ListingFile will be stream
-        std::ostringstream buf;
-        LabelTable.Dump(buf);
-        OFSListing << buf.str();
+        LabelTable.Dump(OFSListing);
     }
 
     Close();
