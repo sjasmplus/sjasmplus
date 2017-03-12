@@ -31,20 +31,20 @@
 #include "sjdefs.h"
 
 // http://legacy.imatix.com/html/sfl/sfl282.htm
-char* strpad(char* string, char ch, aint length) {
-	int cursize;
-	cursize = strlen (string);          /*  Get current length of string     */
-	while (cursize < length)            /*  Pad until at desired length      */
-		string [cursize++] = ch;
+char *strpad(char *string, char ch, aint length) {
+    int cursize;
+    cursize = strlen(string);          /*  Get current length of string     */
+    while (cursize < length)            /*  Pad until at desired length      */
+        string[cursize++] = ch;
 
-	string [cursize++] = '\0';          /*  Add terminating null             */
-	return (string);                    /*    and return to caller           */
+    string[cursize++] = '\0';          /*  Add terminating null             */
+    return (string);                    /*    and return to caller           */
 }
 
 #if !defined (_MSC_VER)
 
-void GetCurrentDirectory(int whatever, char* pad) {
-	pad[0] = 0;
+void GetCurrentDirectory(int whatever, char *pad) {
+    pad[0] = 0;
 }
 
 /*
@@ -82,9 +82,9 @@ int SearchPath(const char *oudzp, const fs::path& fileName, const char *whatever
 void LuaShellExec(char *command) {
 #ifdef WIN32
 
-	WinExec(command, SW_SHOWNORMAL);
-#else	
-	system(command);
+    WinExec(command, SW_SHOWNORMAL);
+#else
+    system(command);
 #endif
 }
 

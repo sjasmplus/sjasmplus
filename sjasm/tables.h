@@ -34,196 +34,254 @@ using std::endl;
 #include "defines.h"
 #include "labels.h"
 
-enum EStructureMembers { SMEMBUNKNOWN, SMEMBALIGN, SMEMBBYTE, SMEMBWORD, SMEMBBLOCK, SMEMBDWORD, SMEMBD24, SMEMBPARENOPEN, SMEMBPARENCLOSE };
+enum EStructureMembers {
+    SMEMBUNKNOWN, SMEMBALIGN, SMEMBBYTE, SMEMBWORD, SMEMBBLOCK, SMEMBDWORD, SMEMBD24, SMEMBPARENOPEN, SMEMBPARENCLOSE
+};
 
-char* ValidateLabel(char*);
-extern char* PreviousIsLabel;
-int GetLabelValue(char*& p, aint& val);
-int GetLocalLabelValue(char*& op, aint& val);
+char *ValidateLabel(char *);
+
+extern char *PreviousIsLabel;
+
+int GetLabelValue(char *&p, aint &val);
+
+int GetLocalLabelValue(char *&op, aint &val);
 
 class CFunctionTableEntry {
 public:
-	char* name;
-	void (*funp)(void);
+    char *name;
+
+    void (*funp)(void);
 };
 
 class CFunctionTable {
 public:
-	CFunctionTable();
-	int Insert(const char*, void(*) (void));
-	int insertd(const char*, void(*) (void));
-	/*int zoek(char*);*/
-	int zoek(const char*, bool =0);
-	int Find(char*);
+    CFunctionTable();
+
+    int Insert(const char *, void(*)(void));
+
+    int insertd(const char *, void(*)(void));
+
+    /*int zoek(char*);*/
+    int zoek(const char *, bool = 0);
+
+    int Find(char *);
+
 private:
-	int HashTable[LABTABSIZE], NextLocation;
-	CFunctionTableEntry funtab[LABTABSIZE];
-	int Hash(const char*);
+    int HashTable[LABTABSIZE], NextLocation;
+    CFunctionTableEntry funtab[LABTABSIZE];
+
+    int Hash(const char *);
 };
 
 class CLocalLabelTableEntry {
 public:
-	aint regel, nummer, value;
-	CLocalLabelTableEntry* next, * prev;
-	CLocalLabelTableEntry(aint, aint, CLocalLabelTableEntry*);
+    aint regel, nummer, value;
+    CLocalLabelTableEntry *next, *prev;
+
+    CLocalLabelTableEntry(aint, aint, CLocalLabelTableEntry *);
 };
 
 class CLocalLabelTable {
 public:
-	CLocalLabelTable();
-	aint zoekf(aint);
-	aint zoekb(aint);
-	void Insert(aint, aint);
+    CLocalLabelTable();
+
+    aint zoekf(aint);
+
+    aint zoekb(aint);
+
+    void Insert(aint, aint);
+
 private:
-	CLocalLabelTableEntry* first, * last;
+    CLocalLabelTableEntry *first, *last;
 };
 
 class CStringsList {
 public:
-	char* string;
-	CStringsList* next;
-	CStringsList() {
-		next = 0;
-	}
-	~CStringsList() {
-		if (next) delete next;
-	}
-	CStringsList(char*, CStringsList*);
+    char *string;
+    CStringsList *next;
+
+    CStringsList() {
+        next = 0;
+    }
+
+    ~CStringsList() {
+        if (next) delete next;
+    }
+
+    CStringsList(char *, CStringsList *);
 };
 
 class CDefineTableEntry {
 public:
-	char* name, * value;
-	CStringsList* nss; /* added */
-	CDefineTableEntry* next;
-	CDefineTableEntry(const char*, const char*, CStringsList* /*added*/, CDefineTableEntry*);
+    char *name, *value;
+    CStringsList *nss; /* added */
+    CDefineTableEntry *next;
+
+    CDefineTableEntry(const char *, const char *, CStringsList * /*added*/, CDefineTableEntry *);
 };
 
 class CMacroDefineTable {
 public:
-	void Init();
-	void AddMacro(char*, char*);
-	CDefineTableEntry* getdefs();
-	void setdefs(CDefineTableEntry*);
-	char* getverv(char*);
-	int FindDuplicate(char*);
-	CMacroDefineTable() {
-		Init();
-	}
-private:
-	// By Antipod: http://zx.pk.ru/showpost.php?p=159487&postcount=264
-	enum
-	{
-		KDelimiter = '_',
-		KTotalJoinedParams = 64
-	};
-	void SplitToArray( const char* aName, char**& aArray, int& aCount, int* aPositions ) const;
-	int	Copy( char* aDest, int aDestPos, const char* aSource, int aSourcePos, int aBytes ) const;
-	void FreeArray( char** aArray, int aCount );
-	char tempBuf[ LABMAX ];	// for 'arg_someLabel_arg_anotherLabel' expansion
-	// --
+    void Init();
 
-	int used[128];
-	CDefineTableEntry* defs;
+    void AddMacro(char *, char *);
+
+    CDefineTableEntry *getdefs();
+
+    void setdefs(CDefineTableEntry *);
+
+    char *getverv(char *);
+
+    int FindDuplicate(char *);
+
+    CMacroDefineTable() {
+        Init();
+    }
+
+private:
+    // By Antipod: http://zx.pk.ru/showpost.php?p=159487&postcount=264
+    enum {
+        KDelimiter = '_',
+        KTotalJoinedParams = 64
+    };
+
+    void SplitToArray(const char *aName, char **&aArray, int &aCount, int *aPositions) const;
+
+    int Copy(char *aDest, int aDestPos, const char *aSource, int aSourcePos, int aBytes) const;
+
+    void FreeArray(char **aArray, int aCount);
+
+    char tempBuf[LABMAX];    // for 'arg_someLabel_arg_anotherLabel' expansion
+    // --
+
+    int used[128];
+    CDefineTableEntry *defs;
 };
 
 class CMacroTableEntry {
 public:
-	char* naam;
-	CStringsList* args, * body;
-	CMacroTableEntry* next;
-	CMacroTableEntry(char*, CMacroTableEntry*);
-	~CMacroTableEntry(){if (next)delete next;};
+    char *naam;
+    CStringsList *args, *body;
+    CMacroTableEntry *next;
+
+    CMacroTableEntry(char *, CMacroTableEntry *);
+
+    ~CMacroTableEntry() { if (next)delete next; };
 };
 
 class CMacroTable {
 public:
-	void Add(char*, char*&);
-	int Emit(char*, char*&);
-	int FindDuplicate(char*);
-	void Init();
-	CMacroTable() {
-		Init();
-	}
-	~CMacroTable(){if(macs) delete macs;};
+    void Add(char *, char *&);
+
+    int Emit(char *, char *&);
+
+    int FindDuplicate(char *);
+
+    void Init();
+
+    CMacroTable() {
+        Init();
+    }
+
+    ~CMacroTable() { if (macs) delete macs; };
 private:
-	int used[128];
-	CMacroTableEntry* macs;
+    int used[128];
+    CMacroTableEntry *macs;
 };
 
 class CStructureEntry1 {
 public:
-	char* naam;
-	aint offset;
-	CStructureEntry1* next;
-	CStructureEntry1(char*, aint);
+    char *naam;
+    aint offset;
+    CStructureEntry1 *next;
+
+    CStructureEntry1(char *, aint);
 };
 
 class CStructureEntry2 {
 public:
-	aint offset, len, def;
-	EStructureMembers type;
-	CStructureEntry2* next;
-	CStructureEntry2(aint, aint, aint, EStructureMembers);
+    aint offset, len, def;
+    EStructureMembers type;
+    CStructureEntry2 *next;
+
+    CStructureEntry2(aint, aint, aint, EStructureMembers);
 };
 
 class CStructure {
 public:
-	char* naam, * id;
-	int binding;
-	int global;
-	aint noffset;
-	void AddLabel(char*);
-	void AddMember(CStructureEntry2*);
-	void CopyLabel(char*, aint);
-	void CopyLabels(CStructure*);
-	void CopyMember(CStructureEntry2*, aint);
-	void CopyMembers(CStructure*, char*&);
-	void deflab();
-	void emitlab(char*);
-	void emitmembs(char*&);
-	CStructure* next;
-	CStructure(char*, char*, int, int, int, CStructure*);
+    char *naam, *id;
+    int binding;
+    int global;
+    aint noffset;
+
+    void AddLabel(char *);
+
+    void AddMember(CStructureEntry2 *);
+
+    void CopyLabel(char *, aint);
+
+    void CopyLabels(CStructure *);
+
+    void CopyMember(CStructureEntry2 *, aint);
+
+    void CopyMembers(CStructure *, char *&);
+
+    void deflab();
+
+    void emitlab(char *);
+
+    void emitmembs(char *&);
+
+    CStructure *next;
+
+    CStructure(char *, char *, int, int, int, CStructure *);
+
 private:
-	CStructureEntry1* mnf, * mnl;
-	CStructureEntry2* mbf, * mbl;
+    CStructureEntry1 *mnf, *mnl;
+    CStructureEntry2 *mbf, *mbl;
 };
 
 class CStructureTable {
 public:
-	CStructure* Add(char*, int, int, int);
-	void Init();
-	CStructureTable() {
-		Init();
-	}
-	CStructure* zoek(const char*, int);
-	int FindDuplicate(char*);
-	int Emit(char*, char*, char*&, int);
+    CStructure *Add(char *, int, int, int);
+
+    void Init();
+
+    CStructureTable() {
+        Init();
+    }
+
+    CStructure *zoek(const char *, int);
+
+    int FindDuplicate(char *);
+
+    int Emit(char *, char *, char *&, int);
+
 private:
-	CStructure* strs[128];
+    CStructure *strs[128];
 };
 
 struct SRepeatStack {
-	int RepeatCount;
-	long CurrentGlobalLine;
-	long CurrentLocalLine;
-	long CurrentLine;
-	CStringsList* Lines;
-	CStringsList* Pointer;
-	bool IsInWork;
-	int Level;
-	char* lp;
+    int RepeatCount;
+    long CurrentGlobalLine;
+    long CurrentLocalLine;
+    long CurrentLine;
+    CStringsList *Lines;
+    CStringsList *Pointer;
+    bool IsInWork;
+    int Level;
+    char *lp;
 };
 
 struct SConditionalStack {
-	long CurrentGlobalLine;
-	long CurrentLocalLine;
-	long CurrentLine;
-	CStringsList* Lines;
-	CStringsList* Pointer;
-	bool IsInWork;
-	int Level;
-	char* lp;
+    long CurrentGlobalLine;
+    long CurrentLocalLine;
+    long CurrentLine;
+    CStringsList *Lines;
+    CStringsList *Pointer;
+    bool IsInWork;
+    int Level;
+    char *lp;
 };
 
 /*
@@ -249,44 +307,54 @@ private:
 
 class CDevicePage {
 public:
-	CDevicePage(aint, aint /*, CDevicePage **/);
-	~CDevicePage();
-	aint Size;
-	aint Number;
-	char *RAM;
-	//CDevicePage* Next;
+    CDevicePage(aint, aint /*, CDevicePage **/);
+
+    ~CDevicePage();
+
+    aint Size;
+    aint Number;
+    char *RAM;
+    //CDevicePage* Next;
 private:
 };
 
 class CDeviceSlot {
 public:
-	CDeviceSlot(aint, aint, aint /*, CDeviceSlot **/);
-	~CDeviceSlot();
-	aint Address;
-	aint Size;
-	CDevicePage* Page;
-	aint Number;
-	//CDeviceSlot* Next;
+    CDeviceSlot(aint, aint, aint /*, CDeviceSlot **/);
+
+    ~CDeviceSlot();
+
+    aint Address;
+    aint Size;
+    CDevicePage *Page;
+    aint Number;
+    //CDeviceSlot* Next;
 private:
 };
 
 class CDevice {
 public:
-	CDevice(const char *, CDevice *);
-	~CDevice();
-	void AddSlot(aint adr, aint size);
-	void AddPage(aint size);
-	CDevicePage* GetPage(aint);
-	CDeviceSlot* GetSlot(aint);
-	char* ID;
-	CDevice* Next;
-	aint CurrentSlot;
-	aint CurrentPage;
-	aint SlotsCount;
-	aint PagesCount;
+    CDevice(const char *, CDevice *);
+
+    ~CDevice();
+
+    void AddSlot(aint adr, aint size);
+
+    void AddPage(aint size);
+
+    CDevicePage *GetPage(aint);
+
+    CDeviceSlot *GetSlot(aint);
+
+    char *ID;
+    CDevice *Next;
+    aint CurrentSlot;
+    aint CurrentPage;
+    aint SlotsCount;
+    aint PagesCount;
 private:
-	CDeviceSlot* Slots[256];
-	CDevicePage* Pages[256];
+    CDeviceSlot *Slots[256];
+    CDevicePage *Pages[256];
 };
 
 

@@ -32,20 +32,19 @@
 // defines.cpp
 
 void CDefineTable::Init() {
-    for (int i = 0; i < 128; defs[i++] = 0) {
-        ;
+    for (int i = 0; i < 128; defs[i++] = 0) { ;
     }
 }
 
-void CDefineTable::Add(const char *name, const char *value, CStringsList * nss/*added*/) {
+void CDefineTable::Add(const char *name, const char *value, CStringsList *nss/*added*/) {
     if (FindDuplicate(name)) {
         Error("Duplicate define", name);
     }
     defs[*name] = new CDefineTableEntry(name, value, nss, defs[*name]);
 }
 
-char* CDefineTable::Get(char* name) {
-    CDefineTableEntry* p = defs[*name];
+char *CDefineTable::Get(char *name) {
+    CDefineTableEntry *p = defs[*name];
     DefArrayList = 0;
     while (p) {
         if (!strcmp(name, p->name)) {
@@ -60,7 +59,7 @@ char* CDefineTable::Get(char* name) {
 }
 
 int CDefineTable::FindDuplicate(const char *name) {
-    CDefineTableEntry* p = defs[*name];
+    CDefineTableEntry *p = defs[*name];
     while (p) {
         if (!strcmp(name, p->name)) {
             return 1;
@@ -70,13 +69,13 @@ int CDefineTable::FindDuplicate(const char *name) {
     return 0;
 }
 
-int CDefineTable::Replace(const char* name, const char* value) {
-    CDefineTableEntry* p = defs[*name];
+int CDefineTable::Replace(const char *name, const char *value) {
+    CDefineTableEntry *p = defs[*name];
     while (p) {
         if (!strcmp(name, p->name)) {
             delete[](p->value);
-            p->value = new char[strlen(value)+1];
-            strcpy(p->value,value);
+            p->value = new char[strlen(value) + 1];
+            strcpy(p->value, value);
 
             return 0;
         }
@@ -86,9 +85,9 @@ int CDefineTable::Replace(const char* name, const char* value) {
     return 1;
 }
 
-int CDefineTable::Remove(char* name) {
-    CDefineTableEntry* p = defs[*name];
-    CDefineTableEntry* p2 = NULL;
+int CDefineTable::Remove(char *name) {
+    CDefineTableEntry *p = defs[*name];
+    CDefineTableEntry *p2 = NULL;
     while (p) {
         if (!strcmp(name, p->name)) {
             if (p2 != NULL) {
@@ -106,10 +105,8 @@ int CDefineTable::Remove(char* name) {
 }
 
 void CDefineTable::RemoveAll() {
-    for (int i=0; i < 128; i++)
-    {
-        if (defs[i] != NULL)
-        {
+    for (int i = 0; i < 128; i++) {
+        if (defs[i] != NULL) {
             delete defs[i];
             defs[i] = NULL;
         }

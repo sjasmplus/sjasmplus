@@ -44,17 +44,18 @@ namespace Options {
     extern fs::path RAWFName;
     extern Filename UnrealLabelListFName;
 
-	extern bool IsPseudoOpBOF;
-	extern bool IsReversePOP;
-	extern bool IsShowFullPath;
-	extern bool AddLabelListing;
+    extern bool IsPseudoOpBOF;
+    extern bool IsReversePOP;
+    extern bool IsShowFullPath;
+    extern bool AddLabelListing;
     extern bool HideLogo;
     extern bool NoDestinationFile;
-	extern bool FakeInstructions;
+    extern bool FakeInstructions;
 
     extern std::list<std::string> IncludeDirsList;
 
-    void GetOptions(const char* argv[], int& argc);
+    void GetOptions(const char *argv[], int &argc);
+
     void ShowHelp();
 } // eof namespace Options
 

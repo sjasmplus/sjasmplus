@@ -30,23 +30,32 @@
 #define __DEFINES
 
 class CStringsList;
+
 class CDefineTableEntry;
 
 class CDefineTable {
 public:
-    CStringsList* DefArrayList; /* added */
+    CStringsList *DefArrayList; /* added */
     void Init();
+
     void Add(const char *, const char *, CStringsList * /*added*/);
-    char* Get(char*);
+
+    char *Get(char *);
+
     int FindDuplicate(const char *);
-    int Replace(const char*, const char*);
-    int Remove(char*);
+
+    int Replace(const char *, const char *);
+
+    int Remove(char *);
+
     void RemoveAll();
+
     CDefineTable() {
         Init();
     }
+
 private:
-    CDefineTableEntry* defs[128];
+    CDefineTableEntry *defs[128];
 };
 
 #endif

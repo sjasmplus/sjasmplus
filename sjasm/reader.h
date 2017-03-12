@@ -31,36 +31,60 @@
 #include "filename.h"
 
 int White();
-void SkipParam(char*&); /* added */
+
+void SkipParam(char *&); /* added */
 int SkipBlanks();
-void SkipBlanks(char*& p);
+
+void SkipBlanks(char *&p);
+
 int NeedEQU();
+
 int NeedDEFL(); /* added */
-char* GetID(char*& p);
-char* getinstr(char*& p);
-int comma(char*& p);
-int oparen(char*& p, char c);
-int cparen(char*& p);
-char* getparen(char* p);
-int check8(aint val, bool error=true); /* changes applied from SjASM 0.39g */
+char *GetID(char *&p);
+
+char *getinstr(char *&p);
+
+int comma(char *&p);
+
+int oparen(char *&p, char c);
+
+int cparen(char *&p);
+
+char *getparen(char *p);
+
+int check8(aint val, bool error = true); /* changes applied from SjASM 0.39g */
 int check8o(long val); /* changes applied from SjASM 0.39g */
-int check16(aint val, bool error=true); /* changes applied from SjASM 0.39g */
-int check24(aint val, bool error=true); /* changes applied from SjASM 0.39g */
-int need(char*& p, char c);
-int need(char*& p, const char *c);
-int needa(char*& p, const char* c1, int r1, const char* c2 = 0, int r2 = 0, const char* c3 = 0, int r3 = 0);
-int GetConstant(char*& op, aint& val);
-int GetCharConst(char*& p, aint& val);
-int GetCharConstChar(char*& op, aint& val);
-int GetCharConstCharSingle(char*& op, aint& val); /* added */
-int GetBytes(char*& p, int e[], int add, int dc);
-int cmphstr(char*& p1, const char* p2);
-std::string GetString(char*& p);
-Filename GetFileName(char*& p);
-HobetaFilename GetHobetaFileName(char*& p);
-int needcomma(char*& p);
-int needbparen(char*& p);
+int check16(aint val, bool error = true); /* changes applied from SjASM 0.39g */
+int check24(aint val, bool error = true); /* changes applied from SjASM 0.39g */
+int need(char *&p, char c);
+
+int need(char *&p, const char *c);
+
+int needa(char *&p, const char *c1, int r1, const char *c2 = 0, int r2 = 0, const char *c3 = 0, int r3 = 0);
+
+int GetConstant(char *&op, aint &val);
+
+int GetCharConst(char *&p, aint &val);
+
+int GetCharConstChar(char *&op, aint &val);
+
+int GetCharConstCharSingle(char *&op, aint &val); /* added */
+int GetBytes(char *&p, int e[], int add, int dc);
+
+int cmphstr(char *&p1, const char *p2);
+
+std::string GetString(char *&p);
+
+Filename GetFileName(char *&p);
+
+HobetaFilename GetHobetaFileName(char *&p);
+
+int needcomma(char *&p);
+
+int needbparen(char *&p);
+
 int islabchar(char p);
-EStructureMembers GetStructMemberId(char*& p);
+
+EStructureMembers GetStructMemberId(char *&p);
 //eof reader.h
 

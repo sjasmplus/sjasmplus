@@ -65,19 +65,19 @@ namespace Options {
 
     std::list<std::string> IncludeDirsList;
 
-    void GetOptions(const char* argv[], int& i) {
-		while (argv[i] && *argv[i] == '-') {
+    void GetOptions(const char *argv[], int &i) {
+        while (argv[i] && *argv[i] == '-') {
             //TODO: do not support single-dashed options
             const std::string option(argv[i][1] == '-' ? argv[i++] + 2 : argv[i++] + 1);
             const std::string::size_type eqPos = option.find("=");
-            const std::string& optName = option.substr(0, eqPos);
-            const std::string& optValue = eqPos != std::string::npos ? option.substr(eqPos + 1) : std::string();
+            const std::string &optName = option.substr(0, eqPos);
+            const std::string &optValue = eqPos != std::string::npos ? option.substr(eqPos + 1) : std::string();
 
             if (optName == HELP) {
                 //TODO: fix behaviour
                 //nothing
             } else if (optName == LSTLAB) {
-				AddLabelListing = 1;
+                AddLabelListing = 1;
             } else if (optName == FULLPATH) {
                 IsShowFullPath = 1;
             } else if (optName == REVERSEPOP) {
@@ -95,43 +95,43 @@ namespace Options {
             } else if (optName == SYM) {
                 if (!optValue.empty()) {
                     SymbolListFName = Filename(optValue);
-				} else {
+                } else {
                     //TODO: fail
-					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
-				}
+                    _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;
+                }
             } else if (optName == LST) {
                 if (!optValue.empty()) {
                     ListingFName = fs::path(optValue);
-				} else {
+                } else {
                     //TODO: fail
-					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
-				}
+                    _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;
+                }
             } else if (optName == EXP) {
                 if (!optValue.empty()) {
                     ExportFName = fs::path(optValue);
-				} else {
+                } else {
                     //TODO: fail
-					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
-				}
+                    _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;
+                }
             } else if (optName == RAW) {
                 if (!optValue.empty()) {
                     RAWFName = fs::path(optValue);
-				} else {
+                } else {
                     //TODO: fail
-					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
-				}
+                    _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;
+                }
             } else if (optName == INC) {
                 if (!optValue.empty()) {
                     IncludeDirsList.push_front(optValue);
-				} else {
+                } else {
                     //TODO: fail
-					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;
-				}
+                    _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;
+                }
             } else {
                 _COUT "Unrecognized option: " _CMDL option _ENDL;
             }
         }
-	}
+    }
 
     void ShowHelp() {
         _COUT "\nOption flags as follows:" _ENDL;

@@ -28,17 +28,25 @@
 
 // parser.h
 
-int ParseExpression(char*& lp, aint& val);
+int ParseExpression(char *&lp, aint &val);
+
 int ParseDirective(bool bol = 0);
+
 int ParseDirective_REPT();
+
 void ParseInstruction(); /* added */
-char* ReplaceDefine(char* lp); /* added */
-char* ReplaceDefineNext(char* lp); /* added */
+char *ReplaceDefine(char *lp); /* added */
+char *ReplaceDefineNext(char *lp); /* added */
 void ParseLine(bool = true);
+
 void ParseLineSafe(bool = true);
-void ParseStructLine(CStructure* st);
+
+void ParseStructLine(CStructure *st);
+
 unsigned long LuaCalculate(char *str);
+
 void LuaParseLine(char *str);
+
 void LuaParseCode(char *str);
 //eof parser.h
 

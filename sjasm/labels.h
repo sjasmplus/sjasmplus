@@ -33,32 +33,45 @@
 
 class CLabelTableEntry {
 public:
-  const char* name;
-	char page; /* added */
-	bool IsDEFL; /* added */
-	unsigned char forwardref; /* added */
-	aint value;
-	char used;
-	CLabelTableEntry();
+    const char *name;
+    char page; /* added */
+    bool IsDEFL; /* added */
+    unsigned char forwardref; /* added */
+    aint value;
+    char used;
+
+    CLabelTableEntry();
 };
 
 class CLabelTable {
 public:
-	CLabelTable();
-    bool Insert(const char* name, aint value, bool undefined = false, bool isDefl = false);
-    bool Update(const char* name, aint value);
-    bool GetValue(const char* name, aint& value);
-    bool Find(const char* name);
-    bool Remove(const char* name);
-    bool IsUsed(const char* name);
-	void RemoveAll();
-    void Dump(std::ostream& str) const;
-    void DumpForUnreal(const Filename& file) const;
-    void DumpSymbols(const Filename& file) const;
+    CLabelTable();
+
+    bool Insert(const char *name, aint value, bool undefined = false, bool isDefl = false);
+
+    bool Update(const char *name, aint value);
+
+    bool GetValue(const char *name, aint &value);
+
+    bool Find(const char *name);
+
+    bool Remove(const char *name);
+
+    bool IsUsed(const char *name);
+
+    void RemoveAll();
+
+    void Dump(std::ostream &str) const;
+
+    void DumpForUnreal(const Filename &file) const;
+
+    void DumpSymbols(const Filename &file) const;
+
 private:
-	int HashTable[LABTABSIZE], NextLocation;
-	CLabelTableEntry LabelTable[LABTABSIZE];
-	int Hash(const char*);
+    int HashTable[LABTABSIZE], NextLocation;
+    CLabelTableEntry LabelTable[LABTABSIZE];
+
+    int Hash(const char *);
 };
 
 #endif

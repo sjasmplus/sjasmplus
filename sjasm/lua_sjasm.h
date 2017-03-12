@@ -4,5 +4,5 @@
 */
 
 /* Exported function */
-TOLUA_API int  tolua_sjasm_open (lua_State* tolua_S);
+TOLUA_API int tolua_sjasm_open(lua_State *tolua_S);
 

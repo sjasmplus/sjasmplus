@@ -28,7 +28,7 @@
 
 // support.h
 
-char* strpad(char* string, char ch, aint length);
+char *strpad(char *string, char ch, aint length);
 
 #if defined (_MSC_VER)
 
@@ -51,7 +51,8 @@ char* strpad(char* string, char ch, aint length);
 #ifndef TCHAR
 #define TCHAR char
 #endif
-void GetCurrentDirectory(int, char*);
+
+void GetCurrentDirectory(int, char *);
 // int SearchPath(const char *, const char *, const char *, int, char *, char **);
 
 #define STRDUP strdup

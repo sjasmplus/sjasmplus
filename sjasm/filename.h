@@ -36,11 +36,13 @@ class Filename {
     std::string Content;
 public:
     Filename() {}
-    Filename(const Filename& rh) : Content(rh.Content) {}
-    explicit Filename(const std::string& rh) : Content(rh) {}
+
+    Filename(const Filename &rh) : Content(rh.Content) {}
+
+    explicit Filename(const std::string &rh) : Content(rh) {}
     //explicit Filename(const char* rh) : Content(rh) {}
 
-    Filename WithExtension(const std::string& ext) const {
+    Filename WithExtension(const std::string &ext) const {
         const std::string::size_type dotPos = Content.find_first_of('.');
         return Filename(Content.substr(0, dotPos) + '.' + ext);
     }
@@ -49,7 +51,7 @@ public:
         return Content.empty();
     }
 
-    const char* c_str() const {
+    const char *c_str() const {
         return Content.c_str();
     }
 };
@@ -62,8 +64,10 @@ class HobetaFilename {
     static const std::size_t MAX_TYPE_SIZE = 3;
 public:
     HobetaFilename() : Content(NAME_SIZE + MIN_TYPE_SIZE, FILLER) {}
-    HobetaFilename(const HobetaFilename& rh) : Content(rh.Content) {}
-    explicit HobetaFilename(const std::string& rh) {
+
+    HobetaFilename(const HobetaFilename &rh) : Content(rh.Content) {}
+
+    explicit HobetaFilename(const std::string &rh) {
         const std::string::size_type dotPos = rh.find_first_of('.');
         Content = rh.substr(0, dotPos);
         Content.resize(NAME_SIZE, FILLER);
@@ -82,7 +86,7 @@ public:
         return Content.empty();
     }
 
-    const void* GetTrDosEntry() const {
+    const void *GetTrDosEntry() const {
         return Content.data();
     }
 
@@ -90,7 +94,7 @@ public:
         return Content.size();
     }
 
-    const char* c_str() const {
+    const char *c_str() const {
         return Content.c_str();
     }
 };

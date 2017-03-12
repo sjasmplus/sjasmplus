@@ -34,10 +34,14 @@
 
 class ModulesList {
 public:
-    void Begin(const std::string& name);
+    void Begin(const std::string &name);
+
     void End();
+
     bool IsEmpty() const;
+
     std::string GetPrefix() const;
+
 private:
     std::stack<std::string> Names;
 };

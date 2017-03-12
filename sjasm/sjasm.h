@@ -38,7 +38,7 @@ extern CDevice *Devices;
 extern CDevice *Device;
 extern CDeviceSlot *Slot;
 extern CDevicePage *Page;
-extern char* DeviceID;
+extern char *DeviceID;
 
 namespace global {
     extern fs::path CurrentDirectory;
@@ -46,7 +46,7 @@ namespace global {
 }
 
 // extend
-extern char * lp, line[LINEMAX], temp[LINEMAX], pline[LINEMAX2], ErrorLine[LINEMAX2], * bp;
+extern char *lp, line[LINEMAX], temp[LINEMAX], pline[LINEMAX2], ErrorLine[LINEMAX2], *bp;
 extern char sline[LINEMAX2], sline2[LINEMAX2];
 
 extern std::vector<fs::path> SourceFNames;
@@ -58,23 +58,27 @@ extern bool moreInputLeft; // Reset by the END directive
 extern int donotlist, listmacro;
 //physical address, disp != org mode flag
 extern int adrdisp, PseudoORG; /* added for spectrum mode */
-extern char* MemoryPointer; /* added for spectrum ram */
+extern char *MemoryPointer; /* added for spectrum ram */
 extern int StartAddress;
 extern int macronummer, lijst, reglenwidth, synerr;
 //$, ...
 extern aint CurAddress, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine, destlen, size, PreviousErrorLine, maxlin, comlin;
 
 extern void (*GetCPUInstruction)(void);
-extern char* vorlabp, * macrolabp, * LastParsedLabel;
 
-extern FILE* FP_ListingFile;
+extern char *vorlabp, *macrolabp, *LastParsedLabel;
+
+extern FILE *FP_ListingFile;
 extern fs::ofstream OFSListing;
 
-enum EEncoding { ENCDOS, ENCWIN };
+enum EEncoding {
+    ENCDOS, ENCWIN
+};
 
 void ExitASM(int p);
-extern CStringsList* lijstp;
-extern stack< SRepeatStack> RepeatStack;
+
+extern CStringsList *lijstp;
+extern stack<SRepeatStack> RepeatStack;
 
 extern CLabelTable LabelTable;
 extern CLocalLabelTable LocalLabelTable;

@@ -30,12 +30,14 @@
 #define __SJDEFS
 
 #ifndef MAX_PATH  // defined on Windows
+
 #include <limits.h>
-  #ifdef PATH_MAX // defined on Unix
-    #define MAX_PATH PATH_MAX
-  #else
-    #define MAX_PATH 0x1000
-  #endif
+
+#ifdef PATH_MAX // defined on Unix
+#define MAX_PATH PATH_MAX
+#else
+#define MAX_PATH 0x1000
+#endif
 #endif
 
 // not used
@@ -44,8 +46,8 @@
 #define LASTPASS 3
 
 // output
-#define _COUT cout << 
-#define _CMDL  << 
+#define _COUT cout <<
+#define _CMDL  <<
 #define _ENDL << endl
 #define _END ;
 
@@ -56,11 +58,13 @@
 
 #include <stack>
 #include <iostream>
+
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::flush;
 using std::stack;
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -92,6 +96,7 @@ extern "C" {
 extern "C" {
 #include "lua_lpack.h"
 }
+
 #include "devices.h"
 #include "support.h"
 #include "tables.h"
