@@ -43,8 +43,6 @@ char* rlpbuf, * rlppos;
 
 int EB[1024 * 64],nEB = 0;
 char WriteBuffer[DESTBUFLEN];
-FILE /* * FP_Input = NULL, * FP_Output = NULL,*/ * FP_RAW = NULL;
-FILE* FP_ListingFile = NULL,* FP_ExportFile = NULL;
 
 fs::ifstream realIFS;
 fs::ifstream *pIFS = &realIFS;
@@ -1105,9 +1103,8 @@ int FileExists(const char* filename) {
 
 void Close() {
 	CloseDest();
-	if (FP_ExportFile != NULL) {
-		fclose(FP_ExportFile);
-		FP_ExportFile = NULL;
+	if (OFSExport.is_open()) {
+        OFSExport.close();
 	}
 	if (OFSRaw.is_open()) {
 		OFSRaw.close();
@@ -1405,10 +1402,12 @@ int ReadFileToCStringsList(CStringsList*& f, const char* end) {
 
 void WriteExp(char* n, aint v) {
 	char lnrs[16],* l = lnrs;
-	if (FP_ExportFile == NULL) {
-        if (!FOPEN_ISOK(FP_ExportFile, Options::ExportFName.c_str(), "w")) {
+	if (!OFSExport.is_open()) {
+        try {
+            OFSExport.open(Options::ExportFName);
+        } catch (std::ofstream::failure& e) {
             Error("Error opening file", Options::ExportFName.c_str(), FATAL);
-		}
+        }
 	}
 	STRCPY(ErrorLine, LINEMAX2, n);
 	STRCAT(ErrorLine, LINEMAX2, ": EQU ");
@@ -1416,7 +1415,7 @@ void WriteExp(char* n, aint v) {
 	PrintHEX32(l, v); *l = 0;
 	STRCAT(ErrorLine, LINEMAX2, lnrs);
 	STRCAT(ErrorLine, LINEMAX2, "\n");
-	fputs(ErrorLine, FP_ExportFile);
+    OFSExport << ErrorLine;
 }
 
 //eof sjio.cpp
