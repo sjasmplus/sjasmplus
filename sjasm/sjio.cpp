@@ -612,9 +612,11 @@ fs::path getAbsPath(const fs::path &p) {
     return fs::absolute(p, global::CurrentDirectory);
 }
 
+/*
 fs::path getAbsPath(const fs::path &p, fs::path &f) {
     return fs::absolute(p / f, global::CurrentDirectory);
 }
+*/
 
 /*
 char* GetPath(const char* fname, TCHAR** filenamebegin) {
@@ -1178,7 +1180,7 @@ void Close() {
     //}
 }
 
-int SaveRAM(FILE *ff, int start, int length) {
+int SaveRAM(fs::ofstream &ofs, int start, int length) {
     //unsigned int addadr = 0,save = 0;
     aint save = 0;
 
@@ -1202,7 +1204,9 @@ int SaveRAM(FILE *ff, int start, int length) {
             } else {
                 save = S->Size - (start - S->Address);
             }
-            if (fwrite(S->Page->RAM + (start - S->Address), 1, save, ff) != save) {
+            try {
+                ofs.write(S->Page->RAM + (start - S->Address), save);
+            } catch (std::ofstream::failure &e) {
                 return 0;
             }
             length -= save;
@@ -1281,25 +1285,28 @@ unsigned char MemGetByte(unsigned int address) {
 }
 
 
-int SaveBinary(const char *fname, int start, int length) {
-    FILE *ff;
-    if (!FOPEN_ISOK(ff, fname, "wb")) {
-        Error("Error opening file", fname, FATAL);
+int SaveBinary(const fs::path &fname, int start, int length) {
+    try {
+        fs::ofstream OFSB(fname, std::ios_base::binary);
+        try {
+            if (length + start > 0xFFFF) {
+                length = -1;
+            }
+            if (length <= 0) {
+                length = 0x10000 - start;
+            }
+
+            //_COUT "Start: " _CMDL start _CMDL " Length: " _CMDL length _ENDL;
+            SaveRAM(OFSB, start, length);
+            OFSB.close();
+        } catch (std::ofstream::failure &e) {
+            OFSB.close();
+            return 0;
+        }
+    } catch (std::ofstream::failure &e) {
+        Error("Error opening file", fname.c_str(), FATAL);
     }
 
-    if (length + start > 0xFFFF) {
-        length = -1;
-    }
-    if (length <= 0) {
-        length = 0x10000 - start;
-    }
-    //_COUT "Start: " _CMDL start _CMDL " Length: " _CMDL length _ENDL;
-    if (!SaveRAM(ff, start, length)) {
-        fclose(ff);
-        return 0;
-    }
-
-    fclose(ff);
     return 1;
 }
 

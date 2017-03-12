@@ -90,16 +90,16 @@ fs::path getAbsPath(const fs::path &p);
 
 fs::path getAbsPath(const fs::path &p, fs::path &f);
 
-char *GetPath(const char *fname, TCHAR **filenamebegin); /* added */
+// char *GetPath(const char *fname, TCHAR **filenamebegin); /* added */
 void BinIncFile(const fs::path &fname, int offset, int length);
 
-int SaveRAM(FILE *, int, int);
+int SaveRAM(fs::ofstream &ofs, int, int);
 
 void *SaveRAM(void *dst, int start, int size);
 
 unsigned char MemGetByte(unsigned int address); /* added */
 unsigned int MemGetWord(unsigned int address); /* added */
-int SaveBinary(const char *fname, int start, int length); /* added */
+int SaveBinary(const fs::path &fname, int start, int length);
 int ReadLine(bool SplitByColon = true);
 
 EReturn ReadFile();

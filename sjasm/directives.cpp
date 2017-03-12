@@ -566,8 +566,7 @@ void dirINCHOB() {
     aint val;
     fs::path fnaamh;
     unsigned char len[2];
-    int offset = 17, length = -1, res;
-    FILE *ff;
+    int offset = 17, length = -1;
 
     fs::path fnaam = fs::path(GetString(lp)); // FIXME
     if (comma(lp)) {
