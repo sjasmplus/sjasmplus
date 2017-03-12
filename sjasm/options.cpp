@@ -52,7 +52,7 @@ namespace Options {
 
     fs::path ExportFName;
     fs::path DestinationFName;
-    Filename RAWFName;
+    fs::path RAWFName;
     Filename UnrealLabelListFName;
 
     bool IsPseudoOpBOF = false;
@@ -115,7 +115,7 @@ namespace Options {
 				}
             } else if (optName == RAW) {
                 if (!optValue.empty()) {
-                    RAWFName = Filename(optValue);
+                    RAWFName = fs::path(optValue);
 				} else {
                     //TODO: fail
 					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;

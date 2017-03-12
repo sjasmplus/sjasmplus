@@ -41,7 +41,7 @@ namespace Options {
     extern Filename ListingFName;
     extern fs::path ExportFName;
     extern fs::path DestinationFName;
-    extern Filename RAWFName;
+    extern fs::path RAWFName;
     extern Filename UnrealLabelListFName;
 
 	extern bool IsPseudoOpBOF;

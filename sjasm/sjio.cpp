@@ -181,11 +181,15 @@ void WriteDest() {
 	destlen += WBLength;
     try {
         OFS.write(WriteBuffer, WBLength);
-    } catch (fs::filesystem_error& e) {
+    } catch (std::ofstream::failure& e) {
         Error("Write error (disk full?)", 0, FATAL);
     }
-	if (FP_RAW != NULL && fwrite(WriteBuffer, 1, WBLength, FP_RAW) != WBLength) {
-		Error("Write error (disk full?)", 0, FATAL);
+	if (OFSRaw.is_open()) {
+        try {
+            OFS.write(WriteBuffer, WBLength);
+        } catch (std::ofstream::failure& e) {
+            Error("Write error (disk full?)", 0, FATAL);
+        }
 	}
 	WBLength = 0;
 }
@@ -757,7 +761,7 @@ void OpenFile(const fs::path& nfilename) {
 
 	try {
         pIFS->open(fullpath, std::ios::binary);
-    } catch (fs::filesystem_error& e) {
+    } catch (std::ifstream::failure& e) {
         Error("Error opening file", nfilename.c_str(), FATAL);
     }
 
@@ -1032,7 +1036,7 @@ void SeekDest(long offset, std::ios_base::seekdir method) {
 	if (OFS.is_open()) {
         try {
             OFS.seekp(offset, method);
-        } catch (fs::filesystem_error& e) {
+        } catch (std::ofstream::failure& e) {
             Error("File seek error (FORG)", 0, FATAL);
         }
 	}
@@ -1066,18 +1070,22 @@ void OpenDest(int mode) {
         try {
             OFS.open(Options::DestinationFName, std::ios_base::binary |
                     (mode == OUTPUT_TRUNCATE ? std::ios_base::trunc : (std::ios_base::in | std::ios_base::app)));
-        } catch (fs::filesystem_error& e) {
+        } catch (std::ofstream::failure& e) {
             Error("Error opening file", Options::DestinationFName.c_str(), FATAL);
         }
 	}
 	Options::NoDestinationFile = false;
-    if (FP_RAW == NULL && !Options::RAWFName.empty() && !FOPEN_ISOK(FP_RAW, Options::RAWFName.c_str(), "wb")) {
-        Error("Error opening file", Options::RAWFName.c_str());
+    if (!OFSRaw.is_open() && !Options::RAWFName.empty()) {
+        try {
+            OFSRaw.open(Options::RAWFName, std::ios_base::binary);
+        } catch (std::ofstream::failure& e) {
+            Error("Error opening file", Options::RAWFName.c_str());
+        }
 	}
 	if (OFS.is_open() && mode != OUTPUT_TRUNCATE) {
         try {
             OFS.seekp(0, mode == OUTPUT_REWIND ? std::ios_base::beg : std::ios_base::end);
-        } catch (fs::filesystem_error& e) {
+        } catch (std::ofstream::failure& e) {
             Error("File seek error (OUTPUT)", 0, FATAL);
         }
 	}
@@ -1099,9 +1107,8 @@ void Close() {
 		fclose(FP_ExportFile);
 		FP_ExportFile = NULL;
 	}
-	if (FP_RAW != NULL) {
-		fclose(FP_RAW);
-		FP_RAW = NULL;
+	if (OFSRaw.is_open()) {
+		OFSRaw.close();
 	}
 	if (FP_ListingFile != NULL) {
 		fclose(FP_ListingFile);
