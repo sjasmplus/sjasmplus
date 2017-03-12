@@ -1593,10 +1593,10 @@ void dirSTRUCT() {
 /* added from SjASM 0.39g */
 void dirFORG() {
 	aint val;
-	int method = SEEK_SET;
+	auto method = std::ios_base::beg;
 	SkipBlanks(lp);
 	if ((*lp == '+') || (*lp == '-')) {
-		method = SEEK_CUR;
+		method = std::ios_base::cur;
 	}
 	if (!ParseExpression(lp, val)) {
 		Error("[FORG] Syntax error", 0, CATCHALL);

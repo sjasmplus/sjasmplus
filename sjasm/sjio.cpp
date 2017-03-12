@@ -43,7 +43,7 @@ char* rlpbuf, * rlppos;
 
 int EB[1024 * 64],nEB = 0;
 char WriteBuffer[DESTBUFLEN];
-FILE /* * FP_Input = NULL,*/ * FP_Output = NULL, * FP_RAW = NULL;
+FILE /* * FP_Input = NULL, * FP_Output = NULL,*/ * FP_RAW = NULL;
 FILE* FP_ListingFile = NULL,* FP_ExportFile = NULL;
 
 fs::ifstream realIFS;
@@ -179,9 +179,11 @@ void WriteDest() {
 		return;
 	}
 	destlen += WBLength;
-	if (FP_Output != NULL && fwrite(WriteBuffer, 1, WBLength, FP_Output) != WBLength) {
-		Error("Write error (disk full?)", 0, FATAL);
-	}
+    try {
+        OFS.write(WriteBuffer, WBLength);
+    } catch (fs::filesystem_error& e) {
+        Error("Write error (disk full?)", 0, FATAL);
+    }
 	if (FP_RAW != NULL && fwrite(WriteBuffer, 1, WBLength, FP_RAW) != WBLength) {
 		Error("Write error (disk full?)", 0, FATAL);
 	}
@@ -755,7 +757,7 @@ void OpenFile(const fs::path& nfilename) {
 
 	try {
         pIFS->open(fullpath, std::ios::binary);
-    } catch (fs::filesystem_error &e) {
+    } catch (fs::filesystem_error& e) {
         Error("Error opening file", nfilename.c_str(), FATAL);
     }
 
@@ -996,7 +998,7 @@ void OpenList() {
 
 void CloseDest() {
 	// simple check
-	if (FP_Output == NULL) {
+	if (!OFS.is_open()) {
 		return;
 	}
 
@@ -1022,13 +1024,17 @@ void CloseDest() {
 			}
 		}
 	}
-	fclose(FP_Output);
+	OFS.close();
 }
 
-void SeekDest(long offset, int method) {
+void SeekDest(long offset, std::ios_base::seekdir method) {
 	WriteDest();
-	if (FP_Output != NULL && fseek(FP_Output, offset, method)) {
-		Error("File seek error (FORG)", 0, FATAL);
+	if (OFS.is_open()) {
+        try {
+            OFS.seekp(offset, method);
+        } catch (fs::filesystem_error& e) {
+            Error("File seek error (FORG)", 0, FATAL);
+        }
 	}
 }
 
@@ -1056,17 +1062,24 @@ void OpenDest(int mode) {
     if (mode != OUTPUT_TRUNCATE && !FileExists(Options::DestinationFName.c_str())) {
 		mode = OUTPUT_TRUNCATE;
 	}
-    if (!Options::NoDestinationFile && !FOPEN_ISOK(FP_Output, Options::DestinationFName.c_str(), mode == OUTPUT_TRUNCATE ? "wb" : "r+b")) {
-        Error("Error opening file", Options::DestinationFName.c_str(), FATAL);
+    if (!Options::NoDestinationFile) {
+        try {
+            OFS.open(Options::DestinationFName, std::ios_base::binary |
+                    (mode == OUTPUT_TRUNCATE ? std::ios_base::trunc : (std::ios_base::in | std::ios_base::app)));
+        } catch (fs::filesystem_error& e) {
+            Error("Error opening file", Options::DestinationFName.c_str(), FATAL);
+        }
 	}
 	Options::NoDestinationFile = false;
     if (FP_RAW == NULL && !Options::RAWFName.empty() && !FOPEN_ISOK(FP_RAW, Options::RAWFName.c_str(), "wb")) {
         Error("Error opening file", Options::RAWFName.c_str());
 	}
-	if (FP_Output != NULL && mode != OUTPUT_TRUNCATE) {
-		if (fseek(FP_Output, 0, mode == OUTPUT_REWIND ? SEEK_SET : SEEK_END)) {
-			Error("File seek error (OUTPUT)", 0, FATAL);
-		}
+	if (OFS.is_open() && mode != OUTPUT_TRUNCATE) {
+        try {
+            OFS.seekp(0, mode == OUTPUT_REWIND ? std::ios_base::beg : std::ios_base::end);
+        } catch (fs::filesystem_error& e) {
+            Error("File seek error (OUTPUT)", 0, FATAL);
+        }
 	}
 }
 

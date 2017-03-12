@@ -85,7 +85,7 @@ EReturn ReadFile(const char* pp, const char* err); /* added */
 EReturn SkipFile();
 EReturn SkipFile(const char *pp, const char *err); /* added */
 void NewDest(char* newfilename);
-void SeekDest(long, int); /* added from new SjASM 0.39g */
+void SeekDest(long, std::ios_base::seekdir); /* added from new SjASM 0.39g */
 int ReadFileToCStringsList(CStringsList*& f, const char* end);
 void WriteExp(char* n, aint v);
 
