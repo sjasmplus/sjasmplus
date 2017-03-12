@@ -39,11 +39,15 @@ CDeviceSlot *Slot = 0;
 CDevicePage *Page = 0;
 char* DeviceID = 0;
 
-// extend
-char filename[LINEMAX], * lp, line[LINEMAX], temp[LINEMAX], pline[LINEMAX2], ErrorLine[LINEMAX2], * bp;
+namespace global {
+    fs::path CurrentDirectory;
+    fs::path currentFilename;
+}
+
+char * lp, line[LINEMAX], temp[LINEMAX], pline[LINEMAX2], ErrorLine[LINEMAX2], * bp;
 char sline[LINEMAX2], sline2[LINEMAX2];
 
-char SourceFNames[128][MAX_PATH];
+std::vector <fs::path> SourceFNames;
 int CurrentSourceFName = 0;
 int SourceFNamesCount = 0;
 
@@ -57,7 +61,6 @@ int StartAddress = -1;
 int macronummer = 0, lijst = 0, reglenwidth = 0, synerr = 1;
 aint CurAddress = 0, CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;
 aint destlen = 0, size = (aint)-1,PreviousErrorLine = (aint)-1, maxlin = 0, comlin = 0;
-char* CurrentDirectory=NULL;
 
 void (*GetCPUInstruction)(void);
 
@@ -150,7 +153,6 @@ void LuaFatalError(lua_State *L) {
 
 
 int main(int argc, const char* argv[]) {
-	char buf[MAX_PATH];
 	int base_encoding; /* added */
 	const char* logo = "SjASMPlus Z80 Cross-Assembler v."SJASMPLUS_VERSION;
 	int i = 1;
@@ -176,15 +178,16 @@ int main(int argc, const char* argv[]) {
 	Options::NoDestinationFile = true; // not *.out files by default
 
 	// get current directory
-	GetCurrentDirectory(MAX_PATH, buf);
-	CurrentDirectory = buf;
+    // TODO: Switch to first source file's location
+	global::CurrentDirectory = fs::current_path();
 
 	// get arguments
     Options::IncludeDirsList.push_front(".");
 	while (argv[i]) {
 		Options::GetOptions(argv, i);
 		if (argv[i]) {
-			STRCPY(SourceFNames[SourceFNamesCount++], LINEMAX, argv[i++]);
+            SourceFNames.push_back(fs::absolute(fs::path(argv[i++]), global::CurrentDirectory));
+            SourceFNamesCount++;
 		}
 	}
 
@@ -192,13 +195,14 @@ int main(int argc, const char* argv[]) {
 		_COUT logo _ENDL;
 	}
 
-	if (!SourceFNames[0][0]) {
+	if (SourceFNames.empty()) {
 		_COUT "No inputfile(s)" _ENDL;
 		return 1;
 	}
 
-    if (Options::DestionationFName.empty()) {
-        Options::DestionationFName = Filename(SourceFNames[0]).WithExtension("out");
+    if (Options::DestinationFName.empty()) {
+        Options::DestinationFName = SourceFNames[0];
+        Options::DestinationFName.replace_extension(".out");
 	}
 
 	// init some vars

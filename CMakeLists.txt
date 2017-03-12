@@ -11,6 +11,9 @@ configure_file(
 )
 include_directories(${PROJECT_BINARY_DIR})
 
+find_package (Boost REQUIRED COMPONENTS filesystem)
+include_directories(${Boost_INCLUDE_DIR})
+
 set(SOURCE_FILES
         lua5.1/lapi.c
         lua5.1/lapi.h
@@ -120,3 +123,5 @@ set(SOURCE_FILES
 include_directories(sjasm lua5.1 tolua++)
 
 add_executable(sjasmplus ${SOURCE_FILES})
+
+target_link_libraries (sjasmplus ${Boost_LIBRARIES})

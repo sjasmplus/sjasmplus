@@ -302,7 +302,7 @@ static int tolua_sjasm_zx_save_snapshot_sna12800(lua_State* tolua_S)
 #ifndef TOLUA_DISABLE_tolua_get_sj_current_path
 static int tolua_get_sj_current_path(lua_State* tolua_S)
 {
-  tolua_pushstring(tolua_S,(const char*)CurrentDirectory);
+  tolua_pushstring(tolua_S, global::CurrentDirectory.c_str());
  return 1;
 }
 #endif //#ifndef TOLUA_DISABLE
@@ -446,8 +446,10 @@ static int tolua_sjasm_sj_get_path00(lua_State* tolua_S)
   char* fname = ((char*)  tolua_tostring(tolua_S,1,0));
   TCHAR* filenamebegin = ((TCHAR*)  tolua_tousertype(tolua_S,2,0));
   {
-   char* tolua_ret = (char*)  GetPath(fname,&filenamebegin);
+   // FIXME: Copied strdup() from GetPath(); need to actually figure out how this works
+   char* tolua_ret = strdup(getAbsPath(fname).c_str());
    tolua_pushstring(tolua_S,(const char*)tolua_ret);
+   filenamebegin = fname;
    tolua_pushusertype(tolua_S,(void*)filenamebegin,"TCHAR");
   }
  }

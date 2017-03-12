@@ -47,17 +47,18 @@ void GetCurrentDirectory(int whatever, char* pad) {
 	pad[0] = 0;
 }
 
-int SearchPath(const char *oudzp, const char *filename, const char *whatever, int maxlen, char *nieuwzp, char **ach) {
+/*
+int SearchPath(const char *oudzp, const fs::path& fileName, const char *whatever, int maxlen, char *nieuwzp, char **ach) {
 	FILE* fp;
 	char* p, * f;
-	if (filename[0] == '/') {
-		STRCPY(nieuwzp, maxlen, filename);
+	if (global::currentFilename[0] == '/') {
+		STRCPY(nieuwzp, maxlen, global::currentFilename);
 	} else {
 		STRCPY(nieuwzp, maxlen, oudzp);
 		if (*nieuwzp && nieuwzp[strlen(nieuwzp)] != '/') {
 			STRCAT(nieuwzp, maxlen, "/");
 		}
-		STRCAT(nieuwzp, maxlen, filename);
+		STRCAT(nieuwzp, maxlen, global::currentFilename);
 	}
 	if (ach) {
 		p = f = nieuwzp;
@@ -74,6 +75,7 @@ int SearchPath(const char *oudzp, const char *filename, const char *whatever, in
 	}
 	return 0;
 }
+*/
 
 #endif
 

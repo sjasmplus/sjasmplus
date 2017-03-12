@@ -100,7 +100,7 @@ void Error(const char* fout, const char* bd, int type) {
 		} else {
 			ln = CurrentLocalLine;
 		}
-		SPRINTF3(ep, LINEMAX2, "%s(%lu): error: %s", filename, ln, fout);
+		SPRINTF3(ep, LINEMAX2, "%s(%lu): error: %s", global::currentFilename.c_str(), ln, fout);
 	}
 
 	if (bd) {
@@ -152,7 +152,7 @@ void Warning(const char* fout, const char* bd, int type) {
 		} else {
 			ln = CurrentLocalLine;
 		}
-		SPRINTF3(ep, LINEMAX2, "%s(%lu): warning: %s", filename, ln, fout);
+		SPRINTF3(ep, LINEMAX2, "%s(%lu): warning: %s", global::currentFilename.c_str(), ln, fout);
 	}
 
 	if (bd) {
@@ -563,10 +563,19 @@ void EmitBlock(aint byte, aint len, bool nulled) {
 	}
 }
 
+fs::path getAbsPath(const fs::path& p) {
+	return fs::absolute(p, global::CurrentDirectory);
+}
+
+fs::path getAbsPath(const fs::path& p, fs::path& f) {
+	return fs::absolute(p / f, global::CurrentDirectory);
+}
+
+/*
 char* GetPath(const char* fname, TCHAR** filenamebegin) {
 	int g = 0;
 	char* kip, fullFilePath[MAX_PATH];
-	g = SearchPath(CurrentDirectory, fname, NULL, MAX_PATH, fullFilePath, filenamebegin);
+	g = SearchPath(global::CurrentDirectory, fname, NULL, MAX_PATH, fullFilePath, filenamebegin);
 	if (!g) {
 		if (fname[0] == '<') {
 			fname++;
@@ -578,7 +587,7 @@ char* GetPath(const char* fname, TCHAR** filenamebegin) {
 		}
 	}
 	if (!g) {
-		SearchPath(CurrentDirectory, fname, NULL, MAX_PATH, fullFilePath, filenamebegin);
+		SearchPath(global::CurrentDirectory, fname, NULL, MAX_PATH, fullFilePath, filenamebegin);
 	}
 	kip = STRDUP(fullFilePath);
 	if (kip == NULL) {
@@ -589,21 +598,18 @@ char* GetPath(const char* fname, TCHAR** filenamebegin) {
 	}
 	return kip;
 }
+*/
 
-void BinIncFile(const char* fname, int offset, int len) {
+void BinIncFile(const fs::path& fname, int offset, int len) {
 	char* bp;
 	FILE* bif;
 	int res;
 	int leng;
-	char* fullFilePath;
-	fullFilePath = GetPath(fname, NULL);
-	if (*fname == '<') {
-		fname++;
+	fs::path fullFilePath;
+	fullFilePath = getAbsPath(fname);
+	if (!FOPEN_ISOK(bif, fullFilePath.c_str(), "rb")) {
+		Error("Error opening file", fname.c_str(), FATAL);
 	}
-	if (!FOPEN_ISOK(bif, fullFilePath, "rb")) {
-		Error("Error opening file", fname, FATAL);
-	}
-	free(fullFilePath);
 	if (offset > 0) {
 		bp = new char[offset + 1];
 		if (bp == NULL) {
@@ -611,10 +617,10 @@ void BinIncFile(const char* fname, int offset, int len) {
 		}
 		res = fread(bp, 1, offset, bif);
 		if (res == -1) {
-			Error("Read error", fname, FATAL);
+			Error("Read error", fname.c_str(), FATAL);
 		}
 		if (res != offset) {
-			Error("Offset beyond filelength", fname, FATAL);
+			Error("Offset beyond filelength", fname.c_str(), FATAL);
 		}
 	}
 	if (len > 0) {
@@ -624,10 +630,10 @@ void BinIncFile(const char* fname, int offset, int len) {
 		}
 		res = fread(bp, 1, len, bif);
 		if (res == -1) {
-			Error("Read error", fname, FATAL);
+			Error("Read error", fname.c_str(), FATAL);
 		}
 		if (res != len) {
-			Error("Unexpected end of file", fname, FATAL);
+			Error("Unexpected end of file", fname.c_str(), FATAL);
 		}
 		while (len--) {
 			if (pass == LASTPASS) {
@@ -679,7 +685,7 @@ void BinIncFile(const char* fname, int offset, int len) {
 		do {
 			res = fread(WriteBuffer, 1, DESTBUFLEN, bif);
 			if (res == -1) {
-				Error("Read error", fname, FATAL);
+				Error("Read error", fname.c_str(), FATAL);
 			}
 			if (pass == LASTPASS) {
 				WBLength = res; 
@@ -731,48 +737,41 @@ void BinIncFile(const char* fname, int offset, int len) {
 	fclose(bif);
 }
 
-void OpenFile(const char* nfilename) {
-	char ofilename[LINEMAX];
-	char* oCurrentDirectory, * fullpath;
-	TCHAR* filenamebegin;
-	
+void OpenFile(const fs::path& nfilename) {
+	fs::path ofilename;
+	fs::path oCurrentDirectory;
+	fs::path fullpath;
+
 	if (++IncludeLevel > 20) {
 		Error("Over 20 files nested", 0, FATAL);
 	}
-	fullpath = GetPath(nfilename, &filenamebegin);
-	if (*nfilename == '<') {
-		nfilename++;
-	}
-	
-	if (!FOPEN_ISOK(FP_Input, fullpath, "r")) {
-		free(fullpath);
-		Error("Error opening file", nfilename, FATAL);
+
+	fullpath = getAbsPath(nfilename);
+
+	if (!FOPEN_ISOK(FP_Input, fullpath.c_str(), "r")) {
+		Error("Error opening file", nfilename.c_str(), FATAL);
 	}
 
 	aint oCurrentLocalLine = CurrentLocalLine;
 	CurrentLocalLine = 0;
-	STRCPY(ofilename, LINEMAX, filename);
+	ofilename = global::currentFilename;
 
 	if (Options::IsShowFullPath) {
-		STRCPY(filename, LINEMAX, fullpath);
+		global::currentFilename = fullpath;
 	} else {
-		STRCPY(filename, LINEMAX, nfilename);
+		global::currentFilename= nfilename;
 	}
 
-	oCurrentDirectory = CurrentDirectory;
-	*filenamebegin = 0;
-	CurrentDirectory = fullpath;
+	oCurrentDirectory = global::CurrentDirectory;
+	global::CurrentDirectory = fullpath.parent_path();
 
-	// Free memory
-	free(fullpath);
-
-	RL_Readed = 0; rlpbuf = rlbuf; 
+	RL_Readed = 0; rlpbuf = rlbuf;
 	ReadBufLine(true);
 
 	fclose(FP_Input);
 	--IncludeLevel;
-	CurrentDirectory = oCurrentDirectory;
-	STRCPY(filename, LINEMAX, ofilename);
+	global::CurrentDirectory = oCurrentDirectory;
+	global::currentFilename = ofilename;
 	if (CurrentLocalLine > maxlin) {
 		maxlin = CurrentLocalLine;
 	}
@@ -780,7 +779,7 @@ void OpenFile(const char* nfilename) {
 }
 
 /* added */
-void IncludeFile(const char* nfilename) {
+void IncludeFile(const fs::path& nfilename) {
 	FILE* oFP_Input = FP_Input;
 	FP_Input = 0;
 
@@ -999,16 +998,18 @@ void SeekDest(long offset, int method) {
 	}
 }
 
+/*
 void NewDest(const char* newfilename) {
 	NewDest(newfilename, OUTPUT_TRUNCATE);
 }
+*/
 
-void NewDest(const char* newfilename, int mode) {
+void NewDest(const fs::path& newfilename, int mode) {
 	// close file
 	CloseDest();
 
 	// and open new file
-    Options::DestionationFName = Filename(newfilename);
+    Options::DestinationFName = newfilename;
 	OpenDest(mode);
 }
 
@@ -1018,11 +1019,11 @@ void OpenDest() {
 
 void OpenDest(int mode) {
 	destlen = 0;
-    if (mode != OUTPUT_TRUNCATE && !FileExists(Options::DestionationFName.c_str())) {
+    if (mode != OUTPUT_TRUNCATE && !FileExists(Options::DestinationFName.c_str())) {
 		mode = OUTPUT_TRUNCATE;
 	}
-    if (!Options::NoDestinationFile && !FOPEN_ISOK(FP_Output, Options::DestionationFName.c_str(), mode == OUTPUT_TRUNCATE ? "wb" : "r+b")) {
-        Error("Error opening file", Options::DestionationFName.c_str(), FATAL);
+    if (!Options::NoDestinationFile && !FOPEN_ISOK(FP_Output, Options::DestinationFName.c_str(), mode == OUTPUT_TRUNCATE ? "wb" : "r+b")) {
+        Error("Error opening file", Options::DestinationFName.c_str(), FATAL);
 	}
 	Options::NoDestinationFile = false;
     if (FP_RAW == NULL && !Options::RAWFName.empty() && !FOPEN_ISOK(FP_RAW, Options::RAWFName.c_str(), "wb")) {

@@ -49,8 +49,9 @@ namespace {
 namespace Options {
     Filename SymbolListFName;
     Filename ListingFName;
-    Filename ExportFName;
-    Filename DestionationFName;
+
+    fs::path ExportFName;
+    fs::path DestinationFName;
     Filename RAWFName;
     Filename UnrealLabelListFName;
 
@@ -107,7 +108,7 @@ namespace Options {
 				}
             } else if (optName == EXP) {
                 if (!optValue.empty()) {
-                    ExportFName = Filename(optValue);
+                    ExportFName = fs::path(optValue);
 				} else {
                     //TODO: fail
 					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;

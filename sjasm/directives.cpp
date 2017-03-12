@@ -507,12 +507,12 @@ void dirINCBIN() {
 /* added */
 void dirINCHOB() {
 	aint val;
-    char * fnaamh;
+    fs::path fnaamh;
 	unsigned char len[2];
 	int offset = 17,length = -1,res;
 	FILE* ff;
 
-    const Filename& fnaam = GetFileName(lp);
+    fs::path fnaam = fs::path(lp); // FIXME
 	if (comma(lp)) {
 		if (!comma(lp)) {
 			if (!ParseExpression(lp, val)) {
@@ -535,8 +535,8 @@ void dirINCHOB() {
 	}
 
     //used for implicit format check
-    fnaamh = GetPath(fnaam.c_str(), NULL);
-    if (!FOPEN_ISOK(ff, fnaamh, "rb")) {
+    fnaamh = getAbsPath(fnaam);
+    if (!FOPEN_ISOK(ff, fnaamh.c_str(), "rb")) {
         Error("[INCHOB] Error opening file", fnaam.c_str(), FATAL);
 	}
 	if (fseek(ff, 0x0b, 0)) {
@@ -551,7 +551,6 @@ void dirINCHOB() {
 	}
 	fclose(ff);
     BinIncFile(fnaam.c_str(), offset, length);
-	delete[] fnaamh;
 }
 
 /* added */
@@ -561,7 +560,7 @@ void dirINCTRD() {
 	int offset = -1,length = -1,res,i;
 	FILE* ff;
 
-    const Filename& fnaam = GetFileName(lp);
+    fs::path fnaam = fs::path(lp);
     HobetaFilename fnaamh;
 	if (comma(lp)) {
 		if (!comma(lp)) {
@@ -595,8 +594,8 @@ void dirINCTRD() {
 	}
     //TODO: extract code to io_trd
 	// open TRD
-    char* fnaamh2 = GetPath(fnaam.c_str(), NULL);
-    if (!FOPEN_ISOK(ff, fnaamh2, "rb")) {
+    fs::path fnaamh2 = getAbsPath(fnaam);
+    if (!FOPEN_ISOK(ff, fnaamh2.c_str(), "rb")) {
         Error("[INCTRD] Error opening file", fnaam.c_str(), FATAL);
 	}
 	// Find file
@@ -631,7 +630,6 @@ void dirINCTRD() {
 	fclose(ff);
 
     BinIncFile(fnaam.c_str(), offset, length);
-	delete[] fnaamh2;
 }
 
 /* added */
@@ -1316,7 +1314,8 @@ void dirEXPORT() {
 	char* n, * p;
 	
     if (Options::ExportFName.empty()) {
-        Options::ExportFName = Filename(SourceFNames[CurrentSourceFName]).WithExtension("exp");
+        Options::ExportFName = SourceFNames[CurrentSourceFName];
+        Options::ExportFName.replace_extension(".exp");
         Warning("[EXPORT] Filename for exportfile was not indicated. Output will be in", Options::ExportFName.c_str());
 	}
 	if (!(n = p = GetID(lp))) {
@@ -1793,7 +1792,7 @@ void _lua_showerror() {
 
 	// print error and other actions
 	err = ErrorLine;
-	SPRINTF3(err, LINEMAX2, "%s(%lu): error: [LUA]%s", filename, ln, pos);
+	SPRINTF3(err, LINEMAX2, "%s(%lu): error: [LUA]%s", global::currentFilename.c_str(), ln, pos);
 
 	if (!strchr(err, '\n')) {
 		STRCAT(err, LINEMAX2, "\n");

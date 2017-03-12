@@ -52,7 +52,7 @@ char* strpad(char* string, char ch, aint length);
 #define TCHAR char
 #endif
 void GetCurrentDirectory(int, char*);
-int SearchPath(const char *, const char *, const char *, int, char *, char **);
+// int SearchPath(const char *, const char *, const char *, int, char *, char **);
 
 #define STRDUP strdup
 #define STRCAT(strDestination, sizeInBytes, strSource) strcat(strDestination, strSource)

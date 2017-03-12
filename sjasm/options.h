@@ -32,11 +32,15 @@
 #include "filename.h"
 #include <list>
 
+#include <boost/filesystem.hpp>
+
+namespace fs = boost::filesystem;
+
 namespace Options {
     extern Filename SymbolListFName;
     extern Filename ListingFName;
-    extern Filename ExportFName;
-    extern Filename DestionationFName;
+    extern fs::path ExportFName;
+    extern fs::path DestinationFName;
     extern Filename RAWFName;
     extern Filename UnrealLabelListFName;
 

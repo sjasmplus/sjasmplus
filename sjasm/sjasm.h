@@ -29,17 +29,27 @@
 #ifndef __SJASM
 #define __SJASM
 
+#include <vector>
+#include <boost/filesystem.hpp>
+
+namespace fs = boost::filesystem;
+
 extern CDevice *Devices;
 extern CDevice *Device;
 extern CDeviceSlot *Slot;
 extern CDevicePage *Page;
 extern char* DeviceID;
 
+namespace global {
+    extern fs::path CurrentDirectory;
+    extern fs::path currentFilename;
+}
+
 // extend
-extern char filename[LINEMAX], * lp, line[LINEMAX], temp[LINEMAX], pline[LINEMAX2], ErrorLine[LINEMAX2], * bp;
+extern char * lp, line[LINEMAX], temp[LINEMAX], pline[LINEMAX2], ErrorLine[LINEMAX2], * bp;
 extern char sline[LINEMAX2], sline2[LINEMAX2];
 
-extern char SourceFNames[128][MAX_PATH];
+extern std::vector<fs::path> SourceFNames;
 extern int CurrentSourceFName;
 
 extern int ConvertEncoding; /* added */
@@ -58,7 +68,6 @@ extern char* vorlabp, * macrolabp, * LastParsedLabel;
 extern FILE* FP_ListingFile; 
 
 enum EEncoding { ENCDOS, ENCWIN };
-extern char* CurrentDirectory;
 
 void ExitASM(int p);
 extern CStringsList* lijstp;
