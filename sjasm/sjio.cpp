@@ -1132,7 +1132,7 @@ void OpenDest() {
 
 void OpenDest(int mode) {
     destlen = 0;
-    if (mode != OUTPUT_TRUNCATE && !FileExists(Options::DestinationFName.c_str())) {
+    if (mode != OUTPUT_TRUNCATE && !fs::exists(Options::DestinationFName)) {
         mode = OUTPUT_TRUNCATE;
     }
     if (!Options::NoDestinationFile) {
@@ -1159,16 +1159,6 @@ void OpenDest(int mode) {
             Error("File seek error (OUTPUT)", 0, FATAL);
         }
     }
-}
-
-int FileExists(const char *filename) {
-    int exists = 0;
-    FILE *test;
-    if (FOPEN_ISOK(test, filename, "r")) {
-        exists = 1;
-        fclose(test);
-    }
-    return exists;
 }
 
 void Close() {

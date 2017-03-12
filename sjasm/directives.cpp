@@ -2108,14 +2108,14 @@ void dirENDLUA() {
 
 /* modified */
 void dirINCLUDELUA() {
-    const Filename &fnaam = GetFileName(lp);
+    const fs::path &fnaam = getAbsPath(GetString(lp));
     int error;
 
     if (pass != 1) {
         return;
     }
 
-    if (!FileExists(fnaam.c_str())) {
+    if (!fs::exists(fnaam)) {
         Error("[INCLUDELUA] File doesn't exist", fnaam.c_str(), PASS1);
         return;
     }

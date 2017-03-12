@@ -49,7 +49,6 @@ extern aint PreviousAddress, epadres;
 
 void OpenDest(int); /* added from new SjASM 0.39g */
 void NewDest(const fs::path &newfilename, int mode); /* added from new SjASM 0.39g */
-int FileExists(const char *filename); /* added from new SjASM 0.39g */
 void Error(const char *, const char *, int = PASS2);
 
 void Warning(const char *, const char *, int = PASS2);

@@ -431,7 +431,7 @@ static int tolua_sjasm_sj_file_exists00(lua_State *tolua_S) {
     {
         char *filename = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
-            bool tolua_ret = (bool) FileExists(filename);
+            bool tolua_ret = (bool) fs::exists(filename);
             tolua_pushboolean(tolua_S, (bool) tolua_ret);
         }
     }
