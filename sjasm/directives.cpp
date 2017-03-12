@@ -726,7 +726,7 @@ void dirSAVESNA() {
     aint val;
     int start = -1;
 
-    const Filename &fnaam = GetFileName(lp);
+    const fs::path fnaam = getAbsPath(GetString(lp));
     if (comma(lp)) {
         if (!comma(lp) && StartAddress < 0) {
             if (!ParseExpression(lp, val)) {
@@ -749,7 +749,7 @@ void dirSAVESNA() {
         start = StartAddress;
     }
 
-    if (exec && !SaveSNA_ZX(fnaam.c_str(), start)) {
+    if (exec && !SaveSNA_ZX(fnaam, start)) {
         Error("[SAVESNA] Error writing file (Disk full?)", bp, CATCHALL);
         return;
     }
@@ -777,7 +777,7 @@ void dirSAVETAP() {
     aint val;
     int start = -1;
 
-    const Filename &filename = GetFileName(lp);
+    const fs::path filename = getAbsPath(GetString(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
@@ -800,7 +800,7 @@ void dirSAVETAP() {
         start = StartAddress;
     }
 
-    if (exec && !SaveTAP_ZX(filename.c_str(), start)) {
+    if (exec && !SaveTAP_ZX(filename, start)) {
         Error("[SAVETAP] Error writing file (Disk full?)", bp, CATCHALL);
         return;
     }

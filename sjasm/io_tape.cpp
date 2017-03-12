@@ -35,13 +35,14 @@ misrepresented as being the original software.
 unsigned char parity;
 unsigned char blocknum = 1;
 
-void writebyte(unsigned char, FILE *);
+std::ostream &writebyte(std::ostream &stream, unsigned char c);
 
-void writenumber(unsigned int, FILE *);
+std::ostream &writenumber(std::ostream &stream, unsigned int);
 
-void writeword(unsigned int, FILE *);
+std::ostream &writeword(std::ostream &stream, unsigned int);
 
-void writecode(unsigned char *, aint, unsigned short, bool header, FILE *);
+std::ostream &writecode(std::ostream &stream, unsigned char *block, aint length,
+                        unsigned short loadaddr, bool header);
 
 void remove_basic_sp(unsigned char *ram);
 
@@ -53,7 +54,7 @@ aint remove_unused_space(unsigned char *ram, aint length);
 
 aint detect_ram_start(unsigned char *ram, aint length);
 
-int SaveTAP_ZX(const char *fname, unsigned short start) {
+int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
     // for Lua
     if (!DeviceID) {
         Error("[SAVETAP] Only for real device emulation mode.", 0);
@@ -64,46 +65,48 @@ int SaveTAP_ZX(const char *fname, unsigned short start) {
         return 0;
     }
 
-    FILE *fpout;
-    if (!FOPEN_ISOK(fpout, fname, "wb")) {
-        Error("Error opening file", fname, FATAL);
+    fs::ofstream ofs;
+    try {
+        ofs.open(fname, std::ios_base::binary);
+    } catch (std::ofstream::failure &e) {
+        Error("Error opening file", fname.c_str(), FATAL);
     }
 
     aint datastart = 0x5E00;
     aint exeat = 0x5E00;
 
-    fputc(19, fpout);                // header length
-    fputc(0, fpout);
-    fputc(0, fpout);
+    ofs << (char)19;                // header length
+    ofs << (char)0;
+    ofs << (char)0;
     parity = 0;                        // initial checksum
-    writebyte(0, fpout);            // block type "BASIC"
+    writebyte(ofs, 0);            // block type "BASIC"
 
     char filename[] = "Loader    ";
     for (aint i = 0; i <= 9; i++)
-        writebyte(filename[i], fpout);
+        writebyte(ofs, filename[i]);
 
-    writebyte(0x1e + 2/*CLS*/, fpout);    // line length
-    writebyte(0, fpout);
-    writebyte(0x0a, fpout);            // "LINE 10"
-    writebyte(0, fpout);
-    writebyte(0x1e + 2/*CLS*/, fpout);    // line length
-    writebyte(0, fpout);
-    writebyte(parity, fpout);        // checksum
+    writebyte(ofs, 0x1e + 2/*CLS*/);    // line length
+    writebyte(ofs, 0);
+    writebyte(ofs, 0x0a);               // "LINE 10"
+    writebyte(ofs, 0);
+    writebyte(ofs, 0x1e + 2/*CLS*/);    // line length
+    writebyte(ofs, 0);
+    writebyte(ofs, parity);             // checksum
 
-    writeword(0x1e + 2/*CLS*/ + 2, fpout);// length of block
+    writeword(ofs, 0x1e + 2/*CLS*/ + 2);// length of block
     parity = 0;
-    writebyte(0xff, fpout);
-    writebyte(0, fpout);
-    writebyte(0x0a, fpout);
-    writebyte(0x1a + 2/*CLS*/, fpout);    // basic line length - 0x1a
-    writebyte(0, fpout);
+    writebyte(ofs, 0xff);
+    writebyte(ofs, 0);
+    writebyte(ofs, 0x0a);
+    writebyte(ofs, 0x1a + 2/*CLS*/);    // basic line length - 0x1a
+    writebyte(ofs, 0);
 
     // :CLEAR VAL "xxxxx"
-    writebyte(0xfd, fpout);            // CLEAR
-    writebyte(0xb0, fpout);            // VAL
-    writebyte('\"', fpout);
-    writenumber(datastart - 1, fpout);
-    writebyte('\"', fpout);
+    writebyte(ofs, 0xfd);            // CLEAR
+    writebyte(ofs, 0xb0);            // VAL
+    writebyte(ofs, '\"');
+    writenumber(ofs, datastart - 1);
+    writebyte(ofs, '\"');
 
     // :INK VAL "7"
     /*writebyte(':', fpout);
@@ -130,23 +133,23 @@ int SaveTAP_ZX(const char *fname, unsigned short start) {
     writebyte('\"', fpout);*/
 
     // :CLS
-    writebyte(':', fpout);
-    writebyte(0xfb, fpout);            // CLS
+    writebyte(ofs, ':');
+    writebyte(ofs, 0xfb);           // CLS
 
-    writebyte(':', fpout);
-    writebyte(0xef, fpout);      /* LOAD */
-    writebyte('\"', fpout);
-    writebyte('\"', fpout);
-    writebyte(0xaf, fpout);      /* CODE */
-    writebyte(':', fpout);
-    writebyte(0xf9, fpout);      /* RANDOMIZE */
-    writebyte(0xc0, fpout);      /* USR */
-    writebyte(0xb0, fpout);      /* VAL */
-    writebyte('\"', fpout);
-    writenumber(exeat, fpout);
-    writebyte('\"', fpout);
-    writebyte(0x0d, fpout);
-    writebyte(parity, fpout);
+    writebyte(ofs, ':');
+    writebyte(ofs, 0xef);           /* LOAD */
+    writebyte(ofs, '\"');
+    writebyte(ofs, '\"');
+    writebyte(ofs, 0xaf);           /* CODE */
+    writebyte(ofs, ':');
+    writebyte(ofs, 0xf9);           /* RANDOMIZE */
+    writebyte(ofs, 0xc0);           /* USR */
+    writebyte(ofs, 0xb0);           /* VAL */
+    writebyte(ofs, '\"');
+    writenumber(ofs, exeat);
+    writebyte(ofs, '\"');
+    writebyte(ofs, 0x0d);
+    writebyte(ofs, parity);
 
     if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
         // prepare code block
@@ -183,15 +186,15 @@ int SaveTAP_ZX(const char *fname, unsigned short start) {
         loader[SaveTAP_ZX_Spectrum_48K_SZ - 3] = char((ram_start + 0x5E00) >> 8);
         loader[SaveTAP_ZX_Spectrum_48K_SZ - 2] = char(ram_length & 0x00FF);
         loader[SaveTAP_ZX_Spectrum_48K_SZ - 1] = char(ram_length >> 8);
-        writecode(loader, SaveTAP_ZX_Spectrum_48K_SZ, 0x5E00, true, fpout);
+        writecode(ofs, loader, SaveTAP_ZX_Spectrum_48K_SZ, 0x5E00, true);
 
         // write screen$
         if (loader[SaveTAP_ZX_Spectrum_48K_SZ - 7]) {
-            writecode((unsigned char *) Device->GetSlot(1)->Page->RAM, 6912, 16384, false, fpout);
+            writecode(ofs, (unsigned char *) Device->GetSlot(1)->Page->RAM, 6912, 16384, false);
         }
 
         // write code block
-        writecode(ram + ram_start, ram_length, 0x5E00 + ram_start, false, fpout);
+        writecode(ofs, ram + ram_start, ram_length, 0x5E00 + ram_start, false);
 
         delete[] ram;
     } else {
@@ -272,63 +275,63 @@ int SaveTAP_ZX(const char *fname, unsigned short start) {
         loader[loader_defsize - 9] = char(has_screen_changes());
 
         // write loader
-        writecode(loader, loader_len, 0x5E00, true, fpout);
+        writecode(ofs, loader, loader_len, 0x5E00, true);
 
         // write screen$
         if (loader[loader_defsize - 9]) {
-            writecode((unsigned char *) Device->GetSlot(1)->Page->RAM, 6912, 0x4000, false, fpout);
+            writecode(ofs, (unsigned char *) Device->GetSlot(1)->Page->RAM, 6912, 0x4000, false);
         }
 
         // write code blocks
         for (aint i = 0; i < count; i++) {
-            writecode(pages_ram[i] + pages_start[i], pages_len[i], 0xC000 + pages_start[i], false, fpout);
+            writecode(ofs, pages_ram[i] + pages_start[i], pages_len[i], 0xC000 + pages_start[i], false);
         }
 
         // write main code block
-        writecode(ram + ram_start, ram_length, 0x5E00 + ram_start, false, fpout);
+        writecode(ofs, ram + ram_start, ram_length, 0x5E00 + ram_start, false);
 
         delete[] ram;
     }
 
-    fclose(fpout);
+    ofs.close();
     return 1;
 }
-
-void writenumber(unsigned int i, FILE *fp) {
+std::ostream &writenumber(std::ostream &stream, unsigned int i){
     int c;
     c = i / 10000;
     i -= c * 10000;
-    writebyte(c + 48, fp);
+    writebyte(stream, c + 48);
     c = i / 1000;
     i -= c * 1000;
-    writebyte(c + 48, fp);
+    writebyte(stream, c + 48);
     c = i / 100;
     i -= c * 100;
-    writebyte(c + 48, fp);
+    writebyte(stream, c + 48);
     c = i / 10;
-    writebyte(c + 48, fp);
+    writebyte(stream, c + 48);
     i %= 10;
-    writebyte(i + 48, fp);
+    writebyte(stream, i + 48);
 }
 
-void writeword(unsigned int i, FILE *fp) {
-    writebyte(i % 256, fp);
-    writebyte(i / 256, fp);
+std::ostream &writeword(std::ostream &stream, unsigned int i) {
+    writebyte(stream, i % 256);
+    writebyte(stream, i / 256);
 }
 
-void writebyte(unsigned char c, FILE *fp) {
-    fputc(c, fp);
+std::ostream &writebyte(std::ostream &stream, unsigned char c) {
+    stream << c;
     parity ^= c;
 }
 
-void writecode(unsigned char *block, aint length, unsigned short loadaddr, bool header, FILE *fp) {
+std::ostream &writecode(std::ostream &stream, unsigned char *block, aint length,
+                        unsigned short loadaddr, bool header) {
     if (header) {
         /* Write out the code header file */
-        fputc(19, fp);        /* Header len */
-        fputc(0, fp);        /* MSB of len */
-        fputc(0, fp);        /* Header is 0 */
+        stream << (char)19;        /* Header len */
+        stream << (char)0;         /* MSB of len */
+        stream << 0;               /* Header is 0 */
         parity = 0;
-        writebyte(3, fp);    /* Filetype (Code) */
+        writebyte(stream, 3);    /* Filetype (Code) */
 
         /*char *blockname = new char[32];
         SPRINTF1(blockname, 32, "Code %02d   ", blocknum++);
@@ -337,22 +340,22 @@ void writecode(unsigned char *block, aint length, unsigned short loadaddr, bool 
         delete[] blockname;*/
         char filename[] = "Loader    ";
         for (aint i = 0; i <= 9; i++)
-            writebyte(filename[i], fp);
+            writebyte(stream, filename[i]);
 
-        writeword(length, fp);
-        writeword(loadaddr, fp); /* load address: 49152 by default */
-        writeword(0, fp);    /* offset */
-        writebyte(parity, fp);
+        writeword(stream, length);
+        writeword(stream, loadaddr); /* load address: 49152 by default */
+        writeword(stream, 0);    /* offset */
+        writebyte(stream, parity);
     }
 
     /* Now onto the data bit */
-    writeword(length + 2, fp);    /* Length of next block */
+    writeword(stream, length + 2);    /* Length of next block */
     parity = 0;
-    writebyte(255, fp);    /* Data... */
+    writebyte(stream, 255);    /* Data... */
     for (aint i = 0; i < length; i++) {
-        writebyte(block[i], fp);
+        writebyte(stream, block[i]);
     }
-    writebyte(parity, fp);
+    writebyte(stream, parity);
 }
 
 void remove_basic_sp(unsigned char *ram) {

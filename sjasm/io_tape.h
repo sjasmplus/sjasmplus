@@ -31,7 +31,7 @@ misrepresented as being the original software.
 #ifndef __IO_TAPE
 #define __IO_TAPE
 
-int SaveTAP_ZX(const char *fname, unsigned short start);
+int SaveTAP_ZX(const fs::path &fname, unsigned short start);
 
 #endif
 
