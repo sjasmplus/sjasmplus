@@ -28,7 +28,7 @@
 
 #include "sjdefs.h"
 
-int SaveSNA_ZX(const char *fname, unsigned short start) {
+int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
     unsigned char snbuf[31];
 
     // for Lua
@@ -40,9 +40,11 @@ int SaveSNA_ZX(const char *fname, unsigned short start) {
         return 0;
     }
 
-    FILE *ff;
-    if (!FOPEN_ISOK(ff, fname, "wb")) {
-        Error("Error opening file", fname, FATAL);
+    fs::ofstream ofs;
+    try {
+        ofs.open(fname, std::ios_base::binary);
+    } catch (std::ofstream::failure &e) {
+        Error("Error opening file", fname.c_str(), FATAL);
     }
 
     memset(snbuf, 0, sizeof(snbuf));
@@ -97,81 +99,58 @@ int SaveSNA_ZX(const char *fname, unsigned short start) {
     snbuf[25] = 1; //im 1
     snbuf[26] = 7; //border 7
 
-    if (fwrite(snbuf, 1, sizeof(snbuf) - 4, ff) != sizeof(snbuf) - 4) {
-        Error("Write error (disk full?)", fname, CATCHALL);
-        fclose(ff);
+    try {
+        ofs.write((const char *)snbuf, sizeof(snbuf) - 4);
+    } catch (std::ofstream::failure &e) {
+        Error("Write error (disk full?)", fname.c_str(), CATCHALL);
+        ofs.close();
         return 0;
     }
 
-    if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
-        if (fwrite(Device->GetPage(1)->RAM, 1, Device->GetPage(1)->Size, ff) != Device->GetPage(1)->Size) {
-            Error("Write error (disk full?)", fname, CATCHALL);
-            fclose(ff);
-            return 0;
+    try {
+        if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
+            ofs.write(Device->GetPage(1)->RAM, Device->GetPage(1)->Size);
+            ofs.write(Device->GetPage(2)->RAM, Device->GetPage(2)->Size);
+            ofs.write(Device->GetPage(3)->RAM, Device->GetPage(3)->Size);
+        } else {
+            ofs.write(Device->GetPage(5)->RAM, Device->GetPage(5)->Size);
+            ofs.write(Device->GetPage(2)->RAM, Device->GetPage(2)->Size);
+            ofs.write(Device->GetPage(Device->GetSlot(3)->Page->Number)->RAM, Device->GetPage(0)->Size);
         }
-        if (fwrite(Device->GetPage(2)->RAM, 1, Device->GetPage(2)->Size, ff) != Device->GetPage(2)->Size) {
-            Error("Write error (disk full?)", fname, CATCHALL);
-            fclose(ff);
-            return 0;
-        }
-        if (fwrite(Device->GetPage(3)->RAM, 1, Device->GetPage(3)->Size, ff) != Device->GetPage(3)->Size) {
-            Error("Write error (disk full?)", fname, CATCHALL);
-            fclose(ff);
-            return 0;
-        }
-    } else {
-        if (fwrite(Device->GetPage(5)->RAM, 1, Device->GetPage(5)->Size, ff) != Device->GetPage(5)->Size) {
-            Error("Write error (disk full?)", fname, CATCHALL);
-            fclose(ff);
-            return 0;
-        }
-        if (fwrite(Device->GetPage(2)->RAM, 1, Device->GetPage(2)->Size, ff) != Device->GetPage(2)->Size) {
-            Error("Write error (disk full?)", fname, CATCHALL);
-            fclose(ff);
-            return 0;
-        }
-        if (fwrite(Device->GetPage(Device->GetSlot(3)->Page->Number)->RAM, 1, Device->GetPage(0)->Size, ff) !=
-            Device->GetPage(0)->Size) {
-            Error("Write error (disk full?)", fname, CATCHALL);
-            fclose(ff);
-            return 0;
-        }
-    }
 
-    if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
+        if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
 
-    } else {
-        snbuf[27] = char(start & 0x00FF); //pc
-        snbuf[28] = char(start >> 8); //pc
-        snbuf[29] = 0x10 + Device->GetSlot(3)->Page->Number; //7ffd
-        snbuf[30] = 0; //tr-dos
-        if (fwrite(snbuf + 27, 1, 4, ff) != 4) {
-            Error("Write error (disk full?)", fname, CATCHALL);
-            fclose(ff);
-            return 0;
+        } else {
+            snbuf[27] = char(start & 0x00FF); //pc
+            snbuf[28] = char(start >> 8); //pc
+            snbuf[29] = 0x10 + Device->GetSlot(3)->Page->Number; //7ffd
+            snbuf[30] = 0; //tr-dos
+            ofs.write((const char *)snbuf + 27, 4);
         }
-    }
 
-    //if (DeviceID) {
-    if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
-        /*for (int i = 0; i < 5; i++) {
-            if (fwrite(Device->GetPage(0)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
-                Error("Write error (disk full?)", fname, CATCHALL);
-                fclose(ff);
-                return 0;
-            }
-        }*/
-    } else {
-        for (int i = 0; i < 8; i++) {
-            if (i != Device->GetSlot(3)->Page->Number && i != 2 && i != 5) {
-                if (fwrite(Device->GetPage(i)->RAM, 1, Device->GetPage(i)->Size, ff) != Device->GetPage(i)->Size) {
+        //if (DeviceID) {
+        if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
+            /*for (int i = 0; i < 5; i++) {
+                if (fwrite(Device->GetPage(0)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
                     Error("Write error (disk full?)", fname, CATCHALL);
                     fclose(ff);
                     return 0;
                 }
+            }*/
+        } else {
+            for (int i = 0; i < 8; i++) {
+                if (i != Device->GetSlot(3)->Page->Number && i != 2 && i != 5) {
+                    ofs.write(Device->GetPage(i)->RAM, Device->GetPage(i)->Size);
+                }
             }
         }
+
+    } catch (std::ofstream::failure &e) {
+        Error("Write error (disk full?)", fname.c_str(), CATCHALL);
+        ofs.close();
+        return 0;
     }
+
     //}
     /* else {
         char *buf = (char*) calloc(0x14000, sizeof(char));
@@ -190,10 +169,10 @@ int SaveSNA_ZX(const char *fname, unsigned short start) {
         !strcmp(DeviceID, "ATMTURBO512") ||
         !strcmp(DeviceID, "PENTAGON1024") ||
         !strcmp(DeviceID, "ATMTURBO1024")) {
-        Warning("Only 128kb will be written to snapshot", fname);
+        Warning("Only 128kb will be written to snapshot", fname.c_str());
     }
 
-    fclose(ff);
+    ofs.close();
     return 1;
 }
 
