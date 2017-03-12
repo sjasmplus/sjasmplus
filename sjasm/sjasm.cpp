@@ -155,7 +155,7 @@ void LuaFatalError(lua_State *L) {
 
 int main(int argc, const char* argv[]) {
 	int base_encoding; /* added */
-	const char* logo = "SjASMPlus Z80 Cross-Assembler v."SJASMPLUS_VERSION;
+	const char* logo = "SjASMPlus Z80 Cross-Assembler v." SJASMPLUS_VERSION;
 	int i = 1;
 
 	if (argc == 1) {
