@@ -618,8 +618,7 @@ void dirINCHOB() {
 void dirINCTRD() {
     aint val;
     char hdr[16];
-    int offset = -1, length = -1, res, i;
-    FILE *ff;
+    int offset = -1, length = -1, i;
 
     fs::path fnaam = fs::path(GetString(lp));
     HobetaFilename fnaamh;
@@ -662,14 +661,18 @@ void dirINCTRD() {
     //TODO: extract code to io_trd
     // open TRD
     fs::path fnaamh2 = getAbsPath(fnaam);
-    if (!FOPEN_ISOK(ff, fnaamh2.c_str(), "rb")) {
+    fs::ifstream ifs;
+    try {
+        ifs.open(fnaamh2, std::ios_base::binary);
+    } catch (std::ifstream::failure &e) {
         Error("[INCTRD] Error opening file", fnaam.c_str(), FATAL);
     }
     // Find file
-    fseek(ff, 0, SEEK_SET);
+    ifs.seekg(0, std::ios_base::beg);
     for (i = 0; i < 128; i++) {
-        res = fread(hdr, 1, 16, ff);
-        if (res != 16) {
+        try {
+            ifs.read(hdr, 16);
+        } catch (std::ifstream::failure &e) {
             Error("[INCTRD] Read error", fnaam.c_str(), CATCHALL);
             return;
         }
@@ -697,9 +700,9 @@ void dirINCTRD() {
         }
     }
     offset += (((unsigned char) hdr[0x0f]) << 12) + (((unsigned char) hdr[0x0e]) << 8);
-    fclose(ff);
+    ifs.close();
 
-    BinIncFile(fnaam.c_str(), offset, length);
+    BinIncFile(fnaam, offset, length);
 }
 
 /* added */

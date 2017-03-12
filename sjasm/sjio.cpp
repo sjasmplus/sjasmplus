@@ -649,12 +649,14 @@ char* GetPath(const char* fname, TCHAR** filenamebegin) {
 
 void BinIncFile(const fs::path &fname, int offset, int len) {
     char *bp;
-    FILE *bif;
-    int res;
+    long res;
     int leng;
     fs::path fullFilePath;
     fullFilePath = getAbsPath(fname);
-    if (!FOPEN_ISOK(bif, fullFilePath.c_str(), "rb")) {
+    fs::ifstream ifs;
+    try {
+        ifs.open(fullFilePath, std::ios_base::binary);
+    } catch (std::ifstream::failure &e) {
         Error("Error opening file", fname.c_str(), FATAL);
     }
     if (offset > 0) {
@@ -662,11 +664,12 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
         if (bp == NULL) {
             Error("No enough memory!", 0, FATAL);
         }
-        res = fread(bp, 1, offset, bif);
-        if (res == -1) {
+        try {
+            ifs.read(bp, offset);
+        } catch (std::ifstream::failure &e) {
             Error("Read error", fname.c_str(), FATAL);
         }
-        if (res != offset) {
+        if (ifs.tellg() != offset) {
             Error("Offset beyond filelength", fname.c_str(), FATAL);
         }
     }
@@ -675,11 +678,12 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
         if (bp == NULL) {
             Error("No enough memory!", 0, FATAL);
         }
-        res = fread(bp, 1, len, bif);
-        if (res == -1) {
+        try {
+            ifs.read(bp, len);
+        } catch (std::ifstream::failure &e) {
             Error("Read error", fname.c_str(), FATAL);
         }
-        if (res != len) {
+        if (ifs.tellg() != offset + len) {
             Error("Unexpected end of file", fname.c_str(), FATAL);
         }
         while (len--) {
@@ -733,10 +737,13 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
             WriteDest();
         }
         do {
-            res = fread(WriteBuffer, 1, DESTBUFLEN, bif);
-            if (res == -1) {
+            res = ifs.tellg();
+            try {
+                ifs.read(WriteBuffer, DESTBUFLEN);
+            } catch (std::ifstream::failure &e) {
                 Error("Read error", fname.c_str(), FATAL);
             }
+            res = ifs.tellg() - res;
             if (pass == LASTPASS) {
                 WBLength = res;
                 if (DeviceID) {
@@ -786,7 +793,7 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
             }
         } while (res == DESTBUFLEN);
     }
-    fclose(bif);
+    ifs.close();
 }
 
 void OpenFile(const fs::path &nfilename) {
