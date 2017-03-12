@@ -38,7 +38,7 @@ namespace fs = boost::filesystem;
 
 namespace Options {
     extern Filename SymbolListFName;
-    extern Filename ListingFName;
+    extern fs::path ListingFName;
     extern fs::path ExportFName;
     extern fs::path DestinationFName;
     extern fs::path RAWFName;

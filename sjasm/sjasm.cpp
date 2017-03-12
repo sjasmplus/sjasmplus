@@ -255,7 +255,7 @@ int main(int argc, const char* argv[]) {
         //TODO: remove when FP_ListingFile will be stream
         std::ostringstream buf;
         LabelTable.Dump(buf);
-        fputs(buf.str().c_str(), FP_ListingFile);
+        OFSListing << buf.str();
 	}
 
 	Close();

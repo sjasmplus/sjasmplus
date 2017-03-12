@@ -1799,8 +1799,8 @@ void _lua_showerror() {
 		STRCAT(err, LINEMAX2, "\n");
 	}
 
-	if (FP_ListingFile != NULL) {
-		fputs(ErrorLine, FP_ListingFile);
+	if (OFSListing.is_open()) {
+        OFSListing << ErrorLine;
 	}
 	_COUT ErrorLine _END;
 

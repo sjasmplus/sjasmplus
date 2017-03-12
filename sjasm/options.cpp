@@ -48,7 +48,7 @@ namespace {
 
 namespace Options {
     Filename SymbolListFName;
-    Filename ListingFName;
+    fs::path ListingFName;
 
     fs::path ExportFName;
     fs::path DestinationFName;
@@ -101,7 +101,7 @@ namespace Options {
 				}
             } else if (optName == LST) {
                 if (!optValue.empty()) {
-                    ListingFName = Filename(optValue);
+                    ListingFName = fs::path(optValue);
 				} else {
                     //TODO: fail
 					_COUT "No parameters found in " _CMDL argv[i-1] _ENDL;

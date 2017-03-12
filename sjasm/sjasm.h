@@ -67,7 +67,8 @@ extern aint CurAddress, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine
 extern void (*GetCPUInstruction)(void);
 extern char* vorlabp, * macrolabp, * LastParsedLabel;
 
-extern FILE* FP_ListingFile; 
+extern FILE* FP_ListingFile;
+extern fs::ofstream OFSListing;
 
 enum EEncoding { ENCDOS, ENCWIN };
 

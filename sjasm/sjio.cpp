@@ -115,8 +115,8 @@ void Error(const char* fout, const char* bd, int type) {
 		STRCAT(ep, LINEMAX2, "\n");
 	}
 
-	if (FP_ListingFile != NULL) {
-		fputs(ErrorLine, FP_ListingFile);
+	if (OFSListing.is_open()) {
+		OFSListing << ErrorLine;
 	}
 
 	_COUT ErrorLine _END;
@@ -168,8 +168,8 @@ void Warning(const char* fout, const char* bd, int type) {
 		STRCAT(ep, LINEMAX2, "\n");
 	}
 
-	if (FP_ListingFile != NULL) {
-		fputs(ErrorLine, FP_ListingFile);
+	if (OFSListing.is_open()) {
+        OFSListing << ErrorLine;
 	}
 	_COUT ErrorLine _END;
 }
@@ -302,8 +302,8 @@ void listbytes3(int pad) {
 			PrintHEX8(pp, EB[i++]); --nEB; ++t;
 		}
 		*(pp++) = '\n'; *pp = 0;
-		if (FP_ListingFile != NULL) {
-			fputs(pline, FP_ListingFile);
+		if (OFSListing.is_open()) {
+            OFSListing << pline;
 		}
 		pad += 32;
 	}
@@ -315,7 +315,7 @@ void ListFile() {
     if (pass != LASTPASS || donotlist) {
 		donotlist = nEB = 0; return;
 	}
-    if (Options::ListingFName.empty() || FP_ListingFile == NULL) {
+    if (Options::ListingFName.empty()) {
 		return;
 	}
 	if (listmacro) {
@@ -342,14 +342,14 @@ void ListFile() {
 			STRCAT(pp, LINEMAX2, ">");
 		}
 		STRCAT(pp, LINEMAX2, line);
-		fputs(pline, FP_ListingFile);
+        OFSListing << pline;
 	} else if (nEB < 6) {
 		listbytes2(pp); *pp = 0;
 		if (listmacro) {
 			STRCAT(pp, LINEMAX2, ">");
 		}
 		STRCAT(pp, LINEMAX2, line);
-		fputs(pline, FP_ListingFile);
+        OFSListing << pline;
 	} else {
 		for (int i = 0; i != 12; ++i) {
 			*(pp++) = ' ';
@@ -358,8 +358,8 @@ void ListFile() {
 		if (listmacro) {
 			STRCAT(pp, LINEMAX2, ">");
 		}
-		STRCAT(pp, LINEMAX2, line); 
-		fputs(pline, FP_ListingFile); 
+		STRCAT(pp, LINEMAX2, line);
+        OFSListing << pline;
 		listbytes3(pad);
 	}
 	epadres = CurAddress;
@@ -374,7 +374,7 @@ void ListFileSkip(char* line) {
 		donotlist = nEB = 0;
 		return;
 	}
-    if (Options::ListingFName.empty() || FP_ListingFile == NULL) {
+    if (Options::ListingFName.empty()) {
 		return;
 	}
 	if (listmacro) {
@@ -398,7 +398,7 @@ void ListFileSkip(char* line) {
 		STRCAT(pp, LINEMAX2, ">");
 	}
 	STRCAT(pp, LINEMAX2, line);
-	fputs(pline, FP_ListingFile);
+    OFSListing << pline;
 	epadres = CurAddress;
 	PreviousAddress = (aint) - 1;
 	nEB = 0;
@@ -994,9 +994,11 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
 /* modified */
 void OpenList() {
     if (!Options::ListingFName.empty()) {
-        if (!FOPEN_ISOK(FP_ListingFile, Options::ListingFName.c_str(), "w")) {
+        try {
+            OFSListing.open(Options::ListingFName);
+        } catch (std::ofstream::failure& e) {
             Error("Error opening file", Options::ListingFName.c_str(), FATAL);
-		}
+        }
 	}
 }
 
@@ -1110,9 +1112,8 @@ void Close() {
 	if (OFSRaw.is_open()) {
 		OFSRaw.close();
 	}
-	if (FP_ListingFile != NULL) {
-		fclose(FP_ListingFile);
-		FP_ListingFile = NULL;
+	if (OFSListing.is_open()) {
+		OFSListing.close();
 	}
 	//if (FP_UnrealList && pass == 9999) {
 	//	fclose(FP_UnrealList);

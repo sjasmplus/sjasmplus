@@ -43,8 +43,6 @@ extern aint PreviousAddress, epadres;
 #define OUTPUT_REWIND 1
 #define OUTPUT_APPEND 2
 
-extern FILE* FP_Input; /* added */
-
 void OpenDest(int); /* added from new SjASM 0.39g */
 void NewDest(const fs::path& newfilename, int mode); /* added from new SjASM 0.39g */
 int FileExists(const char* filename); /* added from new SjASM 0.39g */
