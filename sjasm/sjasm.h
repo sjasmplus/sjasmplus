@@ -53,7 +53,9 @@ extern std::vector<fs::path> SourceFNames;
 extern int CurrentSourceFName;
 
 extern int ConvertEncoding; /* added */
-extern int pass, IsLabelNotFound, ErrorCount, WarningCount, IncludeLevel, IsRunning, donotlist, listmacro;
+extern int pass, IsLabelNotFound, ErrorCount, WarningCount, IncludeLevel;
+extern bool moreInputLeft; // Reset by the END directive
+extern int donotlist, listmacro;
 //physical address, disp != org mode flag
 extern int adrdisp, PseudoORG; /* added for spectrum mode */
 extern char* MemoryPointer; /* added for spectrum ram */

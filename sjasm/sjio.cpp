@@ -37,14 +37,19 @@
 #define DESTBUFLEN 8192
 
 char rlbuf[4096 * 2]; //x2 to prevent errors
-int RL_Readed;
+int bytesRead;
 bool rldquotes = false,rlsquotes = false,rlspace = false,rlcomment = false,rlcolon = false,rlnewline = true;
 char* rlpbuf, * rlppos;
 
 int EB[1024 * 64],nEB = 0;
 char WriteBuffer[DESTBUFLEN];
-FILE* FP_Input = NULL, * FP_Output = NULL, * FP_RAW = NULL;
+FILE /* * FP_Input = NULL,*/ * FP_Output = NULL, * FP_RAW = NULL;
 FILE* FP_ListingFile = NULL,* FP_ExportFile = NULL;
+
+fs::ifstream realIFS;
+fs::ifstream *pIFS = &realIFS;
+fs::ofstream OFS, OFSRaw, OFSListing, OFSExport;
+
 aint PreviousAddress,epadres,IsSkipErrors = 0;
 aint WBLength = 0;
 char hd[] = {
@@ -748,9 +753,11 @@ void OpenFile(const fs::path& nfilename) {
 
 	fullpath = getAbsPath(nfilename);
 
-	if (!FOPEN_ISOK(FP_Input, fullpath.c_str(), "r")) {
-		Error("Error opening file", nfilename.c_str(), FATAL);
-	}
+	try {
+        pIFS->open(fullpath, std::ios::binary);
+    } catch (fs::filesystem_error &e) {
+        Error("Error opening file", nfilename.c_str(), FATAL);
+    }
 
 	aint oCurrentLocalLine = CurrentLocalLine;
 	CurrentLocalLine = 0;
@@ -765,10 +772,10 @@ void OpenFile(const fs::path& nfilename) {
 	oCurrentDirectory = global::CurrentDirectory;
 	global::CurrentDirectory = fullpath.parent_path();
 
-	RL_Readed = 0; rlpbuf = rlbuf;
+	bytesRead = 0; rlpbuf = rlbuf;
 	ReadBufLine(true);
 
-	fclose(FP_Input);
+	pIFS->close();
 	--IncludeLevel;
 	global::CurrentDirectory = oCurrentDirectory;
 	global::currentFilename = ofilename;
@@ -780,15 +787,16 @@ void OpenFile(const fs::path& nfilename) {
 
 /* added */
 void IncludeFile(const fs::path& nfilename) {
-	FILE* oFP_Input = FP_Input;
-	FP_Input = 0;
+    fs::ifstream *saveIFS = pIFS;
+    fs::ifstream incIFS;
+    pIFS = &incIFS;
 
 	char* pbuf = rlpbuf;
 	char* buf = STRDUP(rlbuf);
 	if (buf == NULL) {
 		Error("No enough memory!", 0, FATAL);
 	}
-	int readed = RL_Readed;
+	int readed = bytesRead;
 	bool squotes = rlsquotes,dquotes = rldquotes,space = rlspace,comment = rlcomment,colon = rlcolon,newline = rlnewline;
 
 	rldquotes = false; rlsquotes = false;rlspace = false;rlcomment = false;rlcolon = false;rlnewline = true;
@@ -800,34 +808,60 @@ void IncludeFile(const fs::path& nfilename) {
 	rlsquotes = squotes,rldquotes = dquotes,rlspace = space,rlcomment = comment,rlcolon = colon,rlnewline = newline;
 	rlpbuf = pbuf;
 	STRCPY(rlbuf, 8192, buf);
-	RL_Readed = readed;
+	bytesRead = readed;
 
 	free(buf);
 
-	FP_Input = oFP_Input;
+    pIFS = saveIFS;
 }
 
-/* added */
+std::istream &sja_getline(std::istream &stream, std::string &str) {
+    char ch;
+    str.clear();
+    while (stream.get(ch)) {
+        if (ch == '\n') {
+            if (stream.peek() == '\r')
+                stream.ignore();
+            break;
+        } else if (ch == '\r') {
+            if (stream.peek() == '\n')
+                stream.ignore();
+            break;
+        } else {
+            str.push_back(ch);
+        }
+    }
+    return stream;
+}
+
+// Attempt to read from IFS and return number of bytes or 0
+// TODO: Delete this after switching to proper reading/parsing
+size_t readBuf(char *buf, size_t size) {
+	pIFS->read(buf, size);
+	return pIFS->gcount();
+}
+
+// TODO: Kill it with fire
 void ReadBufLine(bool Parse, bool SplitByColon) {
 	rlppos = line;
 	if (rlcolon) {
 		*(rlppos++) = '\t';
 	}
-	while (IsRunning && (RL_Readed > 0 || (RL_Readed = fread(rlbuf, 1, 4096, FP_Input)))) {
+	while (moreInputLeft && (bytesRead > 0 || (bytesRead = readBuf(rlbuf, 4096)))) {
 		if (!*rlpbuf) {
 			rlpbuf = rlbuf;
 		}
-		while (RL_Readed > 0) {
+		while (bytesRead > 0) {
 			if (*rlpbuf == '\n' || *rlpbuf == '\r') {
 				if (*rlpbuf == '\n') {
-					rlpbuf++;RL_Readed--;
+					rlpbuf++;bytesRead--;
 					if (*rlpbuf && *rlpbuf == '\r') {
-						rlpbuf++;RL_Readed--;
+						rlpbuf++;bytesRead--;
 					}
 				} else if (*rlpbuf == '\r') {
-					rlpbuf++;RL_Readed--;
+					rlpbuf++;bytesRead--;
                     if (*rlpbuf && *rlpbuf == '\n') {
-                        rlpbuf++;RL_Readed--;
+                        rlpbuf++;bytesRead--;
                     }
 				}
 				*rlppos = 0;
@@ -853,7 +887,7 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
 				rlnewline = true;
 			} else if (SplitByColon && *rlpbuf == ':' && rlspace && !rldquotes && !rlsquotes && !rlcomment) {
 				while (*rlpbuf && *rlpbuf == ':') {
-					rlpbuf++;RL_Readed--;
+					rlpbuf++;bytesRead--;
 				}
 			  	*rlppos = 0;
 				if (strlen(line) == LINEMAX - 1) {
@@ -876,7 +910,7 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
 				if ((n = getinstr(lp)) && DirectivesTable.Find(n)) {
 					//it's directive
 					while (*rlpbuf && *rlpbuf == ':') {
-						rlpbuf++;RL_Readed--;
+						rlpbuf++;bytesRead--;
 					}
 					if (strlen(line) == LINEMAX - 1) {
 						Error("Line too long", 0, FATAL);
@@ -903,7 +937,7 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
 					*(rlppos++) = ' ';
 					rlspace = true;
 					while (*rlpbuf && *rlpbuf == ':') {
-						rlpbuf++;RL_Readed--;
+						rlpbuf++;bytesRead--;
 					}
 				}
 			} else {
@@ -923,17 +957,17 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
 					rlcomment = true;
 				} else if (*rlpbuf == '/' && *(rlpbuf + 1) == '/' && !rlsquotes && !rldquotes) {
 					rlcomment = true;  
-					*(rlppos++) = *(rlpbuf++); RL_Readed--;
+					*(rlppos++) = *(rlpbuf++); bytesRead--;
 				} else if (*rlpbuf <= ' ' && !rlsquotes && !rldquotes && !rlcomment) {
 					rlspace = true;
 				}
-				*(rlppos++) = *(rlpbuf++); RL_Readed--;
+				*(rlppos++) = *(rlpbuf++); bytesRead--;
 			}
 		}
 		rlpbuf = rlbuf;
 	}
 	//for end line
-	if (feof(FP_Input) && RL_Readed <= 0 && line) {
+	if (pIFS->eof() && bytesRead <= 0 && line) {
 		if (rlnewline) {
 			CurrentLocalLine++;
 			CompiledCurrentLine++;
@@ -1192,8 +1226,8 @@ int SaveBinary(const char* fname, int start, int length) {
 EReturn ReadFile(const char* pp, const char* err) {
 	CStringsList* ol;
 	char* p;
-	while (RL_Readed > 0 || !feof(FP_Input)) {
-		if (!IsRunning) {
+	while (bytesRead > 0 || !pIFS->eof()) {
+		if (!moreInputLeft) {
 			return END;
 		}
 		if (lijst) {
@@ -1241,8 +1275,8 @@ EReturn SkipFile(const char *pp, const char *err) {
 	CStringsList* ol;
 	char* p;
 	int iflevel = 0;
-	while (RL_Readed > 0 || !feof(FP_Input)) {
-		if (!IsRunning) {
+	while (bytesRead > 0 || !pIFS->eof()) {
+		if (!moreInputLeft) {
 			return END;
 		}
 		if (lijst) {
@@ -1306,10 +1340,10 @@ EReturn SkipFile(const char *pp, const char *err) {
 
 
 int ReadLine(bool SplitByColon) {
-	if (!IsRunning) {
+	if (!moreInputLeft) {
 		return 0;
 	}
-	int res = (RL_Readed > 0 || !feof(FP_Input));
+	int res = (bytesRead > 0 || !pIFS->eof());
 	ReadBufLine(false, SplitByColon);
 	return res;
 }
@@ -1318,8 +1352,8 @@ int ReadFileToCStringsList(CStringsList*& f, const char* end) {
 	CStringsList* s,* l = NULL;
 	char* p;
 	f = NULL;
-	while (RL_Readed > 0 || !feof(FP_Input)) {
-		if (!IsRunning) {
+	while (bytesRead > 0 || !pIFS->eof()) {
+		if (!moreInputLeft) {
 			return 0;
 		}
 		ReadBufLine(false);

@@ -445,6 +445,7 @@ void dirZ80() {
 	GetCPUInstruction = Z80::GetOpCode;
 }
 
+// Do not process beyond the END directive
 void dirEND() {
 	char* p = lp;
 	aint val;
@@ -459,7 +460,7 @@ void dirEND() {
 		lp = p;
 	}
 	
-	IsRunning = 0;
+	moreInputLeft = false;
 }
 
 void dirSIZE() {
@@ -512,7 +513,7 @@ void dirINCHOB() {
 	int offset = 17,length = -1,res;
 	FILE* ff;
 
-    fs::path fnaam = fs::path(lp); // FIXME
+    fs::path fnaam = fs::path(GetString(lp)); // FIXME
 	if (comma(lp)) {
 		if (!comma(lp)) {
 			if (!ParseExpression(lp, val)) {
@@ -560,7 +561,7 @@ void dirINCTRD() {
 	int offset = -1,length = -1,res,i;
 	FILE* ff;
 
-    fs::path fnaam = fs::path(lp);
+    fs::path fnaam = fs::path(GetString(lp));
     HobetaFilename fnaamh;
 	if (comma(lp)) {
 		if (!comma(lp)) {
