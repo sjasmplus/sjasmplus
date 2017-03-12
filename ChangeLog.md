@@ -1,5 +1,18 @@
 # Change Log
 
+## 2017-03-11
+- Version 20170311
+
+### Added
+- Merged updates from https://github.com/vitamin-caig/sjasmplus
+
+### Changed
+- New version scheme: YYYYMMDD
+- Switch to CMake
+
+### Fixed
+- CR+LF line-endings processing
+
 ## 2008-04-03  Aprisobal  <my@aprisobal.by>
 - VERSION 1.07 Stable
 
