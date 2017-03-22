@@ -26,6 +26,9 @@ misrepresented as being the original software.
 
 // io_tape.cpp
 
+#include <vector>
+#include <cstdint>
+
 #include "sjdefs.h"
 
 #include "../resources/SaveTAP_ZX_Spectrum_48K.bin.h"
@@ -55,15 +58,6 @@ aint remove_unused_space(unsigned char *ram, aint length);
 aint detect_ram_start(unsigned char *ram, aint length);
 
 int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
-    // for Lua
-    if (!DeviceID) {
-        Error("[SAVETAP] Only for real device emulation mode.", 0);
-        return 0;
-    } else if (!IsZXSpectrumDevice(DeviceID)) {
-        Error("[SAVETAP] Device must be ZXSPECTRUM48, ZXSPECTRUM128, ZXSPECTRUM256, ZXSPECTRUM512 or ZXSPECTRUM1024.",
-              0);
-        return 0;
-    }
 
     fs::ofstream ofs;
     try {
@@ -151,7 +145,7 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
     writebyte(ofs, 0x0d);
     writebyte(ofs, parity);
 
-    if (!strcmp(DeviceID, "ZXSPECTRUM48")) {
+    if (!Asm.IsPagedMemory()) {
         // prepare code block
         aint ram_length = 0xA200;
         aint ram_start = 0x0000;
@@ -159,9 +153,9 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
         if (ram == NULL) {
             Error("No enough memory", 0, FATAL);
         }
-        memcpy(ram, (unsigned char *) Device->GetSlot(1)->Page->RAM + 0x1E00, 0x2200);
-        memcpy(ram + 0x2200, (unsigned char *) Device->GetSlot(2)->Page->RAM, 0x4000);
-        memcpy(ram + 0x6200, (unsigned char *) Device->GetSlot(3)->Page->RAM, 0x4000);
+        Asm.GetBytes(ram, 0x4000 + 0x1E00, 0x2200);
+        Asm.GetBytes(ram + 0x2200, 0x8000, 0x4000);
+        Asm.GetBytes(ram + 0x6200, 0xC000, 0x4000);
 
         // remove basic vars
         remove_basic_sp(ram + ram_length - sizeof(BASin48SP));
@@ -190,14 +184,17 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
 
         // write screen$
         if (loader[SaveTAP_ZX_Spectrum_48K_SZ - 7]) {
-            writecode(ofs, (unsigned char *) Device->GetSlot(1)->Page->RAM, 6912, 16384, false);
+            const int sz = 6192;
+            uint8_t buf[sz];
+            Asm.GetBytes(buf, 0x4000, sz);
+            writecode(ofs, buf, sz, 16384, false);
         }
 
         // write code block
         writecode(ofs, ram + ram_start, ram_length, 0x5E00 + ram_start, false);
 
         delete[] ram;
-    } else {
+    } else {  // Paged memory
         detect_vars_changes();
 
         // prepare main code block
@@ -206,8 +203,8 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
         if (ram == NULL) {
             Error("No enough memory", 0, FATAL);
         }
-        memcpy(ram, (unsigned char *) Device->GetSlot(1)->Page->RAM + 0x1E00, 0x2200);
-        memcpy(ram + 0x2200, (unsigned char *) Device->GetSlot(2)->Page->RAM, 0x4000);
+        Asm.GetBytes(ram, 1, 0x1E00, 0x2200);
+        Asm.GetBytes(ram + 0x2200, 2, 0, 0x4000);
 
         ram_length = remove_unused_space(ram, ram_length);
         ram_start = detect_ram_start(ram, ram_length);
@@ -216,14 +213,14 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
         // init loader
         aint loader_defsize;
         unsigned char *loader_code;
-        if (!strcmp(DeviceID, "ZXSPECTRUM128")) {
+        if (Asm.GetMemModelName() == "ZXSPECTRUM128"s) {
             loader_defsize = SaveTAP_ZX_Spectrum_128K_SZ;
             loader_code = (unsigned char *) &SaveTAP_ZX_Spectrum_128K[0];
         } else {
             loader_defsize = SaveTAP_ZX_Spectrum_256K_SZ;
             loader_code = (unsigned char *) &SaveTAP_ZX_Spectrum_256K[0];
         }
-        aint loader_len = loader_defsize + (Device->PagesCount - 2) * 5;
+        aint loader_len = loader_defsize + (Asm.NumMemPages() - 2) * 5;
         unsigned char *loader = new unsigned char[loader_len];
         memcpy(loader, loader_code, loader_defsize);
         if (loader == NULL) {
@@ -239,7 +236,7 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
         loader[loader_defsize - 4] = char(ram_length & 0x00FF);
         loader[loader_defsize - 3] = char(ram_length >> 8);
         // Settings.Page
-        loader[loader_defsize - 2] = char(Device->GetSlot(3)->Page->Number);
+        loader[loader_defsize - 2] = char(Asm.GetPageNumInSlot(3));
 
         //
         unsigned char *pages_ram[1024];
@@ -248,20 +245,20 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
 
         // build pages table
         aint count = 0;
-        for (aint i = 0; i < Device->PagesCount; i++) {
-            if (Device->GetSlot(2)->Page->Number != i && Device->GetSlot(1)->Page->Number != i) {
+        for (aint i = 0; i < Asm.NumMemPages(); i++) {
+            if (Asm.GetPageNumInSlot(2) != i && Asm.GetPageNumInSlot(1) != i) {
                 aint length = 0x4000;
-                length = remove_unused_space((unsigned char *) Device->GetPage(i)->RAM, length);
+                length = remove_unused_space(Asm.GetPtrToPage(i), length);
                 if (length > 0) {
-                    pages_ram[count] = (unsigned char *) Device->GetPage(i)->RAM;
+                    pages_ram[count] = Asm.GetPtrToPage(i);
                     pages_start[count] = detect_ram_start(pages_ram[count], length);
                     pages_len[count] = length - pages_start[count];
 
-                    loader[loader_defsize + (count * 5) + 0] = char(i);
-                    loader[loader_defsize + (count * 5) + 1] = char((pages_start[count] + 0xC000) & 0x00FF);
-                    loader[loader_defsize + (count * 5) + 2] = char((pages_start[count] + 0xC000) >> 8);
-                    loader[loader_defsize + (count * 5) + 3] = char(pages_len[count] & 0x00FF);
-                    loader[loader_defsize + (count * 5) + 4] = char(pages_len[count] >> 8);
+                    loader[loader_defsize + (count * 5) + 0] = uint8_t(i);
+                    loader[loader_defsize + (count * 5) + 1] = uint8_t((pages_start[count] + 0xC000) & 0x00FF);
+                    loader[loader_defsize + (count * 5) + 2] = uint8_t((pages_start[count] + 0xC000) >> 8);
+                    loader[loader_defsize + (count * 5) + 3] = uint8_t(pages_len[count] & 0x00FF);
+                    loader[loader_defsize + (count * 5) + 4] = uint8_t(pages_len[count] >> 8);
 
                     count++;
                 }
@@ -269,17 +266,17 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
         }
 
         // Table_BlockList.Count
-        loader[loader_defsize - 1] = char(count);
+        loader[loader_defsize - 1] = uint8_t(count);
 
         // Settings.LoadScreen
-        loader[loader_defsize - 9] = char(has_screen_changes());
+        loader[loader_defsize - 9] = uint8_t(has_screen_changes());
 
         // write loader
         writecode(ofs, loader, loader_len, 0x5E00, true);
 
         // write screen$
         if (loader[loader_defsize - 9]) {
-            writecode(ofs, (unsigned char *) Device->GetSlot(1)->Page->RAM, 6912, 0x4000, false);
+            writecode(ofs, Asm.GetPtrToPageInSlot(1), 6912, 0x4000, false);
         }
 
         // write code blocks
@@ -373,7 +370,7 @@ void remove_basic_sp(unsigned char *ram) {
 }
 
 void detect_vars_changes() {
-    unsigned char *psys = (unsigned char *) Device->GetSlot(1)->Page->RAM + 0x1C00;
+    unsigned char *psys = Asm.GetPtrToPageInSlot(1) + 0x1C00;
 
     bool nobas48 = false;
     for (int i = 0; i < sizeof(BASin48Vars); i++) {
@@ -395,7 +392,7 @@ void detect_vars_changes() {
 }
 
 bool has_screen_changes() {
-    unsigned char *pscr = (unsigned char *) Device->GetSlot(1)->Page->RAM;
+    unsigned char *pscr = Asm.GetPtrToPageInSlot(1);
 
     for (int i = 0; i < 0x1800; i++) {
         if (0 != pscr[i]) {

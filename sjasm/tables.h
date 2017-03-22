@@ -26,13 +26,18 @@
 
 */
 
-// tables.h
+#ifndef SJASMPLUS_TABLES_H
+#define SJASMPLUS_TABLES_H
+
+#include <iostream>
+
 using std::cout;
 using std::cerr;
 using std::endl;
 
 #include "defines.h"
 #include "labels.h"
+#include "errors.h"
 
 enum EStructureMembers {
     SMEMBUNKNOWN, SMEMBALIGN, SMEMBBYTE, SMEMBWORD, SMEMBBLOCK, SMEMBDWORD, SMEMBD24, SMEMBPARENOPEN, SMEMBPARENCLOSE
@@ -360,5 +365,4 @@ private:
 
 int LuaGetLabel(char *name);
 
-//eof tables.h
-
+#endif //SJASMPLUS_TABLES_H

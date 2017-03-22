@@ -28,8 +28,11 @@
 
 // direct.cpp
 
+#include <string>
+#include <boost/optional.hpp>
 #include "sjdefs.h"
-#include <cctype>
+
+using namespace std::string_literals;
 
 CFunctionTable DirectivesTable;
 CFunctionTable DirectivesTable_dup;
@@ -322,9 +325,9 @@ void dirBLOCK() {
 
 void dirORG() {
     aint val;
-    if (DeviceID) {
+    if (Asm.IsPagedMemory()) {
         if (ParseExpression(lp, val)) {
-            CurAddress = val;
+            Asm.SetAddress(val);
         } else {
             Error("[ORG] Syntax error", lp, CATCHALL);
             return;
@@ -334,22 +337,15 @@ void dirORG() {
                 Error("[ORG] Syntax error", lp, CATCHALL);
                 return;
             }
-            if (val < 0) {
-                Error("[ORG] Negative page number are not allowed", lp);
-                return;
-            } else if (val > Device->PagesCount - 1) {
-                char buf[LINEMAX];
-                SPRINTF1(buf, LINEMAX, "[ORG] Page number must be in range 0..%lu", Device->PagesCount - 1);
-                Error(buf, 0, CATCHALL);
+            boost::optional<std::string> err = Asm.SetPage(val);
+            if(err) {
+                Error("[ORG] "s + *err, lp, CATCHALL);
                 return;
             }
-            Slot->Page = Device->GetPage(val);
-            //Page = Slot->Page;
         }
-        CheckPage();
     } else {
         if (ParseExpression(lp, val)) {
-            CurAddress = val;
+            Asm.SetAddress(val);
         } else {
             Error("[ORG] Syntax error", 0, CATCHALL);
         }
@@ -359,71 +355,45 @@ void dirORG() {
 void dirDISP() {
     aint val;
     if (ParseExpression(lp, val)) {
-        adrdisp = CurAddress;
-        CurAddress = val;
+        Asm.DoDisp(val);
     } else {
         Error("[DISP] Syntax error", 0, CATCHALL);
         return;
     }
-    PseudoORG = 1;
 }
 
 void dirENT() {
-    if (!PseudoORG) {
+    if (!Asm.IsDisp()) {
         Error("ENT should be after DISP", 0);
         return;
     }
-    CurAddress = adrdisp;
-    PseudoORG = 0;
+    Asm.DoEnt();
 }
 
 void dirPAGE() {
     aint val;
-    if (!DeviceID) {
-        Warning("PAGE only allowed in real device emulation mode (See DEVICE)", 0);
-        SkipParam(lp);
-        return;
-    }
     if (!ParseExpression(lp, val)) {
         Error("Syntax error", 0, CATCHALL);
         return;
     }
-    if (val < 0) {
-        Error("[PAGE] Negative page number are not allowed", lp);
-        return;
-    } else if (val > Device->PagesCount - 1) {
-        char buf[LINEMAX];
-        SPRINTF1(buf, LINEMAX, "[PAGE] Page number must be in range 0..%lu", Device->PagesCount - 1);
-        Error(buf, 0, CATCHALL);
+    boost::optional<std::string> err = Asm.SetPage(val);
+    if(err) {
+        Error("[PAGE] "s + *err, lp);
         return;
     }
-    Slot->Page = Device->GetPage(val);
-    CheckPage();
 }
 
 void dirSLOT() {
     aint val;
-    if (!DeviceID) {
-        Warning("SLOT only allowed in real device emulation mode (See DEVICE)", 0);
-        SkipParam(lp);
-        return;
-    }
     if (!ParseExpression(lp, val)) {
         Error("Syntax error", 0, CATCHALL);
         return;
     }
-    if (val < 0) {
-        Error("[SLOT] Negative slot number are not allowed", lp);
-        return;
-    } else if (val > Device->SlotsCount - 1) {
-        char buf[LINEMAX];
-        SPRINTF1(buf, LINEMAX, "[SLOT] Slot number must be in range 0..%lu", Device->SlotsCount - 1);
-        Error(buf, 0, CATCHALL);
+    auto err = Asm.SetSlot(val);
+    if(err) {
+        Error("[SLOT] "s + *err, lp);
         return;
     }
-    Slot = Device->GetSlot(val);
-    Device->CurrentSlot = Slot->Number;
-    CheckPage();
 }
 
 void dirALIGN() {
@@ -452,7 +422,7 @@ void dirALIGN() {
         case 8192:
         case 16384:
         case 32768:
-            val = (~CurAddress + 1) & (val - 1);
+            val = (~(Asm.GetCPUAddress()) + 1) & (val - 1);
             if (!noexp && comma(lp)) {
                 if (!ParseExpression(lp, byte)) {
                     EmitBlock(0, val, true);
@@ -513,6 +483,7 @@ void dirEND() {
     moreInputLeft = false;
 }
 
+/*
 void dirSIZE() {
     aint val;
     if (!ParseExpression(lp, val)) {
@@ -528,6 +499,7 @@ void dirSIZE() {
     }
     size = val;
 }
+*/
 
 void dirINCBIN() {
     aint val;
@@ -595,7 +567,7 @@ void dirINCHOB() {
     }
 
     //used for implicit format check
-    fnaamh = getAbsPath(fnaam);
+    fnaamh = GetAbsPath(fnaam);
     try {
         fs::ifstream IFSH(fnaamh, std::ios::binary);
         try {
@@ -660,7 +632,7 @@ void dirINCTRD() {
     }
     //TODO: extract code to io_trd
     // open TRD
-    fs::path fnaamh2 = getAbsPath(fnaam);
+    fs::path fnaamh2 = GetAbsPath(fnaam);
     fs::ifstream ifs;
     try {
         ifs.open(fnaamh2, std::ios_base::binary);
@@ -709,24 +681,13 @@ void dirINCTRD() {
 void dirSAVESNA() {
     bool exec = true;
 
-    if (!DeviceID) {
-        if (pass == LASTPASS) {
-            Error("SAVESNA only allowed in real device emulation mode (See DEVICE)", 0);
-        }
+    if (pass != LASTPASS)
         exec = false;
-    } else if (pass != LASTPASS) {
-        exec = false;
-    }
-
-    if (exec && !IsZXSpectrumDevice(DeviceID)) {
-        Error("[SAVESNA] Device must be ZXSPECTRUM48 or ZXSPECTRUM128.", 0);
-        exec = false;
-    }
 
     aint val;
     int start = -1;
 
-    const fs::path fnaam = getAbsPath(GetString(lp));
+    const fs::path fnaam = GetAbsPath(GetString(lp));
     if (comma(lp)) {
         if (!comma(lp) && StartAddress < 0) {
             if (!ParseExpression(lp, val)) {
@@ -759,25 +720,14 @@ void dirSAVESNA() {
 void dirSAVETAP() {
     bool exec = true;
 
-    if (!DeviceID) {
-        if (pass == LASTPASS) {
-            Error("SAVETAP only allowed in real device emulation mode (See DEVICE)", 0);
-        }
-        exec = false;
-    } else if (pass != LASTPASS) {
-        exec = false;
-    }
-
-    if (exec && !IsZXSpectrumDevice(DeviceID)) {
-        Error("[SAVETAP] Device must be ZXSPECTRUM48, ZXSPECTRUM128, ZXSPECTRUM256, ZXSPECTRUM512 or ZXSPECTRUM1024.",
-              0);
+    if (pass != LASTPASS) {
         exec = false;
     }
 
     aint val;
     int start = -1;
 
-    const fs::path filename = getAbsPath(GetString(lp));
+    const fs::path filename = GetAbsPath(GetString(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
@@ -810,12 +760,7 @@ void dirSAVETAP() {
 void dirSAVEBIN() {
     bool exec = true;
 
-    if (!DeviceID) {
-        if (pass == LASTPASS) {
-            Error("SAVEBIN only allowed in real device emulation mode (See DEVICE)", 0);
-        }
-        exec = false;
-    } else if (pass != LASTPASS) {
+    if (pass != LASTPASS) {
         exec = false;
     }
 
@@ -869,12 +814,7 @@ void dirSAVEHOB() {
     int start = -1, length = -1;
     bool exec = true;
 
-    if (!DeviceID) {
-        if (pass == LASTPASS) {
-            Error("SAVEHOB only allowed in real device emulation mode (See DEVICE)", 0);
-        }
-        exec = false;
-    } else if (pass != LASTPASS) {
+    if (pass != LASTPASS) {
         exec = false;
     }
 
@@ -949,12 +889,7 @@ void dirEMPTYTRD() {
 void dirSAVETRD() {
     bool exec = true;
 
-    if (!DeviceID) {
-        if (pass == LASTPASS) {
-            Error("SAVETRD only allowed in real device emulation mode (See DEVICE)", 0);
-        }
-        exec = false;
-    } else if (pass != LASTPASS) {
+    if (pass != LASTPASS) {
         exec = false;
     }
 
@@ -1050,11 +985,7 @@ void dirENCODING() {
 
 /* added */
 void dirLABELSLIST() {
-    if (!DeviceID) {
-        Error("LABELSLIST only allowed in real device emulation mode (See DEVICE)", 0);
-    }
-
-    if (pass != 1 || !DeviceID) {
+    if (pass != 1) {
         SkipParam(lp);
         return;
     }
@@ -1275,9 +1206,12 @@ void dirINCLUDE() {
 }
 
 /* modified */
+/*
 void dirOUTPUT() {
     const Filename &fnaam = GetFileName(lp);
-    /* begin from SjASM 0.39g */
+    */
+/* begin from SjASM 0.39g *//*
+
     int mode = OUTPUT_TRUNCATE;
     if (comma(lp)) {
         char modechar = (*lp) | 0x20;
@@ -1296,6 +1230,7 @@ void dirOUTPUT() {
         NewDest(fnaam.c_str(), mode);
     }
 }
+*/
 
 /* modified */
 void dirDEFINE() {
@@ -1750,6 +1685,7 @@ void dirSTRUCT() {
 }
 
 /* added from SjASM 0.39g */
+/*
 void dirFORG() {
     aint val;
     auto method = std::ios_base::beg;
@@ -1764,6 +1700,7 @@ void dirFORG() {
         SeekDest(val, method);
     }
 }
+*/
 
 /* i didn't modify it */
 /*
@@ -1964,7 +1901,7 @@ void _lua_showerror() {
     ln = atoi(err) + LuaLine;
 
     // print error and other actions
-    err = ErrorLine;
+    err = (char *)ErrorStr.c_str();
     SPRINTF3(err, LINEMAX2, "%s(%lu): error: [LUA]%s", global::currentFilename.c_str(), ln, pos);
 
     if (!strchr(err, '\n')) {
@@ -1972,9 +1909,9 @@ void _lua_showerror() {
     }
 
     if (OFSListing.is_open()) {
-        OFSListing << ErrorLine;
+        OFSListing << ErrorStr;
     }
-    _COUT ErrorLine _END;
+    _COUT ErrorStr _END;
 
     PreviousErrorLine = ln;
 
@@ -2108,7 +2045,7 @@ void dirENDLUA() {
 
 /* modified */
 void dirINCLUDELUA() {
-    const fs::path &fnaam = getAbsPath(GetString(lp));
+    const fs::path &fnaam = GetAbsPath(GetString(lp));
     int error;
 
     if (pass != 1) {
@@ -2132,9 +2069,7 @@ void dirDEVICE() {
     char *id;
 
     if (id = GetID(lp)) {
-        if (!SetDevice(id)) {
-            Error("[DEVICE] Invalid parameter", 0, CATCHALL);
-        }
+        Asm.SetMemModel(id);
     } else {
         Error("[DEVICE] Syntax error", 0, CATCHALL);
     }
@@ -2154,11 +2089,11 @@ void InsertDirectives() {
     DirectivesTable.insertd("dword", dirDWORD);
     DirectivesTable.insertd("d24", dirD24);
     DirectivesTable.insertd("org", dirORG);
-    DirectivesTable.insertd("fpos", dirFORG);
+//    DirectivesTable.insertd("fpos", dirFORG);
     DirectivesTable.insertd("align", dirALIGN);
     DirectivesTable.insertd("module", dirMODULE);
     //DirectivesTable.insertd("z80", dirZ80);
-    DirectivesTable.insertd("size", dirSIZE);
+//    DirectivesTable.insertd("size", dirSIZE);
     //DirectivesTable.insertd("textarea",dirTEXTAREA);
     DirectivesTable.insertd("textarea", dirDISP);
     //DirectivesTable.insertd("msx", dirZ80);
@@ -2186,7 +2121,7 @@ void InsertDirectives() {
     DirectivesTable.insertd("ifn", dirIFN); /* added */
     DirectivesTable.insertd("ifused", dirIFUSED);
     DirectivesTable.insertd("ufnused", dirIFNUSED); /* added */
-    DirectivesTable.insertd("output", dirOUTPUT);
+//    DirectivesTable.insertd("output", dirOUTPUT);
     DirectivesTable.insertd("define", dirDEFINE);
     DirectivesTable.insertd("undefine", dirUNDEFINE);
     DirectivesTable.insertd("defarray", dirDEFARRAY); /* added */
@@ -2242,33 +2177,20 @@ void InsertDirectives() {
 }
 
 bool LuaSetPage(aint n) {
-    if (n < 0) {
-        Error("sj.set_page: negative page number are not allowed", lp);
-        return false;
-    } else if (n > Device->PagesCount - 1) {
-        char buf[LINEMAX];
-        SPRINTF1(buf, LINEMAX, "sj.set_page: page number must be in range 0..%lu", Device->PagesCount - 1);
-        Error(buf, 0, CATCHALL);
+    auto err = Asm.SetPage(n);
+    if(err) {
+        Error("sj.set_page: "s + *err, lp, CATCHALL);
         return false;
     }
-    Slot->Page = Device->GetPage(n);
-    CheckPage();
     return true;
 }
 
 bool LuaSetSlot(aint n) {
-    if (n < 0) {
-        Error("sj.set_slot: negative slot number are not allowed", lp);
-        return false;
-    } else if (n > Device->SlotsCount - 1) {
-        char buf[LINEMAX];
-        SPRINTF1(buf, LINEMAX, "sj.set_slot: slot number must be in range 0..%lu", Device->SlotsCount - 1);
-        Error(buf, 0, CATCHALL);
+    auto err = Asm.SetSlot(n);
+    if(err) {
+        Error("sj.set_slot: "s + *err, lp, CATCHALL);
         return false;
     }
-    Slot = Device->GetSlot(n);
-    Device->CurrentSlot = Slot->Number;
-    CheckPage();
     return true;
 }
 

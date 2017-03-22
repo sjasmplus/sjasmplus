@@ -155,7 +155,7 @@ static int tolua_sjasm_sj_insert_label00(lua_State *tolua_S) {
 #ifndef TOLUA_DISABLE_tolua_get_sj_unsigned_current_address
 
 static int tolua_get_sj_unsigned_current_address(lua_State *tolua_S) {
-    tolua_pushnumber(tolua_S, (lua_Number) CurAddress);
+    tolua_pushnumber(tolua_S, (lua_Number) Asm.GetCPUAddress());
     return 1;
 }
 
@@ -464,7 +464,7 @@ static int tolua_sjasm_sj_get_path00(lua_State *tolua_S) {
         TCHAR *filenamebegin = ((TCHAR *) tolua_tousertype(tolua_S, 2, 0));
         {
             // FIXME: Copied strdup() from GetPath(); need to actually figure out how this works
-            char *tolua_ret = strdup(getAbsPath(fname).c_str());
+            char *tolua_ret = strdup(GetAbsPath(fname).c_str());
             tolua_pushstring(tolua_S, (const char *) tolua_ret);
             filenamebegin = fname;
             tolua_pushusertype(tolua_S, (void *) filenamebegin, "TCHAR");
@@ -496,8 +496,8 @@ static int tolua_sjasm_sj_set_device00(lua_State *tolua_S) {
     {
         char *id = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
-            bool tolua_ret = (bool) SetDevice(id);
-            tolua_pushboolean(tolua_S, (bool) tolua_ret);
+            Asm.SetMemModel(id);
+            tolua_pushboolean(tolua_S, true);
         }
     }
     return 1;
@@ -524,7 +524,7 @@ static int tolua_sjasm_sj_get_device00(lua_State *tolua_S) {
 #endif
     {
         {
-            char *tolua_ret = (char *) GetDeviceName();
+            char *tolua_ret = (char *) Asm.GetMemModelName().c_str();
             tolua_pushstring(tolua_S, (const char *) tolua_ret);
         }
     }

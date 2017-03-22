@@ -26,13 +26,13 @@
 
 */
 
-// io_snapshots.h
+#ifndef SJASMPLUS_IO_SNAPSHOTS_H
+#define SJASMPLUS_IO_SNAPSHOTS_H
 
-#ifndef __IO_SNAPSHOTS
-#define __IO_SNAPSHOTS
+#include <boost/filesystem.hpp>
+
+namespace fs = boost::filesystem;
 
 int SaveSNA_ZX(const fs::path &fname, unsigned short start);
 
-#endif
-
-//eof io_snapshots.h
+#endif //SJASMPLUS_IO_SNAPSHOTS_H

@@ -33,6 +33,8 @@
 #include <sjasmplus_conf.h>
 #include <sstream>
 
+Assembler Asm;
+
 CDevice *Devices = 0;
 CDevice *Device = 0;
 CDeviceSlot *Slot = 0;
@@ -44,7 +46,7 @@ namespace global {
     fs::path currentFilename;
 }
 
-char *lp, line[LINEMAX], temp[LINEMAX], pline[LINEMAX2], ErrorLine[LINEMAX2], *bp;
+char *lp, line[LINEMAX], temp[LINEMAX], pline[LINEMAX2], *bp;
 char sline[LINEMAX2], sline2[LINEMAX2];
 
 std::vector<fs::path> SourceFNames;
@@ -53,15 +55,15 @@ int SourceFNamesCount = 0;
 
 int ConvertEncoding = ENCWIN; /* added */
 
-int pass = 0, IsLabelNotFound = 0, ErrorCount = 0, WarningCount = 0, IncludeLevel = -1;
+int pass = 0, IsLabelNotFound = 0, ErrorCount = 0, IncludeLevel = -1;
 bool moreInputLeft = false;
 int donotlist = 0, listmacro = 0;
-int adrdisp = 0, PseudoORG = 0; /* added for spectrum ram */
+/* int adrdisp = 0, PseudoORG = 0; */ /* added for spectrum ram */
 char *MemoryPointer = NULL; /* added for spectrum ram */
 int StartAddress = -1;
 int macronummer = 0, lijst = 0, reglenwidth = 0, synerr = 1;
 aint CurAddress = 0, CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;
-aint destlen = 0, size = (aint) -1, PreviousErrorLine = (aint) -1, maxlin = 0, comlin = 0;
+aint destlen = 0, size = (aint) -1, maxlin = 0, comlin = 0;
 
 void (*GetCPUInstruction)(void);
 
@@ -110,11 +112,9 @@ void InitPass(int p) {
     macrolabp = NULL;
     listmacro = 0;
     pass = p;
-    CurAddress = 0;
+    Asm.Reset();
     moreInputLeft = true;
     CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
-    PseudoORG = 0;
-    adrdisp = 0; /* added */
     PreviousAddress = 0;
     epadres = 0;
     macronummer = 0;
@@ -238,17 +238,13 @@ int main(int argc, const char *argv[]) {
         InitPass(pass);
 
         if (pass == LASTPASS) {
-            OpenDest();
+//            OpenDest();
         }
         for (i = 0; i < SourceFNamesCount; i++) {
             OpenFile(SourceFNames[i]);
         }
 
-        if (PseudoORG) {
-            CurAddress = adrdisp;
-            PseudoORG = 0;
-        }
-
+        Asm.Reset();
         if (pass != LASTPASS) {
             _COUT "Pass " _CMDL pass _CMDL " complete (" _CMDL ErrorCount _CMDL " errors)" _ENDL;
         } else {
@@ -284,4 +280,43 @@ int main(int argc, const char *argv[]) {
 
     return (ErrorCount != 0);
 }
-//eof sjasm.cpp
+
+
+boost::optional<std::string> Assembler::EmitByte(uint8_t byte) {
+    const std::string errmsg = "CPU address space overflow"s;
+    if (CPUAddrOverflow) {
+        return errmsg;
+    } else if (EmitAddrOverflow) {
+        return errmsg + " (DISP shift = "s + std::to_string(EmitAddress - CPUAddress) + ")"s;
+    }
+    MemManager.WriteByte(GetEmitAddress(), byte);
+    IncAddress();
+    return boost::none;
+}
+
+// Increase address and return true on overflow
+bool Assembler::IncAddress() {
+    CPUAddress++;
+    if (CPUAddress == 0)
+        CPUAddrOverflow = true;
+    if (Disp) {
+        EmitAddress++;
+        if (EmitAddress == 0)
+            EmitAddrOverflow = true;
+    }
+    if (CPUAddress == 0 || (Disp && EmitAddress == 0))
+        return true;
+}
+
+// DISP directive
+void Assembler::DoDisp(uint16_t dispAddress) {
+    EmitAddress = CPUAddress;
+    CPUAddress = dispAddress;
+    Disp = true;
+}
+
+// ENT directive (undoes DISP)
+void Assembler::DoEnt() {
+    CPUAddress = EmitAddress;
+    Disp = false;
+}

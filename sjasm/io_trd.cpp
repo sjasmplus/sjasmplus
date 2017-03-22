@@ -27,12 +27,7 @@
 // io_trd.cpp
 
 #include "sjdefs.h"
-#include "io_trd.h"
-#include <cassert>
-#include <fstream>
 #include <numeric>
-#include <vector>
-#include <cstdint>
 
 namespace {
 
@@ -348,10 +343,12 @@ int TRD_SaveEmpty(const Filename &fname) {
 int TRD_AddFile(const Filename &fname, const HobetaFilename &fhobname, int start, int length,
                 int autostart) { //autostart added by boo_boo 19_0ct_2008
     // for Lua
+/*
     if (!DeviceID) {
         Error("zx.trdimage_addfile: this function available only in real device emulation mode.", 0);
         return 0;
     }
+*/
     if (start > 0xFFFF) {
         Error("zx.trdimage_addfile: start address more than 0FFFFh are not allowed", bp, PASS3);
         return 0;

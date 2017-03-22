@@ -1331,9 +1331,9 @@ namespace Z80 {
             /* added */
             e[0] = e[1] = e[2] = -1;
             if (!GetAddress(lp, nad)) {
-                nad = CurAddress + 2;
+                nad = Asm.GetCPUAddress() + 2;
             }
-            jmp = nad - CurAddress - 2;
+            jmp = nad - Asm.GetCPUAddress() - 2;
             if (jmp < -128 || jmp > 127) {
                 char el[LINEMAX];
                 SPRINTF1(el, LINEMAX, "[DJNZ] Target out of range (%i)", jmp);
@@ -1843,9 +1843,9 @@ namespace Z80 {
 				_COUT "JUST BREAKPOINT" _ENDL;
 			}*/
             if (!(GetAddress(lp, jrad))) {
-                jrad = CurAddress + 2;
+                jrad = Asm.GetCPUAddress() + 2;
             }
-            jmp = jrad - CurAddress - 2;
+            jmp = jrad - Asm.GetCPUAddress() - 2;
             if (jmp < -128 || jmp > 127) {
                 char el[LINEMAX];
                 /*if (pass == LASTPASS) {
@@ -3193,7 +3193,7 @@ namespace Z80 {
                                 case Z80_BC:
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if (e[2] == 127) {
-                                        Error("Offset out of range", 0, LASTPASS);
+                                        Error("(IX)Z80_BC: Offset out of range", 0, LASTPASS);
                                     }
                                     e[0] = e[3] = 0xdd;
                                     e[1] = 0x71;
@@ -3203,7 +3203,7 @@ namespace Z80 {
                                 case Z80_DE:
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if (e[2] == 127) {
-                                        Error("Offset out of range", 0, LASTPASS);
+                                        Error("(IX)Z80_DE: Offset out of range", 0, LASTPASS);
                                     }
                                     e[0] = e[3] = 0xdd;
                                     e[1] = 0x73;
@@ -3213,7 +3213,7 @@ namespace Z80 {
                                 case Z80_HL:
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if (e[2] == 127) {
-                                        Error("Offset out of range", 0, LASTPASS);
+                                        Error("(IX)Z80_HL: Offset out of range", 0, LASTPASS);
                                     }
                                     e[0] = e[3] = 0xdd;
                                     e[1] = 0x75;
@@ -3261,7 +3261,7 @@ namespace Z80 {
                                 case Z80_BC:
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if (e[2] == 127) {
-                                        Error("Offset out of range", 0, LASTPASS);
+                                        Error("(IY)Z80_BC: Offset out of range", 0, LASTPASS);
                                     }
                                     e[0] = e[3] = 0xfd;
                                     e[1] = 0x71;
@@ -3271,7 +3271,7 @@ namespace Z80 {
                                 case Z80_DE:
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if (e[2] == 127) {
-                                        Error("Offset out of range", 0, LASTPASS);
+                                        Error("(IY)Z80_DE: Offset out of range", 0, LASTPASS);
                                     }
                                     e[0] = e[3] = 0xfd;
                                     e[1] = 0x73;
@@ -3281,7 +3281,7 @@ namespace Z80 {
                                 case Z80_HL:
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if (e[2] == 127) {
-                                        Error("Offset out of range", 0, LASTPASS);
+                                        Error("(IY)Z80_HL: Offset out of range", 0, LASTPASS);
                                     }
                                     e[0] = e[3] = 0xfd;
                                     e[1] = 0x75;

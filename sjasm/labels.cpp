@@ -29,9 +29,6 @@
 // labels.cpp
 
 #include "sjdefs.h"
-#include "labels.h"
-
-#include <fstream>
 
 CLabelTableEntry::CLabelTableEntry() {
     name = NULL;

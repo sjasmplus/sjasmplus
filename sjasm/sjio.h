@@ -26,18 +26,15 @@
 
 */
 
-// sjio.h
+#ifndef SJASMPLUS_SJIO_H
+#define SJASMPLUS_SJIO_H
 
 #include <boost/filesystem.hpp>
+#include "sjdefs.h"
+#include "errors.h"
+
 
 namespace fs = boost::filesystem;
-
-enum EStatus {
-    ALL, PASS1, PASS2, PASS3, FATAL, CATCHALL, SUPPRESS
-};
-enum EReturn {
-    END, ELSE, ENDIF, ENDTEXTAREA, ENDM
-};
 
 #define PAGESIZE 0x4000 /* added */
 
@@ -47,20 +44,17 @@ extern aint PreviousAddress, epadres;
 #define OUTPUT_REWIND 1
 #define OUTPUT_APPEND 2
 
-void OpenDest(int); /* added from new SjASM 0.39g */
-void NewDest(const fs::path &newfilename, int mode); /* added from new SjASM 0.39g */
-void Error(const char *, const char *, int = PASS2);
-
-void Warning(const char *, const char *, int = PASS2);
+// void OpenDest(int); /* added from new SjASM 0.39g */
+// void NewDest(const fs::path &newfilename, int mode); /* added from new SjASM 0.39g */
 
 void ListFile();
 
 void ListFileSkip(char *);
 
-void CheckPage(); /* added */
-void EmitByte(int byte);
+// void CheckPage(); /* added */
+void EmitByte(uint8_t byte);
 
-void EmitWord(int word);
+void EmitWord(uint16_t word);
 
 void EmitBytes(int *bytes);
 
@@ -77,7 +71,7 @@ void Close();
 void OpenList();
 
 void ReadBufLine(bool Parse = true, bool SplitByColon = true); /* added */
-void OpenDest();
+// void OpenDest();
 
 void PrintHEX32(char *&p, aint h);
 
@@ -85,7 +79,7 @@ void PrintHEX16(char *&p, aint h); /* added */
 void PrintHEXAlt(char *&p, aint h); /* added */
 
 
-fs::path getAbsPath(const fs::path &p);
+fs::path GetAbsPath(const fs::path &p);
 
 fs::path getAbsPath(const fs::path &p, fs::path &f);
 
@@ -96,8 +90,8 @@ int SaveRAM(fs::ofstream &ofs, int, int);
 
 void *SaveRAM(void *dst, int start, int size);
 
-unsigned char MemGetByte(unsigned int address); /* added */
-unsigned int MemGetWord(unsigned int address); /* added */
+uint8_t MemGetByte(uint16_t address); /* added */
+uint16_t MemGetWord(uint16_t address); /* added */
 int SaveBinary(const fs::path &fname, int start, int length);
 int ReadLine(bool SplitByColon = true);
 
@@ -114,5 +108,4 @@ int ReadFileToCStringsList(CStringsList *&f, const char *end);
 
 void WriteExp(char *n, aint v);
 
-//eof sjio.h
-
+#endif //SJASMPLUS_SJIO_H

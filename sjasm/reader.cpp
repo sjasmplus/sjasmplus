@@ -29,7 +29,6 @@
 // reader.cpp
 
 #include "sjdefs.h"
-#include <algorithm>
 
 /* modified */
 int cmphstr(char *&p1, const char *p2) {
@@ -269,7 +268,7 @@ int check8(aint val, bool error) {
 /* changes applied from SjASM 0.39g */
 int check8o(long val) {
     if (val < -128 || val > 127) {
-        Error("Offset out of range", 0);
+        Error("check8o(): Offset out of range: "s + std::to_string(val), ""s);
         return 0;
     }
     return 1;

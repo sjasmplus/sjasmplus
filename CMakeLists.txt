@@ -74,10 +74,10 @@ set(SOURCE_FILES
 #        resources/SaveTAP_ZX_Spectrum_48K.bin.h
         sjasm/defines.cpp
         sjasm/defines.h
-        sjasm/devices.cpp
-        sjasm/devices.h
         sjasm/directives.cpp
         sjasm/directives.h
+        sjasm/errors.cpp
+        sjasm/errors.h
         sjasm/filename.h
         sjasm/io_snapshots.cpp
         sjasm/io_snapshots.h
@@ -91,6 +91,8 @@ set(SOURCE_FILES
         sjasm/lua_lpack.h
         sjasm/lua_sjasm.cpp
         sjasm/lua_sjasm.h
+        sjasm/memory.cpp
+        sjasm/memory.h
         sjasm/modules.cpp
         sjasm/modules.h
         sjasm/options.cpp

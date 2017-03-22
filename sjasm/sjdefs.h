@@ -24,10 +24,8 @@
 
 */
 
-//sjdefs.h
-
-#ifndef __SJDEFS
-#define __SJDEFS
+#ifndef SJASMPLUS_SJDEFS_H
+#define SJASMPLUS_SJDEFS_H
 
 #ifndef MAX_PATH  // defined on Windows
 
@@ -40,30 +38,12 @@
 #endif
 #endif
 
-// not used
-#define MAXPASSES 3
-
-#define LASTPASS 3
-
-// output
-#define _COUT cout <<
-#define _CMDL  <<
-#define _ENDL << endl
-#define _END ;
-
 // standard libraries
 #ifdef WIN32
 #include <windows.h>
 #endif
 
 #include <stack>
-#include <iostream>
-
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::flush;
-using std::stack;
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,23 +61,13 @@ extern "C" {
 // global defines
 #define LINEMAX 2048
 #define LINEMAX2 LINEMAX*2
-#ifdef DOS
-#define LABMAX 32
-#define LABTABSIZE 16384
-#define FUNTABSIZE 2048
-#else
-#define LABMAX 64
-#define LABTABSIZE 32768
-#define FUNTABSIZE 4096
-#endif
-#define aint unsigned long
 
 // include all headers
 extern "C" {
 #include "lua_lpack.h"
 }
 
-#include "devices.h"
+//#include "devices.h"
 #include "support.h"
 #include "tables.h"
 #include "reader.h"
@@ -113,5 +83,4 @@ extern "C" {
 #include "modules.h"
 #include "sjasm.h"
 
-#endif
-//eof sjdefs.h
+#endif //SJASMPLUS_SJDEFS_H

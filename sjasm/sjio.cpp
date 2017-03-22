@@ -28,9 +28,15 @@
 
 // sjio.cpp
 
+#include <string>
+#include <iostream>
+#include <iterator>
+#include <algorithm> // for std::copy()
+
+using namespace std::string_literals;
+
 #include "sjdefs.h"
 
-#include <fcntl.h>
 //#include <sys/types.h>
 //#include <sys/stat.h>
 
@@ -42,137 +48,19 @@ bool rldquotes = false, rlsquotes = false, rlspace = false, rlcomment = false, r
 char *rlpbuf, *rlppos;
 
 int EB[1024 * 64], nEB = 0;
-char WriteBuffer[DESTBUFLEN];
+//char WriteBuffer[DESTBUFLEN];
 
 fs::ifstream realIFS;
 fs::ifstream *pIFS = &realIFS;
-fs::ofstream OFS, OFSRaw, OFSListing, OFSExport;
+fs::ofstream /* OFS, OFSRaw, */ OFSListing, OFSExport;
 
-aint PreviousAddress, epadres, IsSkipErrors = 0;
+aint PreviousAddress, epadres;
 aint WBLength = 0;
 char hd[] = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 };
 
-void Error(const char *fout, const char *bd, int type) {
-    char *ep = ErrorLine;
-    char *count;
-    int ln;
-    lua_Debug ar;
-
-    if (IsSkipErrors && PreviousErrorLine == CurrentLocalLine && type != FATAL) {
-        return;
-    }
-    if (type == CATCHALL && PreviousErrorLine == CurrentLocalLine) {
-        return;
-    }
-    if (type == PASS1 && pass != 1) {
-        return;
-    }
-    if ((type == CATCHALL || type == PASS3) && pass < 3) {
-        return;
-    }
-    if ((type == SUPPRESS || type == PASS2) && pass < 2) {
-        return;
-    }
-    IsSkipErrors = (type == SUPPRESS);
-    PreviousErrorLine = CurrentLocalLine;
-    ++ErrorCount;
-
-    count = new char[25];
-    SPRINTF1(count, 25, "%lu", ErrorCount);
-    DefineTable.Replace("_ERRORS", count);
-
-    delete[] count;
-
-    /*SPRINTF3(ep, LINEMAX2, "%s line %lu: %s", filename, CurrentLocalLine, fout);
-    if (bd) {
-        STRCAT(ep, LINEMAX2, ": "); STRCAT(ep, LINEMAX2, bd);
-    }
-    if (!strchr(ep, '\n')) {
-        STRCAT(ep, LINEMAX2, "\n");
-    }*/
-
-    if (pass > LASTPASS) {
-        SPRINTF1(ep, LINEMAX2, "error: %s", fout);
-    } else {
-        if (LuaLine >= 0) {
-            lua_getstack(LUA, 1, &ar);
-            lua_getinfo(LUA, "l", &ar);
-            ln = LuaLine + ar.currentline;
-        } else {
-            ln = CurrentLocalLine;
-        }
-        SPRINTF3(ep, LINEMAX2, "%s(%lu): error: %s", global::currentFilename.c_str(), ln, fout);
-    }
-
-    if (bd) {
-        STRCAT(ep, LINEMAX2, ": ");
-        STRCAT(ep, LINEMAX2, bd);
-    }
-    if (!strchr(ep, '\n')) {
-        STRCAT(ep, LINEMAX2, "\n");
-    }
-
-    if (OFSListing.is_open()) {
-        OFSListing << ErrorLine;
-    }
-
-    _COUT ErrorLine _END;
-
-    /*if (type==FATAL) exit(1);*/
-    if (type == FATAL) {
-        ExitASM(1);
-    }
-}
-
-void Warning(const char *fout, const char *bd, int type) {
-    char *ep = ErrorLine;
-    char *count;
-    int ln;
-    lua_Debug ar;
-
-    if (type == PASS1 && pass != 1) {
-        return;
-    }
-    if (type == PASS2 && pass < 2) {
-        return;
-    }
-
-    ++WarningCount;
-    count = new char[25];
-    SPRINTF1(count, 25, "%lu", WarningCount);
-    DefineTable.Replace("_WARNINGS", count);
-
-    delete[] count;
-
-    if (pass > LASTPASS) {
-        SPRINTF1(ep, LINEMAX2, "warning: %s", fout);
-    } else {
-        if (LuaLine >= 0) {
-            lua_getstack(LUA, 1, &ar);
-            lua_getinfo(LUA, "l", &ar);
-            ln = LuaLine + ar.currentline;
-        } else {
-            ln = CurrentLocalLine;
-        }
-        SPRINTF3(ep, LINEMAX2, "%s(%lu): warning: %s", global::currentFilename.c_str(), ln, fout);
-    }
-
-    if (bd) {
-        STRCAT(ep, LINEMAX2, ": ");
-        STRCAT(ep, LINEMAX2, bd);
-    }
-    if (!strchr(ep, '\n')) {
-        STRCAT(ep, LINEMAX2, "\n");
-    }
-
-    if (OFSListing.is_open()) {
-        OFSListing << ErrorLine;
-    }
-    _COUT ErrorLine _END;
-}
-
+/*
 void WriteDest() {
     if (!WBLength) {
         return;
@@ -185,13 +73,14 @@ void WriteDest() {
     }
     if (OFSRaw.is_open()) {
         try {
-            OFS.write(WriteBuffer, WBLength);
+            OFSRaw.write(WriteBuffer, WBLength);
         } catch (std::ofstream::failure &e) {
             Error("Write error (disk full?)", 0, FATAL);
         }
     }
     WBLength = 0;
 }
+*/
 
 void PrintHEX8(char *&p, aint h) {
     aint hh = h & 0xff;
@@ -390,7 +279,7 @@ void ListFile() {
         OFSListing << pline;
         listbytes3(pad);
     }
-    epadres = CurAddress;
+    epadres = Asm.GetCPUAddress();
     PreviousAddress = (aint) -1;
     nEB = 0;
 }
@@ -427,12 +316,13 @@ void ListFileSkip(char *line) {
     }
     STRCAT(pp, LINEMAX2, line);
     OFSListing << pline;
-    epadres = CurAddress;
+    epadres = Asm.GetCPUAddress();
     PreviousAddress = (aint) -1;
     nEB = 0;
 }
 
 /* added */
+/*
 void CheckPage() {
     if (!DeviceID) {
         return;
@@ -453,16 +343,23 @@ void CheckPage() {
     Warning("Error in CheckPage(). Please, contact with the author of this program.", 0, FATAL);
     ExitASM(1);
 }
+*/
 
 /* modified */
-void Emit(int byte) {
+void Emit(uint8_t byte) {
     EB[nEB++] = byte;
     if (pass == LASTPASS) {
+        auto err = Asm.EmitByte(byte);
+        if (err) {
+            Error(*err, ""s, FATAL);
+            return;
+        }
+
+/*
         WriteBuffer[WBLength++] = (char) byte;
         if (WBLength == DESTBUFLEN) {
             WriteDest();
         }
-        /* (begin add) */
         if (DeviceID) {
             if (PseudoORG) {
                 if (CurAddress >= 0x10000) {
@@ -489,9 +386,11 @@ void Emit(int byte) {
                 //} else {
                 //	MemoryPointer++;
                 //}
-                /*	if (CurAddress > 0xFFFE || (CurAddress > 0x7FFE && CurAddress < 0x8001) || (CurAddress > 0xBFFE && CurAddress < 0xC001)) {
+                */
+/*	if (CurAddress > 0xFFFE || (CurAddress > 0x7FFE && CurAddress < 0x8001) || (CurAddress > 0xBFFE && CurAddress < 0xC001)) {
                         _COUT CurAddress _ENDL;
-                    }*/
+                    }*//*
+
                 if ((MemoryPointer - Page->RAM) >= Page->Size) {
                     ++CurAddress;
                     CheckPage();
@@ -499,11 +398,14 @@ void Emit(int byte) {
                 }
             }
         }
-        /* (end add) */
+*/
+    } else {
+        Asm.IncAddress();
     }
+/*
     if (PseudoORG) {
         ++adrdisp;
-    } /* added */
+    }
 
     if (pass != LASTPASS && DeviceID && CurAddress >= 0x10000) {
         char buf[1024];
@@ -512,22 +414,22 @@ void Emit(int byte) {
     }
 
     ++CurAddress;
-
+*/
 }
 
-void EmitByte(int byte) {
-    PreviousAddress = CurAddress;
+void EmitByte(uint8_t byte) {
+    PreviousAddress = Asm.GetCPUAddress();
     Emit(byte);
 }
 
-void EmitWord(int word) {
-    PreviousAddress = CurAddress;
+void EmitWord(uint16_t word) {
+    PreviousAddress = Asm.GetCPUAddress();
     Emit(word % 256);
     Emit(word / 256);
 }
 
 void EmitBytes(int *bytes) {
-    PreviousAddress = CurAddress;
+    PreviousAddress = Asm.GetCPUAddress();
     if (*bytes == -1) {
         Error("Illegal instruction", line, CATCHALL);
         *lp = 0;
@@ -538,7 +440,7 @@ void EmitBytes(int *bytes) {
 }
 
 void EmitWords(int *words) {
-    PreviousAddress = CurAddress;
+    PreviousAddress = Asm.GetCPUAddress();
     while (*words != -1) {
         Emit((*words) % 256);
         Emit((*words++) / 256);
@@ -547,17 +449,27 @@ void EmitWords(int *words) {
 
 /* modified */
 void EmitBlock(aint byte, aint len, bool nulled) {
-    PreviousAddress = CurAddress;
+    PreviousAddress = Asm.GetCPUAddress();
     if (len) {
         EB[nEB++] = byte;
     }
     while (len--) {
         if (pass == LASTPASS) {
+            if (!nulled) { // Should be called "filled"
+                auto err = Asm.EmitByte(byte);
+                if (err) {
+                    Error(*err, ""s, FATAL);
+                    return;
+                }
+            } else {
+                Asm.IncAddress();
+            }
+
+/*
             WriteBuffer[WBLength++] = (char) byte;
             if (WBLength == DESTBUFLEN) {
                 WriteDest();
             }
-            /* (begin add) */
             if (DeviceID) {
                 if (PseudoORG) {
                     if (CurAddress >= 0x10000) {
@@ -594,26 +506,28 @@ void EmitBlock(aint byte, aint len, bool nulled) {
                     }
                 }
             }
-            /* (end add) */
+*/
         }
+/*
         if (PseudoORG) {
             ++adrdisp;
-        } /* added */
+        }
         if (pass != LASTPASS && DeviceID && CurAddress >= 0x10000) {
             char buf[1024];
             SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
             Error(buf, 0, FATAL);
         }
         ++CurAddress;
+*/
     }
 }
 
-fs::path getAbsPath(const fs::path &p) {
+fs::path GetAbsPath(const fs::path &p) {
     return fs::absolute(p, global::CurrentDirectory);
 }
 
 /*
-fs::path getAbsPath(const fs::path &p, fs::path &f) {
+fs::path GetAbsPath(const fs::path &p, fs::path &f) {
     return fs::absolute(p / f, global::CurrentDirectory);
 }
 */
@@ -648,38 +562,65 @@ char* GetPath(const char* fname, TCHAR** filenamebegin) {
 */
 
 void BinIncFile(const fs::path &fname, int offset, int len) {
-    char *bp;
     long res;
     int leng;
     fs::path fullFilePath;
-    fullFilePath = getAbsPath(fname);
+    fullFilePath = GetAbsPath(fname);
     fs::ifstream ifs;
+
+    uint16_t destAddr = Asm.GetEmitAddress();
+    if ((int) destAddr + len > 0x10000) {
+        Error(std::to_string(len) + " bytes of file \""s + fname.string() +
+              "\" won't fit at current address="s +
+              std::to_string(destAddr), ""s, FATAL);
+        return;
+    }
+
     try {
         ifs.open(fullFilePath, std::ios_base::binary);
     } catch (std::ifstream::failure &e) {
-        Error("Error opening file", fname.c_str(), FATAL);
+        Error("Error opening file", fname.string(), FATAL);
+    }
+    if (len < 0) {
+        Error("BinIncFile(): len < 0"s, fname.string(), FATAL);
+        return;
+    }
+    if (len == 0) {
+        // Load whole file
+        ifs.seekg(0, ifs.end);
+        len = ifs.tellg();
     }
     if (offset > 0) {
-        bp = new char[offset + 1];
-        if (bp == NULL) {
-            Error("No enough memory!", 0, FATAL);
-        }
-        try {
-            ifs.read(bp, offset);
-        } catch (std::ifstream::failure &e) {
-            Error("Read error", fname.c_str(), FATAL);
-        }
+        ifs.seekg(offset, ifs.beg);
         if (ifs.tellg() != offset) {
-            Error("Offset beyond filelength", fname.c_str(), FATAL);
+            Error("Offset ("s + std::to_string(offset) + ") is beyond file length"s,
+                  fname.string(), FATAL);
+            return;
         }
     }
     if (len > 0) {
-        bp = new char[len + 1];
-        if (bp == NULL) {
+        char byte;
+        auto l = len;
+        while(l > 0) {
+            if (!ifs.get(byte)) {
+                Error("Could not read "s + std::to_string(len) + " bytes. File too small?", fname.string(), FATAL);
+                return;
+            }
+            auto err = Asm.EmitByte(byte);
+            if (err) {
+                Error(*err, fname.string(), FATAL);
+                return;
+            }
+            l--;
+        }
+
+/*
+        _bp = new char[len + 1];
+        if (_bp == NULL) {
             Error("No enough memory!", 0, FATAL);
         }
         try {
-            ifs.read(bp, len);
+            ifs.read(_bp, len);
         } catch (std::ifstream::failure &e) {
             Error("Read error", fname.c_str(), FATAL);
         }
@@ -688,7 +629,7 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
         }
         while (len--) {
             if (pass == LASTPASS) {
-                WriteBuffer[WBLength++] = *bp;
+                WriteBuffer[WBLength++] = *_bp;
                 if (WBLength == DESTBUFLEN) {
                     WriteDest();
                 }
@@ -699,7 +640,7 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
                             SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
                             Error(buf, 0, FATAL);
                         }
-                        *(MemoryPointer++) = *bp;
+                        *(MemoryPointer++) = *_bp;
                         if ((MemoryPointer - Page->RAM) >= Page->Size) {
                             ++adrdisp;
                             ++CurAddress;
@@ -712,7 +653,7 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
                             SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
                             Error(buf, 0, FATAL);
                         }
-                        *(MemoryPointer++) = *bp;
+                        *(MemoryPointer++) = *_bp;
                         if ((MemoryPointer - Page->RAM) >= Page->Size) {
                             ++CurAddress;
                             CheckPage();
@@ -720,7 +661,7 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
                         }
                     }
                 }
-                *bp++;
+                *_bp++;
             }
             if (PseudoORG) {
                 ++adrdisp;
@@ -732,7 +673,11 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
             }
             ++CurAddress;
         }
-    } else {
+*/
+    }
+
+/*
+    else {
         if (pass == LASTPASS) {
             WriteDest();
         }
@@ -793,6 +738,7 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
             }
         } while (res == DESTBUFLEN);
     }
+*/
     ifs.close();
 }
 
@@ -805,7 +751,7 @@ void OpenFile(const fs::path &nfilename) {
         Error("Over 20 files nested", 0, FATAL);
     }
 
-    fullpath = getAbsPath(nfilename);
+    fullpath = GetAbsPath(nfilename);
 
     try {
         pIFS->open(fullpath, std::ios::binary);
@@ -845,7 +791,7 @@ void IncludeFile(const fs::path &nfilename) {
     fs::ifstream *saveIFS = pIFS;
     fs::ifstream incIFS;
     pIFS = &incIFS;
-
+//std::cout << "*** INCLUDE: " << nfilename << std::endl;
     char *pbuf = rlpbuf;
     char *buf = STRDUP(rlbuf);
     if (buf == NULL) {
@@ -1069,6 +1015,7 @@ void OpenList() {
     }
 }
 
+/*
 void CloseDest() {
     // simple check
     if (!OFS.is_open()) {
@@ -1111,15 +1058,13 @@ void SeekDest(long offset, std::ios_base::seekdir method) {
     }
 }
 
-/*
 void NewDest(const char* newfilename) {
 	NewDest(newfilename, OUTPUT_TRUNCATE);
 }
-*/
 
 void NewDest(const fs::path &newfilename, int mode) {
     // close file
-    CloseDest();
+    //CloseDest();
 
     // and open new file
     Options::DestinationFName = newfilename;
@@ -1160,8 +1105,10 @@ void OpenDest(int mode) {
         }
     }
 }
+*/
 
 void Close() {
+/*
     CloseDest();
     if (OFSExport.is_open()) {
         OFSExport.close();
@@ -1169,6 +1116,7 @@ void Close() {
     if (OFSRaw.is_open()) {
         OFSRaw.close();
     }
+*/
     if (OFSListing.is_open()) {
         OFSListing.close();
     }
@@ -1179,19 +1127,35 @@ void Close() {
 
 int SaveRAM(fs::ofstream &ofs, int start, int length) {
     //unsigned int addadr = 0,save = 0;
+/*
     aint save = 0;
 
     if (!DeviceID) {
         return 0;
     }
+*/
 
-    if (length + start > 0xFFFF) {
-        length = -1;
+    if (start + length > 0x10000) {
+        Error("SaveRAM(): start("s + std::to_string(start) + ") + length("s +
+                      std::to_string(length)+ ") > 0x10000"s, ""s, FATAL);
+        return 0;
     }
     if (length <= 0) {
         length = 0x10000 - start;
     }
 
+    char *data = new char[length];
+    Asm.GetBytes((uint8_t *)data, start, length);
+    try {
+        ofs.write(data, length);
+    } catch (std::ofstream::failure &e) {
+        delete [] data;
+        return 0;
+    }
+    delete [] data;
+
+
+/*
     CDeviceSlot *S;
     for (int i = 0; i < Device->SlotsCount; i++) {
         S = Device->GetSlot(i);
@@ -1214,23 +1178,32 @@ int SaveRAM(fs::ofstream &ofs, int start, int length) {
             }
         }
     }
+*/
 
     return 1;
 }
 
 void *SaveRAM(void *dst, int start, int length) {
+/*
     if (!DeviceID) {
         return 0;
     }
+*/
 
-    if (length + start > 0xFFFF) {
-        length = -1;
+    unsigned char *target = static_cast<unsigned char *>(dst);
+    if (start + length > 0x10000) {
+        Error("*SaveRAM(): start("s + std::to_string(start) + ") + length("s +
+              std::to_string(length)+ ") > 0x10000"s, ""s, FATAL);
+        return target;
     }
     if (length <= 0) {
         length = 0x10000 - start;
     }
 
-    unsigned char *target = static_cast<unsigned char *>(dst);
+    Asm.GetBytes(target, start, length);
+    target += length;
+
+/*
     aint save = 0;
 
     CDeviceSlot *S;
@@ -1251,23 +1224,27 @@ void *SaveRAM(void *dst, int start, int length) {
             }
         }
     }
+*/
 
     return target;
 }
 
-unsigned int MemGetWord(unsigned int address) {
+uint16_t MemGetWord(uint16_t address) {
     if (pass != LASTPASS) {
         return 0;
     }
 
-    return MemGetByte(address) + (MemGetByte(address + 1) * 256);
+    return (uint16_t)MemGetByte(address) + ((uint16_t)MemGetByte(address + 1) * (uint16_t)256);
 }
 
-unsigned char MemGetByte(unsigned int address) {
-    if (!DeviceID || pass != LASTPASS) {
+uint8_t MemGetByte(uint16_t address) {
+    if (pass != LASTPASS) {
         return 0;
     }
 
+    return Asm.GetByte(address);
+
+/*
     CDeviceSlot *S;
     for (int i = 0; i < Device->SlotsCount; i++) {
         S = Device->GetSlot(i);
@@ -1279,6 +1256,7 @@ unsigned char MemGetByte(unsigned int address) {
     Warning("Error with MemGetByte!", 0);
     ExitASM(1);
     return 0;
+*/
 }
 
 
@@ -1482,14 +1460,14 @@ void WriteExp(char *n, aint v) {
             Error("Error opening file", Options::ExportFName.c_str(), FATAL);
         }
     }
-    STRCPY(ErrorLine, LINEMAX2, n);
-    STRCAT(ErrorLine, LINEMAX2, ": EQU ");
-    STRCAT(ErrorLine, LINEMAX2, "0x");
+    ErrorStr = n;
+    ErrorStr += ": EQU "s;
+    ErrorStr += "0x"s;
     PrintHEX32(l, v);
     *l = 0;
-    STRCAT(ErrorLine, LINEMAX2, lnrs);
-    STRCAT(ErrorLine, LINEMAX2, "\n");
-    OFSExport << ErrorLine;
+    ErrorStr += lnrs;
+    ErrorStr += "\n"s;
+    OFSExport << ErrorStr;
 }
 
 //eof sjio.cpp

@@ -29,6 +29,13 @@
 #ifndef __DEFINES
 #define __DEFINES
 
+#include <cstdint>
+
+#define LASTPASS 3
+
+// Documentation says "all expressions are done in 32 bit"
+typedef int32_t aint;
+
 class CStringsList;
 
 class CDefineTableEntry;
