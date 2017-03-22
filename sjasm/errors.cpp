@@ -137,3 +137,7 @@ void Warning(const char *fout, const char *bd, int type) {
     }
     _COUT ErrorStr _END;
 }
+
+void Warning(const std::string &fout, const std::string &bd, int type) {
+    Warning(fout.c_str(), bd.c_str(), type);
+}

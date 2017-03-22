@@ -89,10 +89,12 @@ public:
 
     virtual uint8_t *GetPtrToPage(int page) override {
         Error("GetPtrToPage(): "s + *(SetPage(0, 0)), ""s, FATAL);
+        return nullptr;
     }
 
     virtual uint8_t *GetPtrToPageInSlot(int slot) override {
         Error("GetPtrToPageInSlot(): "s + *(SetPage(0, 0)), ""s, FATAL);
+        return nullptr;
     }
 
     virtual void WriteByte(uint16_t addr, uint8_t byte) override {

@@ -756,7 +756,7 @@ void OpenFile(const fs::path &nfilename) {
     try {
         pIFS->open(fullpath, std::ios::binary);
     } catch (std::ifstream::failure &e) {
-        Error("Error opening file", nfilename.c_str(), FATAL);
+        Error("Error opening file"s, nfilename.string(), FATAL);
     }
 
     aint oCurrentLocalLine = CurrentLocalLine;
@@ -1010,7 +1010,7 @@ void OpenList() {
         try {
             OFSListing.open(Options::ListingFName);
         } catch (std::ofstream::failure &e) {
-            Error("Error opening file", Options::ListingFName.c_str(), FATAL);
+            Error("Error opening file"s, Options::ListingFName.string(), FATAL);
         }
     }
 }
@@ -1279,7 +1279,7 @@ int SaveBinary(const fs::path &fname, int start, int length) {
             return 0;
         }
     } catch (std::ofstream::failure &e) {
-        Error("Error opening file", fname.c_str(), FATAL);
+        Error("Error opening file"s, fname.string(), FATAL);
     }
 
     return 1;
@@ -1457,7 +1457,7 @@ void WriteExp(char *n, aint v) {
         try {
             OFSExport.open(Options::ExportFName);
         } catch (std::ofstream::failure &e) {
-            Error("Error opening file", Options::ExportFName.c_str(), FATAL);
+            Error("Error opening file"s, Options::ExportFName.string(), FATAL);
         }
     }
     ErrorStr = n;

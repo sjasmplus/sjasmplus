@@ -35,7 +35,7 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
     try {
         ofs.open(fname, std::ios_base::binary);
     } catch (std::ofstream::failure &e) {
-        Error("Error opening file", fname.c_str(), FATAL);
+        Error("Error opening file"s, fname.string(), FATAL);
     }
 
     memset(snbuf, 0, sizeof(snbuf));
@@ -93,7 +93,7 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
     try {
         ofs.write((const char *) snbuf, sizeof(snbuf) - 4);
     } catch (std::ofstream::failure &e) {
-        Error("Write error (disk full?)", fname.c_str(), CATCHALL);
+        Error("Write error (disk full?)"s, fname.string(), CATCHALL);
         ofs.close();
         return 0;
     }
@@ -137,7 +137,7 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
         }
 
     } catch (std::ofstream::failure &e) {
-        Error("Write error (disk full?)", fname.c_str(), CATCHALL);
+        Error("Write error (disk full?)"s, fname.string(), CATCHALL);
         ofs.close();
         return 0;
     }
@@ -158,7 +158,7 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
 
     if (Asm.IsPagedMemory() &&
             Asm.GetMemModelName() != "ZXSPECTRUM128"s) {
-        Warning("Only 128kb will be written to snapshot", fname.c_str());
+        Warning("Only 128kb will be written to snapshot"s, fname.string());
     }
 
     ofs.close();

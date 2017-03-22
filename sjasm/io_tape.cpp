@@ -63,7 +63,7 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
     try {
         ofs.open(fname, std::ios_base::binary);
     } catch (std::ofstream::failure &e) {
-        Error("Error opening file", fname.c_str(), FATAL);
+        Error("Error opening file"s, fname.string(), FATAL);
     }
 
     aint datastart = 0x5E00;

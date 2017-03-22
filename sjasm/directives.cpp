@@ -470,9 +470,7 @@ void dirEND() {
     aint val;
     if (ParseExpression(lp, val)) {
         if (val > 65535 || val < 0) {
-            char buf[LINEMAX];
-            SPRINTF1(buf, LINEMAX, "[END] Invalid address: %s", val);
-            Error(buf, 0, CATCHALL);
+            Error("[END] Invalid address: "s + std::to_string(val), ""s, CATCHALL);
             return;
         }
         StartAddress = val;
@@ -574,11 +572,11 @@ void dirINCHOB() {
             IFSH.seekg(0x0b, std::ios::beg);
             IFSH.read((char *)len, 2);
         } catch (std::ifstream::failure& e) {
-            Error("[INCHOB] Hobeta file has wrong format", fnaam.c_str(), FATAL);
+            Error("[INCHOB] Hobeta file has wrong format"s, fnaam.string(), FATAL);
         }
         IFSH.close();
     } catch (std::ifstream::failure& e) {
-        Error("[INCHOB] Error opening file", fnaam.c_str(), FATAL);
+        Error("[INCHOB] Error opening file"s, fnaam.string(), FATAL);
     }
     if (length == -1) {
         length = len[0] + (len[1] << 8);
@@ -637,7 +635,7 @@ void dirINCTRD() {
     try {
         ifs.open(fnaamh2, std::ios_base::binary);
     } catch (std::ifstream::failure &e) {
-        Error("[INCTRD] Error opening file", fnaam.c_str(), FATAL);
+        Error("[INCTRD] Error opening file"s, fnaam.string(), FATAL);
     }
     // Find file
     ifs.seekg(0, std::ios_base::beg);
@@ -645,7 +643,7 @@ void dirINCTRD() {
         try {
             ifs.read(hdr, 16);
         } catch (std::ifstream::failure &e) {
-            Error("[INCTRD] Read error", fnaam.c_str(), CATCHALL);
+            Error("[INCTRD] Read error"s, fnaam.string(), CATCHALL);
             return;
         }
         if (0 == std::memcmp(hdr, fnaamh.GetTrDosEntry(), fnaamh.GetTrdDosEntrySize())) {
@@ -1395,7 +1393,7 @@ void dirEXPORT() {
     if (Options::ExportFName.empty()) {
         Options::ExportFName = SourceFNames[CurrentSourceFName];
         Options::ExportFName.replace_extension(".exp");
-        Warning("[EXPORT] Filename for exportfile was not indicated. Output will be in", Options::ExportFName.c_str());
+        Warning("[EXPORT] Filename for exportfile was not indicated. Output will be in"s, Options::ExportFName.string());
     }
     if (!(n = p = GetID(lp))) {
         Error("[EXPORT] Syntax error", lp, CATCHALL);
@@ -2053,12 +2051,12 @@ void dirINCLUDELUA() {
     }
 
     if (!fs::exists(fnaam)) {
-        Error("[INCLUDELUA] File doesn't exist", fnaam.c_str(), PASS1);
+        Error("[INCLUDELUA] File doesn't exist"s, fnaam.string(), PASS1);
         return;
     }
 
     LuaLine = CurrentLocalLine;
-    error = luaL_loadfile(LUA, fnaam.c_str()) || lua_pcall(LUA, 0, 0, 0);
+    error = luaL_loadfile(LUA, (const char *)fnaam.c_str()) || lua_pcall(LUA, 0, 0, 0);
     if (error) {
         _lua_showerror();
     }

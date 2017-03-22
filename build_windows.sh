@@ -13,5 +13,5 @@ rm -rf ${BUILD_DIR}
 mkdir ${BUILD_DIR}
 cd ${BUILD_DIR}
 
-${TARGET}-cmake -D CMAKE_EXE_LINKER_FLAGS="-static" -D CMAKE_BUILD_TYPE="Release" ..
+${TARGET}-cmake -DBoost_USE_STATIC_LIBS:BOOL=ON -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_BUILD_TYPE="Release" ..
 make
