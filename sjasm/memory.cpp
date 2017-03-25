@@ -60,6 +60,8 @@ MemoryManager::~MemoryManager() {
 
 void MemoryManager::SetMemModel(const std::string &name) {
     std::string uName = to_upper_copy(name);
+    if (uName == "ZXSPECTRUM48"s)
+        uName = "PLAIN"s;
     if (GetMemModelName() == uName)
         return;
     try {
@@ -71,7 +73,7 @@ void MemoryManager::SetMemModel(const std::string &name) {
         // Check if this model is defined at all
         try {
             int nPages = MemModelNames.at(uName);
-            MemModels[uName] = new ZXMemModel(uName, nPages);
+            CurrentMemModel = (MemModels[uName] = new ZXMemModel(uName, nPages));
         } catch (std::out_of_range &e) {
             Error("Unknown memory model"s, uName, FATAL);
         }
