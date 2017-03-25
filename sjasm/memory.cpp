@@ -3,7 +3,10 @@
 //
 
 #include <cstring>
+#include <boost/algorithm/string/case_conv.hpp>
 #include "memory.h"
+
+using boost::algorithm::to_upper_copy;
 
 ZXMemModel::ZXMemModel(const std::string &name, int nPages) : MemModel(name) {
     NPages = nPages;
@@ -56,20 +59,21 @@ MemoryManager::~MemoryManager() {
 }
 
 void MemoryManager::SetMemModel(const std::string &name) {
-    if (GetMemModelName() == name)
+    std::string uName = to_upper_copy(name);
+    if (GetMemModelName() == uName)
         return;
     try {
         // Check if this model has already been added/allocated
-        auto m = MemModels.at(name);
+        auto m = MemModels.at(uName);
         CurrentMemModel = m;
         return;
     } catch (std::out_of_range &e) {
         // Check if this model is defined at all
         try {
-            int nPages = MemModelNames.at(name);
-            MemModels[name] = new ZXMemModel(name, nPages);
+            int nPages = MemModelNames.at(uName);
+            MemModels[uName] = new ZXMemModel(uName, nPages);
         } catch (std::out_of_range &e) {
-            Error("Unknown memory model"s, name, FATAL);
+            Error("Unknown memory model"s, uName, FATAL);
         }
     }
 }
