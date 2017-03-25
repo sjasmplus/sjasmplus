@@ -507,6 +507,8 @@ void EmitBlock(aint byte, aint len, bool nulled) {
                 }
             }
 */
+        } else {
+            Asm.IncAddress();
         }
 /*
         if (PseudoORG) {
