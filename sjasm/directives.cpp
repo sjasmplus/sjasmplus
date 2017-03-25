@@ -338,7 +338,7 @@ void dirORG() {
                 return;
             }
             boost::optional<std::string> err = Asm.SetPage(val);
-            if(err) {
+            if (err) {
                 Error("[ORG] "s + *err, lp, CATCHALL);
                 return;
             }
@@ -377,7 +377,7 @@ void dirPAGE() {
         return;
     }
     boost::optional<std::string> err = Asm.SetPage(val);
-    if(err) {
+    if (err) {
         Error("[PAGE] "s + *err, lp);
         return;
     }
@@ -390,7 +390,7 @@ void dirSLOT() {
         return;
     }
     auto err = Asm.SetSlot(val);
-    if(err) {
+    if (err) {
         Error("[SLOT] "s + *err, lp);
         return;
     }
@@ -572,12 +572,12 @@ void dirINCHOB() {
         fs::ifstream IFSH(fnaamh, std::ios::binary);
         try {
             IFSH.seekg(0x0b, std::ios::beg);
-            IFSH.read((char *)len, 2);
-        } catch (std::ifstream::failure& e) {
+            IFSH.read((char *) len, 2);
+        } catch (std::ifstream::failure &e) {
             Error("[INCHOB] Hobeta file has wrong format"s, fnaam.string(), FATAL);
         }
         IFSH.close();
-    } catch (std::ifstream::failure& e) {
+    } catch (std::ifstream::failure &e) {
         Error("[INCHOB] Error opening file"s, fnaam.string(), FATAL);
     }
     if (length == -1) {
@@ -1395,7 +1395,8 @@ void dirEXPORT() {
     if (Options::ExportFName.empty()) {
         Options::ExportFName = SourceFNames[CurrentSourceFName];
         Options::ExportFName.replace_extension(".exp");
-        Warning("[EXPORT] Filename for exportfile was not indicated. Output will be in"s, Options::ExportFName.string());
+        Warning("[EXPORT] Filename for exportfile was not indicated. Output will be in"s,
+                Options::ExportFName.string());
     }
     if (!(n = p = GetID(lp))) {
         Error("[EXPORT] Syntax error", lp, CATCHALL);
@@ -1901,7 +1902,7 @@ void _lua_showerror() {
     ln = atoi(err) + LuaLine;
 
     // print error and other actions
-    err = (char *)ErrorStr.c_str();
+    err = (char *) ErrorStr.c_str();
     SPRINTF3(err, LINEMAX2, "%s(%lu): error: [LUA]%s", global::currentFilename.c_str(), ln, pos);
 
     if (!strchr(err, '\n')) {
@@ -2058,7 +2059,7 @@ void dirINCLUDELUA() {
     }
 
     LuaLine = CurrentLocalLine;
-    error = luaL_loadfile(LUA, (const char *)fnaam.c_str()) || lua_pcall(LUA, 0, 0, 0);
+    error = luaL_loadfile(LUA, (const char *) fnaam.c_str()) || lua_pcall(LUA, 0, 0, 0);
     if (error) {
         _lua_showerror();
     }
@@ -2178,7 +2179,7 @@ void InsertDirectives() {
 
 bool LuaSetPage(aint n) {
     auto err = Asm.SetPage(n);
-    if(err) {
+    if (err) {
         Error("sj.set_page: "s + *err, lp, CATCHALL);
         return false;
     }
@@ -2187,7 +2188,7 @@ bool LuaSetPage(aint n) {
 
 bool LuaSetSlot(aint n) {
     auto err = Asm.SetSlot(n);
-    if(err) {
+    if (err) {
         Error("sj.set_slot: "s + *err, lp, CATCHALL);
         return false;
     }

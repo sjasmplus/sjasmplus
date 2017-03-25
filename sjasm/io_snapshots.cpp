@@ -112,8 +112,8 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
         if (!Asm.IsPagedMemory()) {
 
         } else { // 128K
-            snbuf[27] = (uint8_t)(start & 0x00FF); //pc
-            snbuf[28] = (uint8_t)(start >> 8); //pc
+            snbuf[27] = (uint8_t) (start & 0x00FF); //pc
+            snbuf[28] = (uint8_t) (start >> 8); //pc
             snbuf[29] = 0x10 + Asm.GetPageNumInSlot(3); //7ffd
             snbuf[30] = 0; //tr-dos
             ofs.write((const char *) snbuf + 27, 4);
@@ -131,7 +131,7 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
         } else { // 128K
             for (int i = 0; i < 8; i++) {
                 if (i != Asm.GetPageNumInSlot(3) && i != 2 && i != 5) {
-                    ofs.write((const char *)Asm.GetPtrToPage(i), 0x4000);
+                    ofs.write((const char *) Asm.GetPtrToPage(i), 0x4000);
                 }
             }
         }
@@ -157,7 +157,7 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
     }*/
 
     if (Asm.IsPagedMemory() &&
-            Asm.GetMemModelName() != "ZXSPECTRUM128"s) {
+        Asm.GetMemModelName() != "ZXSPECTRUM128"s) {
         Warning("Only 128kb will be written to snapshot"s, fname.string());
     }
 

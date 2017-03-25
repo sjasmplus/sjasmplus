@@ -1,6 +1,7 @@
 extern "C" {
 #include "lua_sjasm.h"
 }
+
 #include "tables.h"
 #include "errors.h"
 
@@ -25,6 +26,7 @@ namespace global {
     extern fs::path currentFilename;
 }
 extern fs::ofstream OFSListing;
+
 void ExitASM(int p);
 // sjasm.{h,cpp}
 
@@ -78,7 +80,7 @@ void Error(const char *fout, const char *bd, int type) {
         ErrorStr += ": "s + bd;
     }
 //    if (ErrorStr.find('\n') != std::string::npos) {
-        ErrorStr += "\n"s;
+    ErrorStr += "\n"s;
 //    }
 
     if (OFSListing.is_open()) {
@@ -129,7 +131,7 @@ void Warning(const char *fout, const char *bd, int type) {
         ErrorStr += ": "s + bd;
     }
 //    if (ErrorStr.find('\n') != std::string::npos) {
-        ErrorStr += "\n"s;
+    ErrorStr += "\n"s;
 //    }
 
     if (OFSListing.is_open()) {

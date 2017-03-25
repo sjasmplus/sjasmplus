@@ -69,9 +69,9 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
     aint datastart = 0x5E00;
     aint exeat = 0x5E00;
 
-    ofs << (char)19;                // header length
-    ofs << (char)0;
-    ofs << (char)0;
+    ofs << (char) 19;                // header length
+    ofs << (char) 0;
+    ofs << (char) 0;
     parity = 0;                        // initial checksum
     writebyte(ofs, 0);            // block type "BASIC"
 
@@ -293,7 +293,8 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
     ofs.close();
     return 1;
 }
-std::ostream &writenumber(std::ostream &stream, unsigned int i){
+
+std::ostream &writenumber(std::ostream &stream, unsigned int i) {
     int c;
     c = i / 10000;
     i -= c * 10000;
@@ -324,8 +325,8 @@ std::ostream &writecode(std::ostream &stream, unsigned char *block, aint length,
                         unsigned short loadaddr, bool header) {
     if (header) {
         /* Write out the code header file */
-        stream << (char)19;        /* Header len */
-        stream << (char)0;         /* MSB of len */
+        stream << (char) 19;        /* Header len */
+        stream << (char) 0;         /* MSB of len */
         stream << 0;               /* Header is 0 */
         parity = 0;
         writebyte(stream, 3);    /* Filetype (Code) */

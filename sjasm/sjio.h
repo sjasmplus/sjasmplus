@@ -93,6 +93,7 @@ void *SaveRAM(void *dst, int start, int size);
 uint8_t MemGetByte(uint16_t address); /* added */
 uint16_t MemGetWord(uint16_t address); /* added */
 int SaveBinary(const fs::path &fname, int start, int length);
+
 int ReadLine(bool SplitByColon = true);
 
 EReturn ReadFile();

@@ -604,7 +604,7 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
     if (len > 0) {
         char byte;
         auto l = len;
-        while(l > 0) {
+        while (l > 0) {
             if (!ifs.get(byte)) {
                 Error("Could not read "s + std::to_string(len) + " bytes. File too small?", fname.string(), FATAL);
                 return;
@@ -1140,7 +1140,7 @@ int SaveRAM(fs::ofstream &ofs, int start, int length) {
 
     if (start + length > 0x10000) {
         Error("SaveRAM(): start("s + std::to_string(start) + ") + length("s +
-                      std::to_string(length)+ ") > 0x10000"s, ""s, FATAL);
+              std::to_string(length) + ") > 0x10000"s, ""s, FATAL);
         return 0;
     }
     if (length <= 0) {
@@ -1148,14 +1148,14 @@ int SaveRAM(fs::ofstream &ofs, int start, int length) {
     }
 
     char *data = new char[length];
-    Asm.GetBytes((uint8_t *)data, start, length);
+    Asm.GetBytes((uint8_t *) data, start, length);
     try {
         ofs.write(data, length);
     } catch (std::ofstream::failure &e) {
-        delete [] data;
+        delete[] data;
         return 0;
     }
-    delete [] data;
+    delete[] data;
 
 
 /*
@@ -1196,7 +1196,7 @@ void *SaveRAM(void *dst, int start, int length) {
     unsigned char *target = static_cast<unsigned char *>(dst);
     if (start + length > 0x10000) {
         Error("*SaveRAM(): start("s + std::to_string(start) + ") + length("s +
-              std::to_string(length)+ ") > 0x10000"s, ""s, FATAL);
+              std::to_string(length) + ") > 0x10000"s, ""s, FATAL);
         return target;
     }
     if (length <= 0) {
@@ -1237,7 +1237,7 @@ uint16_t MemGetWord(uint16_t address) {
         return 0;
     }
 
-    return (uint16_t)MemGetByte(address) + ((uint16_t)MemGetByte(address + 1) * (uint16_t)256);
+    return (uint16_t) MemGetByte(address) + ((uint16_t) MemGetByte(address + 1) * (uint16_t) 256);
 }
 
 uint8_t MemGetByte(uint16_t address) {

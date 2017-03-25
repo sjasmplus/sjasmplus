@@ -30,9 +30,11 @@ enum EReturn {
 };
 
 void Error(const char *, const char *, int = PASS2);
+
 void Error(const std::string &fout, const std::string &bd, int type = PASS2);
 
 void Warning(const char *, const char *, int = PASS2);
+
 void Warning(const std::string &fout, const std::string &bd, int type = PASS2);
 
 // output

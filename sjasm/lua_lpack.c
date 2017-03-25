@@ -246,7 +246,7 @@ static int l_pack(lua_State *L)        /** pack(f,...) */
 
 static const luaL_reg R[] =
         {
-                {"pack", l_pack},
+                {"pack",   l_pack},
                 {"unpack", l_unpack},
                 {NULL, NULL}
         };

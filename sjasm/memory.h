@@ -34,17 +34,26 @@ public:
 
     // Return error string on error
     virtual boost::optional<std::string> SetPage(int slot, int page) = 0;
+
     virtual boost::optional<std::string> SetPage(uint16_t currentAddr, int page) = 0;
+
     virtual boost::optional<std::string> ValidateSlot(int slot) = 0;
+
     virtual int GetPageForAddress(uint16_t currentAddr) = 0;
 
     // TODO: replace with safer version
     virtual void GetBytes(uint8_t *dest, uint16_t addr, uint16_t size) = 0;
+
     virtual void GetBytes(uint8_t *dest, int slot, uint16_t addrInPage, uint16_t size) = 0;
+
     virtual uint8_t *GetPtrToMem() = 0;
+
     virtual void Clear() = 0;
+
     virtual uint8_t *GetPtrToPage(int page) = 0;
+
     virtual uint8_t *GetPtrToPageInSlot(int slot) = 0;
+
     virtual void InitZXSysVars() = 0;
 };
 
@@ -66,18 +75,21 @@ public:
     virtual boost::optional<std::string> SetPage(int slot, int page) override {
         return "The PLAIN memory model does not support page switching"s;
     }
+
     virtual boost::optional<std::string> SetPage(uint16_t currentAddr, int page) override {
-        return SetPage((int)0, 0);
+        return SetPage((int) 0, 0);
     }
+
     virtual boost::optional<std::string> ValidateSlot(int slot) override {
-        return SetPage((int)0, (int)0);
+        return SetPage((int) 0, (int) 0);
     }
+
     virtual int GetPageForAddress(uint16_t currentAddr) override {
         return 0;
     }
 
     virtual void GetBytes(uint8_t *dest, uint16_t addr, uint16_t size) override {
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             *(dest + i) = Memory[addr + i];
         }
     }
@@ -119,21 +131,23 @@ private:
     int NSlots = 4;
     int SlotPages[4] = {0, 5, 2, 7};
     std::vector<uint8_t> Memory;
+
     uint8_t ReadByte(uint16_t addr) {
         return Memory[SlotPages[addr / PageSize] * PageSize + (addr % PageSize)];
     }
+
 public:
     ZXMemModel(const std::string &name, int nPages);
 
     virtual void GetBytes(uint8_t *dest, uint16_t addr, uint16_t size) override {
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             *(dest + i) = ReadByte(addr + i);
         }
     }
 
     virtual void GetBytes(uint8_t *dest, int slot, uint16_t addrInPage, uint16_t size) override {
         uint16_t addr = addrInPage + slot * PageSize;
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             *(dest + i) = ReadByte(addr + i);
         }
     }
@@ -151,7 +165,7 @@ public:
     }
 
     virtual uint8_t *GetPtrToPageInSlot(int slot) override {
-        return Memory.data() + SlotPages[slot] *PageSize;
+        return Memory.data() + SlotPages[slot] * PageSize;
     }
 
     void WriteByte(uint16_t addr, uint8_t byte) override {
@@ -165,9 +179,13 @@ public:
     virtual int GetPageNumInSlot(int slot) override { return SlotPages[slot]; }
 
     virtual boost::optional<std::string> SetPage(int slot, int page) override;
+
     virtual boost::optional<std::string> SetPage(uint16_t currentAddr, int page) override;
+
     virtual boost::optional<std::string> ValidateSlot(int slot) override;
+
     virtual int GetPageForAddress(uint16_t currentAddr) override;
+
     virtual void InitZXSysVars() override;
 };
 
@@ -188,6 +206,7 @@ private:
 
 public:
     MemoryManager();
+
     ~MemoryManager();
 
     void SetMemModel(const std::string &name);
