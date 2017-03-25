@@ -8,15 +8,30 @@
 
 using boost::algorithm::to_upper_copy;
 
+// ZXSPECTRUM48
+void PlainMemModel::InitZXSysVars() {
+    if(!ZXSysVarsInitialized) {
+        auto memPtr = Memory.data();
+        memcpy(memPtr + 0x5C00, BASin48Vars, sizeof(BASin48Vars));
+        memset(memPtr + 0x4000 + 6144, 7 * 8, 768);
+        memcpy(memPtr + 0x10000 - sizeof(BASin48SP), BASin48SP, sizeof(BASin48SP));
+        ZXSysVarsInitialized = true;
+    }
+}
+
+// ZXSPECTRUM128 and up
+void ZXMemModel::InitZXSysVars() {
+    if(!ZXSysVarsInitialized) {
+        memcpy(GetPtrToPage(5) + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
+        memset(GetPtrToPage(5) + 6144, 7 * 8, 768);
+        ZXSysVarsInitialized = true;
+    }
+}
+
 ZXMemModel::ZXMemModel(const std::string &name, int nPages) : MemModel(name) {
     NPages = nPages;
     Memory.resize(PageSize * nPages, 0);
-
-    // FIXME: Make optional
-    memcpy(GetPtrToPage(5) + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
-    memset(GetPtrToPage(5) + 6144, 7 * 8, 768);
 }
-
 
 boost::optional<std::string> ZXMemModel::SetPage(int slot, int page) {
     auto err = ValidateSlot(slot);
@@ -60,22 +75,32 @@ MemoryManager::~MemoryManager() {
 
 void MemoryManager::SetMemModel(const std::string &name) {
     std::string uName = to_upper_copy(name);
-    if (uName == "ZXSPECTRUM48"s)
+    bool initSysVars = false;
+    if (uName.substr(0,2) == "ZX"s) {
+        initSysVars = true;
+    }
+    if (uName == "ZXSPECTRUM48"s) {
         uName = "PLAIN"s;
-    if (GetMemModelName() == uName)
-        return;
-    try {
-        // Check if this model has already been added/allocated
-        auto m = MemModels.at(uName);
-        CurrentMemModel = m;
-        return;
-    } catch (std::out_of_range &e) {
-        // Check if this model is defined at all
+    }
+    if (GetMemModelName() != uName)
+    {
         try {
-            int nPages = MemModelNames.at(uName);
-            CurrentMemModel = (MemModels[uName] = new ZXMemModel(uName, nPages));
+            // Check if this model has already been added/allocated
+            auto m = MemModels.at(uName);
+            CurrentMemModel = m;
         } catch (std::out_of_range &e) {
-            Error("Unknown memory model"s, uName, FATAL);
+            // Check if this model is defined at all
+            try {
+                int nPages = MemModelNames.at(uName);
+                CurrentMemModel = (MemModels[uName] = new ZXMemModel(uName, nPages));
+            } catch (std::out_of_range &e) {
+                Error("Unknown memory model"s, uName, FATAL);
+                return;
+            }
         }
+    }
+    if (initSysVars) {
+        // FIXME: Make this optional
+        CurrentMemModel->InitZXSysVars();
     }
 }

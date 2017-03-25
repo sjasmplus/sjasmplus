@@ -18,6 +18,7 @@ using namespace std::string_literals;
 class MemModel {
 protected:
     std::string Name;
+    bool ZXSysVarsInitialized = false;
 public:
     MemModel(const std::string &name) { Name = name; }
 
@@ -41,8 +42,10 @@ public:
     virtual void GetBytes(uint8_t *dest, uint16_t addr, uint16_t size) = 0;
     virtual void GetBytes(uint8_t *dest, int slot, uint16_t addrInPage, uint16_t size) = 0;
     virtual uint8_t *GetPtrToMem() = 0;
+    virtual void Clear() = 0;
     virtual uint8_t *GetPtrToPage(int page) = 0;
     virtual uint8_t *GetPtrToPageInSlot(int slot) = 0;
+    virtual void InitZXSysVars() = 0;
 };
 
 // Plain 64K without paging
@@ -87,6 +90,10 @@ public:
         return Memory.data();
     }
 
+    virtual void Clear() override {
+        Memory.fill(0);
+    }
+
     virtual uint8_t *GetPtrToPage(int page) override {
         Error("GetPtrToPage(): "s + *(SetPage(0, 0)), ""s, FATAL);
         return nullptr;
@@ -100,6 +107,8 @@ public:
     virtual void WriteByte(uint16_t addr, uint8_t byte) override {
         Memory[addr] = byte;
     }
+
+    virtual void InitZXSysVars() override;
 };
 
 // ZX Spectrum 128, 256, 512, 1024 with 4 slots of 16K each
@@ -133,6 +142,10 @@ public:
         return Memory.data();
     }
 
+    virtual void Clear() override {
+        Memory.assign(Memory.size(), 0);
+    }
+
     virtual uint8_t *GetPtrToPage(int page) override {
         return Memory.data() + page * PageSize;
     }
@@ -155,6 +168,7 @@ public:
     virtual boost::optional<std::string> SetPage(uint16_t currentAddr, int page) override;
     virtual boost::optional<std::string> ValidateSlot(int slot) override;
     virtual int GetPageForAddress(uint16_t currentAddr) override;
+    virtual void InitZXSysVars() override;
 };
 
 // MemoryManager knows about memory models and manages them, and is used to collect assembler's output
@@ -222,6 +236,10 @@ public:
         return CurrentMemModel->GetPtrToMem();
     }
 
+    void Clear() {
+        return CurrentMemModel->Clear();
+    }
+
     uint8_t *GetPtrToPage(int page) {
         return CurrentMemModel->GetPtrToPage(page);
     }
@@ -232,6 +250,10 @@ public:
 
     void WriteByte(uint16_t addr, uint8_t byte) {
         CurrentMemModel->WriteByte(addr, byte);
+    }
+
+    void InitZXSysVars() {
+        CurrentMemModel->InitZXSysVars();
     }
 };
 

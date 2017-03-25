@@ -66,7 +66,7 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
         if (Asm.GetByte(0xFF2D) == (uint8_t) 0xb1 &&
             Asm.GetByte(0xFF2E) == (uint8_t) 0x33 &&
             Asm.GetByte(0xFF2F) == (uint8_t) 0xe0 &&
-            Asm.GetByte(0x3F30) == (uint8_t) 0x5c) {
+            Asm.GetByte(0xFF30) == (uint8_t) 0x5c) {
 
             snbuf[23] = 0x2D;// + 16; //sp
             snbuf[24] = 0xFF; //sp
