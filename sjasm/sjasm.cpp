@@ -306,6 +306,7 @@ bool Assembler::IncAddress() {
     }
     if (CPUAddress == 0 || (Disp && EmitAddress == 0))
         return true;
+    return false;
 }
 
 // DISP directive
