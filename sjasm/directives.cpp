@@ -528,6 +528,8 @@ void dirINCBIN() {
             length = val;
         }
     }
+    offset = offset < 0 ? 0 : offset;
+    length = length < 0 ? 0 : length;
     BinIncFile(fnaam.c_str(), offset, length);
 }
 

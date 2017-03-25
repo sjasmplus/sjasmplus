@@ -589,6 +589,7 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
         // Load whole file
         ifs.seekg(0, ifs.end);
         len = ifs.tellg();
+        ifs.seekg(0, ifs.beg);
     }
     if (offset > 0) {
         ifs.seekg(offset, ifs.beg);
