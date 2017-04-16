@@ -138,7 +138,7 @@ int ParseExpUnair(char *&p, aint &nval) {
                 break;
             default:
                 Error("Parser error", 0);
-                break;
+                return 0;
         }
         return 1;
     } else {
