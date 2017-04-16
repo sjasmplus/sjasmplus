@@ -112,7 +112,7 @@ void listbytes2(char *&p) {
 
 void printCurrentLocalLine(char *&p) {
     aint v = CurrentLocalLine;
-    switch (reglenwidth) {
+    switch (NDigitsInLineNumber) {
         default:
             *(p++) = (unsigned char) ('0' + v / 1000000);
             v %= 1000000;
@@ -204,7 +204,7 @@ void PrintHEXAlt(char *&p, aint h) {
 
 void listbytes3(int pad) {
     int i = 0, t;
-    char *pp, *sp = pline + 3 + reglenwidth;
+    char *pp, *sp = pline + 3 + NDigitsInLineNumber;
     while (nEB) {
         pp = sp;
         PrintHEX16(pp, pad);
@@ -785,8 +785,8 @@ void OpenFile(const fs::path &nfilename) {
     --IncludeLevel;
     global::CurrentDirectory = oCurrentDirectory;
     global::currentFilename = ofilename;
-    if (CurrentLocalLine > maxlin) {
-        maxlin = CurrentLocalLine;
+    if (CurrentLocalLine > MaxLineNumber) {
+        MaxLineNumber = CurrentLocalLine;
     }
     CurrentLocalLine = oCurrentLocalLine;
 }

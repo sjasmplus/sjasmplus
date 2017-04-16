@@ -61,9 +61,9 @@ int donotlist = 0, listmacro = 0;
 /* int adrdisp = 0, PseudoORG = 0; */ /* added for spectrum ram */
 char *MemoryPointer = NULL; /* added for spectrum ram */
 int StartAddress = -1;
-int macronummer = 0, lijst = 0, reglenwidth = 0, synerr = 1;
+int macronummer = 0, lijst = 0, NDigitsInLineNumber = 0, synerr = 1;
 aint CurAddress = 0, CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;
-aint destlen = 0, size = (aint) -1, maxlin = 0, comlin = 0;
+aint destlen = 0, size = (aint) -1, MaxLineNumber = 0, comlin = 0;
 
 void (*GetCPUInstruction)(void);
 
@@ -83,24 +83,24 @@ int LuaLine = -1;
 
 /* modified */
 void InitPass(int p) {
-    reglenwidth = 1;
-    if (maxlin > 9) {
-        reglenwidth = 2;
+    NDigitsInLineNumber = 1;
+    if (MaxLineNumber > 9) {
+        NDigitsInLineNumber = 2;
     }
-    if (maxlin > 99) {
-        reglenwidth = 3;
+    if (MaxLineNumber > 99) {
+        NDigitsInLineNumber = 3;
     }
-    if (maxlin > 999) {
-        reglenwidth = 4;
+    if (MaxLineNumber > 999) {
+        NDigitsInLineNumber = 4;
     }
-    if (maxlin > 9999) {
-        reglenwidth = 5;
+    if (MaxLineNumber > 9999) {
+        NDigitsInLineNumber = 5;
     }
-    if (maxlin > 99999) {
-        reglenwidth = 6;
+    if (MaxLineNumber > 99999) {
+        NDigitsInLineNumber = 6;
     }
-    if (maxlin > 999999) {
-        reglenwidth = 7;
+    if (MaxLineNumber > 999999) {
+        NDigitsInLineNumber = 7;
     }
     if (LastParsedLabel != NULL) {
         free(LastParsedLabel);

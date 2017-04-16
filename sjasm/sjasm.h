@@ -61,9 +61,9 @@ extern int donotlist, listmacro;
 extern int adrdisp, PseudoORG; /* added for spectrum mode */
 extern char *MemoryPointer; /* added for spectrum ram */
 extern int StartAddress;
-extern int macronummer, lijst, reglenwidth, synerr;
+extern int macronummer, lijst, NDigitsInLineNumber, synerr;
 //$, ...
-extern aint CurAddress, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine, destlen, /* size, */ maxlin, comlin;
+extern aint CurAddress, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine, destlen, /* size, */ MaxLineNumber, comlin;
 
 extern void (*GetCPUInstruction)(void);
 
