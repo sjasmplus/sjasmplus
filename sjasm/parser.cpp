@@ -1167,6 +1167,7 @@ void LuaParseLine(char *str) {
     ml = STRDUP(line);
     if (ml == nullptr) {
         Error("Not enough memory!", 0, FATAL);
+        return;
     }
 
     STRCPY(line, LINEMAX, str);
@@ -1182,6 +1183,7 @@ void LuaParseCode(char *str) {
     ml = STRDUP(line);
     if (ml == nullptr) {
         Error("Not enough memory!", 0, FATAL);
+        return;
     }
 
     STRCPY(line, LINEMAX, str);

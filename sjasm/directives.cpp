@@ -92,8 +92,9 @@ int ParseDirective(bool bol) {
         olistmacro = listmacro;
         listmacro = 1;
         ml = STRDUP(line);
-        if (ml == NULL) {
+        if (ml == nullptr) {
             Error("No enough memory!", 0, FATAL);
+            return 0;
         }
         do {
             STRCPY(line, LINEMAX, pp);
@@ -1782,6 +1783,7 @@ void dirEDUP() {
     ml = STRDUP(line);
     if (ml == nullptr) {
         Error("[EDUP/ENDR] No enough memory", 0, FATAL);
+        return;
     }
     gcurln = CurrentGlobalLine;
     lcurln = CurrentLocalLine;
@@ -1893,6 +1895,7 @@ void _lua_showerror() {
     char *err = STRDUP(lua_tostring(LUA, -1));
     if (err == NULL) {
         Error("No enough memory!", 0, FATAL);
+        return;
     }
     //_COUT err _ENDL;
     err += 18;

@@ -801,6 +801,7 @@ void IncludeFile(const fs::path &nfilename) {
     char *buf = STRDUP(rlbuf);
     if (buf == NULL) {
         Error("No enough memory!", 0, FATAL);
+        return;
     }
     int readed = bytesRead;
     bool squotes = rlsquotes, dquotes = rldquotes, space = rlspace, comment = rlcomment, colon = rlcolon, newline = rlnewline;
