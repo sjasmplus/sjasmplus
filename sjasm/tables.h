@@ -64,7 +64,7 @@ public:
 
     int Insert(const char *, void(*)(void));
 
-    int insertd(const char *, void(*)(void));
+    int InsertDirective(const char *, void(*)(void));
 
     int CallIfExists(const char *, bool = 0);
 

@@ -316,7 +316,7 @@ int CFunctionTable::Insert(const char *nname, void(*nfunp)(void)) {
     return 1;
 }
 
-int CFunctionTable::insertd(const char *nname, void(*nfunp)(void)) {
+int CFunctionTable::InsertDirective(const char *nname, void(*nfunp)(void)) {
     size_t len = strlen(nname) + 2;
     char *buf = new char[len];
     //if (buf == NULL) {

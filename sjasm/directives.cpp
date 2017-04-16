@@ -2080,101 +2080,101 @@ void dirDEVICE() {
 
 /* modified */
 void InsertDirectives() {
-    DirectivesTable.insertd("assert", dirASSERT);
-    DirectivesTable.insertd("byte", dirBYTE);
-    DirectivesTable.insertd("abyte", dirABYTE);
-    DirectivesTable.insertd("abytec", dirABYTEC);
-    DirectivesTable.insertd("abytez", dirABYTEZ);
-    DirectivesTable.insertd("word", dirWORD);
-    DirectivesTable.insertd("block", dirBLOCK);
-    DirectivesTable.insertd("dword", dirDWORD);
-    DirectivesTable.insertd("d24", dirD24);
-    DirectivesTable.insertd("org", dirORG);
-//    DirectivesTable.insertd("fpos", dirFORG);
-    DirectivesTable.insertd("align", dirALIGN);
-    DirectivesTable.insertd("module", dirMODULE);
-    //DirectivesTable.insertd("z80", dirZ80);
-//    DirectivesTable.insertd("size", dirSIZE);
-    //DirectivesTable.insertd("textarea",dirTEXTAREA);
-    DirectivesTable.insertd("textarea", dirDISP);
-    //DirectivesTable.insertd("msx", dirZ80);
-    DirectivesTable.insertd("else", dirELSE);
-    DirectivesTable.insertd("export", dirEXPORT);
-    DirectivesTable.insertd("display", dirDISPLAY); /* added */
-    DirectivesTable.insertd("end", dirEND);
-    DirectivesTable.insertd("include", dirINCLUDE);
-    DirectivesTable.insertd("incbin", dirINCBIN);
-    DirectivesTable.insertd("binary", dirINCBIN); /* added */
-    DirectivesTable.insertd("inchob", dirINCHOB); /* added */
-    DirectivesTable.insertd("inctrd", dirINCTRD); /* added */
-    DirectivesTable.insertd("insert", dirINCBIN); /* added */
-    DirectivesTable.insertd("savesna", dirSAVESNA); /* added */
-    DirectivesTable.insertd("savetap", dirSAVETAP); /* added */
-    DirectivesTable.insertd("savehob", dirSAVEHOB); /* added */
-    DirectivesTable.insertd("savebin", dirSAVEBIN); /* added */
-    DirectivesTable.insertd("emptytrd", dirEMPTYTRD); /* added */
-    DirectivesTable.insertd("savetrd", dirSAVETRD); /* added */
-    DirectivesTable.insertd("shellexec", dirSHELLEXEC); /* added */
+    DirectivesTable.InsertDirective("assert", dirASSERT);
+    DirectivesTable.InsertDirective("byte", dirBYTE);
+    DirectivesTable.InsertDirective("abyte", dirABYTE);
+    DirectivesTable.InsertDirective("abytec", dirABYTEC);
+    DirectivesTable.InsertDirective("abytez", dirABYTEZ);
+    DirectivesTable.InsertDirective("word", dirWORD);
+    DirectivesTable.InsertDirective("block", dirBLOCK);
+    DirectivesTable.InsertDirective("dword", dirDWORD);
+    DirectivesTable.InsertDirective("d24", dirD24);
+    DirectivesTable.InsertDirective("org", dirORG);
+//    DirectivesTable.InsertDirective("fpos", dirFORG);
+    DirectivesTable.InsertDirective("align", dirALIGN);
+    DirectivesTable.InsertDirective("module", dirMODULE);
+    //DirectivesTable.InsertDirective("z80", dirZ80);
+//    DirectivesTable.InsertDirective("size", dirSIZE);
+    //DirectivesTable.InsertDirective("textarea",dirTEXTAREA);
+    DirectivesTable.InsertDirective("textarea", dirDISP);
+    //DirectivesTable.InsertDirective("msx", dirZ80);
+    DirectivesTable.InsertDirective("else", dirELSE);
+    DirectivesTable.InsertDirective("export", dirEXPORT);
+    DirectivesTable.InsertDirective("display", dirDISPLAY); /* added */
+    DirectivesTable.InsertDirective("end", dirEND);
+    DirectivesTable.InsertDirective("include", dirINCLUDE);
+    DirectivesTable.InsertDirective("incbin", dirINCBIN);
+    DirectivesTable.InsertDirective("binary", dirINCBIN); /* added */
+    DirectivesTable.InsertDirective("inchob", dirINCHOB); /* added */
+    DirectivesTable.InsertDirective("inctrd", dirINCTRD); /* added */
+    DirectivesTable.InsertDirective("insert", dirINCBIN); /* added */
+    DirectivesTable.InsertDirective("savesna", dirSAVESNA); /* added */
+    DirectivesTable.InsertDirective("savetap", dirSAVETAP); /* added */
+    DirectivesTable.InsertDirective("savehob", dirSAVEHOB); /* added */
+    DirectivesTable.InsertDirective("savebin", dirSAVEBIN); /* added */
+    DirectivesTable.InsertDirective("emptytrd", dirEMPTYTRD); /* added */
+    DirectivesTable.InsertDirective("savetrd", dirSAVETRD); /* added */
+    DirectivesTable.InsertDirective("shellexec", dirSHELLEXEC); /* added */
 /*#ifdef WIN32
-	DirectivesTable.insertd("winexec", dirWINEXEC);
+	DirectivesTable.InsertDirective("winexec", dirWINEXEC);
 #endif*/
-    DirectivesTable.insertd("if", dirIF);
-    DirectivesTable.insertd("ifn", dirIFN); /* added */
-    DirectivesTable.insertd("ifused", dirIFUSED);
-    DirectivesTable.insertd("ufnused", dirIFNUSED); /* added */
-//    DirectivesTable.insertd("output", dirOUTPUT);
-    DirectivesTable.insertd("define", dirDEFINE);
-    DirectivesTable.insertd("undefine", dirUNDEFINE);
-    DirectivesTable.insertd("defarray", dirDEFARRAY); /* added */
-    DirectivesTable.insertd("ifdef", dirIFDEF);
-    DirectivesTable.insertd("ifndef", dirIFNDEF);
-    DirectivesTable.insertd("macro", dirMACRO);
-    DirectivesTable.insertd("struct", dirSTRUCT);
-    DirectivesTable.insertd("dc", dirDC);
-    DirectivesTable.insertd("dz", dirDZ);
-    DirectivesTable.insertd("db", dirBYTE);
-    DirectivesTable.insertd("dm", dirBYTE); /* added */
-    DirectivesTable.insertd("dw", dirWORD);
-    DirectivesTable.insertd("ds", dirBLOCK);
-    DirectivesTable.insertd("dd", dirDWORD);
-    DirectivesTable.insertd("defb", dirBYTE);
-    DirectivesTable.insertd("defw", dirWORD);
-    DirectivesTable.insertd("defs", dirBLOCK);
-    DirectivesTable.insertd("defd", dirDWORD);
-    DirectivesTable.insertd("defm", dirBYTE); /* added */
-    DirectivesTable.insertd("endmod", dirENDMODULE);
-    DirectivesTable.insertd("endmodule", dirENDMODULE);
-    DirectivesTable.insertd("rept", dirDUP);
-    DirectivesTable.insertd("dup", dirDUP); /* added */
-    DirectivesTable.insertd("disp", dirDISP); /* added */
-    DirectivesTable.insertd("phase", dirDISP); /* added */
-    DirectivesTable.insertd("ent", dirENT); /* added */
-    DirectivesTable.insertd("unphase", dirENT); /* added */
-    DirectivesTable.insertd("dephase", dirENT); /* added */
-    DirectivesTable.insertd("page", dirPAGE); /* added */
-    DirectivesTable.insertd("slot", dirSLOT); /* added */
-    DirectivesTable.insertd("encoding", dirENCODING); /* added */
-    DirectivesTable.insertd("labelslist", dirLABELSLIST); /* added */
-    //  DirectivesTable.insertd("bind",dirBIND); /* i didn't comment this */
-    DirectivesTable.insertd("endif", dirENDIF);
-    //DirectivesTable.insertd("endt",dirENDTEXTAREA);
-    DirectivesTable.insertd("endt", dirENT);
-    DirectivesTable.insertd("endm", dirENDM);
-    DirectivesTable.insertd("edup", dirEDUP); /* added */
-    DirectivesTable.insertd("endr", dirEDUP); /* added */
-    DirectivesTable.insertd("ends", dirENDS);
+    DirectivesTable.InsertDirective("if", dirIF);
+    DirectivesTable.InsertDirective("ifn", dirIFN); /* added */
+    DirectivesTable.InsertDirective("ifused", dirIFUSED);
+    DirectivesTable.InsertDirective("ufnused", dirIFNUSED); /* added */
+//    DirectivesTable.InsertDirective("output", dirOUTPUT);
+    DirectivesTable.InsertDirective("define", dirDEFINE);
+    DirectivesTable.InsertDirective("undefine", dirUNDEFINE);
+    DirectivesTable.InsertDirective("defarray", dirDEFARRAY); /* added */
+    DirectivesTable.InsertDirective("ifdef", dirIFDEF);
+    DirectivesTable.InsertDirective("ifndef", dirIFNDEF);
+    DirectivesTable.InsertDirective("macro", dirMACRO);
+    DirectivesTable.InsertDirective("struct", dirSTRUCT);
+    DirectivesTable.InsertDirective("dc", dirDC);
+    DirectivesTable.InsertDirective("dz", dirDZ);
+    DirectivesTable.InsertDirective("db", dirBYTE);
+    DirectivesTable.InsertDirective("dm", dirBYTE); /* added */
+    DirectivesTable.InsertDirective("dw", dirWORD);
+    DirectivesTable.InsertDirective("ds", dirBLOCK);
+    DirectivesTable.InsertDirective("dd", dirDWORD);
+    DirectivesTable.InsertDirective("defb", dirBYTE);
+    DirectivesTable.InsertDirective("defw", dirWORD);
+    DirectivesTable.InsertDirective("defs", dirBLOCK);
+    DirectivesTable.InsertDirective("defd", dirDWORD);
+    DirectivesTable.InsertDirective("defm", dirBYTE); /* added */
+    DirectivesTable.InsertDirective("endmod", dirENDMODULE);
+    DirectivesTable.InsertDirective("endmodule", dirENDMODULE);
+    DirectivesTable.InsertDirective("rept", dirDUP);
+    DirectivesTable.InsertDirective("dup", dirDUP); /* added */
+    DirectivesTable.InsertDirective("disp", dirDISP); /* added */
+    DirectivesTable.InsertDirective("phase", dirDISP); /* added */
+    DirectivesTable.InsertDirective("ent", dirENT); /* added */
+    DirectivesTable.InsertDirective("unphase", dirENT); /* added */
+    DirectivesTable.InsertDirective("dephase", dirENT); /* added */
+    DirectivesTable.InsertDirective("page", dirPAGE); /* added */
+    DirectivesTable.InsertDirective("slot", dirSLOT); /* added */
+    DirectivesTable.InsertDirective("encoding", dirENCODING); /* added */
+    DirectivesTable.InsertDirective("labelslist", dirLABELSLIST); /* added */
+    //  DirectivesTable.InsertDirective("bind",dirBIND); /* i didn't comment this */
+    DirectivesTable.InsertDirective("endif", dirENDIF);
+    //DirectivesTable.InsertDirective("endt",dirENDTEXTAREA);
+    DirectivesTable.InsertDirective("endt", dirENT);
+    DirectivesTable.InsertDirective("endm", dirENDM);
+    DirectivesTable.InsertDirective("edup", dirEDUP); /* added */
+    DirectivesTable.InsertDirective("endr", dirEDUP); /* added */
+    DirectivesTable.InsertDirective("ends", dirENDS);
 
-    DirectivesTable.insertd("device", dirDEVICE);
+    DirectivesTable.InsertDirective("device", dirDEVICE);
 
-    DirectivesTable.insertd("lua", dirLUA);
-    DirectivesTable.insertd("endlua", dirENDLUA);
-    DirectivesTable.insertd("includelua", dirINCLUDELUA);
+    DirectivesTable.InsertDirective("lua", dirLUA);
+    DirectivesTable.InsertDirective("endlua", dirENDLUA);
+    DirectivesTable.InsertDirective("includelua", dirINCLUDELUA);
 
-    DirectivesTable_dup.insertd("dup", dirDUP); /* added */
-    DirectivesTable_dup.insertd("edup", dirEDUP); /* added */
-    DirectivesTable_dup.insertd("endm", dirENDM); /* added */
-    DirectivesTable_dup.insertd("endr", dirEDUP); /* added */
-    DirectivesTable_dup.insertd("rept", dirDUP); /* added */
+    DirectivesTable_dup.InsertDirective("dup", dirDUP); /* added */
+    DirectivesTable_dup.InsertDirective("edup", dirEDUP); /* added */
+    DirectivesTable_dup.InsertDirective("endm", dirENDM); /* added */
+    DirectivesTable_dup.InsertDirective("endr", dirEDUP); /* added */
+    DirectivesTable_dup.InsertDirective("rept", dirDUP); /* added */
 }
 
 bool LuaSetPage(aint n) {
