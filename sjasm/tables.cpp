@@ -534,7 +534,7 @@ void CMacroDefineTable::FreeArray(char **aArray, int aCount) {
             delete[] aArray[i];
         }
     }
-    delete aArray;
+    delete[] aArray;
 }
 // --
 
@@ -986,7 +986,7 @@ void CStructure::emitlab(char *iid) {
             Error("Duplicate label", 0, PASS1);
         }
     }
-    free(p);
+    delete[] p;
     STRCAT(sn, LINEMAX, ".");
     while (np) {
         STRCPY(ln, LINEMAX, sn);
@@ -1007,7 +1007,7 @@ void CStructure::emitlab(char *iid) {
                 Error("Duplicate label", 0, PASS1);
             }
         }
-        free(p);
+        delete[] p;
         np = np->next;
     }
 }
@@ -1108,7 +1108,7 @@ void CStructure::emitmembs(char *&p) {
     } /* this line from SjASM 0.39g */
     e[et] = -1;
     EmitBytes(e);
-    delete e;
+    delete[] e;
 }
 
 void CStructureTable::Init() {

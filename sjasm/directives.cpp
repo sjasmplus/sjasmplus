@@ -103,7 +103,7 @@ int ParseDirective(bool bol) {
         listmacro = olistmacro;
         donotlist = 1;
 
-        delete[] ml;
+        free(ml);
         return 1;
     }
     /* (end add) */
@@ -1780,7 +1780,7 @@ void dirEDUP() {
     olistmacro = listmacro;
     listmacro = 1;
     ml = STRDUP(line);
-    if (ml == NULL) {
+    if (ml == nullptr) {
         Error("[EDUP/ENDR] No enough memory", 0, FATAL);
     }
     gcurln = CurrentGlobalLine;
@@ -1804,6 +1804,7 @@ void dirEDUP() {
     listmacro = olistmacro;
     donotlist = 1;
     STRCPY(line, LINEMAX, ml);
+    free(ml);
 
     ListFile();
 }
@@ -1843,6 +1844,7 @@ void dirDEFARRAY() {
             ++lp;
             while (*lp != '>') {
                 if (!*lp) {
+                    delete a;
                     Error("[DEFARRAY] No closing bracket - <..>", 0);
                     return;
                 }
@@ -1902,11 +1904,11 @@ void _lua_showerror() {
     ln = atoi(err) + LuaLine;
 
     // print error and other actions
-    err = (char *) ErrorStr.c_str();
-    SPRINTF3(err, LINEMAX2, "%s(%lu): error: [LUA]%s", global::CurrentFilename.c_str(), ln, pos);
+    ErrorStr = global::CurrentFilename.string() + "("s + std::to_string(ln) + "): error: [LUA]"s + pos;
+    free(err);
 
-    if (!strchr(err, '\n')) {
-        STRCAT(err, LINEMAX2, "\n");
+    if (ErrorStr.find('\n') == std::string::npos) {
+        ErrorStr += "\n"s;
     }
 
     if (OFSListing.is_open()) {
@@ -2002,6 +2004,7 @@ void dirLUA() {
                     *(bp++) = '\n';
                     *(bp) = 0;
                 } else {
+                    delete[] buff;
                     Error("[LUA] Maximum size of Lua script is 32768 bytes", 0, FATAL);
                     return;
                 }

@@ -1165,28 +1165,30 @@ void LuaParseLine(char *str) {
     char *ml;
 
     ml = STRDUP(line);
-    if (ml == NULL) {
-        Error("No enough memory!", 0, FATAL);
+    if (ml == nullptr) {
+        Error("Not enough memory!", 0, FATAL);
     }
 
     STRCPY(line, LINEMAX, str);
     ParseLineSafe();
 
     STRCPY(line, LINEMAX, ml);
+    free(ml);
 }
 
 void LuaParseCode(char *str) {
     char *ml;
 
     ml = STRDUP(line);
-    if (ml == NULL) {
-        Error("No enough memory!", 0, FATAL);
+    if (ml == nullptr) {
+        Error("Not enough memory!", 0, FATAL);
     }
 
     STRCPY(line, LINEMAX, str);
     ParseLineSafe(false);
 
     STRCPY(line, LINEMAX, ml);
+    free(ml);
 }
 
 //eof parser.cpp
