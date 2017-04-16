@@ -38,9 +38,6 @@ namespace {
         p[1] = data >> 8;
     }
 
-#define STATIC_ASSERT_AT(p, line)
-#define STATIC_ASSERT(p) namespace {typedef char scoped[(p)?1:-1];}
-
     const unsigned TOTAL_SECTORS = 2560;
     const unsigned SECTOR_SIZE = 256;
     const unsigned TRACK_SECTORS = 16;
@@ -315,11 +312,11 @@ namespace {
         return name.GetType() == "B";
     }
 
-    STATIC_ASSERT(sizeof(DiskLocation) == 2);
-    STATIC_ASSERT(sizeof(CatEntry) == 16);
-    STATIC_ASSERT(sizeof(Catalogue) == 128 * 16);
-    STATIC_ASSERT(sizeof(ServiceSector) == SECTOR_SIZE);
-    STATIC_ASSERT(sizeof(HobetaHeader) == 17);
+    static_assert(sizeof(DiskLocation) == 2, "sizeof(DiskLocation) != 2");
+    static_assert(sizeof(CatEntry) == 16, "sizeof(CatEntry) != 16");
+    static_assert(sizeof(Catalogue) == 128 * 16, "sizeof(Catalogue) != 128 * 16");
+    static_assert(sizeof(ServiceSector) == SECTOR_SIZE, "sizeof(ServiceSector) != SECTOR_SIZE");
+    static_assert(sizeof(HobetaHeader) == 17, "sizeof(HobetaHeader) != 17");
 }
 
 int TRD_SaveEmpty(const Filename &fname) {
