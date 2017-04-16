@@ -331,7 +331,7 @@ int CFunctionTable::insertd(const char *nname, void(*nfunp)(void)) {
     return Insert(buf, nfunp);
 }
 
-int CFunctionTable::zoek(const char *nname, bool bol) {
+int CFunctionTable::CallIfExists(const char *nname, bool bol) {
     int tr, htr, otr;
     otr = tr = Hash(nname);
     while ((htr = HashTable[tr])) {

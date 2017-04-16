@@ -78,7 +78,7 @@ namespace Z80 {
             Error("Unrecognized instruction", lp, LASTPASS);
             return;
         }
-        if (!OpCodeTable.zoek(n)) {
+        if (!OpCodeTable.CallIfExists(n)) {
             Error("Unrecognized instruction", bp, LASTPASS);
             *lp = 0;
         }

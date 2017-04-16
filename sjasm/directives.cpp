@@ -47,7 +47,7 @@ int ParseDirective(bool bol) {
         return 0;
     }
 
-    if (DirectivesTable.zoek(n, bol)) {
+    if (DirectivesTable.CallIfExists(n, bol)) {
         return 1;
     }
         /* (begin add) */
@@ -121,7 +121,7 @@ int ParseDirective_REPT() {
         return 0;
     }
 
-    if (DirectivesTable_dup.zoek(n)) {
+    if (DirectivesTable_dup.CallIfExists(n)) {
         return 1;
     }
     lp = olp;

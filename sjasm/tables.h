@@ -66,8 +66,7 @@ public:
 
     int insertd(const char *, void(*)(void));
 
-    /*int zoek(char*);*/
-    int zoek(const char *, bool = 0);
+    int CallIfExists(const char *, bool = 0);
 
     int Find(char *);
 
