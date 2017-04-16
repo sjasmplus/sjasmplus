@@ -28,7 +28,7 @@
 
 // direct.h
 
-extern CFunctionTable DirectivesTable;
+extern FunctionTable DirectivesTable;
 
 void InsertDirectives();
 

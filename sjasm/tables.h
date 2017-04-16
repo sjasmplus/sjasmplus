@@ -55,30 +55,18 @@ int GetLabelValue(char *&p, aint &val);
 
 int GetLocalLabelValue(char *&op, aint &val);
 
-class CFunctionTableEntry {
+class FunctionTable {
 public:
-    char *name;
+    bool insert(const std::string &Name, void(*FuncPtr)(void));
 
-    void (*funp)(void);
-};
+    bool insertDirective(const std::string &, void(*)(void));
 
-class CFunctionTable {
-public:
-    CFunctionTable();
+    bool callIfExists(const std::string &, bool = 0);
 
-    int insert(const char *, void(*)(void));
-
-    int insertDirective(const char *, void(*)(void));
-
-    int callIfExists(const char *, bool = 0);
-
-    int find(char *);
+    bool find(const std::string &);
 
 private:
-    int HashTable[LABTABSIZE], NextLocation;
-    CFunctionTableEntry funtab[LABTABSIZE];
-
-    int Hash(const char *);
+    std::map<std::string, void (*)(void)> Map;
 };
 
 class CLocalLabelTableEntry {

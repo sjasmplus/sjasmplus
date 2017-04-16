@@ -28,6 +28,10 @@
 
 // tables.cpp
 
+#include <boost/algorithm/string/case_conv.hpp>
+
+using boost::algorithm::to_upper_copy;
+
 #include "sjdefs.h"
 
 char *PreviousIsLabel;
@@ -263,121 +267,45 @@ int GetLocalLabelValue(char *&op, aint &val) {
     return 1;
 }
 
-CFunctionTable::CFunctionTable() {
-    NextLocation = 1;
+bool FunctionTable::insert(const std::string &Name, void(*FuncPtr)(void)) {
+    std::string uName = to_upper_copy(Name);
+    if (Map.find(uName) != Map.end()) {
+        return false;
+    }
+    Map[uName] = FuncPtr;
+    return true;
 }
 
-int CFunctionTable::insert(const char *nname, void(*nfunp)(void)) {
-    char *p;
-    if (NextLocation >= FUNTABSIZE * 2 / 3) {
-        _COUT "Functions Table is full" _ENDL;
-        ExitASM(1);
+bool FunctionTable::insertDirective(const std::string &Name, void(*FuncPtr)(void)) {
+    if (!insert(Name, FuncPtr)) {
+        return false;
     }
-    int tr, htr;
-    tr = Hash(nname);
-    while ((htr = HashTable[tr])) {
-        if (!strcmp((funtab[htr].name), nname)) {
-            return 0;
-        } else if (++tr >= FUNTABSIZE) {
-            tr = 0;
-        }
-    }
-    HashTable[tr] = NextLocation;
-    funtab[NextLocation].name = STRDUP(nname);
-    if (funtab[NextLocation].name == NULL) {
-        Error("No enough memory!", 0, FATAL);
-    }
-    funtab[NextLocation].funp = nfunp;
-    ++NextLocation;
-
-    STRCPY(p = temp, LINEMAX, nname);
-    while ((*p = (char) toupper(*p))) { ++p; }
-
-    if (NextLocation >= FUNTABSIZE * 2 / 3) {
-        _COUT "Functions Table is full" _ENDL;
-        ExitASM(1);
-    }
-    tr = Hash(temp);
-    while ((htr = HashTable[tr])) {
-        if (!strcmp((funtab[htr].name), temp)) {
-            return 0;
-        } else if (++tr >= FUNTABSIZE) {
-            tr = 0;
-        }
-    }
-    HashTable[tr] = NextLocation;
-    funtab[NextLocation].name = STRDUP(temp);
-    if (funtab[NextLocation].name == NULL) {
-        Error("No enough memory!", 0, FATAL);
-    }
-    funtab[NextLocation].funp = nfunp;
-    ++NextLocation;
-
-    return 1;
+    return insert("."s + Name, FuncPtr);
 }
 
-int CFunctionTable::insertDirective(const char *nname, void(*nfunp)(void)) {
-    size_t len = strlen(nname) + 2;
-    char *buf = new char[len];
-    //if (buf == NULL) {
-    //	Error("No enough memory!", 0, FATAL);
-    //}
-    STRCPY(buf, len, nname);
-    if (!insert(buf, nfunp)) {
-        return 0;
+bool FunctionTable::callIfExists(const std::string &Name, bool BOL) {
+    std::string uName = to_upper_copy(Name);
+    auto search = Map.find(uName);
+    if (search != Map.end()) {
+        if (BOL && (uName == "END"s || uName == ".END"s)) { // FIXME?
+            return false;
+        } else {
+            (search->second)();
+            return true;
+        }
+    } else {
+        return false;
     }
-    STRCPY(buf + 1, len, nname);
-    buf[0] = '.';
-    return insert(buf, nfunp);
 }
 
-int CFunctionTable::callIfExists(const char *nname, bool bol) {
-    int tr, htr, otr;
-    otr = tr = Hash(nname);
-    while ((htr = HashTable[tr])) {
-        if (!strcmp((funtab[htr].name), nname)) {
-            if (bol && ((sizeof(nname) == 3 && (!strcmp("END", nname) || !strcmp("end", nname))) ||
-                        (sizeof(nname) == 4 && (!strcmp(".END", nname) || !strcmp(".end", nname))))) {
-                return 0;
-            } else {
-                (*funtab[htr].funp)();
-                return 1;
-            }
-        }
-        if (++tr >= FUNTABSIZE) {
-            tr = 0;
-        }
-        if (tr == otr) {
-            break;
-        }
+bool FunctionTable::find(const std::string &Name) {
+    std::string uName = to_upper_copy(Name);
+    auto search = Map.find(uName);
+    if (search != Map.end()) {
+        return true;
+    } else {
+        return false;
     }
-    return 0;
-}
-
-int CFunctionTable::find(char *nname) {
-    int tr, htr, otr;
-    otr = tr = Hash(nname);
-    while ((htr = HashTable[tr])) {
-        if (!strcmp((funtab[htr].name), nname)) {
-            return 1;
-        }
-        if (++tr >= FUNTABSIZE) {
-            tr = 0;
-        }
-        if (tr == otr) {
-            break;
-        }
-    }
-    return 0;
-}
-
-int CFunctionTable::Hash(const char *s) {
-    const char *ss = s;
-    unsigned int h = 0;
-    for (; *ss != '\0'; ss++) {
-        h = (h << 3) + *ss;
-    }
-    return h % FUNTABSIZE;
 }
 
 /* modified */

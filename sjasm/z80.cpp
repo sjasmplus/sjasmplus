@@ -62,7 +62,7 @@ namespace Z80 {
     //SkipBlanks(my_p);
     //Warning("Fake instructions is disabled. The instruction was not compiled", my_p, LASTPASS);
 
-    CFunctionTable OpCodeTable;
+    FunctionTable OpCodeTable;
 
     /*char *GetRegister(Z80Reg reg){
 		switch (reg) {
@@ -5485,84 +5485,84 @@ namespace Z80 {
 
     /* modified */
     void Init() {
-        OpCodeTable.insert("adc", OpCode_ADC);
-        OpCodeTable.insert("add", OpCode_ADD);
-        OpCodeTable.insert("and", OpCode_AND);
-        OpCodeTable.insert("bit", OpCode_BIT);
-        OpCodeTable.insert("call", OpCode_CALL);
-        OpCodeTable.insert("ccf", OpCode_CCF);
-        OpCodeTable.insert("cp", OpCode_CP);
-        OpCodeTable.insert("cpd", OpCode_CPD);
-        OpCodeTable.insert("cpdr", OpCode_CPDR);
-        OpCodeTable.insert("cpi", OpCode_CPI);
-        OpCodeTable.insert("cpir", OpCode_CPIR);
-        OpCodeTable.insert("cpl", OpCode_CPL);
-        OpCodeTable.insert("daa", OpCode_DAA);
-        OpCodeTable.insert("dec", OpCode_DEC);
-        OpCodeTable.insert("di", OpCode_DI);
-        OpCodeTable.insert("djnz", OpCode_DJNZ);
-        OpCodeTable.insert("ei", OpCode_EI);
-        OpCodeTable.insert("ex", OpCode_EX);
-        OpCodeTable.insert("exa", OpCode_EXA); /* added */
-        OpCodeTable.insert("exd", OpCode_EXD); /* added */
-        OpCodeTable.insert("exx", OpCode_EXX);
-        OpCodeTable.insert("halt", OpCode_HALT);
-        OpCodeTable.insert("im", OpCode_IM);
-        OpCodeTable.insert("in", OpCode_IN);
-        OpCodeTable.insert("inc", OpCode_INC);
-        OpCodeTable.insert("ind", OpCode_IND);
-        OpCodeTable.insert("indr", OpCode_INDR);
-        OpCodeTable.insert("ini", OpCode_INI);
-        OpCodeTable.insert("inir", OpCode_INIR);
-        OpCodeTable.insert("inf", OpCode_INF); // thanks to BREEZE
-        OpCodeTable.insert("jp", OpCode_JP);
-        OpCodeTable.insert("jr", OpCode_JR);
-        OpCodeTable.insert("ld", OpCode_LD);
-        OpCodeTable.insert("ldd", OpCode_LDD);
-        OpCodeTable.insert("lddr", OpCode_LDDR);
-        OpCodeTable.insert("ldi", OpCode_LDI);
-        OpCodeTable.insert("ldir", OpCode_LDIR);
-        OpCodeTable.insert("mulub", OpCode_MULUB);
-        OpCodeTable.insert("muluw", OpCode_MULUW);
-        OpCodeTable.insert("neg", OpCode_NEG);
-        OpCodeTable.insert("nop", OpCode_NOP);
-        OpCodeTable.insert("or", OpCode_OR);
-        OpCodeTable.insert("otdr", OpCode_OTDR);
-        OpCodeTable.insert("otir", OpCode_OTIR);
-        OpCodeTable.insert("out", OpCode_OUT);
-        OpCodeTable.insert("outd", OpCode_OUTD);
-        OpCodeTable.insert("outi", OpCode_OUTI);
+        OpCodeTable.insert("adc"s, OpCode_ADC);
+        OpCodeTable.insert("add"s, OpCode_ADD);
+        OpCodeTable.insert("and"s, OpCode_AND);
+        OpCodeTable.insert("bit"s, OpCode_BIT);
+        OpCodeTable.insert("call"s, OpCode_CALL);
+        OpCodeTable.insert("ccf"s, OpCode_CCF);
+        OpCodeTable.insert("cp"s, OpCode_CP);
+        OpCodeTable.insert("cpd"s, OpCode_CPD);
+        OpCodeTable.insert("cpdr"s, OpCode_CPDR);
+        OpCodeTable.insert("cpi"s, OpCode_CPI);
+        OpCodeTable.insert("cpir"s, OpCode_CPIR);
+        OpCodeTable.insert("cpl"s, OpCode_CPL);
+        OpCodeTable.insert("daa"s, OpCode_DAA);
+        OpCodeTable.insert("dec"s, OpCode_DEC);
+        OpCodeTable.insert("di"s, OpCode_DI);
+        OpCodeTable.insert("djnz"s, OpCode_DJNZ);
+        OpCodeTable.insert("ei"s, OpCode_EI);
+        OpCodeTable.insert("ex"s, OpCode_EX);
+        OpCodeTable.insert("exa"s, OpCode_EXA); /* added */
+        OpCodeTable.insert("exd"s, OpCode_EXD); /* added */
+        OpCodeTable.insert("exx"s, OpCode_EXX);
+        OpCodeTable.insert("halt"s, OpCode_HALT);
+        OpCodeTable.insert("im"s, OpCode_IM);
+        OpCodeTable.insert("in"s, OpCode_IN);
+        OpCodeTable.insert("inc"s, OpCode_INC);
+        OpCodeTable.insert("ind"s, OpCode_IND);
+        OpCodeTable.insert("indr"s, OpCode_INDR);
+        OpCodeTable.insert("ini"s, OpCode_INI);
+        OpCodeTable.insert("inir"s, OpCode_INIR);
+        OpCodeTable.insert("inf"s, OpCode_INF); // thanks to BREEZE
+        OpCodeTable.insert("jp"s, OpCode_JP);
+        OpCodeTable.insert("jr"s, OpCode_JR);
+        OpCodeTable.insert("ld"s, OpCode_LD);
+        OpCodeTable.insert("ldd"s, OpCode_LDD);
+        OpCodeTable.insert("lddr"s, OpCode_LDDR);
+        OpCodeTable.insert("ldi"s, OpCode_LDI);
+        OpCodeTable.insert("ldir"s, OpCode_LDIR);
+        OpCodeTable.insert("mulub"s, OpCode_MULUB);
+        OpCodeTable.insert("muluw"s, OpCode_MULUW);
+        OpCodeTable.insert("neg"s, OpCode_NEG);
+        OpCodeTable.insert("nop"s, OpCode_NOP);
+        OpCodeTable.insert("or"s, OpCode_OR);
+        OpCodeTable.insert("otdr"s, OpCode_OTDR);
+        OpCodeTable.insert("otir"s, OpCode_OTIR);
+        OpCodeTable.insert("out"s, OpCode_OUT);
+        OpCodeTable.insert("outd"s, OpCode_OUTD);
+        OpCodeTable.insert("outi"s, OpCode_OUTI);
         if (Options::IsReversePOP) {
-            OpCodeTable.insert("pop", OpCode_POPreverse);
+            OpCodeTable.insert("pop"s, OpCode_POPreverse);
         } else {
-            OpCodeTable.insert("pop", OpCode_POP);
+            OpCodeTable.insert("pop"s, OpCode_POP);
         }
-        OpCodeTable.insert("push", OpCode_PUSH);
-        OpCodeTable.insert("res", OpCode_RES);
-        OpCodeTable.insert("ret", OpCode_RET);
-        OpCodeTable.insert("reti", OpCode_RETI);
-        OpCodeTable.insert("retn", OpCode_RETN);
-        OpCodeTable.insert("rl", OpCode_RL);
-        OpCodeTable.insert("rla", OpCode_RLA);
-        OpCodeTable.insert("rlc", OpCode_RLC);
-        OpCodeTable.insert("rlca", OpCode_RLCA);
-        OpCodeTable.insert("rld", OpCode_RLD);
-        OpCodeTable.insert("rr", OpCode_RR);
-        OpCodeTable.insert("rra", OpCode_RRA);
-        OpCodeTable.insert("rrc", OpCode_RRC);
-        OpCodeTable.insert("rrca", OpCode_RRCA);
-        OpCodeTable.insert("rrd", OpCode_RRD);
-        OpCodeTable.insert("rst", OpCode_RST);
-        OpCodeTable.insert("sbc", OpCode_SBC);
-        OpCodeTable.insert("scf", OpCode_SCF);
-        OpCodeTable.insert("set", OpCode_SET);
-        OpCodeTable.insert("sla", OpCode_SLA);
-        OpCodeTable.insert("sli", OpCode_SLL);
-        OpCodeTable.insert("sll", OpCode_SLL);
-        OpCodeTable.insert("sra", OpCode_SRA);
-        OpCodeTable.insert("srl", OpCode_SRL);
-        OpCodeTable.insert("sub", OpCode_SUB);
-        OpCodeTable.insert("xor", OpCode_XOR);
+        OpCodeTable.insert("push"s, OpCode_PUSH);
+        OpCodeTable.insert("res"s, OpCode_RES);
+        OpCodeTable.insert("ret"s, OpCode_RET);
+        OpCodeTable.insert("reti"s, OpCode_RETI);
+        OpCodeTable.insert("retn"s, OpCode_RETN);
+        OpCodeTable.insert("rl"s, OpCode_RL);
+        OpCodeTable.insert("rla"s, OpCode_RLA);
+        OpCodeTable.insert("rlc"s, OpCode_RLC);
+        OpCodeTable.insert("rlca"s, OpCode_RLCA);
+        OpCodeTable.insert("rld"s, OpCode_RLD);
+        OpCodeTable.insert("rr"s, OpCode_RR);
+        OpCodeTable.insert("rra"s, OpCode_RRA);
+        OpCodeTable.insert("rrc"s, OpCode_RRC);
+        OpCodeTable.insert("rrca"s, OpCode_RRCA);
+        OpCodeTable.insert("rrd"s, OpCode_RRD);
+        OpCodeTable.insert("rst"s, OpCode_RST);
+        OpCodeTable.insert("sbc"s, OpCode_SBC);
+        OpCodeTable.insert("scf"s, OpCode_SCF);
+        OpCodeTable.insert("set"s, OpCode_SET);
+        OpCodeTable.insert("sla"s, OpCode_SLA);
+        OpCodeTable.insert("sli"s, OpCode_SLL);
+        OpCodeTable.insert("sll"s, OpCode_SLL);
+        OpCodeTable.insert("sra"s, OpCode_SRA);
+        OpCodeTable.insert("srl"s, OpCode_SRL);
+        OpCodeTable.insert("sub"s, OpCode_SUB);
+        OpCodeTable.insert("xor"s, OpCode_XOR);
     }
 } // eof namespace Z80
 
