@@ -115,7 +115,7 @@ static int tolua_sjasm_sj_get_label00(lua_State *tolua_S) {
 
 #endif //#ifndef TOLUA_DISABLE
 
-/* function: LabelTable.Insert */
+/* function: LabelTable.insert */
 #ifndef TOLUA_DISABLE_tolua_sjasm_sj_insert_label00
 
 static int tolua_sjasm_sj_insert_label00(lua_State *tolua_S) {

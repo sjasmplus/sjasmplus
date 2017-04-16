@@ -45,7 +45,7 @@ bool CLabelTable::Insert(const char *nname, aint nvalue, bool undefined, bool Is
         Error("Label table full", 0, FATAL);
     }
 
-    // Find label in label table
+    // find label in label table
     int tr, htr;
     tr = Hash(nname);
     while ((htr = HashTable[tr])) {

@@ -267,7 +267,7 @@ CFunctionTable::CFunctionTable() {
     NextLocation = 1;
 }
 
-int CFunctionTable::Insert(const char *nname, void(*nfunp)(void)) {
+int CFunctionTable::insert(const char *nname, void(*nfunp)(void)) {
     char *p;
     if (NextLocation >= FUNTABSIZE * 2 / 3) {
         _COUT "Functions Table is full" _ENDL;
@@ -316,22 +316,22 @@ int CFunctionTable::Insert(const char *nname, void(*nfunp)(void)) {
     return 1;
 }
 
-int CFunctionTable::InsertDirective(const char *nname, void(*nfunp)(void)) {
+int CFunctionTable::insertDirective(const char *nname, void(*nfunp)(void)) {
     size_t len = strlen(nname) + 2;
     char *buf = new char[len];
     //if (buf == NULL) {
     //	Error("No enough memory!", 0, FATAL);
     //}
     STRCPY(buf, len, nname);
-    if (!Insert(buf, nfunp)) {
+    if (!insert(buf, nfunp)) {
         return 0;
     }
     STRCPY(buf + 1, len, nname);
     buf[0] = '.';
-    return Insert(buf, nfunp);
+    return insert(buf, nfunp);
 }
 
-int CFunctionTable::CallIfExists(const char *nname, bool bol) {
+int CFunctionTable::callIfExists(const char *nname, bool bol) {
     int tr, htr, otr;
     otr = tr = Hash(nname);
     while ((htr = HashTable[tr])) {
@@ -354,7 +354,7 @@ int CFunctionTable::CallIfExists(const char *nname, bool bol) {
     return 0;
 }
 
-int CFunctionTable::Find(char *nname) {
+int CFunctionTable::find(char *nname) {
     int tr, htr, otr;
     otr = tr = Hash(nname);
     while ((htr = HashTable[tr])) {

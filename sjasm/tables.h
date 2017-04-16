@@ -30,6 +30,10 @@
 #define SJASMPLUS_TABLES_H
 
 #include <iostream>
+#include <string>
+#include <map>
+
+using namespace std::string_literals;
 
 using std::cout;
 using std::cerr;
@@ -62,13 +66,13 @@ class CFunctionTable {
 public:
     CFunctionTable();
 
-    int Insert(const char *, void(*)(void));
+    int insert(const char *, void(*)(void));
 
-    int InsertDirective(const char *, void(*)(void));
+    int insertDirective(const char *, void(*)(void));
 
-    int CallIfExists(const char *, bool = 0);
+    int callIfExists(const char *, bool = 0);
 
-    int Find(char *);
+    int find(char *);
 
 private:
     int HashTable[LABTABSIZE], NextLocation;

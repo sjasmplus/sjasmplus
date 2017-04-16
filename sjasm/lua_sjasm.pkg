@@ -34,7 +34,7 @@ module sj {
 	char* DefineTable.Get @ get_define (char *);
 	bool DefineTable.Replace @ insert_define (char *, char *);
 	int LuaGetLabel @ get_label (char *);
-	bool LabelTable.Insert @ insert_label (char *, unsigned int, bool=false, bool=false);
+	bool LabelTable.insert @ insert_label (char *, unsigned int, bool=false, bool=false);
 }
 
 // sjasm.h
