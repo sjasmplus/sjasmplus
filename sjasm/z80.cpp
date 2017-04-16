@@ -1331,9 +1331,9 @@ namespace Z80 {
             /* added */
             e[0] = e[1] = e[2] = -1;
             if (!GetAddress(lp, nad)) {
-                nad = Asm.GetCPUAddress() + 2;
+                nad = Asm.getCPUAddress() + 2;
             }
-            jmp = nad - Asm.GetCPUAddress() - 2;
+            jmp = nad - Asm.getCPUAddress() - 2;
             if (jmp < -128 || jmp > 127) {
                 char el[LINEMAX];
                 SPRINTF1(el, LINEMAX, "[DJNZ] Target out of range (%i)", jmp);
@@ -1843,9 +1843,9 @@ namespace Z80 {
 				_COUT "JUST BREAKPOINT" _ENDL;
 			}*/
             if (!(GetAddress(lp, jrad))) {
-                jrad = Asm.GetCPUAddress() + 2;
+                jrad = Asm.getCPUAddress() + 2;
             }
-            jmp = jrad - Asm.GetCPUAddress() - 2;
+            jmp = jrad - Asm.getCPUAddress() - 2;
             if (jmp < -128 || jmp > 127) {
                 char el[LINEMAX];
                 /*if (pass == LASTPASS) {

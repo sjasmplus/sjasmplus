@@ -44,7 +44,7 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
     snbuf[2] = 0x27; //hl'
     snbuf[15] = 0x3a; //iy
     snbuf[16] = 0x5c; //iy
-    if (!Asm.IsPagedMemory()) {
+    if (!Asm.isPagedMemory()) {
         snbuf[0] = 0x3F; //i
         snbuf[3] = 0x9B; //de'
         snbuf[4] = 0x36; //de'
@@ -63,16 +63,16 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
         snbuf[21] = 0x54; //af
         snbuf[22] = 0x00; //af
 
-        if (Asm.GetByte(0xFF2D) == (uint8_t) 0xb1 &&
-            Asm.GetByte(0xFF2E) == (uint8_t) 0x33 &&
-            Asm.GetByte(0xFF2F) == (uint8_t) 0xe0 &&
-            Asm.GetByte(0xFF30) == (uint8_t) 0x5c) {
+        if (Asm.getByte(0xFF2D) == (uint8_t) 0xb1 &&
+                Asm.getByte(0xFF2E) == (uint8_t) 0x33 &&
+                Asm.getByte(0xFF2F) == (uint8_t) 0xe0 &&
+                Asm.getByte(0xFF30) == (uint8_t) 0x5c) {
 
             snbuf[23] = 0x2D;// + 16; //sp
             snbuf[24] = 0xFF; //sp
 
-            Asm.WriteByte(0xFF2D + 16, (uint8_t) (start & 0x00FF));  // pc
-            Asm.WriteByte(0xFF2E + 16, (uint8_t) (start >> 8));      // pc
+            Asm.writeByte(0xFF2D + 16, (uint8_t) (start & 0x00FF));  // pc
+            Asm.writeByte(0xFF2E + 16, (uint8_t) (start >> 8));      // pc
         } else {
             Warning("[SAVESNA] RAM <0x4000-0x4001> will be overriden due to 48k snapshot imperfect format.", NULL,
                     LASTPASS);
@@ -80,8 +80,8 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
             snbuf[23] = 0x00; //sp
             snbuf[24] = 0x40; //sp
 
-            Asm.WriteByte(0x4000, (uint8_t) (start & 0x00FF));  // pc
-            Asm.WriteByte(0x4001, (uint8_t) (start >> 8));      // pc
+            Asm.writeByte(0x4000, (uint8_t) (start & 0x00FF));  // pc
+            Asm.writeByte(0x4001, (uint8_t) (start >> 8));      // pc
         }
     } else {
         snbuf[23] = 0X00; //sp
@@ -99,28 +99,28 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
     }
 
     try {
-        if (!Asm.IsPagedMemory()) {
+        if (!Asm.isPagedMemory()) {
             // 48K
-            ofs.write((const char *) Asm.GetPtrToMem() + 0x4000, 0xC000);
+            ofs.write((const char *) Asm.getPtrToMem() + 0x4000, 0xC000);
         } else {
             // 128K
-            ofs.write((const char *) Asm.GetPtrToPage(5), 0x4000);
-            ofs.write((const char *) Asm.GetPtrToPage(2), 0x4000);
-            ofs.write((const char *) Asm.GetPtrToPageInSlot(3), 0x4000);
+            ofs.write((const char *) Asm.getPtrToPage(5), 0x4000);
+            ofs.write((const char *) Asm.getPtrToPage(2), 0x4000);
+            ofs.write((const char *) Asm.getPtrToPageInSlot(3), 0x4000);
         }
 
-        if (!Asm.IsPagedMemory()) {
+        if (!Asm.isPagedMemory()) {
 
         } else { // 128K
             snbuf[27] = (uint8_t) (start & 0x00FF); //pc
             snbuf[28] = (uint8_t) (start >> 8); //pc
-            snbuf[29] = 0x10 + Asm.GetPageNumInSlot(3); //7ffd
+            snbuf[29] = 0x10 + Asm.getPageNumInSlot(3); //7ffd
             snbuf[30] = 0; //tr-dos
             ofs.write((const char *) snbuf + 27, 4);
         }
 
         //if (DeviceID) {
-        if (!Asm.IsPagedMemory()) {
+        if (!Asm.isPagedMemory()) {
             /*for (int i = 0; i < 5; i++) {
                 if (fwrite(Device->GetPage(0)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
                     Error("Write error (disk full?)", fname, CATCHALL);
@@ -130,8 +130,8 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
             }*/
         } else { // 128K
             for (int i = 0; i < 8; i++) {
-                if (i != Asm.GetPageNumInSlot(3) && i != 2 && i != 5) {
-                    ofs.write((const char *) Asm.GetPtrToPage(i), 0x4000);
+                if (i != Asm.getPageNumInSlot(3) && i != 2 && i != 5) {
+                    ofs.write((const char *) Asm.getPtrToPage(i), 0x4000);
                 }
             }
         }
@@ -156,8 +156,8 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
         }
     }*/
 
-    if (Asm.IsPagedMemory() &&
-        Asm.GetMemModelName() != "ZXSPECTRUM128"s) {
+    if (Asm.isPagedMemory() &&
+            Asm.getMemModelName() != "ZXSPECTRUM128"s) {
         Warning("Only 128kb will be written to snapshot"s, fname.string());
     }
 

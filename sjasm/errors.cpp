@@ -23,7 +23,7 @@ extern lua_State *LUA;
 extern int LuaLine;
 namespace global {
     extern fs::path CurrentDirectory;
-    extern fs::path currentFilename;
+    extern fs::path CurrentFilename;
 }
 extern fs::ofstream OFSListing;
 
@@ -73,7 +73,7 @@ void Error(const char *fout, const char *bd, int type) {
         } else {
             ln = CurrentLocalLine;
         }
-        ErrorStr = global::currentFilename.string() + "("s + std::to_string(ln) + "): error: "s + fout;
+        ErrorStr = global::CurrentFilename.string() + "("s + std::to_string(ln) + "): error: "s + fout;
     }
 
     if (bd) {
@@ -124,7 +124,7 @@ void Warning(const char *fout, const char *bd, int type) {
         } else {
             ln = CurrentLocalLine;
         }
-        ErrorStr = global::currentFilename.string() + "("s + std::to_string(ln) + "): warning: "s + fout;
+        ErrorStr = global::CurrentFilename.string() + "("s + std::to_string(ln) + "): warning: "s + fout;
     }
 
     if (bd) {

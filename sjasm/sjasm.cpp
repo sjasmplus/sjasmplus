@@ -43,7 +43,7 @@ char *DeviceID = 0;
 
 namespace global {
     fs::path CurrentDirectory;
-    fs::path currentFilename;
+    fs::path CurrentFilename;
 }
 
 char *lp, line[LINEMAX], temp[LINEMAX], pline[LINEMAX2], *bp;
@@ -112,7 +112,7 @@ void InitPass(int p) {
     macrolabp = NULL;
     listmacro = 0;
     pass = p;
-    Asm.Reset();
+    Asm.reset();
     moreInputLeft = true;
     CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
     PreviousAddress = 0;
@@ -244,7 +244,7 @@ int main(int argc, const char *argv[]) {
             OpenFile(SourceFNames[i]);
         }
 
-        Asm.Reset();
+        Asm.reset();
         if (pass != LASTPASS) {
             _COUT "Pass " _CMDL pass _CMDL " complete (" _CMDL ErrorCount _CMDL " errors)" _ENDL;
         } else {
@@ -282,20 +282,20 @@ int main(int argc, const char *argv[]) {
 }
 
 
-boost::optional<std::string> Assembler::EmitByte(uint8_t byte) {
+boost::optional<std::string> Assembler::emitByte(uint8_t byte) {
     const std::string errmsg = "CPU address space overflow"s;
     if (CPUAddrOverflow) {
         return errmsg;
     } else if (EmitAddrOverflow) {
         return errmsg + " (DISP shift = "s + std::to_string(EmitAddress - CPUAddress) + ")"s;
     }
-    MemManager.WriteByte(GetEmitAddress(), byte);
-    IncAddress();
+    MemManager.writeByte(getEmitAddress(), byte);
+    incAddress();
     return boost::none;
 }
 
 // Increase address and return true on overflow
-bool Assembler::IncAddress() {
+bool Assembler::incAddress() {
     CPUAddress++;
     if (CPUAddress == 0)
         CPUAddrOverflow = true;
@@ -310,14 +310,14 @@ bool Assembler::IncAddress() {
 }
 
 // DISP directive
-void Assembler::DoDisp(uint16_t dispAddress) {
+void Assembler::doDisp(uint16_t DispAddress) {
     EmitAddress = CPUAddress;
-    CPUAddress = dispAddress;
+    CPUAddress = DispAddress;
     Disp = true;
 }
 
 // ENT directive (undoes DISP)
-void Assembler::DoEnt() {
+void Assembler::doEnt() {
     CPUAddress = EmitAddress;
     Disp = false;
 }

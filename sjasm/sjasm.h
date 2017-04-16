@@ -43,7 +43,7 @@ namespace fs = boost::filesystem;
 
 namespace global {
     extern fs::path CurrentDirectory;
-    extern fs::path currentFilename;
+    extern fs::path CurrentFilename;
 }
 
 // extend
@@ -109,114 +109,114 @@ private:
 
 public:
 
-    uint16_t GetCPUAddress() {
+    uint16_t getCPUAddress() {
         return CPUAddress;
     }
 
-    uint16_t GetEmitAddress() {
+    uint16_t getEmitAddress() {
         return Disp ? EmitAddress : CPUAddress;
     }
 
-    boost::optional<std::string> EmitByte(uint8_t byte);
+    boost::optional<std::string> emitByte(uint8_t byte);
 
     // ORG directive
-    void SetAddress(uint16_t newAddress) {
-        CPUAddress = newAddress;
+    void setAddress(uint16_t NewAddress) {
+        CPUAddress = NewAddress;
         // Reset effects of any SLOT directive so that the ORG page option (if any)
         // would affect the page under the newly set address
         Slot = -1;
     }
 
     // Increase address and return true on overflow
-    bool IncAddress();
+    bool incAddress();
 
     // DISP directive
-    void DoDisp(uint16_t dispAddress);
+    void doDisp(uint16_t DispAddress);
 
     // ENT directive (undoes DISP)
-    void DoEnt();
+    void doEnt();
 
-    bool IsDisp() { return Disp; }
+    bool isDisp() { return Disp; }
 
-    void Reset() {
+    void reset() {
         CPUAddress = EmitAddress = 0;
         Disp = CPUAddrOverflow = EmitAddrOverflow = false;
         Slot = -1;
     }
 
-    void SetMemModel(const std::string &name) {
-        MemManager.SetMemModel(name);
+    void setMemModel(const std::string &Name) {
+        MemManager.setMemModel(Name);
     }
 
-    const std::string &GetMemModelName() {
-        return MemManager.GetMemModelName();
+    const std::string &getMemModelName() {
+        return MemManager.setMemModelName();
     }
 
-    bool IsPagedMemory() {
-        return MemManager.IsPagedMemory();
+    bool isPagedMemory() {
+        return MemManager.isPagedMemory();
     }
 
-    int NumMemPages() {
-        return MemManager.NumMemPages();
+    int numMemPages() {
+        return MemManager.numMemPages();
     }
 
-    int GetPageNumInSlot(int slot) {
-        return MemManager.GetPageNumInSlot(slot);
+    int getPageNumInSlot(int Slot) {
+        return MemManager.getPageNumInSlot(Slot);
     }
 
     // Returns an error string in case of failure
     // If Slot has been set by a SLOT directive, use it.
     // Otherwise use the slot of the current address.
-    boost::optional<std::string> SetPage(int page) {
+    boost::optional<std::string> setPage(int Page) {
         if (Slot != -1) {
-            int s = Slot;
+            int S = Slot;
             Slot = -1;
-            return MemManager.SetPage(s, page);
-        } else return MemManager.SetPage(GetEmitAddress(), page);
+            return MemManager.setPage(S, Page);
+        } else return MemManager.setPage(getEmitAddress(), Page);
     }
 
     // Save slot number set by the SLOT directive
-    boost::optional<std::string> SetSlot(int slot) {
-        auto err = MemManager.ValidateSlot(slot);
-        if (err) return err;
+    boost::optional<std::string> setSlot(int Slot) {
+        auto Err = MemManager.validateSlot(Slot);
+        if (Err) return Err;
         else {
-            Slot = slot;
+            Slot = Slot;
             return boost::none;
         }
     }
 
-    int GetPage() {
-        return MemManager.GetPageForAddress(GetEmitAddress());
+    int getPage() {
+        return MemManager.getPageForAddress(getEmitAddress());
     }
 
-    uint8_t GetByte(uint16_t addr) {
-        uint8_t b;
-        GetBytes(&b, addr, 1);
-        return b;
+    uint8_t getByte(uint16_t Addr) {
+        uint8_t Byte;
+        getBytes(&Byte, Addr, 1);
+        return Byte;
     }
 
-    void WriteByte(uint16_t addr, uint8_t byte) {
-        MemManager.WriteByte(addr, byte);
+    void writeByte(uint16_t Addr, uint8_t Byte) {
+        MemManager.writeByte(Addr, Byte);
     }
 
-    void GetBytes(uint8_t *dest, uint16_t addr, uint16_t size) {
-        MemManager.GetBytes(dest, addr, size);
+    void getBytes(uint8_t *Dest, uint16_t Addr, uint16_t Size) {
+        MemManager.getBytes(Dest, Addr, Size);
     }
 
-    void GetBytes(uint8_t *dest, int slot, uint16_t addrInPage, uint16_t size) {
-        MemManager.GetBytes(dest, slot, addrInPage, size);
+    void getBytes(uint8_t *Dest, int Slot, uint16_t AddrInPage, uint16_t Size) {
+        MemManager.getBytes(Dest, Slot, AddrInPage, Size);
     }
 
-    uint8_t *GetPtrToMem() {
-        return MemManager.GetPtrToMem();
+    uint8_t *getPtrToMem() {
+        return MemManager.getPtrToMem();
     }
 
-    uint8_t *GetPtrToPage(int page) {
-        return MemManager.GetPtrToPage(page);
+    uint8_t *getPtrToPage(int Page) {
+        return MemManager.getPtrToPage(Page);
     }
 
-    uint8_t *GetPtrToPageInSlot(int slot) {
-        return MemManager.GetPtrToPageInSlot(slot);
+    uint8_t *getPtrToPageInSlot(int Slot) {
+        return MemManager.getPtrToPageInSlot(Slot);
     }
 };
 

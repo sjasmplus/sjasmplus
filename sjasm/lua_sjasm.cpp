@@ -155,7 +155,7 @@ static int tolua_sjasm_sj_insert_label00(lua_State *tolua_S) {
 #ifndef TOLUA_DISABLE_tolua_get_sj_unsigned_current_address
 
 static int tolua_get_sj_unsigned_current_address(lua_State *tolua_S) {
-    tolua_pushnumber(tolua_S, (lua_Number) Asm.GetCPUAddress());
+    tolua_pushnumber(tolua_S, (lua_Number) Asm.getCPUAddress());
     return 1;
 }
 
@@ -496,7 +496,7 @@ static int tolua_sjasm_sj_set_device00(lua_State *tolua_S) {
     {
         char *id = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
-            Asm.SetMemModel(id);
+            Asm.setMemModel(id);
             tolua_pushboolean(tolua_S, true);
         }
     }
@@ -524,7 +524,7 @@ static int tolua_sjasm_sj_get_device00(lua_State *tolua_S) {
 #endif
     {
         {
-            char *tolua_ret = (char *) Asm.GetMemModelName().c_str();
+            char *tolua_ret = (char *) Asm.getMemModelName().c_str();
             tolua_pushstring(tolua_S, (const char *) tolua_ret);
         }
     }

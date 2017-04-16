@@ -279,7 +279,7 @@ void ListFile() {
         OFSListing << pline;
         listbytes3(pad);
     }
-    epadres = Asm.GetCPUAddress();
+    epadres = Asm.getCPUAddress();
     PreviousAddress = (aint) -1;
     nEB = 0;
 }
@@ -316,7 +316,7 @@ void ListFileSkip(char *line) {
     }
     STRCAT(pp, LINEMAX2, line);
     OFSListing << pline;
-    epadres = Asm.GetCPUAddress();
+    epadres = Asm.getCPUAddress();
     PreviousAddress = (aint) -1;
     nEB = 0;
 }
@@ -349,7 +349,7 @@ void CheckPage() {
 void Emit(uint8_t byte) {
     EB[nEB++] = byte;
     if (pass == LASTPASS) {
-        auto err = Asm.EmitByte(byte);
+        auto err = Asm.emitByte(byte);
         if (err) {
             Error(*err, ""s, FATAL);
             return;
@@ -400,7 +400,7 @@ void Emit(uint8_t byte) {
         }
 */
     } else {
-        Asm.IncAddress();
+        Asm.incAddress();
     }
 /*
     if (PseudoORG) {
@@ -418,18 +418,18 @@ void Emit(uint8_t byte) {
 }
 
 void EmitByte(uint8_t byte) {
-    PreviousAddress = Asm.GetCPUAddress();
+    PreviousAddress = Asm.getCPUAddress();
     Emit(byte);
 }
 
 void EmitWord(uint16_t word) {
-    PreviousAddress = Asm.GetCPUAddress();
+    PreviousAddress = Asm.getCPUAddress();
     Emit(word % 256);
     Emit(word / 256);
 }
 
 void EmitBytes(int *bytes) {
-    PreviousAddress = Asm.GetCPUAddress();
+    PreviousAddress = Asm.getCPUAddress();
     if (*bytes == -1) {
         Error("Illegal instruction", line, CATCHALL);
         *lp = 0;
@@ -440,7 +440,7 @@ void EmitBytes(int *bytes) {
 }
 
 void EmitWords(int *words) {
-    PreviousAddress = Asm.GetCPUAddress();
+    PreviousAddress = Asm.getCPUAddress();
     while (*words != -1) {
         Emit((*words) % 256);
         Emit((*words++) / 256);
@@ -449,20 +449,20 @@ void EmitWords(int *words) {
 
 /* modified */
 void EmitBlock(aint byte, aint len, bool nulled) {
-    PreviousAddress = Asm.GetCPUAddress();
+    PreviousAddress = Asm.getCPUAddress();
     if (len) {
         EB[nEB++] = byte;
     }
     while (len--) {
         if (pass == LASTPASS) {
             if (!nulled) { // Should be called "filled"
-                auto err = Asm.EmitByte(byte);
+                auto err = Asm.emitByte(byte);
                 if (err) {
                     Error(*err, ""s, FATAL);
                     return;
                 }
             } else {
-                Asm.IncAddress();
+                Asm.incAddress();
             }
 
 /*
@@ -508,7 +508,7 @@ void EmitBlock(aint byte, aint len, bool nulled) {
             }
 */
         } else {
-            Asm.IncAddress();
+            Asm.incAddress();
         }
 /*
         if (PseudoORG) {
@@ -572,7 +572,7 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
     fullFilePath = GetAbsPath(fname);
     fs::ifstream ifs;
 
-    uint16_t destAddr = Asm.GetEmitAddress();
+    uint16_t destAddr = Asm.getEmitAddress();
     if ((int) destAddr + len > 0x10000) {
         Error(std::to_string(len) + " bytes of file \""s + fname.string() +
               "\" won't fit at current address="s +
@@ -611,7 +611,7 @@ void BinIncFile(const fs::path &fname, int offset, int len) {
                 Error("Could not read "s + std::to_string(len) + " bytes. File too small?", fname.string(), FATAL);
                 return;
             }
-            auto err = Asm.EmitByte(byte);
+            auto err = Asm.emitByte(byte);
             if (err) {
                 Error(*err, fname.string(), FATAL);
                 return;
@@ -766,12 +766,12 @@ void OpenFile(const fs::path &nfilename) {
 
     aint oCurrentLocalLine = CurrentLocalLine;
     CurrentLocalLine = 0;
-    ofilename = global::currentFilename;
+    ofilename = global::CurrentFilename;
 
     if (Options::IsShowFullPath) {
-        global::currentFilename = fullpath;
+        global::CurrentFilename = fullpath;
     } else {
-        global::currentFilename = nfilename;
+        global::CurrentFilename = nfilename;
     }
 
     oCurrentDirectory = global::CurrentDirectory;
@@ -784,7 +784,7 @@ void OpenFile(const fs::path &nfilename) {
     pIFS->close();
     --IncludeLevel;
     global::CurrentDirectory = oCurrentDirectory;
-    global::currentFilename = ofilename;
+    global::CurrentFilename = ofilename;
     if (CurrentLocalLine > MaxLineNumber) {
         MaxLineNumber = CurrentLocalLine;
     }
@@ -1150,7 +1150,7 @@ int SaveRAM(fs::ofstream &ofs, int start, int length) {
     }
 
     char *data = new char[length];
-    Asm.GetBytes((uint8_t *) data, start, length);
+    Asm.getBytes((uint8_t *) data, start, length);
     try {
         ofs.write(data, length);
     } catch (std::ofstream::failure &e) {
@@ -1205,7 +1205,7 @@ void *SaveRAM(void *dst, int start, int length) {
         length = 0x10000 - start;
     }
 
-    Asm.GetBytes(target, start, length);
+    Asm.getBytes(target, start, length);
     target += length;
 
 /*
@@ -1247,7 +1247,7 @@ uint8_t MemGetByte(uint16_t address) {
         return 0;
     }
 
-    return Asm.GetByte(address);
+    return Asm.getByte(address);
 
 /*
     CDeviceSlot *S;

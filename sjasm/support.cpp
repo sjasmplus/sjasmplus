@@ -51,14 +51,14 @@ void GetCurrentDirectory(int whatever, char *pad) {
 int SearchPath(const char *oudzp, const fs::path& fileName, const char *whatever, int maxlen, char *nieuwzp, char **ach) {
 	FILE* fp;
 	char* p, * f;
-	if (global::currentFilename[0] == '/') {
-		STRCPY(nieuwzp, maxlen, global::currentFilename);
+	if (global::CurrentFilename[0] == '/') {
+		STRCPY(nieuwzp, maxlen, global::CurrentFilename);
 	} else {
 		STRCPY(nieuwzp, maxlen, oudzp);
 		if (*nieuwzp && nieuwzp[strlen(nieuwzp)] != '/') {
 			STRCAT(nieuwzp, maxlen, "/");
 		}
-		STRCAT(nieuwzp, maxlen, global::currentFilename);
+		STRCAT(nieuwzp, maxlen, global::CurrentFilename);
 	}
 	if (ach) {
 		p = f = nieuwzp;

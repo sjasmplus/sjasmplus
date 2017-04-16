@@ -325,9 +325,9 @@ void dirBLOCK() {
 
 void dirORG() {
     aint val;
-    if (Asm.IsPagedMemory()) {
+    if (Asm.isPagedMemory()) {
         if (ParseExpression(lp, val)) {
-            Asm.SetAddress(val);
+            Asm.setAddress(val);
         } else {
             Error("[ORG] Syntax error", lp, CATCHALL);
             return;
@@ -337,7 +337,7 @@ void dirORG() {
                 Error("[ORG] Syntax error", lp, CATCHALL);
                 return;
             }
-            boost::optional<std::string> err = Asm.SetPage(val);
+            boost::optional<std::string> err = Asm.setPage(val);
             if (err) {
                 Error("[ORG] "s + *err, lp, CATCHALL);
                 return;
@@ -345,7 +345,7 @@ void dirORG() {
         }
     } else {
         if (ParseExpression(lp, val)) {
-            Asm.SetAddress(val);
+            Asm.setAddress(val);
         } else {
             Error("[ORG] Syntax error", 0, CATCHALL);
         }
@@ -355,7 +355,7 @@ void dirORG() {
 void dirDISP() {
     aint val;
     if (ParseExpression(lp, val)) {
-        Asm.DoDisp(val);
+        Asm.doDisp(val);
     } else {
         Error("[DISP] Syntax error", 0, CATCHALL);
         return;
@@ -363,11 +363,11 @@ void dirDISP() {
 }
 
 void dirENT() {
-    if (!Asm.IsDisp()) {
+    if (!Asm.isDisp()) {
         Error("ENT should be after DISP", 0);
         return;
     }
-    Asm.DoEnt();
+    Asm.doEnt();
 }
 
 void dirPAGE() {
@@ -376,7 +376,7 @@ void dirPAGE() {
         Error("Syntax error", 0, CATCHALL);
         return;
     }
-    boost::optional<std::string> err = Asm.SetPage(val);
+    boost::optional<std::string> err = Asm.setPage(val);
     if (err) {
         Error("[PAGE] "s + *err, lp);
         return;
@@ -389,7 +389,7 @@ void dirSLOT() {
         Error("Syntax error", 0, CATCHALL);
         return;
     }
-    auto err = Asm.SetSlot(val);
+    auto err = Asm.setSlot(val);
     if (err) {
         Error("[SLOT] "s + *err, lp);
         return;
@@ -422,7 +422,7 @@ void dirALIGN() {
         case 8192:
         case 16384:
         case 32768:
-            val = (~(Asm.GetCPUAddress()) + 1) & (val - 1);
+            val = (~(Asm.getCPUAddress()) + 1) & (val - 1);
             if (!noexp && comma(lp)) {
                 if (!ParseExpression(lp, byte)) {
                     EmitBlock(0, val, true);
@@ -1903,7 +1903,7 @@ void _lua_showerror() {
 
     // print error and other actions
     err = (char *) ErrorStr.c_str();
-    SPRINTF3(err, LINEMAX2, "%s(%lu): error: [LUA]%s", global::currentFilename.c_str(), ln, pos);
+    SPRINTF3(err, LINEMAX2, "%s(%lu): error: [LUA]%s", global::CurrentFilename.c_str(), ln, pos);
 
     if (!strchr(err, '\n')) {
         STRCAT(err, LINEMAX2, "\n");
@@ -2070,7 +2070,7 @@ void dirDEVICE() {
     char *id;
 
     if ((id = GetID(lp))) {
-        Asm.SetMemModel(id);
+        Asm.setMemModel(id);
     } else {
         Error("[DEVICE] Syntax error", 0, CATCHALL);
     }
@@ -2178,7 +2178,7 @@ void InsertDirectives() {
 }
 
 bool LuaSetPage(aint n) {
-    auto err = Asm.SetPage(n);
+    auto err = Asm.setPage(n);
     if (err) {
         Error("sj.set_page: "s + *err, lp, CATCHALL);
         return false;
@@ -2187,7 +2187,7 @@ bool LuaSetPage(aint n) {
 }
 
 bool LuaSetSlot(aint n) {
-    auto err = Asm.SetSlot(n);
+    auto err = Asm.setSlot(n);
     if (err) {
         Error("sj.set_slot: "s + *err, lp, CATCHALL);
         return false;
