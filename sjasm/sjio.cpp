@@ -564,8 +564,10 @@ char* GetPath(const char* fname, TCHAR** filenamebegin) {
 */
 
 void BinIncFile(const fs::path &fname, int offset, int len) {
+/*
     long res;
     int leng;
+*/
     fs::path fullFilePath;
     fullFilePath = GetAbsPath(fname);
     fs::ifstream ifs;

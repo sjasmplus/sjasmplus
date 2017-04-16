@@ -8,6 +8,11 @@
 
 using boost::algorithm::to_upper_copy;
 
+MemModel::~MemModel() {
+    // Compulsory virtual destructor definition,
+    // even if it's empty
+}
+
 // ZXSPECTRUM48
 void PlainMemModel::InitZXSysVars() {
     if (!ZXSysVarsInitialized) {

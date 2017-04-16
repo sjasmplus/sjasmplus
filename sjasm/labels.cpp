@@ -48,7 +48,7 @@ bool CLabelTable::Insert(const char *nname, aint nvalue, bool undefined, bool Is
     // Find label in label table
     int tr, htr;
     tr = Hash(nname);
-    while (htr = HashTable[tr]) {
+    while ((htr = HashTable[tr])) {
         if (!strcmp((LabelTable[htr].name), nname)) {
             /*if (LabelTable[htr].IsDEFL) {
                             _COUT "A" _CMDL LabelTable[htr].value _ENDL;
@@ -89,7 +89,7 @@ bool CLabelTable::Insert(const char *nname, aint nvalue, bool undefined, bool Is
 bool CLabelTable::Update(const char *nname, aint nvalue) {
     int tr, htr, otr;
     otr = tr = Hash(nname);
-    while (htr = HashTable[tr]) {
+    while ((htr = HashTable[tr])) {
         if (!strcmp((LabelTable[htr].name), nname)) {
             LabelTable[htr].value = nvalue;
             return true;
@@ -107,7 +107,7 @@ bool CLabelTable::Update(const char *nname, aint nvalue) {
 bool CLabelTable::GetValue(const char *nname, aint &nvalue) {
     int tr, htr, otr;
     otr = tr = Hash(nname);
-    while (htr = HashTable[tr]) {
+    while ((htr = HashTable[tr])) {
         if (!strcmp((LabelTable[htr].name), nname)) {
             if (LabelTable[htr].used == -1 && pass != LASTPASS) {
                 LabelTable[htr].used = 1;
@@ -142,7 +142,7 @@ bool CLabelTable::GetValue(const char *nname, aint &nvalue) {
 bool CLabelTable::Find(const char *nname) {
     int tr, htr, otr;
     otr = tr = Hash(nname);
-    while (htr = HashTable[tr]) {
+    while ((htr = HashTable[tr])) {
         if (!strcmp((LabelTable[htr].name), nname)) {
             if (LabelTable[htr].page == -1) {
                 return false;
@@ -163,7 +163,7 @@ bool CLabelTable::Find(const char *nname) {
 bool CLabelTable::IsUsed(const char *nname) {
     int tr, htr, otr;
     otr = tr = Hash(nname);
-    while (htr = HashTable[tr]) {
+    while ((htr = HashTable[tr])) {
         if (!strcmp((LabelTable[htr].name), nname)) {
             if (LabelTable[htr].used > 0) {
                 return true;
@@ -184,7 +184,7 @@ bool CLabelTable::IsUsed(const char *nname) {
 bool CLabelTable::Remove(const char *nname) {
     int tr, htr, otr;
     otr = tr = Hash(nname);
-    while (htr = HashTable[tr]) {
+    while ((htr = HashTable[tr])) {
         if (!strcmp((LabelTable[htr].name), nname)) {
             free((void *) LabelTable[htr].name);
             LabelTable[htr].name = 0;
@@ -222,7 +222,7 @@ int CLabelTable::Hash(const char *s) {
     unsigned int h = 0, g;
     for (; *ss != '\0'; ss++) {
         h = (h << 4) + *ss;
-        if (g = h & 0xf0000000) {
+        if ((g = h & 0xf0000000)) {
             h ^= g >> 24;
             h ^= g;
         }
@@ -258,7 +258,7 @@ void CLabelTable::DumpForUnreal(const Filename &file) const {
     char buf[9];
     for (int i = 1; i < NextLocation; ++i) {
         const CLabelTableEntry &label = LabelTable[i];
-        if (!label.page == -1) {
+        if (!(label.page == -1)) {
             continue;
         }
         aint lvalue = label.value;

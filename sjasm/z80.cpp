@@ -3000,7 +3000,7 @@ namespace Z80 {
                                 }
                                 break;
                             }
-                            if (beginhaakje = oparen(lp, '(')) {
+                            if ((beginhaakje = oparen(lp, '('))) {
                                 olp = --lp;
                             }
                             b = GetWord(lp);
@@ -3066,7 +3066,7 @@ namespace Z80 {
                                 }
                                 break;
                             }
-                            if (beginhaakje = oparen(lp, '(')) {
+                            if ((beginhaakje = oparen(lp, '('))) {
                                 olp = --lp;
                             }
                             b = GetWord(lp);
@@ -5297,6 +5297,9 @@ namespace Z80 {
                             e[0] = 0xb7;
                             e[1] = 0xed;
                             e[2] = 0x72;
+                            break;
+                        default:
+                            Error("[SUB] Illegal operand", lp, SUPPRESS);
                             break;
                     }
                     break;

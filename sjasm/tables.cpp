@@ -275,7 +275,7 @@ int CFunctionTable::Insert(const char *nname, void(*nfunp)(void)) {
     }
     int tr, htr;
     tr = Hash(nname);
-    while (htr = HashTable[tr]) {
+    while ((htr = HashTable[tr])) {
         if (!strcmp((funtab[htr].name), nname)) {
             return 0;
         } else if (++tr >= FUNTABSIZE) {
@@ -291,14 +291,14 @@ int CFunctionTable::Insert(const char *nname, void(*nfunp)(void)) {
     ++NextLocation;
 
     STRCPY(p = temp, LINEMAX, nname);
-    while (*p = (char) toupper(*p)) { ++p; }
+    while ((*p = (char) toupper(*p))) { ++p; }
 
     if (NextLocation >= FUNTABSIZE * 2 / 3) {
         _COUT "Functions Table is full" _ENDL;
         ExitASM(1);
     }
     tr = Hash(temp);
-    while (htr = HashTable[tr]) {
+    while ((htr = HashTable[tr])) {
         if (!strcmp((funtab[htr].name), temp)) {
             return 0;
         } else if (++tr >= FUNTABSIZE) {
@@ -334,7 +334,7 @@ int CFunctionTable::insertd(const char *nname, void(*nfunp)(void)) {
 int CFunctionTable::zoek(const char *nname, bool bol) {
     int tr, htr, otr;
     otr = tr = Hash(nname);
-    while (htr = HashTable[tr]) {
+    while ((htr = HashTable[tr])) {
         if (!strcmp((funtab[htr].name), nname)) {
             if (bol && ((sizeof(nname) == 3 && (!strcmp("END", nname) || !strcmp("end", nname))) ||
                         (sizeof(nname) == 4 && (!strcmp(".END", nname) || !strcmp(".end", nname))))) {
@@ -357,7 +357,7 @@ int CFunctionTable::zoek(const char *nname, bool bol) {
 int CFunctionTable::Find(char *nname) {
     int tr, htr, otr;
     otr = tr = Hash(nname);
-    while (htr = HashTable[tr]) {
+    while ((htr = HashTable[tr])) {
         if (!strcmp((funtab[htr].name), nname)) {
             return 1;
         }
@@ -1208,8 +1208,6 @@ CStructure *CStructureTable::Add(char *naam, int no, int idx, int gl) {
 }
 
 CStructure *CStructureTable::zoek(const char *naam, int gl) {
-    char sn[LINEMAX], *sp;
-    sn[0] = 0;
     const std::string &name = naam;
     const std::string &fullName = gl ? name : name + Modules.GetPrefix();
     CStructure *p = strs[fullName[0]];

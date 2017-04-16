@@ -22,6 +22,8 @@ protected:
 public:
     MemModel(const std::string &name) { Name = name; }
 
+    virtual ~MemModel() = 0;
+
     const std::string &GetName() { return Name; }
 
     virtual bool IsPagedMemory() = 0;
@@ -65,6 +67,8 @@ public:
     PlainMemModel() : MemModel{"PLAIN"s} {
         Memory.fill(0);
     }
+
+    virtual ~PlainMemModel() override {}
 
     bool IsPagedMemory() override { return false; }
 
@@ -138,6 +142,8 @@ private:
 
 public:
     ZXMemModel(const std::string &name, int nPages);
+
+    virtual ~ZXMemModel() override {}
 
     virtual void GetBytes(uint8_t *dest, uint16_t addr, uint16_t size) override {
         for (int i = 0; i < size; i++) {

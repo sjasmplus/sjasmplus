@@ -1953,7 +1953,7 @@ void dirLUA() {
     char *rp, *id;
     char *buff = new char[32768];
     char *bp = buff;
-    char size = 0;
+//    char size = 0;
     int ln = 0;
     bool execute = false;
 
@@ -2069,7 +2069,7 @@ void dirINCLUDELUA() {
 void dirDEVICE() {
     char *id;
 
-    if (id = GetID(lp)) {
+    if ((id = GetID(lp))) {
         Asm.SetMemModel(id);
     } else {
         Error("[DEVICE] Syntax error", 0, CATCHALL);

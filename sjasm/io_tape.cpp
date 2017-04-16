@@ -309,16 +309,19 @@ std::ostream &writenumber(std::ostream &stream, unsigned int i) {
     writebyte(stream, c + 48);
     i %= 10;
     writebyte(stream, i + 48);
+    return stream;
 }
 
 std::ostream &writeword(std::ostream &stream, unsigned int i) {
     writebyte(stream, i % 256);
     writebyte(stream, i / 256);
+    return stream;
 }
 
 std::ostream &writebyte(std::ostream &stream, unsigned char c) {
     stream << c;
     parity ^= c;
+    return stream;
 }
 
 std::ostream &writecode(std::ostream &stream, unsigned char *block, aint length,
@@ -354,17 +357,18 @@ std::ostream &writecode(std::ostream &stream, unsigned char *block, aint length,
         writebyte(stream, block[i]);
     }
     writebyte(stream, parity);
+    return stream;
 }
 
 void remove_basic_sp(unsigned char *ram) {
     bool remove = true;
-    for (int i = 0; i < sizeof(BASin48SP); i++) {
+    for (size_t i = 0; i < sizeof(BASin48SP); i++) {
         if (BASin48SP[i] != ram[i]) {
             remove = false;
         }
     }
     if (remove) {
-        for (int i = 0; i < sizeof(BASin48SP); i++) {
+        for (size_t i = 0; i < sizeof(BASin48SP); i++) {
             ram[i] = 0;
         }
     }
@@ -374,14 +378,14 @@ void detect_vars_changes() {
     unsigned char *psys = Asm.GetPtrToPageInSlot(1) + 0x1C00;
 
     bool nobas48 = false;
-    for (int i = 0; i < sizeof(BASin48Vars); i++) {
+    for (size_t i = 0; i < sizeof(BASin48Vars); i++) {
         if (BASin48Vars[i] != psys[i]) {
             nobas48 = true;
         }
     }
 
     bool nosys = false;
-    for (int i = 0; i < sizeof(ZXSysVars); i++) {
+    for (size_t i = 0; i < sizeof(ZXSysVars); i++) {
         if (ZXSysVars[i] != psys[i]) {
             nosys = true;
         }
