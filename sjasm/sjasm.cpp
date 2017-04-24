@@ -282,14 +282,14 @@ int main(int argc, const char *argv[]) {
 }
 
 
-boost::optional<std::string> Assembler::emitByte(uint8_t byte) {
-    const std::string errmsg = "CPU address space overflow"s;
+boost::optional<std::string> Assembler::emitByte(uint8_t Byte) {
+    const std::string ErrMsg = "CPU address space overflow"s;
     if (CPUAddrOverflow) {
-        return errmsg;
+        return ErrMsg;
     } else if (EmitAddrOverflow) {
-        return errmsg + " (DISP shift = "s + std::to_string(EmitAddress - CPUAddress) + ")"s;
+        return ErrMsg + " (DISP shift = "s + std::to_string(EmitAddress - CPUAddress) + ")"s;
     }
-    MemManager.writeByte(getEmitAddress(), byte);
+    MemManager.writeByte(getEmitAddress(), Byte);
     incAddress();
     return boost::none;
 }

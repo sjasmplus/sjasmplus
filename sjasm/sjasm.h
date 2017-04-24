@@ -117,7 +117,7 @@ public:
         return Disp ? EmitAddress : CPUAddress;
     }
 
-    boost::optional<std::string> emitByte(uint8_t byte);
+    boost::optional<std::string> emitByte(uint8_t Byte);
 
     // ORG directive
     void setAddress(uint16_t NewAddress) {
