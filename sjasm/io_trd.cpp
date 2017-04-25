@@ -378,7 +378,7 @@ int TRD_AddFile(const Filename &fname, const HobetaFilename &fhobname, int start
     const unsigned char autostartData[] =
             {0x80, 0xaa, (uint8_t) (autostart & 0xff), (uint8_t) (autostart >> 8)};
 
-    const unsigned realLength = autostart > 0 ? realLength + sizeof(autostartData) : length;
+    const unsigned realLength = autostart > 0 ? length + sizeof(autostartData) : length;
     if (void *data = image.AddFile(fhobname, IsBasic(fhobname) ? length : start, realLength)) {
         void *end = SaveRAM(data, start, length);
         if (autostart > 0) {
