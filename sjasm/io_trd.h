@@ -28,10 +28,56 @@
 
 // io_trd.h
 
-#ifndef __IO_TRD
-#define __IO_TRD
+#ifndef SJASMPLUS_IO_TRD_H
+#define SJASMPLUS_IO_TRD_H
 
-#include "filename.h"
+#include <string>
+#include <boost/filesystem.hpp>
+
+namespace fs = boost::filesystem;
+
+class HobetaFilename {
+    std::string Content;
+    static const char FILLER = ' ';
+    static const std::size_t NAME_SIZE = 8;
+    static const std::size_t MIN_TYPE_SIZE = 1;
+    static const std::size_t MAX_TYPE_SIZE = 3;
+public:
+    HobetaFilename() : Content(NAME_SIZE + MIN_TYPE_SIZE, FILLER) {}
+
+    HobetaFilename(const HobetaFilename &rh) : Content(rh.Content) {}
+
+    explicit HobetaFilename(const std::string &rh) {
+        const std::string::size_type dotPos = rh.find_first_of('.');
+        Content = rh.substr(0, dotPos);
+        Content.resize(NAME_SIZE, FILLER);
+        if (dotPos != std::string::npos) {
+            Content += rh.substr(dotPos + 1, MAX_TYPE_SIZE);
+        } else {
+            Content.append(MIN_TYPE_SIZE, FILLER);
+        }
+    }
+
+    std::string GetType() const {
+        return Content.substr(NAME_SIZE);
+    }
+
+    bool Empty() const {
+        return Content.empty();
+    }
+
+    const void *GetTrDosEntry() const {
+        return Content.data();
+    }
+
+    std::size_t GetTrdDosEntrySize() const {
+        return Content.size();
+    }
+
+    const char *c_str() const {
+        return Content.c_str();
+    }
+};
 
 int TRD_SaveEmpty(const fs::path &FileName);
 
@@ -49,6 +95,4 @@ inline int TRD_AddFile(char *FileName, char *HobetaFileName, int Start, int Leng
     return TRD_AddFile(fs::path(FileName), HobetaFilename(HobetaFileName), Start, Length, Autostart);
 }
 
-#endif
-
-//eof io_trd.h
+#endif // SJASMPLUS_IO_TRD_H

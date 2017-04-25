@@ -29,7 +29,6 @@
 #ifndef __OPTIONS
 #define __OPTIONS
 
-#include "filename.h"
 #include <list>
 
 #include <boost/filesystem.hpp>

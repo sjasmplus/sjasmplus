@@ -28,7 +28,7 @@
 
 // reader.h
 
-#include "filename.h"
+#include "io_trd.h"
 
 int White();
 
