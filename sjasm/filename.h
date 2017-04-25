@@ -32,30 +32,6 @@
 #include <string>
 #include <cstring>
 
-class Filename {
-    std::string Content;
-public:
-    Filename() {}
-
-    Filename(const Filename &rh) : Content(rh.Content) {}
-
-    explicit Filename(const std::string &rh) : Content(rh) {}
-    //explicit Filename(const char* rh) : Content(rh) {}
-
-    Filename WithExtension(const std::string &ext) const {
-        const std::string::size_type dotPos = Content.find_first_of('.');
-        return Filename(Content.substr(0, dotPos) + '.' + ext);
-    }
-
-    bool empty() const {
-        return Content.empty();
-    }
-
-    const char *c_str() const {
-        return Content.c_str();
-    }
-};
-
 class HobetaFilename {
     std::string Content;
     static const char FILLER = ' ';

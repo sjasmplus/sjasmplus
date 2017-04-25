@@ -37,12 +37,12 @@
 namespace fs = boost::filesystem;
 
 namespace Options {
-    extern Filename SymbolListFName;
+    extern fs::path SymbolListFName;
     extern fs::path ListingFName;
     extern fs::path ExportFName;
     extern fs::path DestinationFName;
     extern fs::path RAWFName;
-    extern Filename UnrealLabelListFName;
+    extern fs::path UnrealLabelListFName;
 
     extern bool IsPseudoOpBOF;
     extern bool IsReversePOP;

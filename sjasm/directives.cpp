@@ -504,7 +504,7 @@ void dirINCBIN() {
     aint val;
     int offset = -1, length = -1;
 
-    const Filename &fnaam = GetFileName(lp);
+    const fs::path &FileName = GetFileName(lp);
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
@@ -531,7 +531,7 @@ void dirINCBIN() {
     }
     offset = offset < 0 ? 0 : offset;
     length = length < 0 ? 0 : length;
-    BinIncFile(fnaam.c_str(), offset, length);
+    BinIncFile(FileName, offset, length);
 }
 
 /* added */
@@ -768,7 +768,7 @@ void dirSAVEBIN() {
     aint val;
     int start = -1, length = -1;
 
-    const Filename &fnaam = GetFileName(lp);
+    const fs::path &FileName = GetFileName(lp);
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
@@ -803,7 +803,7 @@ void dirSAVEBIN() {
         return;
     }
 
-    if (exec && !SaveBinary(fnaam.c_str(), start, length)) {
+    if (exec && !SaveBinary(FileName, start, length)) {
         Error("[SAVEBIN] Error writing file (Disk full?)", bp, CATCHALL);
         return;
     }
@@ -819,17 +819,17 @@ void dirSAVEHOB() {
         exec = false;
     }
 
-    const Filename &fnaam = GetFileName(lp);
-    HobetaFilename fnaamh;
+    const fs::path &FileName = GetFileName(lp);
+    HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
-            fnaamh = GetHobetaFileName(lp);
+            HobetaFileName = GetHobetaFileName(lp);
         } else {
             Error("[SAVEHOB] Syntax error. No parameters", bp, PASS3);
             return;
         }
     }
-    if (fnaamh.Empty()) {
+    if (HobetaFileName.Empty()) {
         Error("[SAVEHOB] Syntax error", bp, PASS3);
         return;
     }
@@ -866,7 +866,7 @@ void dirSAVEHOB() {
         Error("[SAVEHOB] Syntax error. No parameters", bp, PASS3);
         return;
     }
-    if (exec && !SaveHobeta(fnaam, fnaamh, start, length)) {
+    if (exec && !SaveHobeta(FileName, HobetaFileName, start, length)) {
         Error("[SAVEHOB] Error writing file (Disk full?)", bp, CATCHALL);
         return;
     }
@@ -878,12 +878,12 @@ void dirEMPTYTRD() {
         SkipParam(lp);
         return;
     }
-    const Filename &fnaam = GetFileName(lp);
-    if (fnaam.empty()) {
+    const fs::path &FileName = GetFileName(lp);
+    if (FileName.empty()) {
         Error("[EMPTYTRD] Syntax error", bp, CATCHALL);
         return;
     }
-    TRD_SaveEmpty(fnaam);
+    TRD_SaveEmpty(FileName);
 }
 
 /* added */
@@ -897,17 +897,17 @@ void dirSAVETRD() {
     aint val;
     int start = -1, length = -1, autostart = -1; //autostart added by boo_boo 19_0ct_2008
 
-    const Filename &fnaam = GetFileName(lp);
-    HobetaFilename fnaamh;
+    const fs::path &FileName = GetFileName(lp);
+    HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
-            fnaamh = GetHobetaFileName(lp);
+            HobetaFileName = GetHobetaFileName(lp);
         } else {
             Error("[SAVETRD] Syntax error. No parameters", bp, PASS3);
             return;
         }
     }
-    if (fnaamh.Empty()) {
+    if (HobetaFileName.Empty()) {
         Error("[SAVETRD] Syntax error. Filename should not be empty", bp, PASS3);
         return;
     }
@@ -959,7 +959,7 @@ void dirSAVETRD() {
     }
 
     if (exec) {
-        TRD_AddFile(fnaam, fnaamh, start, length, autostart);
+        TRD_AddFile(FileName, HobetaFileName, start, length, autostart);
     }
 }
 
@@ -990,12 +990,12 @@ void dirLABELSLIST() {
         SkipParam(lp);
         return;
     }
-    const Filename &opt = GetFileName(lp);
-    if (opt.empty()) {
-        Error("[LABELSLIST] Syntax error. No parameters", bp, CATCHALL);
+    const fs::path &FileName = GetFileName(lp);
+    if (FileName.empty()) {
+        Error("[LABELSLIST] Syntax error. File name not specified", bp, CATCHALL);
         return;
     }
-    Options::UnrealLabelListFName = opt;
+    Options::UnrealLabelListFName = FileName;
 }
 
 /* deleted */
@@ -1200,9 +1200,9 @@ void dirENDIF() {
 
 /* modified */
 void dirINCLUDE() {
-    const Filename &fnaam = GetFileName(lp);
+    const fs::path &FileName = GetFileName(lp);
     ListFile();
-    IncludeFile(fnaam.c_str());
+    IncludeFile(FileName);
     donotlist = 1;
 }
 

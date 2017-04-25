@@ -47,13 +47,13 @@ namespace {
 }
 
 namespace Options {
-    Filename SymbolListFName;
+    fs::path SymbolListFName;
     fs::path ListingFName;
 
     fs::path ExportFName;
     fs::path DestinationFName;
     fs::path RAWFName;
-    Filename UnrealLabelListFName;
+    fs::path UnrealLabelListFName;
 
     bool IsPseudoOpBOF = false;
     bool IsReversePOP = false;
@@ -94,7 +94,7 @@ namespace Options {
                 IncludeDirsList.push_front(option.substr(1));
             } else if (optName == SYM) {
                 if (!optValue.empty()) {
-                    SymbolListFName = Filename(optValue);
+                    SymbolListFName = fs::path(optValue);
                 } else {
                     //TODO: fail
                     _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;

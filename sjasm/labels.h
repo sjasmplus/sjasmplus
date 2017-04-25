@@ -29,7 +29,9 @@
 #ifndef __LABELS
 #define __LABELS
 
-#include "filename.h"
+#include <boost/filesystem.hpp>
+
+namespace fs = boost::filesystem;
 
 #define LABMAX 64
 #define LABTABSIZE 32768
@@ -67,9 +69,9 @@ public:
 
     void Dump(std::ostream &str) const;
 
-    void DumpForUnreal(const Filename &file) const;
+    void DumpForUnreal(const fs::path &FileName) const;
 
-    void DumpSymbols(const Filename &file) const;
+    void DumpSymbols(const fs::path &FileName) const;
 
 private:
     int HashTable[LABTABSIZE], NextLocation;

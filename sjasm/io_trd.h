@@ -33,19 +33,20 @@
 
 #include "filename.h"
 
-int TRD_SaveEmpty(const Filename &fname);
+int TRD_SaveEmpty(const fs::path &FileName);
 
-int TRD_AddFile(const Filename &fname, const HobetaFilename &fhobname, int start, int length, int autostart);
+int TRD_AddFile(const fs::path &FileName, const HobetaFilename &HobetaFileName,
+                int Start, int Length, int Autostart);
 
-int SaveHobeta(const Filename &fname, const HobetaFilename &fhobname, int start, int length);
+int SaveHobeta(const fs::path &FileName, const HobetaFilename &HobetaFileName, int Start, int Length);
 
 //lua adapters
-inline int TRD_SaveEmpty(char *fname) {
-    return TRD_SaveEmpty(Filename(fname));
+inline int TRD_SaveEmpty(char *FileName) {
+    return TRD_SaveEmpty(fs::path(FileName));
 }
 
-inline int TRD_AddFile(char *fname, char *fhobname, int start, int length, int autostart) {
-    return TRD_AddFile(Filename(fname), HobetaFilename(fhobname), start, length, autostart);
+inline int TRD_AddFile(char *FileName, char *HobetaFileName, int Start, int Length, int Autostart) {
+    return TRD_AddFile(fs::path(FileName), HobetaFilename(HobetaFileName), Start, Length, Autostart);
 }
 
 #endif

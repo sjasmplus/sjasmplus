@@ -75,7 +75,7 @@ int cmphstr(char *&p1, const char *p2);
 
 std::string GetString(char *&p);
 
-Filename GetFileName(char *&p);
+fs::path GetFileName(char *&p);
 
 HobetaFilename GetHobetaFileName(char *&p);
 

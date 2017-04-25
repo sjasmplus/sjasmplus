@@ -711,9 +711,9 @@ std::string GetString(char *&p) {
     return result;
 }
 
-Filename GetFileName(char *&p) {
+fs::path GetFileName(char *&p) {
     const std::string &result = GetString(p);
-    return Filename(result);
+    return fs::path(result);
 }
 
 HobetaFilename GetHobetaFileName(char *&p) {

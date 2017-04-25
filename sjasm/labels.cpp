@@ -250,10 +250,10 @@ void CLabelTable::Dump(std::ostream &str) const {
     }
 }
 
-void CLabelTable::DumpForUnreal(const Filename &file) const {
-    std::ofstream stream(file.c_str());
-    if (!stream) {
-        Error("Error opening file", file.c_str(), FATAL);
+void CLabelTable::DumpForUnreal(const fs::path &FileName) const {
+    fs::ofstream OFS(FileName);
+    if (!OFS) {
+        Error("Error opening file", FileName.string(), FATAL);
     }
     char buf[9];
     for (int i = 1; i < NextLocation; ++i) {
@@ -275,23 +275,23 @@ void CLabelTable::DumpForUnreal(const Filename &file) const {
             lvalue -= 0xc000;
         }
         if (page != -1) {
-            stream << '0' << char('0' + page);
+            OFS << '0' << char('0' + page);
         }
-        stream << ':';
+        OFS << ':';
         {
             char *p = buf;
             PrintHEXAlt(p, lvalue);
             *p = 0;
         }
-        stream << buf;
-        stream << ' ' << label.name << std::endl;
+        OFS << buf;
+        OFS << ' ' << label.name << std::endl;
     }
 }
 
-void CLabelTable::DumpSymbols(const Filename &file) const {
-    std::ofstream stream(file.c_str());
-    if (!stream) {
-        Error("Error opening file", file.c_str(), FATAL);
+void CLabelTable::DumpSymbols(const fs::path &FileName) const {
+    fs::ofstream OFS(FileName);
+    if (!OFS) {
+        Error("Error opening file", FileName.string(), FATAL);
     }
     char buf[9] = {0};
     for (int i = 1; i < NextLocation; ++i) {
@@ -299,7 +299,7 @@ void CLabelTable::DumpSymbols(const Filename &file) const {
         if (isalpha(label.name[0])) {
             char *p = buf;
             PrintHEX32(p, label.value);
-            stream << label.name << ": equ 0x" << buf << std::endl;
+            OFS << label.name << ": equ 0x" << buf << std::endl;
         }
     }
 }
