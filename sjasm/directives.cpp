@@ -531,7 +531,7 @@ void dirINCBIN() {
     }
     offset = offset < 0 ? 0 : offset;
     length = length < 0 ? 0 : length;
-    BinIncFile(FileName, offset, length);
+    includeBinaryFile(FileName, offset, length);
 }
 
 /* added */
@@ -568,7 +568,7 @@ void dirINCHOB() {
     }
 
     //used for implicit format check
-    fnaamh = GetAbsPath(fnaam);
+    fnaamh = getAbsPath(fnaam);
     try {
         fs::ifstream IFSH(fnaamh, std::ios::binary);
         try {
@@ -584,7 +584,7 @@ void dirINCHOB() {
     if (length == -1) {
         length = len[0] + (len[1] << 8);
     }
-    BinIncFile(fnaam, offset, length);
+    includeBinaryFile(fnaam, offset, length);
 }
 
 /* added */
@@ -633,7 +633,7 @@ void dirINCTRD() {
     }
     //TODO: extract code to io_trd
     // open TRD
-    fs::path fnaamh2 = GetAbsPath(fnaam);
+    fs::path fnaamh2 = getAbsPath(fnaam);
     fs::ifstream ifs;
     try {
         ifs.open(fnaamh2, std::ios_base::binary);
@@ -675,7 +675,7 @@ void dirINCTRD() {
     offset += (((unsigned char) hdr[0x0f]) << 12) + (((unsigned char) hdr[0x0e]) << 8);
     ifs.close();
 
-    BinIncFile(fnaam, offset, length);
+    includeBinaryFile(fnaam, offset, length);
 }
 
 /* added */
@@ -688,7 +688,7 @@ void dirSAVESNA() {
     aint val;
     int start = -1;
 
-    const fs::path fnaam = GetAbsPath(GetString(lp));
+    const fs::path fnaam = getAbsPath(GetString(lp));
     if (comma(lp)) {
         if (!comma(lp) && StartAddress < 0) {
             if (!ParseExpression(lp, val)) {
@@ -728,7 +728,7 @@ void dirSAVETAP() {
     aint val;
     int start = -1;
 
-    const fs::path filename = GetAbsPath(GetString(lp));
+    const fs::path filename = getAbsPath(GetString(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
@@ -803,7 +803,7 @@ void dirSAVEBIN() {
         return;
     }
 
-    if (exec && !SaveBinary(FileName, start, length)) {
+    if (exec && !saveBinaryFile(FileName, start, length)) {
         Error("[SAVEBIN] Error writing file (Disk full?)", bp, CATCHALL);
         return;
     }
@@ -2052,7 +2052,7 @@ void dirENDLUA() {
 
 /* modified */
 void dirINCLUDELUA() {
-    const fs::path &fnaam = GetAbsPath(GetString(lp));
+    const fs::path &fnaam = getAbsPath(GetString(lp));
     int error;
 
     if (pass != 1) {

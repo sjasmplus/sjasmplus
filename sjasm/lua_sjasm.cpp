@@ -464,7 +464,7 @@ static int tolua_sjasm_sj_get_path00(lua_State *tolua_S) {
         TCHAR *filenamebegin = ((TCHAR *) tolua_tousertype(tolua_S, 2, 0));
         {
             // FIXME: Copied strdup() from GetPath(); need to actually figure out how this works
-            char *tolua_ret = strdup((const char *) GetAbsPath(fname).c_str());
+            char *tolua_ret = strdup((const char *) getAbsPath(fname).c_str());
             tolua_pushstring(tolua_S, (const char *) tolua_ret);
             filenamebegin = fname;
             tolua_pushusertype(tolua_S, (void *) filenamebegin, "TCHAR");

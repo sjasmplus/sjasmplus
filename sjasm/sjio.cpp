@@ -524,7 +524,7 @@ void EmitBlock(aint byte, aint len, bool nulled) {
     }
 }
 
-fs::path GetAbsPath(const fs::path &p) {
+fs::path getAbsPath(const fs::path &p) {
     return fs::absolute(p, global::CurrentDirectory);
 }
 
@@ -563,188 +563,59 @@ char* GetPath(const char* fname, TCHAR** filenamebegin) {
 }
 */
 
-void BinIncFile(const fs::path &fname, int offset, int len) {
-/*
-    long res;
-    int leng;
-*/
-    fs::path fullFilePath;
-    fullFilePath = GetAbsPath(fname);
-    fs::ifstream ifs;
+void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
 
-    uint16_t destAddr = Asm.getEmitAddress();
-    if ((int) destAddr + len > 0x10000) {
-        Error(std::to_string(len) + " bytes of file \""s + fname.string() +
+    fs::path AbsFilePath = getAbsPath(FileName);
+
+    uint16_t DestAddr = Asm.getEmitAddress();
+    if ((int) DestAddr + Length > 0x10000) {
+        Error(std::to_string(Length) + " bytes of file \""s + FileName.string() +
               "\" won't fit at current address="s +
-              std::to_string(destAddr), ""s, FATAL);
+              std::to_string(DestAddr), ""s, FATAL);
         return;
     }
 
-    try {
-        ifs.open(fullFilePath, std::ios_base::binary);
-    } catch (std::ifstream::failure &e) {
-        Error("Error opening file", fname.string(), FATAL);
-    }
-    if (len < 0) {
-        Error("BinIncFile(): len < 0"s, fname.string(), FATAL);
+    fs::ifstream IFS(AbsFilePath, std::ios_base::binary);
+    if (!IFS) {
+        Error("Error opening file", FileName.string(), FATAL);
         return;
     }
-    if (len == 0) {
-        // Load whole file
-        ifs.seekg(0, ifs.end);
-        len = ifs.tellg();
-        ifs.seekg(0, ifs.beg);
+    if (Length < 0) {
+        Error("BinIncFile(): len < 0"s, FileName.string(), FATAL);
+        return;
     }
-    if (offset > 0) {
-        ifs.seekg(offset, ifs.beg);
-        if (ifs.tellg() != offset) {
-            Error("Offset ("s + std::to_string(offset) + ") is beyond file length"s,
-                  fname.string(), FATAL);
+    if (Length == 0) {
+        // Load whole file
+        IFS.seekg(0, IFS.end);
+        Length = IFS.tellg();
+        IFS.seekg(0, IFS.beg);
+    }
+    if (Offset > 0) {
+        IFS.seekg(Offset, IFS.beg);
+        if (IFS.tellg() != Offset) {
+            Error("Offset ("s + std::to_string(Offset) + ") is beyond file length"s,
+                  FileName.string(), FATAL);
             return;
         }
     }
-    if (len > 0) {
-        char byte;
-        auto l = len;
-        while (l > 0) {
-            if (!ifs.get(byte)) {
-                Error("Could not read "s + std::to_string(len) + " bytes. File too small?", fname.string(), FATAL);
+    if (Length > 0) {
+        char Byte;
+        auto Remaining = Length;
+        while (Remaining > 0) {
+            if (!IFS.get(Byte)) {
+                Error("Could not read "s + std::to_string(Length) + " bytes. File too small?", FileName.string(),
+                      FATAL);
                 return;
             }
-            auto err = Asm.emitByte(byte);
+            auto err = Asm.emitByte(Byte);
             if (err) {
-                Error(*err, fname.string(), FATAL);
+                Error(*err, FileName.string(), FATAL);
                 return;
             }
-            l--;
+            Remaining--;
         }
-
-/*
-        _bp = new char[len + 1];
-        if (_bp == NULL) {
-            Error("No enough memory!", 0, FATAL);
-        }
-        try {
-            ifs.read(_bp, len);
-        } catch (std::ifstream::failure &e) {
-            Error("Read error", fname.c_str(), FATAL);
-        }
-        if (ifs.tellg() != offset + len) {
-            Error("Unexpected end of file", fname.c_str(), FATAL);
-        }
-        while (len--) {
-            if (pass == LASTPASS) {
-                WriteBuffer[WBLength++] = *_bp;
-                if (WBLength == DESTBUFLEN) {
-                    WriteDest();
-                }
-                if (DeviceID) {
-                    if (PseudoORG) {
-                        if (CurAddress >= 0x10000) {
-                            char buf[1024];
-                            SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
-                            Error(buf, 0, FATAL);
-                        }
-                        *(MemoryPointer++) = *_bp;
-                        if ((MemoryPointer - Page->RAM) >= Page->Size) {
-                            ++adrdisp;
-                            ++CurAddress;
-                            CheckPage();
-                            continue;
-                        }
-                    } else {
-                        if (CurAddress >= 0x10000) {
-                            char buf[1024];
-                            SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
-                            Error(buf, 0, FATAL);
-                        }
-                        *(MemoryPointer++) = *_bp;
-                        if ((MemoryPointer - Page->RAM) >= Page->Size) {
-                            ++CurAddress;
-                            CheckPage();
-                            continue;
-                        }
-                    }
-                }
-                *_bp++;
-            }
-            if (PseudoORG) {
-                ++adrdisp;
-            }
-            if (pass != LASTPASS && DeviceID && CurAddress >= 0x10000) {
-                char buf[1024];
-                SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
-                Error(buf, 0, FATAL);
-            }
-            ++CurAddress;
-        }
-*/
     }
-
-/*
-    else {
-        if (pass == LASTPASS) {
-            WriteDest();
-        }
-        do {
-            res = ifs.tellg();
-            try {
-                ifs.read(WriteBuffer, DESTBUFLEN);
-            } catch (std::ifstream::failure &e) {
-                Error("Read error", fname.c_str(), FATAL);
-            }
-            res = ifs.tellg() - res;
-            if (pass == LASTPASS) {
-                WBLength = res;
-                if (DeviceID) {
-                    leng = 0;
-                    while (leng != res) {
-                        if (PseudoORG) {
-                            if (CurAddress >= 0x10000) {
-                                Error("RAM limit exceeded", 0, FATAL);
-                            }
-                            *(MemoryPointer++) = (char) WriteBuffer[leng++];
-                            if ((MemoryPointer - Page->RAM) >= Page->Size) {
-                                ++adrdisp;
-                                ++CurAddress;
-                                CheckPage();
-                            } else {
-                                ++adrdisp;
-                                ++CurAddress;
-                            }
-                        } else {
-                            if (CurAddress >= 0x10000) {
-                                Error("RAM limit exceeded", 0, FATAL);
-                            }
-                            *(MemoryPointer++) = (char) WriteBuffer[leng++];
-                            if ((MemoryPointer - Page->RAM) >= Page->Size) {
-                                ++CurAddress;
-                                CheckPage();
-                            } else {
-                                ++CurAddress;
-                            }
-                        }
-                    }
-                }
-                WriteDest();
-            }
-            if (!DeviceID || pass != LASTPASS) {
-                if (PseudoORG) {
-                    adrdisp += res;
-                }
-                for (int j = 0; j < res; j++) {
-                    if (pass != LASTPASS && DeviceID && CurAddress >= 0x10000) {
-                        char buf[1024];
-                        SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
-                        Error(buf, 0, FATAL);
-                    }
-                    ++CurAddress;
-                }
-            }
-        } while (res == DESTBUFLEN);
-    }
-*/
-    ifs.close();
+    IFS.close();
 }
 
 void OpenFile(const fs::path &nfilename) {
@@ -756,7 +627,7 @@ void OpenFile(const fs::path &nfilename) {
         Error("Over 20 files nested", 0, FATAL);
     }
 
-    fullpath = GetAbsPath(nfilename);
+    fullpath = getAbsPath(nfilename);
 
     try {
         pIFS->open(fullpath, std::ios::binary);
@@ -1266,26 +1137,27 @@ uint8_t MemGetByte(uint16_t address) {
 }
 
 
-int SaveBinary(const fs::path &fname, int start, int length) {
-    try {
-        fs::ofstream OFSB(fname, std::ios_base::binary);
-        try {
-            if (length + start > 0xFFFF) {
-                length = -1;
-            }
-            if (length <= 0) {
-                length = 0x10000 - start;
-            }
+int saveBinaryFile(const fs::path &FileName, int Start, int Length) {
 
-            //_COUT "Start: " _CMDL start _CMDL " Length: " _CMDL length _ENDL;
-            SaveRAM(OFSB, start, length);
-            OFSB.close();
-        } catch (std::ofstream::failure &e) {
-            OFSB.close();
-            return 0;
+    fs::ofstream OFS(FileName, std::ios_base::binary);
+    if (!OFS) {
+        Error("Error opening file"s, FileName.string(), FATAL);
+        return 0;
+    }
+    try {
+        if (Length + Start > 0xFFFF) {
+            Length = -1;
         }
+        if (Length <= 0) {
+            Length = 0x10000 - Start;
+        }
+
+        //_COUT "Start: " _CMDL start _CMDL " Length: " _CMDL length _ENDL;
+        SaveRAM(OFS, Start, Length);
+        OFS.close();
     } catch (std::ofstream::failure &e) {
-        Error("Error opening file"s, fname.string(), FATAL);
+        OFS.close();
+        return 0;
     }
 
     return 1;

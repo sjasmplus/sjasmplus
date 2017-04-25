@@ -79,12 +79,12 @@ void PrintHEX16(char *&p, aint h); /* added */
 void PrintHEXAlt(char *&p, aint h); /* added */
 
 
-fs::path GetAbsPath(const fs::path &p);
+fs::path getAbsPath(const fs::path &p);
 
 fs::path getAbsPath(const fs::path &p, fs::path &f);
 
 // char *GetPath(const char *fname, TCHAR **filenamebegin); /* added */
-void BinIncFile(const fs::path &fname, int offset, int length);
+void includeBinaryFile(const fs::path &FileName, int Offset, int Length);
 
 int SaveRAM(fs::ofstream &ofs, int, int);
 
@@ -92,7 +92,7 @@ void *SaveRAM(void *dst, int start, int size);
 
 uint8_t MemGetByte(uint16_t address); /* added */
 uint16_t MemGetWord(uint16_t address); /* added */
-int SaveBinary(const fs::path &fname, int start, int length);
+int saveBinaryFile(const fs::path &FileName, int Start, int Length);
 
 int ReadLine(bool SplitByColon = true);
 
