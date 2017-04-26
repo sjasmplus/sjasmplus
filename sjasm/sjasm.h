@@ -162,12 +162,14 @@ public:
         Slot = -1;
     }
 
+    bool isMemManagerActive() { return MemManager.isActive(); }
+
     void setMemModel(const std::string &Name) {
         MemManager.setMemModel(Name);
     }
 
     const std::string &getMemModelName() {
-        return MemManager.setMemModelName();
+        return MemManager.getMemModelName();
     }
 
     bool isPagedMemory() {

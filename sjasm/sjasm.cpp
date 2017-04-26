@@ -290,7 +290,9 @@ boost::optional<std::string> Assembler::emitByte(uint8_t Byte) {
     } else if (EmitAddrOverflow) {
         return ErrMsg + " (DISP shift = "s + std::to_string(EmitAddress - CPUAddress) + ")"s;
     }
-    MemManager.writeByte(getEmitAddress(), Byte);
+    if (MemManager.isActive()) {
+        MemManager.writeByte(getEmitAddress(), Byte);
+    }
     if (RawOFS.is_open()) {
         RawOFS.write((char *)&Byte, 1);
     }

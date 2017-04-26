@@ -372,6 +372,10 @@ void dirENT() {
 }
 
 void dirPAGE() {
+    if (!Asm.isMemManagerActive()) {
+        Error("[PAGE] works in device emulation mode only"s, ""s);
+        return;
+    }
     aint val;
     if (!ParseExpression(lp, val)) {
         Error("Syntax error", 0, CATCHALL);
@@ -385,6 +389,10 @@ void dirPAGE() {
 }
 
 void dirSLOT() {
+    if (!Asm.isMemManagerActive()) {
+        Error("[SLOT] works in device emulation mode only"s, ""s);
+        return;
+    }
     aint val;
     if (!ParseExpression(lp, val)) {
         Error("Syntax error", 0, CATCHALL);
@@ -678,6 +686,10 @@ void dirINCTRD() {
 
 /* added */
 void dirSAVESNA() {
+    if (!Asm.isMemManagerActive()) {
+        Error("[SAVESNA] works in device emulation mode only"s, ""s);
+        return;
+    }
     bool exec = true;
 
     if (pass != LASTPASS)
@@ -717,6 +729,11 @@ void dirSAVESNA() {
 
 /* added */
 void dirSAVETAP() {
+    if (!Asm.isMemManagerActive()) {
+        Error("[SAVETAP] works in device emulation mode only"s, ""s);
+        return;
+    }
+
     bool exec = true;
 
     if (pass != LASTPASS) {
@@ -757,6 +774,10 @@ void dirSAVETAP() {
 
 /* added */
 void dirSAVEBIN() {
+    if (!Asm.isMemManagerActive()) {
+        Error("[SAVEBIN] works in device emulation mode only"s, ""s);
+        return;
+    }
     bool exec = true;
 
     if (pass != LASTPASS) {
@@ -809,6 +830,10 @@ void dirSAVEBIN() {
 
 /* added */
 void dirSAVEHOB() {
+    if (!Asm.isMemManagerActive()) {
+        Error("[SAVEHOB] works in device emulation mode only"s, ""s);
+        return;
+    }
     aint val;
     int start = -1, length = -1;
     bool exec = true;
@@ -872,6 +897,10 @@ void dirSAVEHOB() {
 
 /* added */
 void dirEMPTYTRD() {
+    if (!Asm.isMemManagerActive()) {
+        Error("[EMPTYTRD] works in device emulation mode only"s, ""s);
+        return;
+    }
     if (pass != LASTPASS) {
         SkipParam(lp);
         return;
@@ -886,6 +915,10 @@ void dirEMPTYTRD() {
 
 /* added */
 void dirSAVETRD() {
+    if (!Asm.isMemManagerActive()) {
+        Error("[SAVETRD] works in device emulation mode only"s, ""s);
+        return;
+    }
     bool exec = true;
 
     if (pass != LASTPASS) {

@@ -67,9 +67,7 @@ int ZXMemModel::getPageForAddress(uint16_t CurrentAddr) {
 }
 
 MemoryManager::MemoryManager() {
-    MemModel *m = new PlainMemModel();
-    MemModels["PLAIN"s] = m;
-    CurrentMemModel = m;
+    CurrentMemModel = nullptr;
 }
 
 MemoryManager::~MemoryManager() {
@@ -87,7 +85,11 @@ void MemoryManager::setMemModel(const std::string &name) {
     if (uName == "ZXSPECTRUM48"s) {
         uName = "PLAIN"s;
     }
-    if (setMemModelName() != uName) {
+    if (uName == "NONE"s) {
+        CurrentMemModel = nullptr;
+        return;
+    }
+    if (CurrentMemModel == nullptr || getMemModelName() != uName) {
         try {
             // Check if this model has already been added/allocated
             auto m = MemModels.at(uName);

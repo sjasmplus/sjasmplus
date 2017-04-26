@@ -215,9 +215,11 @@ public:
 
     ~MemoryManager();
 
+    bool isActive() { return CurrentMemModel != nullptr; }
+
     void setMemModel(const std::string &name);
 
-    const std::string &setMemModelName() {
+    const std::string &getMemModelName() {
         return CurrentMemModel->getName();
     }
 
