@@ -99,14 +99,14 @@ void MemoryManager::setMemModel(const std::string &name) {
             try {
                 int nPages = MemModelNames.at(uName);
                 CurrentMemModel = (MemModels[uName] = new ZXMemModel(uName, nPages));
+                if (initSysVars) {
+                    // FIXME: Make this optional
+                    CurrentMemModel->initZXSysVars();
+                }
             } catch (std::out_of_range &e) {
                 Error("Unknown memory model"s, uName, FATAL);
                 return;
             }
         }
-    }
-    if (initSysVars) {
-        // FIXME: Make this optional
-        CurrentMemModel->initZXSysVars();
     }
 }
