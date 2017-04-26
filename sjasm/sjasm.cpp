@@ -192,7 +192,7 @@ int main(int argc, const char *argv[]) {
     while (argv[i]) {
         Options::GetOptions(argv, i);
         if (argv[i]) {
-            SourceFNames.push_back(fs::absolute(fs::path(argv[i++]), global::CurrentDirectory));
+            SourceFNames.push_back(fs::path(argv[i++]));
             SourceFNamesCount++;
         }
     }
