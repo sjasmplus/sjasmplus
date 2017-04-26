@@ -51,8 +51,7 @@ namespace Options {
     fs::path ListingFName;
 
     fs::path ExportFName;
-    fs::path DestinationFName;
-    fs::path RAWFName;
+    fs::path RawOutputFileName;
     fs::path UnrealLabelListFName;
 
     bool IsPseudoOpBOF = false;
@@ -62,6 +61,7 @@ namespace Options {
     bool HideLogo = false;
     bool NoDestinationFile = false;
     bool FakeInstructions = true;
+    bool OverrideRawOutput = false;
 
     std::list<std::string> IncludeDirsList;
 
@@ -115,7 +115,8 @@ namespace Options {
                 }
             } else if (optName == RAW) {
                 if (!optValue.empty()) {
-                    RAWFName = fs::path(optValue);
+                    RawOutputFileName = fs::path(optValue);
+                    OverrideRawOutput = true;
                 } else {
                     //TODO: fail
                     _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;

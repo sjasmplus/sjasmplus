@@ -40,10 +40,6 @@ namespace fs = boost::filesystem;
 
 extern aint PreviousAddress, epadres;
 
-#define OUTPUT_TRUNCATE 0
-#define OUTPUT_REWIND 1
-#define OUTPUT_APPEND 2
-
 // void OpenDest(int); /* added from new SjASM 0.39g */
 // void NewDest(const fs::path &newfilename, int mode); /* added from new SjASM 0.39g */
 
@@ -102,9 +98,7 @@ EReturn ReadFile(const char *pp, const char *err); /* added */
 EReturn SkipFile();
 
 EReturn SkipFile(const char *pp, const char *err); /* added */
-void NewDest(char *newfilename);
 
-void SeekDest(long, std::ios_base::seekdir); /* added from new SjASM 0.39g */
 int ReadFileToCStringsList(CStringsList *&f, const char *end);
 
 void WriteExp(char *n, aint v);

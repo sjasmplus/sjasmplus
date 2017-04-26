@@ -206,10 +206,11 @@ int main(int argc, const char *argv[]) {
         return 1;
     }
 
-    if (Options::DestinationFName.empty()) {
-        Options::DestinationFName = SourceFNames[0];
-        Options::DestinationFName.replace_extension(".out");
+    if (Options::RawOutputFileName.empty()) {
+        Options::RawOutputFileName = SourceFNames[0];
+        Options::RawOutputFileName.replace_extension(".out");
     }
+    Asm.setRawOutputOptions(Options::OverrideRawOutput, Options::RawOutputFileName);
 
     // init some vars
     InitCPU();
@@ -290,6 +291,9 @@ boost::optional<std::string> Assembler::emitByte(uint8_t Byte) {
         return ErrMsg + " (DISP shift = "s + std::to_string(EmitAddress - CPUAddress) + ")"s;
     }
     MemManager.writeByte(getEmitAddress(), Byte);
+    if (RawOFS.is_open()) {
+        RawOFS.write((char *)&Byte, 1);
+    }
     incAddress();
     return boost::none;
 }
@@ -320,4 +324,63 @@ void Assembler::doDisp(uint16_t DispAddress) {
 void Assembler::doEnt() {
     CPUAddress = EmitAddress;
     Disp = false;
+}
+
+void Assembler::setRawOutputOptions(bool Override, const fs::path &FileName) {
+    OverrideRawOutput = Override;
+    RawOutputFileName = FileName;
+    setRawOutput(FileName);
+}
+
+void Assembler::setRawOutput(const fs::path &FileName, OutputMode Mode) {
+    if (RawOFS.is_open()) {
+        RawOFS.close();
+        enforceFileSize();
+    }
+    auto OpenMode = std::ios_base::binary | std::ios_base::in | std::ios_base::out;
+    switch (Mode) {
+        case OutputMode::Truncate:
+            OpenMode |= std::ios_base::trunc;
+            break;
+        case OutputMode::Append:
+            OpenMode |= std::ios_base::ate;
+            break;
+        default:
+            break;
+    }
+    RawOFS.open(FileName, OpenMode);
+}
+
+boost::optional<std::string> Assembler::seekRawOutput(std::streamoff Offset, std::ios_base::seekdir Method) {
+    if (RawOFS.is_open()) {
+
+        std::streampos NewPos;
+        if (Method == std::ios_base::cur) {
+            NewPos = RawOFS.tellp() + Offset;
+        } else {
+            NewPos = Offset;
+        }
+
+        RawOFS.seekp(Offset, Method);
+
+        if (RawOFS.tellp() != NewPos) {
+            return "Could not seek to position "s + std::to_string(Offset) +
+                   " of file "s + RawOutputFileName.string();
+        }
+    }
+    return boost::none;
+}
+
+void Assembler::enforceFileSize() {
+    // File must be closed at this point
+    assert(!RawOFS.is_open());
+    if (ForcedRawOutputSize > 0) {
+        auto Size = fs::file_size(RawOutputFileName);
+        if (ForcedRawOutputSize < Size) {
+            Warning("File "s + RawOutputFileName.string() +
+                    " truncated by SIZE directive by "s +
+                    std::to_string(Size - ForcedRawOutputSize) + " bytes"s, ""s);
+        }
+        fs::resize_file(RawOutputFileName, ForcedRawOutputSize);
+    }
 }

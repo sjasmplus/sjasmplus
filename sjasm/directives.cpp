@@ -482,7 +482,6 @@ void dirEND() {
     moreInputLeft = false;
 }
 
-/*
 void dirSIZE() {
     aint val;
     if (!ParseExpression(lp, val)) {
@@ -492,13 +491,12 @@ void dirSIZE() {
     if (pass == LASTPASS) {
         return;
     }
-    if (size != (aint) -1) {
-        Error("[SIZE] Multiple sizes?", 0);
+    if (Asm.isForcedRawOutputSize()) {
+        Error("[SIZE] Multiple SIZE directives?", 0);
         return;
     }
-    size = val;
+    Asm.setForcedRawOutputFileSize(val);
 }
-*/
 
 void dirINCBIN() {
     aint val;
@@ -1206,32 +1204,31 @@ void dirINCLUDE() {
     donotlist = 1;
 }
 
-/* modified */
-/*
 void dirOUTPUT() {
-    const Filename &fnaam = GetFileName(lp);
-    */
-/* begin from SjASM 0.39g *//*
+    const fs::path &FileName = GetFileName(lp);
 
-    int mode = OUTPUT_TRUNCATE;
+    auto Mode = OutputMode::Truncate;
     if (comma(lp)) {
-        char modechar = (*lp) | 0x20;
+        char ModeChar = (*lp) | 0x20;
         lp++;
-        if (modechar == 't') {
-            mode = OUTPUT_TRUNCATE;
-        } else if (modechar == 'r') {
-            mode = OUTPUT_REWIND;
-        } else if (modechar == 'a') {
-            mode = OUTPUT_APPEND;
+        if (ModeChar == 't') {
+            Mode = OutputMode::Truncate;
+        } else if (ModeChar == 'r') {
+            Mode = OutputMode::Rewind;
+        } else if (ModeChar == 'a') {
+            Mode = OutputMode::Append;
         } else {
-            Error("Syntax error", bp, CATCHALL);
+            Error("Unknown output mode (known modes are t,r and a)"s, bp, CATCHALL);
         }
     }
     if (pass == LASTPASS) {
-        NewDest(fnaam.c_str(), mode);
+        if (!Asm.isRawOutputOverriden()) {
+            Asm.setRawOutput(FileName, Mode);
+        } else {
+            Warning("OUTPUT directive had no effect as output is overriden"s, ""s);
+        }
     }
 }
-*/
 
 /* modified */
 void dirDEFINE() {
@@ -1686,23 +1683,23 @@ void dirSTRUCT() {
     st->deflab();
 }
 
-/* added from SjASM 0.39g */
-/*
-void dirFORG() {
-    aint val;
-    auto method = std::ios_base::beg;
+void dirFPOS() {
+    aint Offset;
+    auto Method = std::ios_base::beg;
     SkipBlanks(lp);
     if ((*lp == '+') || (*lp == '-')) {
-        method = std::ios_base::cur;
+        Method = std::ios_base::cur;
     }
-    if (!ParseExpression(lp, val)) {
-        Error("[FORG] Syntax error", 0, CATCHALL);
+    if (!ParseExpression(lp, Offset)) {
+        Error("[FPOS] Syntax error"s, ""s, CATCHALL);
     }
     if (pass == LASTPASS) {
-        SeekDest(val, method);
+        auto Err = Asm.seekRawOutput(Offset, Method);
+        if (Err) {
+            Error(*Err, ""s);
+        }
     }
 }
-*/
 
 /* i didn't modify it */
 /*
@@ -2096,11 +2093,11 @@ void InsertDirectives() {
     DirectivesTable.insertDirective("dword"s, dirDWORD);
     DirectivesTable.insertDirective("d24"s, dirD24);
     DirectivesTable.insertDirective("org"s, dirORG);
-//    DirectivesTable.insertDirective("fpos"s, dirFORG);
+    DirectivesTable.insertDirective("fpos"s, dirFPOS);
     DirectivesTable.insertDirective("align"s, dirALIGN);
     DirectivesTable.insertDirective("module"s, dirMODULE);
     //DirectivesTable.insertDirective("z80"s, dirZ80);
-//    DirectivesTable.insertDirective("size"s, dirSIZE);
+    DirectivesTable.insertDirective("size"s, dirSIZE);
     //DirectivesTable.insertDirective("textarea"s,dirTEXTAREA);
     DirectivesTable.insertDirective("textarea"s, dirDISP);
     //DirectivesTable.insertDirective("msx"s, dirZ80);
@@ -2128,7 +2125,7 @@ void InsertDirectives() {
     DirectivesTable.insertDirective("ifn"s, dirIFN); /* added */
     DirectivesTable.insertDirective("ifused"s, dirIFUSED);
     DirectivesTable.insertDirective("ufnused"s, dirIFNUSED); /* added */
-//    DirectivesTable.insertDirective("output"s, dirOUTPUT);
+    DirectivesTable.insertDirective("output"s, dirOUTPUT);
     DirectivesTable.insertDirective("define"s, dirDEFINE);
     DirectivesTable.insertDirective("undefine"s, dirUNDEFINE);
     DirectivesTable.insertDirective("defarray"s, dirDEFARRAY); /* added */

@@ -93,6 +93,10 @@ extern int LuaLine;
 
 extern ModulesList Modules;
 
+enum class OutputMode {
+    Truncate, Rewind, Append
+};
+
 class Assembler {
 
 private:
@@ -107,7 +111,21 @@ private:
 
     MemoryManager MemManager;
 
+    fs::path RawOutputFileName;
+    bool OverrideRawOutput = false;
+    fs::fstream RawOFS;
+    uintmax_t ForcedRawOutputSize = 0;
+
+    void enforceFileSize();
+
 public:
+
+    ~Assembler() {
+        if (RawOFS.is_open()) {
+            RawOFS.close();
+            enforceFileSize();
+        }
+    }
 
     uint16_t getCPUAddress() {
         return CPUAddress;
@@ -218,6 +236,17 @@ public:
     uint8_t *getPtrToPageInSlot(int Slot) {
         return MemManager.getPtrToPageInSlot(Slot);
     }
+
+    void setRawOutputOptions(bool Override, const fs::path &FileName);
+
+    void setRawOutput(const fs::path &FileName, OutputMode Mode = OutputMode::Truncate);
+
+    bool isRawOutputOverriden() { return OverrideRawOutput; }
+
+    boost::optional<std::string> seekRawOutput(std::streamoff Offset, std::ios_base::seekdir Method);
+
+    void setForcedRawOutputFileSize(uintmax_t NewSize) { ForcedRawOutputSize = NewSize; }
+    bool isForcedRawOutputSize() { return ForcedRawOutputSize > 0; }
 };
 
 extern Assembler Asm;

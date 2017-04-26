@@ -39,8 +39,7 @@ namespace Options {
     extern fs::path SymbolListFName;
     extern fs::path ListingFName;
     extern fs::path ExportFName;
-    extern fs::path DestinationFName;
-    extern fs::path RAWFName;
+    extern fs::path RawOutputFileName;
     extern fs::path UnrealLabelListFName;
 
     extern bool IsPseudoOpBOF;
@@ -50,7 +49,7 @@ namespace Options {
     extern bool HideLogo;
     extern bool NoDestinationFile;
     extern bool FakeInstructions;
-
+    extern bool OverrideRawOutput;
     extern std::list<std::string> IncludeDirsList;
 
     void GetOptions(const char *argv[], int &argc);
