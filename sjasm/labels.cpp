@@ -252,13 +252,13 @@ void CLabelTable::Dump(std::ostream &str) const {
 
 void CLabelTable::DumpForUnreal(const fs::path &FileName) const {
     fs::ofstream OFS(FileName);
-    if (!OFS) {
+    if (!OFS.is_open()) {
         Error("Error opening file", FileName.string(), FATAL);
     }
     char buf[9];
     for (int i = 1; i < NextLocation; ++i) {
         const CLabelTableEntry &label = LabelTable[i];
-        if (!(label.page == -1)) {
+        if (label.page == -1) {
             continue;
         }
         aint lvalue = label.value;
