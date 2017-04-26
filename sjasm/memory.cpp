@@ -98,7 +98,12 @@ void MemoryManager::setMemModel(const std::string &name) {
             // Check if this model is defined at all
             try {
                 int nPages = MemModelNames.at(uName);
-                CurrentMemModel = (MemModels[uName] = new ZXMemModel(uName, nPages));
+                // TODO: Make this more general
+                if (uName == "PLAIN"s) {
+                    CurrentMemModel = (MemModels[uName] = new PlainMemModel());
+                } else {
+                    CurrentMemModel = (MemModels[uName] = new ZXMemModel(uName, nPages));
+                }
                 if (initSysVars) {
                     // FIXME: Make this optional
                     CurrentMemModel->initZXSysVars();
