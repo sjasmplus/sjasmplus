@@ -78,7 +78,6 @@ set(SOURCE_FILES
         sjasm/directives.h
         sjasm/errors.cpp
         sjasm/errors.h
-        sjasm/filename.h
         sjasm/io_snapshots.cpp
         sjasm/io_snapshots.h
         sjasm/io_tape.cpp
