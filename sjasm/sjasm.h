@@ -55,7 +55,7 @@ extern int CurrentSourceFName;
 
 extern int ConvertEncoding; /* added */
 extern int pass, IsLabelNotFound, ErrorCount, IncludeLevel;
-extern bool moreInputLeft; // Reset by the END directive
+extern bool SourceReaderEnabled; // Reset by the END directive
 //physical address, disp != org mode flag
 extern int adrdisp, PseudoORG; /* added for spectrum mode */
 extern char *MemoryPointer; /* added for spectrum ram */

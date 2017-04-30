@@ -489,7 +489,7 @@ void dirEND() {
         lp = p;
     }
 
-    moreInputLeft = false;
+    SourceReaderEnabled = false;
 }
 
 void dirSIZE() {

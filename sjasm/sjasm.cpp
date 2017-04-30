@@ -57,7 +57,7 @@ int SourceFNamesCount = 0;
 int ConvertEncoding = ENCWIN; /* added */
 
 int pass = 0, IsLabelNotFound = 0, ErrorCount = 0, IncludeLevel = -1;
-bool moreInputLeft = false;
+bool SourceReaderEnabled = false;
 /* int adrdisp = 0, PseudoORG = 0; */ /* added for spectrum ram */
 char *MemoryPointer = NULL; /* added for spectrum ram */
 int StartAddress = -1;
@@ -93,7 +93,7 @@ void InitPass(int p) {
     macrolabp = NULL;
     pass = p;
     Asm.reset();
-    moreInputLeft = true;
+    SourceReaderEnabled = true;
     CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
     Listing.initPass();
     macronummer = 0;
