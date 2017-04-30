@@ -11,7 +11,7 @@ configure_file(
 )
 include_directories(${PROJECT_BINARY_DIR})
 
-find_package (Boost REQUIRED COMPONENTS filesystem)
+find_package (Boost REQUIRED COMPONENTS filesystem system)
 include_directories(${Boost_INCLUDE_DIR})
 
 set(SOURCE_FILES
