@@ -101,7 +101,7 @@ void listbytes3(int pad) {
     ListingEmitBuffer.clear();
 }
 
-void ListFile() {
+void listFile() {
     char *pp = pline;
     aint pad;
     if (pass != LASTPASS || donotlist) {
@@ -162,7 +162,7 @@ void ListFile() {
     ListingEmitBuffer.clear();
 }
 
-void ListFileSkip(char *line) {
+void listFileSkip(char *line) {
     char *pp = pline;
     aint pad;
     if (pass != LASTPASS || donotlist) {
@@ -200,8 +200,25 @@ void ListFileSkip(char *line) {
     ListingEmitBuffer.clear();
 }
 
-void Close() {
+
+void openListingFile() {
+    if (!Options::ListingFName.empty()) {
+        try {
+            OFSListing.open(Options::ListingFName);
+        } catch (std::ios_base::failure &e) {
+            Error("Error opening file"s, Options::ListingFName.string(), FATAL);
+        }
+    }
+}
+
+void closeListingFile() {
     if (OFSListing.is_open()) {
         OFSListing.close();
+    }
+}
+
+void writeToListing(const std::string &String) {
+    if (OFSListing.is_open()) {
+        OFSListing << String;
     }
 }

@@ -3,13 +3,18 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
 
 extern std::vector<uint8_t> ListingEmitBuffer;
 
-void ListFile();
+void listFile();
 
-void ListFileSkip(char *);
+void listFileSkip(char *line);
 
-void Close();
+void openListingFile();
+
+void closeListingFile();
+
+void writeToListing(const std::string &String);
 
 #endif //SJASMPLUS_LISTING_H

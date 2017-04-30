@@ -24,7 +24,6 @@ namespace global {
     extern fs::path CurrentDirectory;
     extern fs::path CurrentFilename;
 }
-extern fs::ofstream OFSListing;
 
 void ExitASM(int p);
 // sjasm.{h,cpp}
@@ -82,9 +81,7 @@ void Error(const char *fout, const char *bd, int type) {
     ErrorStr += "\n"s;
 //    }
 
-    if (OFSListing.is_open()) {
-        OFSListing << ErrorStr;
-    }
+    writeToListing(ErrorStr);
 
     _COUT ErrorStr _END;
 
@@ -133,9 +130,7 @@ void Warning(const char *fout, const char *bd, int type) {
     ErrorStr += "\n"s;
 //    }
 
-    if (OFSListing.is_open()) {
-        OFSListing << ErrorStr;
-    }
+    writeToListing(ErrorStr);
     _COUT ErrorStr _END;
 }
 

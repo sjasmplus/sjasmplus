@@ -30,6 +30,7 @@
 
 #include "sjdefs.h"
 #include "util.h"
+#include <sstream>
 
 CLabelTableEntry::CLabelTableEntry() {
     name = NULL;
@@ -231,8 +232,9 @@ int CLabelTable::Hash(const char *s) {
     return h % LABTABSIZE;
 }
 
-void CLabelTable::Dump(std::ostream &str) const {
-    str << std::endl
+std::string CLabelTable::Dump() const {
+    std::stringstream Str;
+    Str << std::endl
         << "Value    Label" << std::endl
         << "------ - -----------------------------------------------------------" << std::endl;
     char buf[9];
@@ -244,11 +246,12 @@ void CLabelTable::Dump(std::ostream &str) const {
                 PrintHEXAlt(p, label.value);
                 *p = 0;
             }
-            str << "0x" << buf
+            Str << "0x" << buf
                 << (label.used > 0 ? "   " : " X ") << label.name
                 << std::endl;
         }
     }
+    return Str.str();
 }
 
 void CLabelTable::DumpForUnreal(const fs::path &FileName) const {

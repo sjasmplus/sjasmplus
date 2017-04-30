@@ -29,6 +29,7 @@
 #ifndef __LABELS
 #define __LABELS
 
+#include <string>
 #include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
@@ -67,7 +68,7 @@ public:
 
     void RemoveAll();
 
-    void Dump(std::ostream &str) const;
+    std::string Dump() const;
 
     void DumpForUnreal(const fs::path &FileName) const;
 

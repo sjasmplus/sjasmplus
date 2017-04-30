@@ -148,7 +148,7 @@ void FreeRAM() {
 void ExitASM(int p) {
     FreeRAM();
     if (pass == LASTPASS) {
-        Close();
+        closeListingFile();
     }
     exit(p);
 }
@@ -223,7 +223,7 @@ int main(int argc, const char *argv[]) {
     InitPass(1);
 
     // open lists
-    OpenList();
+    openListingFile();
 
     // open source filenames
     for (i = 0; i < SourceFNamesCount; i++) {
@@ -256,10 +256,10 @@ int main(int argc, const char *argv[]) {
 
     pass = 9999; /* added for detect end of compiling */
     if (Options::AddLabelListing) {
-        LabelTable.Dump(OFSListing);
+        writeToListing(LabelTable.Dump());
     }
 
-    Close();
+    closeListingFile();
 
     if (!Options::UnrealLabelListFName.empty()) {
         LabelTable.DumpForUnreal(Options::UnrealLabelListFName);

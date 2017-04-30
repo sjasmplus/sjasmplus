@@ -52,8 +52,6 @@ void OpenFile(const fs::path &nfilename);
 
 void IncludeFile(const fs::path &nfilename);
 
-void OpenList();
-
 void ReadBufLine(bool Parse = true, bool SplitByColon = true); /* added */
 
 fs::path getAbsPath(const fs::path &p);

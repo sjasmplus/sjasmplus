@@ -495,17 +495,6 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
     }
 }
 
-/* modified */
-void OpenList() {
-    if (!Options::ListingFName.empty()) {
-        try {
-            OFSListing.open(Options::ListingFName);
-        } catch (std::ofstream::failure &e) {
-            Error("Error opening file"s, Options::ListingFName.string(), FATAL);
-        }
-    }
-}
-
 int SaveRAM(fs::ofstream &ofs, int start, int length) {
     //unsigned int addadr = 0,save = 0;
 /*
@@ -698,7 +687,7 @@ EReturn ReadFile(const char *pp, const char *err) {
             return ENDIF;
         }
         if (cmphstr(p, "else")) {
-            ListFile();
+            listFile();
             lp = ReplaceDefine(p);
             return ELSE;
         }
@@ -777,12 +766,12 @@ EReturn SkipFile(const char *pp, const char *err) {
         }
         if (cmphstr(p, "else")) {
             if (!iflevel) {
-                ListFile();
+                listFile();
                 lp = ReplaceDefine(p);
                 return ELSE;
             }
         }
-        ListFileSkip(line);
+        listFileSkip(line);
     }
     Error("Unexpected end of file", 0, FATAL);
     return END;
@@ -827,7 +816,7 @@ int ReadFileToCStringsList(CStringsList *&f, const char *end) {
             l->next = s;
         }
         l = s;
-        ListFileSkip(line);
+        listFileSkip(line);
     }
     Error("Unexpected end of file", 0, FATAL);
     return 0;
