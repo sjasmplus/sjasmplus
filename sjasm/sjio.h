@@ -36,18 +36,12 @@
 
 namespace fs = boost::filesystem;
 
-#define PAGESIZE 0x4000 /* added */
-
 extern aint PreviousAddress, epadres;
-
-// void OpenDest(int); /* added from new SjASM 0.39g */
-// void NewDest(const fs::path &newfilename, int mode); /* added from new SjASM 0.39g */
 
 void ListFile();
 
 void ListFileSkip(char *);
 
-// void CheckPage(); /* added */
 void EmitByte(uint8_t byte);
 
 void EmitWord(uint16_t word);
@@ -67,13 +61,6 @@ void Close();
 void OpenList();
 
 void ReadBufLine(bool Parse = true, bool SplitByColon = true); /* added */
-// void OpenDest();
-
-void PrintHEX32(char *&p, aint h);
-
-void PrintHEX16(char *&p, aint h); /* added */
-void PrintHEXAlt(char *&p, aint h); /* added */
-
 
 fs::path getAbsPath(const fs::path &p);
 

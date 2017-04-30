@@ -31,6 +31,7 @@
 #include <string>
 #include <boost/optional.hpp>
 #include "sjdefs.h"
+#include "util.h"
 
 using namespace std::string_literals;
 

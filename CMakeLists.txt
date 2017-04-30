@@ -86,6 +86,8 @@ set(SOURCE_FILES
         sjasm/io_trd.h
         sjasm/labels.cpp
         sjasm/labels.h
+        sjasm/listing.cpp
+        sjasm/listing.h
         sjasm/lua_lpack.c
         sjasm/lua_lpack.h
         sjasm/lua_sjasm.cpp
@@ -109,6 +111,8 @@ set(SOURCE_FILES
         sjasm/support.h
         sjasm/tables.cpp
         sjasm/tables.h
+        sjasm/util.cpp
+        sjasm/util.h
         sjasm/z80.cpp
         sjasm/z80.h
 #        sjasmwin32/sjasmwin32.cpp

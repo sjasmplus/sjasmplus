@@ -36,11 +36,7 @@
 using namespace std::string_literals;
 
 #include "sjdefs.h"
-
-//#include <sys/types.h>
-//#include <sys/stat.h>
-
-#define DESTBUFLEN 8192
+#include "util.h"
 
 char rlbuf[4096 * 2]; //x2 to prevent errors
 int bytesRead;
@@ -48,45 +44,12 @@ bool rldquotes = false, rlsquotes = false, rlspace = false, rlcomment = false, r
 char *rlpbuf, *rlppos;
 
 int EB[1024 * 64], nEB = 0;
-//char WriteBuffer[DESTBUFLEN];
 
 fs::ifstream realIFS;
 fs::ifstream *pIFS = &realIFS;
-fs::ofstream /* OFS, OFSRaw, */ OFSListing, OFSExport;
+fs::ofstream OFSListing, OFSExport;
 
 aint PreviousAddress, epadres;
-aint WBLength = 0;
-char hd[] = {
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-};
-
-/*
-void WriteDest() {
-    if (!WBLength) {
-        return;
-    }
-    destlen += WBLength;
-    try {
-        OFS.write(WriteBuffer, WBLength);
-    } catch (std::ofstream::failure &e) {
-        Error("Write error (disk full?)", 0, FATAL);
-    }
-    if (OFSRaw.is_open()) {
-        try {
-            OFSRaw.write(WriteBuffer, WBLength);
-        } catch (std::ofstream::failure &e) {
-            Error("Write error (disk full?)", 0, FATAL);
-        }
-    }
-    WBLength = 0;
-}
-*/
-
-void PrintHEX8(char *&p, aint h) {
-    aint hh = h & 0xff;
-    *(p++) = hd[hh >> 4];
-    *(p++) = hd[hh & 15];
-}
 
 void listbytes(char *&p) {
     int i = 0;
@@ -137,69 +100,6 @@ void printCurrentLocalLine(char *&p) {
     *(p++) = IncludeLevel > 0 ? '+' : ' ';
     *(p++) = IncludeLevel > 1 ? '+' : ' ';
     *(p++) = IncludeLevel > 2 ? '+' : ' ';
-}
-
-void PrintHEX32(char *&p, aint h) {
-    aint hh = h & 0xffffffff;
-    *(p++) = hd[hh >> 28];
-    hh &= 0xfffffff;
-    *(p++) = hd[hh >> 24];
-    hh &= 0xffffff;
-    *(p++) = hd[hh >> 20];
-    hh &= 0xfffff;
-    *(p++) = hd[hh >> 16];
-    hh &= 0xffff;
-    *(p++) = hd[hh >> 12];
-    hh &= 0xfff;
-    *(p++) = hd[hh >> 8];
-    hh &= 0xff;
-    *(p++) = hd[hh >> 4];
-    hh &= 0xf;
-    *(p++) = hd[hh];
-}
-
-void PrintHEX16(char *&p, aint h) {
-    aint hh = h & 0xffff;
-    *(p++) = hd[hh >> 12];
-    hh &= 0xfff;
-    *(p++) = hd[hh >> 8];
-    hh &= 0xff;
-    *(p++) = hd[hh >> 4];
-    hh &= 0xf;
-    *(p++) = hd[hh];
-}
-
-/* added */
-char hd2[] = {
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-};
-
-/* added */
-void PrintHEXAlt(char *&p, aint h) {
-    aint hh = h & 0xffffffff;
-    if (hh >> 28 != 0) {
-        *(p++) = hd2[hh >> 28];
-    }
-    hh &= 0xfffffff;
-    if (hh >> 24 != 0) {
-        *(p++) = hd2[hh >> 24];
-    }
-    hh &= 0xffffff;
-    if (hh >> 20 != 0) {
-        *(p++) = hd2[hh >> 20];
-    }
-    hh &= 0xfffff;
-    if (hh >> 16 != 0) {
-        *(p++) = hd2[hh >> 16];
-    }
-    hh &= 0xffff;
-    *(p++) = hd2[hh >> 12];
-    hh &= 0xfff;
-    *(p++) = hd2[hh >> 8];
-    hh &= 0xff;
-    *(p++) = hd2[hh >> 4];
-    hh &= 0xf;
-    *(p++) = hd2[hh];
 }
 
 void listbytes3(int pad) {
@@ -321,7 +221,6 @@ void ListFileSkip(char *line) {
     nEB = 0;
 }
 
-/* added */
 /*
 void CheckPage() {
     if (!DeviceID) {
@@ -345,7 +244,6 @@ void CheckPage() {
 }
 */
 
-/* modified */
 void Emit(uint8_t byte) {
     EB[nEB++] = byte;
     if (pass == LASTPASS) {
@@ -354,67 +252,9 @@ void Emit(uint8_t byte) {
             Error(*err, ""s, FATAL);
             return;
         }
-
-/*
-        WriteBuffer[WBLength++] = (char) byte;
-        if (WBLength == DESTBUFLEN) {
-            WriteDest();
-        }
-        if (DeviceID) {
-            if (PseudoORG) {
-                if (CurAddress >= 0x10000) {
-                    char buf[1024];
-                    SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
-                    Error(buf, 0, FATAL);
-                }
-                *(MemoryPointer++) = (char) byte;
-                if ((MemoryPointer - Page->RAM) >= Page->Size) {
-                    ++adrdisp;
-                    ++CurAddress;
-                    CheckPage();
-                    return;
-                }
-            } else {
-                if (CurAddress >= 0x10000) {
-                    char buf[1024];
-                    SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
-                    Error(buf, 0, FATAL);
-                }
-
-                //if (!nulled) {
-                *(MemoryPointer++) = (char) byte;
-                //} else {
-                //	MemoryPointer++;
-                //}
-                */
-/*	if (CurAddress > 0xFFFE || (CurAddress > 0x7FFE && CurAddress < 0x8001) || (CurAddress > 0xBFFE && CurAddress < 0xC001)) {
-                        _COUT CurAddress _ENDL;
-                    }*//*
-
-                if ((MemoryPointer - Page->RAM) >= Page->Size) {
-                    ++CurAddress;
-                    CheckPage();
-                    return;
-                }
-            }
-        }
-*/
-    } else {
+  } else {
         Asm.incAddress();
     }
-/*
-    if (PseudoORG) {
-        ++adrdisp;
-    }
-
-    if (pass != LASTPASS && DeviceID && CurAddress >= 0x10000) {
-        char buf[1024];
-        SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
-        Error(buf, 0, FATAL);
-    }
-
-    ++CurAddress;
-*/
 }
 
 void EmitByte(uint8_t byte) {
@@ -447,7 +287,6 @@ void EmitWords(int *words) {
     }
 }
 
-/* modified */
 void EmitBlock(aint byte, aint len, bool nulled) {
     PreviousAddress = Asm.getCPUAddress();
     if (len) {
@@ -464,63 +303,9 @@ void EmitBlock(aint byte, aint len, bool nulled) {
             } else {
                 Asm.incAddress();
             }
-
-/*
-            WriteBuffer[WBLength++] = (char) byte;
-            if (WBLength == DESTBUFLEN) {
-                WriteDest();
-            }
-            if (DeviceID) {
-                if (PseudoORG) {
-                    if (CurAddress >= 0x10000) {
-                        char buf[1024];
-                        SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
-                        Error(buf, 0, FATAL);
-                    }
-                    if (!nulled) {
-                        *(MemoryPointer++) = (char) byte;
-                    } else {
-                        MemoryPointer++;
-                    }
-                    if ((MemoryPointer - Page->RAM) >= Page->Size) {
-                        ++adrdisp;
-                        ++CurAddress;
-                        CheckPage();
-                        continue;
-                    }
-                } else {
-                    if (CurAddress >= 0x10000) {
-                        char buf[1024];
-                        SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
-                        Error(buf, 0, FATAL);
-                    }
-                    if (!nulled) {
-                        *(MemoryPointer++) = (char) byte;
-                    } else {
-                        MemoryPointer++;
-                    }
-                    if ((MemoryPointer - Page->RAM) >= Page->Size) {
-                        ++CurAddress;
-                        CheckPage();
-                        continue;
-                    }
-                }
-            }
-*/
         } else {
             Asm.incAddress();
         }
-/*
-        if (PseudoORG) {
-            ++adrdisp;
-        }
-        if (pass != LASTPASS && DeviceID && CurAddress >= 0x10000) {
-            char buf[1024];
-            SPRINTF1(buf, 1024, "RAM limit exceeded %lu", CurAddress);
-            Error(buf, 0, FATAL);
-        }
-        ++CurAddress;
-*/
     }
 }
 
@@ -892,114 +677,10 @@ void OpenList() {
     }
 }
 
-/*
-void CloseDest() {
-    // simple check
-    if (!OFS.is_open()) {
-        return;
-    }
-
-    long pad;
-    if (WBLength) {
-        WriteDest();
-    }
-    if (size != -1) {
-        if (destlen > size) {
-            Error("File exceeds 'size'", 0);
-        } else {
-            pad = size - destlen;
-            if (pad > 0) {
-                while (pad--) {
-                    WriteBuffer[WBLength++] = 0;
-                    if (WBLength == 256) {
-                        WriteDest();
-                    }
-                }
-            }
-            if (WBLength) {
-                WriteDest();
-            }
-        }
-    }
-    OFS.close();
-}
-
-void SeekDest(long offset, std::ios_base::seekdir method) {
-    WriteDest();
-    if (OFS.is_open()) {
-        try {
-            OFS.seekp(offset, method);
-        } catch (std::ofstream::failure &e) {
-            Error("File seek error (FORG)", 0, FATAL);
-        }
-    }
-}
-
-void NewDest(const char* newfilename) {
-	NewDest(newfilename, OUTPUT_TRUNCATE);
-}
-
-void NewDest(const fs::path &newfilename, int mode) {
-    // close file
-    //CloseDest();
-
-    // and open new file
-    Options::DestinationFName = newfilename;
-    OpenDest(mode);
-}
-
-void OpenDest() {
-    OpenDest(OUTPUT_TRUNCATE);
-}
-
-void OpenDest(int mode) {
-    destlen = 0;
-    if (mode != OUTPUT_TRUNCATE && !fs::exists(Options::DestinationFName)) {
-        mode = OUTPUT_TRUNCATE;
-    }
-    if (!Options::NoDestinationFile) {
-        try {
-            OFS.open(Options::DestinationFName, std::ios_base::binary |
-                                                (mode == OUTPUT_TRUNCATE ? std::ios_base::trunc : (std::ios_base::in |
-                                                                                                   std::ios_base::app)));
-        } catch (std::ofstream::failure &e) {
-            Error("Error opening file", Options::DestinationFName.c_str(), FATAL);
-        }
-    }
-    Options::NoDestinationFile = false;
-    if (!OFSRaw.is_open() && !Options::RAWFName.empty()) {
-        try {
-            OFSRaw.open(Options::RAWFName, std::ios_base::binary);
-        } catch (std::ofstream::failure &e) {
-            Error("Error opening file", Options::RAWFName.c_str());
-        }
-    }
-    if (OFS.is_open() && mode != OUTPUT_TRUNCATE) {
-        try {
-            OFS.seekp(0, mode == OUTPUT_REWIND ? std::ios_base::beg : std::ios_base::end);
-        } catch (std::ofstream::failure &e) {
-            Error("File seek error (OUTPUT)", 0, FATAL);
-        }
-    }
-}
-*/
-
 void Close() {
-/*
-    CloseDest();
-    if (OFSExport.is_open()) {
-        OFSExport.close();
-    }
-    if (OFSRaw.is_open()) {
-        OFSRaw.close();
-    }
-*/
     if (OFSListing.is_open()) {
         OFSListing.close();
     }
-    //if (FP_UnrealList && pass == 9999) {
-    //	fclose(FP_UnrealList);
-    //}
 }
 
 int SaveRAM(fs::ofstream &ofs, int start, int length) {
