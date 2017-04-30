@@ -6,7 +6,7 @@
 
 fs::ofstream OFSListing;
 
-std::vector<uint8_t> ListingEmitBuffer;
+std::vector<uint8_t> ListingByteBuffer;
 
 
 void listbytes(char *&p) {
@@ -17,12 +17,12 @@ void listbytes(char *&p) {
         *(p++) = ' ';
     }
 */
-    std::for_each(ListingEmitBuffer.begin(), ListingEmitBuffer.end(), [&i, &p](const uint8_t &Byte) {
+    std::for_each(ListingByteBuffer.begin(), ListingByteBuffer.end(), [&i, &p](const uint8_t &Byte) {
         PrintHEX8(p, Byte);
         i++;
         *(p++) = ' ';
     });
-    ListingEmitBuffer.clear();
+    ListingByteBuffer.clear();
 
     i = 4 - i;
     while (i--) {
@@ -38,7 +38,7 @@ void listbytes2(char *&p) {
         PrintHEX8(p, EB[i]);
     }
 */
-    auto beg = ListingEmitBuffer.begin();
+    auto beg = ListingByteBuffer.begin();
     std::for_each(beg, beg + 5, [&p](const uint8_t Byte) {
         PrintHEX8(p, Byte);
     });
@@ -79,8 +79,8 @@ void printCurrentLocalLine(char *&p) {
 void listbytes3(int pad) {
     int t;
     char *pp, *sp = pline + 3 + NDigitsInLineNumber;
-    auto it = ListingEmitBuffer.begin();
-    auto end = ListingEmitBuffer.end();
+    auto it = ListingByteBuffer.begin();
+    auto end = ListingByteBuffer.end();
     while (it < end) {
         pp = sp;
         PrintHEX16(pp, pad);
@@ -98,7 +98,7 @@ void listbytes3(int pad) {
         }
         pad += 32;
     }
-    ListingEmitBuffer.clear();
+    ListingByteBuffer.clear();
 }
 
 void listFile() {
@@ -106,14 +106,14 @@ void listFile() {
     aint pad;
     if (pass != LASTPASS || donotlist) {
         donotlist = 0;
-        ListingEmitBuffer.clear();
+        ListingByteBuffer.clear();
         return;
     }
     if (Options::ListingFName.empty()) {
         return;
     }
     if (listmacro) {
-        if (ListingEmitBuffer.size() == 0) {
+        if (ListingByteBuffer.size() == 0) {
             return;
         }
     }
@@ -129,7 +129,7 @@ void listFile() {
     printCurrentLocalLine(pp);
     PrintHEX16(pp, pad);
     *(pp++) = ' ';
-    if (ListingEmitBuffer.size() < 5) {
+    if (ListingByteBuffer.size() < 5) {
         listbytes(pp);
         *pp = 0;
         if (listmacro) {
@@ -137,7 +137,7 @@ void listFile() {
         }
         STRCAT(pp, LINEMAX2, line);
         OFSListing << pline;
-    } else if (ListingEmitBuffer.size() < 6) {
+    } else if (ListingByteBuffer.size() < 6) {
         listbytes2(pp);
         *pp = 0;
         if (listmacro) {
@@ -159,7 +159,7 @@ void listFile() {
     }
     epadres = Asm.getCPUAddress();
     PreviousAddress = (aint) -1;
-    ListingEmitBuffer.clear();
+    ListingByteBuffer.clear();
 }
 
 void listFileSkip(char *line) {
@@ -167,7 +167,7 @@ void listFileSkip(char *line) {
     aint pad;
     if (pass != LASTPASS || donotlist) {
         donotlist = 0;
-        ListingEmitBuffer.clear();
+        ListingByteBuffer.clear();
         return;
     }
     if (Options::ListingFName.empty()) {
@@ -187,7 +187,7 @@ void listFileSkip(char *line) {
     PrintHEX16(pp, pad);
     *pp = 0;
     STRCAT(pp, LINEMAX2, "~            ");
-    if (ListingEmitBuffer.size() > 0) {
+    if (ListingByteBuffer.size() > 0) {
         Error("Internal error lfs", 0, FATAL);
     }
     if (listmacro) {
@@ -197,7 +197,7 @@ void listFileSkip(char *line) {
     OFSListing << pline;
     epadres = Asm.getCPUAddress();
     PreviousAddress = (aint) -1;
-    ListingEmitBuffer.clear();
+    ListingByteBuffer.clear();
 }
 
 
@@ -221,4 +221,8 @@ void writeToListing(const std::string &String) {
     if (OFSListing.is_open()) {
         OFSListing << String;
     }
+}
+
+void appendToListingByteBuffer(const uint8_t Byte) {
+    ListingByteBuffer.push_back(Byte);
 }

@@ -74,7 +74,7 @@ void CheckPage() {
 */
 
 void Emit(uint8_t byte) {
-    ListingEmitBuffer.push_back(byte);
+    appendToListingByteBuffer(byte);
     if (pass == LASTPASS) {
         auto err = Asm.emitByte(byte);
         if (err) {
@@ -119,7 +119,7 @@ void EmitWords(int *words) {
 void EmitBlock(uint8_t byte, aint len, bool nulled) {
     PreviousAddress = Asm.getCPUAddress();
     if (len) {
-        ListingEmitBuffer.push_back(byte);
+        appendToListingByteBuffer(byte);
     }
     while (len--) {
         if (pass == LASTPASS) {
