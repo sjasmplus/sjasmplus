@@ -30,6 +30,7 @@
 
 #include "sjdefs.h"
 #include "lua_sjasm.h"
+#include "listing.h"
 #include <sjasmplus_conf.h>
 #include <sstream>
 

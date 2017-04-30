@@ -32,6 +32,7 @@
 #include <boost/optional.hpp>
 #include "sjdefs.h"
 #include "util.h"
+#include "listing.h"
 
 using namespace std::string_literals;
 

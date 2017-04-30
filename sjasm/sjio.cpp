@@ -37,189 +37,18 @@ using namespace std::string_literals;
 
 #include "sjdefs.h"
 #include "util.h"
+#include "listing.h"
 
 char rlbuf[4096 * 2]; //x2 to prevent errors
 int bytesRead;
 bool rldquotes = false, rlsquotes = false, rlspace = false, rlcomment = false, rlcolon = false, rlnewline = true;
 char *rlpbuf, *rlppos;
 
-int EB[1024 * 64], nEB = 0;
-
 fs::ifstream realIFS;
 fs::ifstream *pIFS = &realIFS;
-fs::ofstream OFSListing, OFSExport;
+fs::ofstream OFSExport;
 
 aint PreviousAddress, epadres;
-
-void listbytes(char *&p) {
-    int i = 0;
-    while (nEB--) {
-        PrintHEX8(p, EB[i++]);
-        *(p++) = ' ';
-    }
-    i = 4 - i;
-    while (i--) {
-        *(p++) = ' ';
-        *(p++) = ' ';
-        *(p++) = ' ';
-    }
-}
-
-void listbytes2(char *&p) {
-    for (int i = 0; i != 5; ++i) {
-        PrintHEX8(p, EB[i]);
-    }
-    *(p++) = ' ';
-    *(p++) = ' ';
-}
-
-void printCurrentLocalLine(char *&p) {
-    aint v = CurrentLocalLine;
-    switch (NDigitsInLineNumber) {
-        default:
-            *(p++) = (unsigned char) ('0' + v / 1000000);
-            v %= 1000000;
-        case 6:
-            *(p++) = (unsigned char) ('0' + v / 100000);
-            v %= 100000;
-        case 5:
-            *(p++) = (unsigned char) ('0' + v / 10000);
-            v %= 10000;
-        case 4:
-            *(p++) = (unsigned char) ('0' + v / 1000);
-            v %= 1000;
-        case 3:
-            *(p++) = (unsigned char) ('0' + v / 100);
-            v %= 100;
-        case 2:
-            *(p++) = (unsigned char) ('0' + v / 10);
-            v %= 10;
-        case 1:
-            *(p++) = (unsigned char) ('0' + v);
-    }
-    *(p++) = IncludeLevel > 0 ? '+' : ' ';
-    *(p++) = IncludeLevel > 1 ? '+' : ' ';
-    *(p++) = IncludeLevel > 2 ? '+' : ' ';
-}
-
-void listbytes3(int pad) {
-    int i = 0, t;
-    char *pp, *sp = pline + 3 + NDigitsInLineNumber;
-    while (nEB) {
-        pp = sp;
-        PrintHEX16(pp, pad);
-        *(pp++) = ' ';
-        t = 0;
-        while (nEB && t < 32) {
-            PrintHEX8(pp, EB[i++]);
-            --nEB;
-            ++t;
-        }
-        *(pp++) = '\n';
-        *pp = 0;
-        if (OFSListing.is_open()) {
-            OFSListing << pline;
-        }
-        pad += 32;
-    }
-}
-
-void ListFile() {
-    char *pp = pline;
-    aint pad;
-    if (pass != LASTPASS || donotlist) {
-        donotlist = nEB = 0;
-        return;
-    }
-    if (Options::ListingFName.empty()) {
-        return;
-    }
-    if (listmacro) {
-        if (!nEB) {
-            return;
-        }
-    }
-    if ((pad = PreviousAddress) == (aint) -1) {
-        pad = epadres;
-    }
-    if (strlen(line) && line[strlen(line) - 1] != 10) {
-        STRCAT(line, LINEMAX, "\n");
-    } else {
-        STRCPY(line, LINEMAX, "\n");
-    }
-    *pp = 0;
-    printCurrentLocalLine(pp);
-    PrintHEX16(pp, pad);
-    *(pp++) = ' ';
-    if (nEB < 5) {
-        listbytes(pp);
-        *pp = 0;
-        if (listmacro) {
-            STRCAT(pp, LINEMAX2, ">");
-        }
-        STRCAT(pp, LINEMAX2, line);
-        OFSListing << pline;
-    } else if (nEB < 6) {
-        listbytes2(pp);
-        *pp = 0;
-        if (listmacro) {
-            STRCAT(pp, LINEMAX2, ">");
-        }
-        STRCAT(pp, LINEMAX2, line);
-        OFSListing << pline;
-    } else {
-        for (int i = 0; i != 12; ++i) {
-            *(pp++) = ' ';
-        }
-        *pp = 0;
-        if (listmacro) {
-            STRCAT(pp, LINEMAX2, ">");
-        }
-        STRCAT(pp, LINEMAX2, line);
-        OFSListing << pline;
-        listbytes3(pad);
-    }
-    epadres = Asm.getCPUAddress();
-    PreviousAddress = (aint) -1;
-    nEB = 0;
-}
-
-void ListFileSkip(char *line) {
-    char *pp = pline;
-    aint pad;
-    if (pass != LASTPASS || donotlist) {
-        donotlist = nEB = 0;
-        return;
-    }
-    if (Options::ListingFName.empty()) {
-        return;
-    }
-    if (listmacro) {
-        return;
-    }
-    if ((pad = PreviousAddress) == (aint) -1) {
-        pad = epadres;
-    }
-    if (strlen(line) && line[strlen(line) - 1] != 10) {
-        STRCAT(line, LINEMAX, "\n");
-    }
-    *pp = 0;
-    printCurrentLocalLine(pp);
-    PrintHEX16(pp, pad);
-    *pp = 0;
-    STRCAT(pp, LINEMAX2, "~            ");
-    if (nEB) {
-        Error("Internal error lfs", 0, FATAL);
-    }
-    if (listmacro) {
-        STRCAT(pp, LINEMAX2, ">");
-    }
-    STRCAT(pp, LINEMAX2, line);
-    OFSListing << pline;
-    epadres = Asm.getCPUAddress();
-    PreviousAddress = (aint) -1;
-    nEB = 0;
-}
 
 /*
 void CheckPage() {
@@ -245,7 +74,7 @@ void CheckPage() {
 */
 
 void Emit(uint8_t byte) {
-    EB[nEB++] = byte;
+    ListingEmitBuffer.push_back(byte);
     if (pass == LASTPASS) {
         auto err = Asm.emitByte(byte);
         if (err) {
@@ -287,10 +116,10 @@ void EmitWords(int *words) {
     }
 }
 
-void EmitBlock(aint byte, aint len, bool nulled) {
+void EmitBlock(uint8_t byte, aint len, bool nulled) {
     PreviousAddress = Asm.getCPUAddress();
     if (len) {
-        EB[nEB++] = byte;
+        ListingEmitBuffer.push_back(byte);
     }
     while (len--) {
         if (pass == LASTPASS) {
@@ -674,12 +503,6 @@ void OpenList() {
         } catch (std::ofstream::failure &e) {
             Error("Error opening file"s, Options::ListingFName.string(), FATAL);
         }
-    }
-}
-
-void Close() {
-    if (OFSListing.is_open()) {
-        OFSListing.close();
     }
 }
 

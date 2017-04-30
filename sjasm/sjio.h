@@ -38,10 +38,6 @@ namespace fs = boost::filesystem;
 
 extern aint PreviousAddress, epadres;
 
-void ListFile();
-
-void ListFileSkip(char *);
-
 void EmitByte(uint8_t byte);
 
 void EmitWord(uint16_t word);
@@ -50,13 +46,11 @@ void EmitBytes(int *bytes);
 
 void EmitWords(int *words);
 
-void EmitBlock(aint byte, aint len, bool nulled = false);
+void EmitBlock(uint8_t byte, aint len, bool nulled = false);
 
 void OpenFile(const fs::path &nfilename);
 
 void IncludeFile(const fs::path &nfilename);
-
-void Close();
 
 void OpenList();
 

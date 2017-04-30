@@ -29,6 +29,7 @@
 // parser.cpp
 
 #include "sjdefs.h"
+#include "listing.h"
 
 int replacedefineteller = 0, comnxtlin;
 char dirDEFl[] = "def", dirDEFu[] = "DEF"; /* added for ReplaceDefine */

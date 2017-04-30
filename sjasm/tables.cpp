@@ -33,6 +33,7 @@
 using boost::algorithm::to_upper_copy;
 
 #include "sjdefs.h"
+#include "listing.h"
 
 char *PreviousIsLabel;
 
