@@ -43,41 +43,43 @@ void ListingWriter::listBytes5() {
     OFS << "  ";
 }
 
-void ListingWriter::printCurrentLocalLine() {
+std::string ListingWriter::printCurrentLocalLine() {
     aint v = CurrentLocalLine;
+    std::string S;
     switch (NumDigitsInLineNumber) {
         default:
-            OFS << (unsigned char) ('0' + v / 1000000);
+            S += (unsigned char) ('0' + v / 1000000);
             v %= 1000000;
         case 6:
-            OFS << (unsigned char) ('0' + v / 100000);
+            S += (unsigned char) ('0' + v / 100000);
             v %= 100000;
         case 5:
-            OFS << (unsigned char) ('0' + v / 10000);
+            S += (unsigned char) ('0' + v / 10000);
             v %= 10000;
         case 4:
-            OFS << (unsigned char) ('0' + v / 1000);
+            S += (unsigned char) ('0' + v / 1000);
             v %= 1000;
         case 3:
-            OFS << (unsigned char) ('0' + v / 100);
+            S += (unsigned char) ('0' + v / 100);
             v %= 100;
         case 2:
-            OFS << (unsigned char) ('0' + v / 10);
+            S += (unsigned char) ('0' + v / 10);
             v %= 10;
         case 1:
-            OFS << (unsigned char) ('0' + v);
+            S += (unsigned char) ('0' + v);
     }
-    OFS << (IncludeLevel > 0 ? '+' : ' ');
-    OFS << (IncludeLevel > 1 ? '+' : ' ');
-    OFS << (IncludeLevel > 2 ? '+' : ' ');
+    S += (IncludeLevel > 0 ? '+' : ' ');
+    S += (IncludeLevel > 1 ? '+' : ' ');
+    S += (IncludeLevel > 2 ? '+' : ' ');
+    return S;
 }
 
-void ListingWriter::listBytesLong(int pad) {
+void ListingWriter::listBytesLong(int pad, const std::string &Prefix) {
     int t;
     auto it = ByteBuffer.begin();
     auto end = ByteBuffer.end();
     while (it < end) {
-        OFS << toHex16(pad) << ' ';
+        OFS << Prefix << toHex16(pad) << ' ';
         t = 0;
         while (it < end && t < 32) {
             OFS << toHex8(*it);
@@ -108,25 +110,20 @@ void ListingWriter::listFile() {
     if ((pad = PreviousAddress) == -1) {
         pad = epadres;
     }
-    if (strlen(line) && line[strlen(line) - 1] != 10) {
-        STRCAT(line, LINEMAX, "\n");
-    } else {
-        STRCPY(line, LINEMAX, "\n");
-    }
-    printCurrentLocalLine();
-    OFS << toHex16(pad) << ' ';
+    std::string Prefix = printCurrentLocalLine();
+    OFS << Prefix << toHex16(pad) << ' ';
     if (ByteBuffer.size() < 5) {
         listBytes4();
         if (listmacro) {
             OFS << ">";
         }
-        OFS << line;
+        OFS << line << endl;
     } else if (ByteBuffer.size() < 6) {
         listBytes5();
         if (listmacro) {
             OFS << ">";
         }
-        OFS << line;
+        OFS << line << endl;
     } else {
         for (int i = 0; i != 12; ++i) {
             OFS << ' ';
@@ -134,8 +131,8 @@ void ListingWriter::listFile() {
         if (listmacro) {
             OFS << ">";
         }
-        OFS << line;
-        listBytesLong(pad);
+        OFS << line << endl;
+        listBytesLong(pad, Prefix);
     }
     epadres = Asm.getCPUAddress();
     PreviousAddress = -1;
@@ -158,11 +155,7 @@ void ListingWriter::listFileSkip(char *line) {
     if ((pad = PreviousAddress) == -1) {
         pad = epadres;
     }
-    if (strlen(line) && line[strlen(line) - 1] != 10) {
-        STRCAT(line, LINEMAX, "\n");
-    }
-    printCurrentLocalLine();
-    OFS << toHex16(pad);
+    OFS << printCurrentLocalLine() << toHex16(pad);
     OFS << "~            ";
     if (ByteBuffer.size() > 0) {
         Error("Internal error lfs", 0, FATAL);
@@ -170,7 +163,7 @@ void ListingWriter::listFileSkip(char *line) {
     if (listmacro) {
         OFS << ">";
     }
-    OFS << line;
+    OFS << line << endl;
     epadres = Asm.getCPUAddress();
     PreviousAddress = -1;
     ByteBuffer.clear();
@@ -194,7 +187,7 @@ void ListingWriter::initPass() {
     PreviousAddress = 0;
     listmacro = false;
 
-    // Put this here for now, as MaxLineNumber has the correct value only at the end op pass 1
+    // Put this here for now, as MaxLineNumber has the correct value only at the end of pass 1
     // i.e. it is usable only after the first pass
     NumDigitsInLineNumber = 1;
     if (MaxLineNumber > 9) {

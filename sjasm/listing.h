@@ -20,9 +20,9 @@ private:
 
     void listBytes5();
 
-    void listBytesLong(int pad);
+    void listBytesLong(int pad, const std::string &Prefix);
 
-    void printCurrentLocalLine();
+    std::string printCurrentLocalLine();
 
 public:
     void init();

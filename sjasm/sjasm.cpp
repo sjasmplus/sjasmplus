@@ -203,7 +203,7 @@ int main(int argc, const char *argv[]) {
     // open lists
     Listing.init();
 
-    // open source filenames
+    // open source files
     for (i = 0; i < SourceFNamesCount; i++) {
         OpenFile(SourceFNames[i]);
     }
