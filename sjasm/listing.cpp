@@ -199,31 +199,6 @@ void ListingWriter::listFileSkip(char *line) {
     ByteBuffer.clear();
 }
 
-
-/*
-void openListingFile() {
-    if (!Options::ListingFName.empty()) {
-        try {
-            OFSListing.open(Options::ListingFName);
-        } catch (std::ios_base::failure &e) {
-            Error("Error opening file"s, Options::ListingFName.string(), FATAL);
-        }
-    }
-}
-
-void closeListingFile() {
-    if (OFSListing.is_open()) {
-        OFSListing.close();
-    }
-}
-
-void writeToListing(const std::string &String) {
-    if (OFSListing.is_open()) {
-        OFSListing << String;
-    }
-}
-*/
-
 void ListingWriter::addByte(const uint8_t Byte) {
     ByteBuffer.push_back(Byte);
 }

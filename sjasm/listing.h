@@ -6,13 +6,6 @@
 #include <string>
 #include "util.h"
 
-void openListingFile();
-
-void closeListingFile();
-
-void writeToListing(const std::string &String);
-
-
 class ListingWriter : public TextOutput {
 private:
     std::vector<uint8_t> ByteBuffer;
