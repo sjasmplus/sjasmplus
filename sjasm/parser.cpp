@@ -949,35 +949,35 @@ void ParseLine(bool parselabels) {
     /* (end add) */
     if (comlin) {
         comlin += comnxtlin;
-        listFileSkip(line);
+        Listing.listFileSkip(line);
         return;
     }
     comlin += comnxtlin;
     if (!*lp) {
-        listFile();
+        Listing.listFile();
         return;
     }
     if (parselabels) {
         ParseLabel();
     }
     if (SkipBlanks()) {
-        listFile();
+        Listing.listFile();
         return;
     }
     ParseMacro();
     if (SkipBlanks()) {
-        listFile();
+        Listing.listFile();
         return;
     }
     ParseInstruction();
     if (SkipBlanks()) {
-        listFile();
+        Listing.listFile();
         return;
     }
     if (*lp) {
         Error("Unexpected", lp, LASTPASS);
     }
-    listFile();
+    Listing.listFile();
 }
 
 /* added */

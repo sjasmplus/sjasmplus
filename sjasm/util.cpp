@@ -73,3 +73,25 @@ void PrintHEXAlt(char *&p, aint h) {
     hh &= 0xf;
     *(p++) = hd2[hh];
 }
+
+TextOutput::~TextOutput() {
+    if (OFS.is_open()) {
+        OFS.close();
+    }
+}
+
+void TextOutput::open(const fs::path &FileName) {
+    if (!FileName.empty()) {
+        try {
+            OFS.open(FileName);
+        } catch (std::ios_base::failure &e) {
+            Error("Error opening file"s, FileName.string(), FATAL);
+        }
+    }
+}
+
+void TextOutput::write(const std::string &String) {
+    if (OFS.is_open()) {
+        OFS << String;
+    }
+}

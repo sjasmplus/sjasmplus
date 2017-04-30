@@ -74,7 +74,7 @@ void CheckPage() {
 */
 
 void Emit(uint8_t byte) {
-    appendToListingByteBuffer(byte);
+    Listing.addByte(byte);
     if (pass == LASTPASS) {
         auto err = Asm.emitByte(byte);
         if (err) {
@@ -119,7 +119,7 @@ void EmitWords(int *words) {
 void EmitBlock(uint8_t byte, aint len, bool nulled) {
     PreviousAddress = Asm.getCPUAddress();
     if (len) {
-        appendToListingByteBuffer(byte);
+        Listing.addByte(byte);
     }
     while (len--) {
         if (pass == LASTPASS) {
@@ -687,7 +687,7 @@ EReturn ReadFile(const char *pp, const char *err) {
             return ENDIF;
         }
         if (cmphstr(p, "else")) {
-            listFile();
+            Listing.listFile();
             lp = ReplaceDefine(p);
             return ELSE;
         }
@@ -766,12 +766,12 @@ EReturn SkipFile(const char *pp, const char *err) {
         }
         if (cmphstr(p, "else")) {
             if (!iflevel) {
-                listFile();
+                Listing.listFile();
                 lp = ReplaceDefine(p);
                 return ELSE;
             }
         }
-        listFileSkip(line);
+        Listing.listFileSkip(line);
     }
     Error("Unexpected end of file", 0, FATAL);
     return END;
@@ -816,7 +816,7 @@ int ReadFileToCStringsList(CStringsList *&f, const char *end) {
             l->next = s;
         }
         l = s;
-        listFileSkip(line);
+        Listing.listFileSkip(line);
     }
     Error("Unexpected end of file", 0, FATAL);
     return 0;

@@ -1051,7 +1051,7 @@ void dirIF() {
     }
 
     if (val) {
-        listFile();
+        Listing.listFile();
         switch (ReadFile(lp, "[IF] No endif")) {
             case ELSE:
                 if (SkipFile(lp, "[IF] No endif") != ENDIF) {
@@ -1065,7 +1065,7 @@ void dirIF() {
                 break;
         }
     } else {
-        listFile();
+        Listing.listFile();
         switch (SkipFile(lp, "[IF] No endif")) {
             case ELSE:
                 if (ReadFile(lp, "[IF] No endif") != ENDIF) {
@@ -1094,7 +1094,7 @@ void dirIFN() {
     }
 
     if (!val) {
-        listFile();
+        Listing.listFile();
         switch (ReadFile(lp, "[IFN] No endif")) {
             case ELSE:
                 if (SkipFile(lp, "[IFN] No endif") != ENDIF) {
@@ -1108,7 +1108,7 @@ void dirIFN() {
                 break;
         }
     } else {
-        listFile();
+        Listing.listFile();
         switch (SkipFile(lp, "[IFN] No endif")) {
             case ELSE:
                 if (ReadFile(lp, "[IFN] No endif") != ENDIF) {
@@ -1141,7 +1141,7 @@ void dirIFUSED() {
     }
 
     if (LabelTable.IsUsed(id)) {
-        listFile();
+        Listing.listFile();
         switch (ReadFile(lp, "[IFUSED] No endif")) {
             case ELSE:
                 if (SkipFile(lp, "[IFUSED] No endif") != ENDIF) {
@@ -1155,7 +1155,7 @@ void dirIFUSED() {
                 break;
         }
     } else {
-        listFile();
+        Listing.listFile();
         switch (SkipFile(lp, "[IFUSED] No endif")) {
             case ELSE:
                 if (ReadFile(lp, "[IFUSED] No endif") != ENDIF) {
@@ -1188,7 +1188,7 @@ void dirIFNUSED() {
     }
 
     if (!LabelTable.IsUsed(id)) {
-        listFile();
+        Listing.listFile();
         switch (ReadFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
                 if (SkipFile(lp, "[IFNUSED] No endif") != ENDIF) {
@@ -1202,7 +1202,7 @@ void dirIFNUSED() {
                 break;
         }
     } else {
-        listFile();
+        Listing.listFile();
         switch (SkipFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
                 if (ReadFile(lp, "[IFNUSED] No endif") != ENDIF) {
@@ -1234,7 +1234,7 @@ void dirENDIF() {
 /* modified */
 void dirINCLUDE() {
     const fs::path &FileName = GetFileName(lp);
-    listFile();
+    Listing.listFile();
     IncludeFile(FileName);
     donotlist = 1;
 }
@@ -1326,7 +1326,7 @@ void dirIFDEF() {
     }
 
     if (DefineTable.FindDuplicate(id)) {
-        listFile();
+        Listing.listFile();
         /*switch (res=ReadFile()) {*/
         switch (res = ReadFile(lp, "[IFDEF] No endif")) {
             /*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1343,7 +1343,7 @@ void dirIFDEF() {
                 break;
         }
     } else {
-        listFile();
+        Listing.listFile();
         /*switch (res=SkipFile()) {*/
         switch (res = SkipFile(lp, "[IFDEF] No endif")) {
             /*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1383,7 +1383,7 @@ void dirIFNDEF() {
     }
 
     if (!DefineTable.FindDuplicate(id)) {
-        listFile();
+        Listing.listFile();
         /*switch (res=ReadFile()) {*/
         switch (res = ReadFile(lp, "[IFNDEF] No endif")) {
             /*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1400,7 +1400,7 @@ void dirIFNDEF() {
                 break;
         }
     } else {
-        listFile();
+        Listing.listFile();
         /*switch (res=SkipFile()) {*/
         switch (res = SkipFile(lp, "[IFNDEF] No endif")) {
             /*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1698,7 +1698,7 @@ void dirSTRUCT() {
         }
     }
     st = StructureTable.Add(naam, offset, bind, global);
-    listFile();
+    Listing.listFile();
     while ('o') {
         if (!ReadLine()) {
             Error("[STRUCT] Unexpected end of structure", 0, PASS1);
@@ -1713,7 +1713,7 @@ void dirSTRUCT() {
             break;
         }
         ParseStructLine(st);
-        listFileSkip(line);
+        Listing.listFileSkip(line);
     }
     st->deflab();
 }
@@ -1840,7 +1840,7 @@ void dirEDUP() {
     STRCPY(line, LINEMAX, ml);
     free(ml);
 
-    listFile();
+    Listing.listFile();
 }
 
 void dirENDM() {
@@ -1946,7 +1946,7 @@ void _lua_showerror() {
         ErrorStr += "\n"s;
     }
 
-    writeToListing(ErrorStr);
+    Listing.write(ErrorStr);
     _COUT ErrorStr _END;
 
     PreviousErrorLine = ln;
@@ -2020,7 +2020,7 @@ void dirLUA() {
     }
 
     ln = CurrentLocalLine;
-    listFile();
+    Listing.listFile();
     while (1) {
         if (!ReadLine(false)) {
             Error("[LUA] Unexpected end of lua script", 0, PASS3);
@@ -2057,7 +2057,7 @@ void dirLUA() {
             }
         }
 
-        listFileSkip(line);
+        Listing.listFileSkip(line);
     }
 
     if (execute) {

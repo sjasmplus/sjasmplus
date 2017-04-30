@@ -628,7 +628,7 @@ void CMacroTable::Add(char *nnaam, char *&p) {
     if (*p/* && *p!=':'*/) {
         Error("Unexpected", p, PASS1);
     }
-    listFile();
+    Listing.listFile();
     if (!ReadFileToCStringsList(macs->body, "endm")) {
         Error("Unexpected end of macro", 0, PASS1);
     }
@@ -742,7 +742,7 @@ int CMacroTable::Emit(char *naam, char *&p) {
         Error("Too many arguments for macro", naam);
     }
     /* (end new) */
-    listFile();
+    Listing.listFile();
     olistmacro = listmacro;
     listmacro = 1;
     olijstp = lijstp;

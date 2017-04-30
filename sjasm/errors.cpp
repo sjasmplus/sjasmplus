@@ -81,7 +81,7 @@ void Error(const char *fout, const char *bd, int type) {
     ErrorStr += "\n"s;
 //    }
 
-    writeToListing(ErrorStr);
+    Listing.write(ErrorStr);
 
     _COUT ErrorStr _END;
 
@@ -130,7 +130,7 @@ void Warning(const char *fout, const char *bd, int type) {
     ErrorStr += "\n"s;
 //    }
 
-    writeToListing(ErrorStr);
+    Listing.write(ErrorStr);
     _COUT ErrorStr _END;
 }
 
