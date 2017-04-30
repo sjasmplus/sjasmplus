@@ -237,16 +237,10 @@ std::string CLabelTable::Dump() const {
     Str << std::endl
         << "Value    Label" << std::endl
         << "------ - -----------------------------------------------------------" << std::endl;
-    char buf[9];
     for (int i = 1; i < NextLocation; ++i) {
         const CLabelTableEntry &label = LabelTable[i];
         if (label.page != -1) {
-            {
-                char *p = buf;
-                PrintHEXAlt(p, label.value);
-                *p = 0;
-            }
-            Str << "0x" << buf
+            Str << "0x" << toHexAlt(label.value)
                 << (label.used > 0 ? "   " : " X ") << label.name
                 << std::endl;
         }
@@ -259,7 +253,6 @@ void CLabelTable::DumpForUnreal(const fs::path &FileName) const {
     if (!OFS.is_open()) {
         Error("Error opening file", FileName.string(), FATAL);
     }
-    char buf[9];
     for (int i = 1; i < NextLocation; ++i) {
         const CLabelTableEntry &label = LabelTable[i];
         if (label.page == -1) {
@@ -282,12 +275,7 @@ void CLabelTable::DumpForUnreal(const fs::path &FileName) const {
             OFS << '0' << char('0' + page);
         }
         OFS << ':';
-        {
-            char *p = buf;
-            PrintHEXAlt(p, lvalue);
-            *p = 0;
-        }
-        OFS << buf;
+        OFS << toHexAlt(lvalue);
         OFS << ' ' << label.name << std::endl;
     }
 }

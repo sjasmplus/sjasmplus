@@ -48,8 +48,6 @@ fs::ifstream realIFS;
 fs::ifstream *pIFS = &realIFS;
 fs::ofstream OFSExport;
 
-aint PreviousAddress, epadres;
-
 /*
 void CheckPage() {
     if (!DeviceID) {
@@ -87,18 +85,18 @@ void Emit(uint8_t byte) {
 }
 
 void EmitByte(uint8_t byte) {
-    PreviousAddress = Asm.getCPUAddress();
+    Listing.setPreviousAddress(Asm.getCPUAddress());
     Emit(byte);
 }
 
 void EmitWord(uint16_t word) {
-    PreviousAddress = Asm.getCPUAddress();
+    Listing.setPreviousAddress(Asm.getCPUAddress());
     Emit(word % 256);
     Emit(word / 256);
 }
 
 void EmitBytes(int *bytes) {
-    PreviousAddress = Asm.getCPUAddress();
+    Listing.setPreviousAddress(Asm.getCPUAddress());
     if (*bytes == -1) {
         Error("Illegal instruction", line, CATCHALL);
         *lp = 0;
@@ -109,7 +107,7 @@ void EmitBytes(int *bytes) {
 }
 
 void EmitWords(int *words) {
-    PreviousAddress = Asm.getCPUAddress();
+    Listing.setPreviousAddress(Asm.getCPUAddress());
     while (*words != -1) {
         Emit((*words) % 256);
         Emit((*words++) / 256);
@@ -117,7 +115,7 @@ void EmitWords(int *words) {
 }
 
 void EmitBlock(uint8_t byte, aint len, bool nulled) {
-    PreviousAddress = Asm.getCPUAddress();
+    Listing.setPreviousAddress(Asm.getCPUAddress());
     if (len) {
         Listing.addByte(byte);
     }

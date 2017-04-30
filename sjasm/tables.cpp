@@ -35,6 +35,8 @@ using boost::algorithm::to_upper_copy;
 #include "sjdefs.h"
 #include "listing.h"
 
+char temp[LINEMAX];
+
 char *PreviousIsLabel;
 
 char *ValidateLabel(char *naam) {
@@ -639,7 +641,8 @@ int CMacroTable::Emit(char *naam, char *&p) {
     char *n, labnr[LINEMAX], ml[LINEMAX], *omacrolabp;
     CMacroTableEntry *m = macs;
     CDefineTableEntry *odefs;
-    int olistmacro, olijst;
+    bool olistmacro;
+    int olijst;
     if (!used[*naam]) {
         return 0;
     }
@@ -744,7 +747,7 @@ int CMacroTable::Emit(char *naam, char *&p) {
     /* (end new) */
     Listing.listFile();
     olistmacro = listmacro;
-    listmacro = 1;
+    listmacro = true;
     olijstp = lijstp;
     olijst = lijst;
     lijstp = m->body;
@@ -764,7 +767,7 @@ int CMacroTable::Emit(char *naam, char *&p) {
     macrolabp = omacrolabp;
     /*listmacro=olistmacro; donotlist=1; return 0;*/
     listmacro = olistmacro;
-    donotlist = 1;
+    donotlist = true;
     return 2;
 }
 

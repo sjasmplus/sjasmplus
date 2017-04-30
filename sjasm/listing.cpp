@@ -4,11 +4,11 @@
 #include "listing.h"
 #include "util.h"
 
-//fs::ofstream OFSListing;
+bool donotlist = false, listmacro = false;
 
 ListingWriter Listing;
 
-void ListingWriter::listbytes(char *&p) {
+void ListingWriter::listBytes4() {
     int i = 0;
 /*
     while (nEB--) {
@@ -16,99 +16,88 @@ void ListingWriter::listbytes(char *&p) {
         *(p++) = ' ';
     }
 */
-    std::for_each(ByteBuffer.begin(), ByteBuffer.end(), [&i, &p](const uint8_t &Byte) {
-        PrintHEX8(p, Byte);
+    std::for_each(ByteBuffer.begin(), ByteBuffer.end(), [&i,this](const uint8_t &Byte) {
+        OFS << toHex8(Byte) << ' ';
         i++;
-        *(p++) = ' ';
     });
     ByteBuffer.clear();
 
+    assert(i <= 4);
     i = 4 - i;
     while (i--) {
-        *(p++) = ' ';
-        *(p++) = ' ';
-        *(p++) = ' ';
+        OFS << "   ";
     }
 }
 
-void ListingWriter::listbytes2(char *&p) {
+void ListingWriter::listBytes5() {
 /*
     for (int i = 0; i != 5; ++i) {
         PrintHEX8(p, EB[i]);
     }
 */
     auto beg = ByteBuffer.begin();
-    std::for_each(beg, beg + 5, [&p](const uint8_t Byte) {
-        PrintHEX8(p, Byte);
+    std::for_each(beg, beg + 5, [this](const uint8_t Byte) {
+        OFS << toHex8(Byte);
     });
 
-    *(p++) = ' ';
-    *(p++) = ' ';
+    OFS << "  ";
 }
 
-void ListingWriter::printCurrentLocalLine(char *&p) {
+void ListingWriter::printCurrentLocalLine() {
     aint v = CurrentLocalLine;
-    switch (NDigitsInLineNumber) {
+    switch (NumDigitsInLineNumber) {
         default:
-            *(p++) = (unsigned char) ('0' + v / 1000000);
+            OFS << (unsigned char) ('0' + v / 1000000);
             v %= 1000000;
         case 6:
-            *(p++) = (unsigned char) ('0' + v / 100000);
+            OFS << (unsigned char) ('0' + v / 100000);
             v %= 100000;
         case 5:
-            *(p++) = (unsigned char) ('0' + v / 10000);
+            OFS << (unsigned char) ('0' + v / 10000);
             v %= 10000;
         case 4:
-            *(p++) = (unsigned char) ('0' + v / 1000);
+            OFS << (unsigned char) ('0' + v / 1000);
             v %= 1000;
         case 3:
-            *(p++) = (unsigned char) ('0' + v / 100);
+            OFS << (unsigned char) ('0' + v / 100);
             v %= 100;
         case 2:
-            *(p++) = (unsigned char) ('0' + v / 10);
+            OFS << (unsigned char) ('0' + v / 10);
             v %= 10;
         case 1:
-            *(p++) = (unsigned char) ('0' + v);
+            OFS << (unsigned char) ('0' + v);
     }
-    *(p++) = IncludeLevel > 0 ? '+' : ' ';
-    *(p++) = IncludeLevel > 1 ? '+' : ' ';
-    *(p++) = IncludeLevel > 2 ? '+' : ' ';
+    OFS << (IncludeLevel > 0 ? '+' : ' ');
+    OFS << (IncludeLevel > 1 ? '+' : ' ');
+    OFS << (IncludeLevel > 2 ? '+' : ' ');
 }
 
-void ListingWriter::listbytes3(int pad) {
+void ListingWriter::listBytesLong(int pad) {
     int t;
-    char *pp, *sp = pline + 3 + NDigitsInLineNumber;
     auto it = ByteBuffer.begin();
     auto end = ByteBuffer.end();
     while (it < end) {
-        pp = sp;
-        PrintHEX16(pp, pad);
-        *(pp++) = ' ';
+        OFS << toHex16(pad) << ' ';
         t = 0;
         while (it < end && t < 32) {
-            PrintHEX8(pp, *it);
+            OFS << toHex8(*it);
             ++it;
             ++t;
         }
-        *(pp++) = '\n';
-        *pp = 0;
-        if (OFS.is_open()) {
-            OFS << pline;
-        }
+        OFS << endl;
         pad += 32;
     }
     ByteBuffer.clear();
 }
 
 void ListingWriter::listFile() {
-    char *pp = pline;
-    aint pad;
+    int pad;
     if (pass != LASTPASS || donotlist) {
-        donotlist = 0;
+        donotlist = false;
         ByteBuffer.clear();
         return;
     }
-    if (Options::ListingFName.empty()) {
+    if (!isActive) {
         return;
     }
     if (listmacro) {
@@ -116,7 +105,7 @@ void ListingWriter::listFile() {
             return;
         }
     }
-    if ((pad = PreviousAddress) == (aint) -1) {
+    if ((pad = PreviousAddress) == -1) {
         pad = epadres;
     }
     if (strlen(line) && line[strlen(line) - 1] != 10) {
@@ -124,78 +113,66 @@ void ListingWriter::listFile() {
     } else {
         STRCPY(line, LINEMAX, "\n");
     }
-    *pp = 0;
-    printCurrentLocalLine(pp);
-    PrintHEX16(pp, pad);
-    *(pp++) = ' ';
+    printCurrentLocalLine();
+    OFS << toHex16(pad) << ' ';
     if (ByteBuffer.size() < 5) {
-        listbytes(pp);
-        *pp = 0;
+        listBytes4();
         if (listmacro) {
-            STRCAT(pp, LINEMAX2, ">");
+            OFS << ">";
         }
-        STRCAT(pp, LINEMAX2, line);
-        OFS << pline;
+        OFS << line;
     } else if (ByteBuffer.size() < 6) {
-        listbytes2(pp);
-        *pp = 0;
+        listBytes5();
         if (listmacro) {
-            STRCAT(pp, LINEMAX2, ">");
+            OFS << ">";
         }
-        STRCAT(pp, LINEMAX2, line);
-        OFS << pline;
+        OFS << line;
     } else {
         for (int i = 0; i != 12; ++i) {
-            *(pp++) = ' ';
+            OFS << ' ';
         }
-        *pp = 0;
         if (listmacro) {
-            STRCAT(pp, LINEMAX2, ">");
+            OFS << ">";
         }
-        STRCAT(pp, LINEMAX2, line);
-        OFS << pline;
-        listbytes3(pad);
+        OFS << line;
+        listBytesLong(pad);
     }
     epadres = Asm.getCPUAddress();
-    PreviousAddress = (aint) -1;
+    PreviousAddress = -1;
     ByteBuffer.clear();
 }
 
 void ListingWriter::listFileSkip(char *line) {
-    char *pp = pline;
     aint pad;
     if (pass != LASTPASS || donotlist) {
-        donotlist = 0;
+        donotlist = false;
         ByteBuffer.clear();
         return;
     }
-    if (Options::ListingFName.empty()) {
+    if (!isActive) {
         return;
     }
     if (listmacro) {
         return;
     }
-    if ((pad = PreviousAddress) == (aint) -1) {
+    if ((pad = PreviousAddress) == -1) {
         pad = epadres;
     }
     if (strlen(line) && line[strlen(line) - 1] != 10) {
         STRCAT(line, LINEMAX, "\n");
     }
-    *pp = 0;
-    printCurrentLocalLine(pp);
-    PrintHEX16(pp, pad);
-    *pp = 0;
-    STRCAT(pp, LINEMAX2, "~            ");
+    printCurrentLocalLine();
+    OFS << toHex16(pad);
+    OFS << "~            ";
     if (ByteBuffer.size() > 0) {
         Error("Internal error lfs", 0, FATAL);
     }
     if (listmacro) {
-        STRCAT(pp, LINEMAX2, ">");
+        OFS << ">";
     }
-    STRCAT(pp, LINEMAX2, line);
-    OFS << pline;
+    OFS << line;
     epadres = Asm.getCPUAddress();
-    PreviousAddress = (aint) -1;
+    PreviousAddress = -1;
     ByteBuffer.clear();
 }
 
@@ -204,5 +181,38 @@ void ListingWriter::addByte(const uint8_t Byte) {
 }
 
 void ListingWriter::init() {
-    open(Options::ListingFName);
+    if (!Options::ListingFName.empty()) {
+        open(Options::ListingFName);
+        isActive = true;
+    } else {
+        isActive = false;
+    }
+}
+
+void ListingWriter::initPass() {
+    epadres = 0;
+    PreviousAddress = 0;
+    listmacro = false;
+
+    // Put this here for now, as MaxLineNumber has the correct value only at the end op pass 1
+    // i.e. it is usable only after the first pass
+    NumDigitsInLineNumber = 1;
+    if (MaxLineNumber > 9) {
+        NumDigitsInLineNumber = 2;
+    }
+    if (MaxLineNumber > 99) {
+        NumDigitsInLineNumber = 3;
+    }
+    if (MaxLineNumber > 999) {
+        NumDigitsInLineNumber = 4;
+    }
+    if (MaxLineNumber > 9999) {
+        NumDigitsInLineNumber = 5;
+    }
+    if (MaxLineNumber > 99999) {
+        NumDigitsInLineNumber = 6;
+    }
+    if (MaxLineNumber > 999999) {
+        NumDigitsInLineNumber = 7;
+    }
 }

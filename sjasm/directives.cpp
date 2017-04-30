@@ -79,7 +79,7 @@ int ParseDirective(bool bol) {
         }
 
         char mline[LINEMAX2];
-        int olistmacro;
+        bool olistmacro;
         char *ml;
         char *pp = mline;
         *pp = 0;
@@ -92,7 +92,7 @@ int ParseDirective(bool bol) {
         }
         //_COUT pp _ENDL;
         olistmacro = listmacro;
-        listmacro = 1;
+        listmacro = true;
         ml = STRDUP(line);
         if (ml == nullptr) {
             Error("No enough memory!", 0, FATAL);
@@ -104,7 +104,7 @@ int ParseDirective(bool bol) {
         } while (--val);
         STRCPY(line, LINEMAX, ml);
         listmacro = olistmacro;
-        donotlist = 1;
+        donotlist = true;
 
         free(ml);
         return 1;
@@ -1236,7 +1236,7 @@ void dirINCLUDE() {
     const fs::path &FileName = GetFileName(lp);
     Listing.listFile();
     IncludeFile(FileName);
-    donotlist = 1;
+    donotlist = true;
 }
 
 void dirOUTPUT() {
@@ -1451,8 +1451,7 @@ void dirEXPORT() {
 /* added */
 void dirDISPLAY() {
     char decprint = 0;
-    char e[LINEMAX];
-    char *ep = e;
+    std::string Message;
     aint val;
     int t = 0;
     while (1) {
@@ -1505,17 +1504,15 @@ void dirDISPLAY() {
             do {
                 if (!*lp || *lp == '"') {
                     Error("[DISPLAY] Syntax error", line, PASS3);
-                    *ep = 0;
                     return;
                 }
                 if (t == 128) {
                     Error("[DISPLAY] Too many arguments", line, PASS3);
-                    *ep = 0;
                     return;
                 }
                 GetCharConstChar(lp, val);
                 check8(val);
-                *(ep++) = (char) (val & 255);
+                Message += (char) (val & 255);
             } while (*lp != '"');
             ++lp;
         } else if (*lp == 0x27) {
@@ -1523,37 +1520,32 @@ void dirDISPLAY() {
             do {
                 if (!*lp || *lp == 0x27) {
                     Error("[DISPLAY] Syntax error", line, PASS3);
-                    *ep = 0;
                     return;
                 }
                 if (t == LINEMAX - 1) {
                     Error("[DISPLAY] Too many arguments", line, PASS3);
-                    *ep = 0;
                     return;
                 }
                 GetCharConstCharSingle(lp, val);
                 check8(val);
-                *(ep++) = (char) (val & 255);
+                Message += (char) (val & 255);
             } while (*lp != 0x27);
             ++lp;
         } else {
             if (ParseExpression(lp, val)) {
                 if (decprint == 0 || decprint == 2) {
-                    *(ep++) = '0';
-                    *(ep++) = 'x';
+                    Message += "0x";
                     if (val < 0x1000) {
-                        PrintHEX16(ep, val);
+                        Message += toHex16(val);
                     } else {
-                        PrintHEXAlt(ep, val);
+                        Message += toHexAlt(val);
                     }
                 }
                 if (decprint == 2) {
-                    *(ep++) = ',';
-                    *(ep++) = ' ';
+                    Message += ", ";
                 }
                 if (decprint == 1 || decprint == 2) {
-                    SPRINTF1(ep, (int) (&e[0] + LINEMAX - ep), "%d", val);
-                    ep += strlen(ep);
+                    Message += std::to_string(val);
                 }
                 decprint = 0;
             } else {
@@ -1567,12 +1559,11 @@ void dirDISPLAY() {
         }
         ++lp;
     }
-    *ep = 0; // end line
 
     if (pass != LASTPASS) {
         // do none
     } else {
-        _COUT "> " _CMDL e _ENDL;
+        _COUT "> " _CMDL Message _ENDL;
     }
 }
 
@@ -1811,7 +1802,7 @@ void dirEDUP() {
     STRNCAT(dup.Pointer->string, LINEMAX, dup.lp, lp - dup.lp - 4); //чтобы взять код перед EDUP/ENDR/ENDM
     CStringsList *s;
     olistmacro = listmacro;
-    listmacro = 1;
+    listmacro = true;
     ml = STRDUP(line);
     if (ml == nullptr) {
         Error("[EDUP/ENDR] No enough memory", 0, FATAL);
@@ -1836,7 +1827,7 @@ void dirEDUP() {
     CurrentGlobalLine = gcurln;
     CurrentLocalLine = lcurln;
     listmacro = olistmacro;
-    donotlist = 1;
+    donotlist = true;
     STRCPY(line, LINEMAX, ml);
     free(ml);
 

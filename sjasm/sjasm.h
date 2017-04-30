@@ -47,7 +47,7 @@ namespace global {
 }
 
 // extend
-extern char *lp, line[LINEMAX], temp[LINEMAX], pline[LINEMAX2], ErrorLine[LINEMAX2], *bp;
+extern char *lp, line[LINEMAX], *bp;
 extern char sline[LINEMAX2], sline2[LINEMAX2];
 
 extern std::vector<fs::path> SourceFNames;
@@ -56,12 +56,11 @@ extern int CurrentSourceFName;
 extern int ConvertEncoding; /* added */
 extern int pass, IsLabelNotFound, ErrorCount, IncludeLevel;
 extern bool moreInputLeft; // Reset by the END directive
-extern int donotlist, listmacro;
 //physical address, disp != org mode flag
 extern int adrdisp, PseudoORG; /* added for spectrum mode */
 extern char *MemoryPointer; /* added for spectrum ram */
 extern int StartAddress;
-extern int macronummer, lijst, NDigitsInLineNumber, synerr;
+extern int macronummer, lijst, synerr;
 //$, ...
 extern aint CurAddress, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine, destlen, /* size, */ MaxLineNumber, comlin;
 

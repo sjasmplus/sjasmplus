@@ -7,13 +7,13 @@
 
 namespace fs = boost::filesystem;
 
-void PrintHEX8(char *&p, aint h);
+std::string toHex8(aint Number);
 
-void PrintHEX16(char *&p, aint h);
+std::string toHex16(aint Number);
 
 void PrintHEX32(char *&p, aint h);
 
-void PrintHEXAlt(char *&p, aint h);
+std::string toHexAlt(aint Number);
 
 class TextOutput {
 protected:

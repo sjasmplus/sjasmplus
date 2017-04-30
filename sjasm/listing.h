@@ -6,26 +6,38 @@
 #include <string>
 #include "util.h"
 
+extern bool donotlist, listmacro;
+
 class ListingWriter : public TextOutput {
 private:
+    bool isActive = false;
     std::vector<uint8_t> ByteBuffer;
+    int PreviousAddress;
+    aint epadres;
+    int NumDigitsInLineNumber = 0;
 
-    void listbytes(char *&p);
+    void listBytes4();
 
-    void listbytes2(char *&p);
+    void listBytes5();
 
-    void listbytes3(int pad);
+    void listBytesLong(int pad);
 
-    void printCurrentLocalLine(char *&p);
+    void printCurrentLocalLine();
 
 public:
     void init();
+
+    void initPass();
 
     void listFile();
 
     void listFileSkip(char *line);
 
     void addByte(const uint8_t Byte);
+
+    void setPreviousAddress(int Value) {
+        PreviousAddress = Value;
+    }
 };
 
 extern ListingWriter Listing;

@@ -33,10 +33,7 @@
 #include "sjdefs.h"
 #include "errors.h"
 
-
 namespace fs = boost::filesystem;
-
-extern aint PreviousAddress, epadres;
 
 void EmitByte(uint8_t byte);
 

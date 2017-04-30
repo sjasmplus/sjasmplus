@@ -47,7 +47,7 @@ namespace global {
     fs::path CurrentFilename;
 }
 
-char *lp, line[LINEMAX], temp[LINEMAX], pline[LINEMAX2], *bp;
+char *lp, line[LINEMAX], *bp;
 char sline[LINEMAX2], sline2[LINEMAX2];
 
 std::vector<fs::path> SourceFNames;
@@ -58,11 +58,10 @@ int ConvertEncoding = ENCWIN; /* added */
 
 int pass = 0, IsLabelNotFound = 0, ErrorCount = 0, IncludeLevel = -1;
 bool moreInputLeft = false;
-int donotlist = 0, listmacro = 0;
 /* int adrdisp = 0, PseudoORG = 0; */ /* added for spectrum ram */
 char *MemoryPointer = NULL; /* added for spectrum ram */
 int StartAddress = -1;
-int macronummer = 0, lijst = 0, NDigitsInLineNumber = 0, synerr = 1;
+int macronummer = 0, lijst = 0, synerr = 1;
 aint CurAddress = 0, CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;
 aint destlen = 0, size = (aint) -1, MaxLineNumber = 0, comlin = 0;
 
@@ -84,25 +83,6 @@ int LuaLine = -1;
 
 /* modified */
 void InitPass(int p) {
-    NDigitsInLineNumber = 1;
-    if (MaxLineNumber > 9) {
-        NDigitsInLineNumber = 2;
-    }
-    if (MaxLineNumber > 99) {
-        NDigitsInLineNumber = 3;
-    }
-    if (MaxLineNumber > 999) {
-        NDigitsInLineNumber = 4;
-    }
-    if (MaxLineNumber > 9999) {
-        NDigitsInLineNumber = 5;
-    }
-    if (MaxLineNumber > 99999) {
-        NDigitsInLineNumber = 6;
-    }
-    if (MaxLineNumber > 999999) {
-        NDigitsInLineNumber = 7;
-    }
     if (LastParsedLabel != NULL) {
         free(LastParsedLabel);
         LastParsedLabel = NULL;
@@ -111,13 +91,11 @@ void InitPass(int p) {
     vorlabp = (char *) malloc(2);
     STRCPY(vorlabp, sizeof("_"), "_");
     macrolabp = NULL;
-    listmacro = 0;
     pass = p;
     Asm.reset();
     moreInputLeft = true;
     CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
-    PreviousAddress = 0;
-    epadres = 0;
+    Listing.initPass();
     macronummer = 0;
     lijst = 0;
     comlin = 0;
