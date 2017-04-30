@@ -477,7 +477,7 @@ char *CMacroDefineTable::getverv(char *name) {
 }
 
 void CMacroDefineTable::SplitToArray(const char *aName, char **&aArray, int &aCount, int *aPositions) const {
-    int nameLen = strlen(aName);
+    size_t nameLen = strlen(aName);
     aCount = 0;
     int itemSizes[KTotalJoinedParams];
     int currentItemsize = 0;

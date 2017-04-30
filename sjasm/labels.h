@@ -36,7 +36,6 @@ namespace fs = boost::filesystem;
 
 #define LABMAX 64
 #define LABTABSIZE 32768
-#define FUNTABSIZE 4096
 
 class CLabelTableEntry {
 public:

@@ -49,7 +49,7 @@ void OpenFile(const fs::path &nfilename);
 
 void IncludeFile(const fs::path &nfilename);
 
-void ReadBufLine(bool Parse = true, bool SplitByColon = true); /* added */
+void readBufLine(bool Parse = true, bool SplitByColon = true); /* added */
 
 fs::path getAbsPath(const fs::path &p);
 

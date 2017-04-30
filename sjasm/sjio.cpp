@@ -39,10 +39,10 @@ using namespace std::string_literals;
 #include "util.h"
 #include "listing.h"
 
-char rlbuf[4096 * 2]; //x2 to prevent errors
+char ReadLineBuf[4096 * 2]; //x2 to prevent errors
 size_t BytesLeft;
 bool rldquotes = false, rlsquotes = false, rlspace = false, rlcomment = false, rlcolon = false, rlnewline = true;
-char *rlpbuf, *rlppos;
+char *ReadLineBufPtr, *rlppos;
 
 fs::ifstream realIFS;
 fs::ifstream *pIFS = &realIFS;
@@ -261,8 +261,8 @@ void OpenFile(const fs::path &nfilename) {
     global::CurrentDirectory = fullpath.parent_path();
 
     BytesLeft = 0;
-    rlpbuf = rlbuf;
-    ReadBufLine(true);
+    ReadLineBufPtr = ReadLineBuf;
+    readBufLine(true);
 
     pIFS->close();
     --IncludeLevel;
@@ -280,13 +280,13 @@ void IncludeFile(const fs::path &nfilename) {
     fs::ifstream incIFS;
     pIFS = &incIFS;
 //std::cout << "*** INCLUDE: " << nfilename << std::endl;
-    char *pbuf = rlpbuf;
-    char *buf = STRDUP(rlbuf);
-    if (buf == NULL) {
+    char *SaveReadLineBufPtr = ReadLineBufPtr;
+    char *SaveReadLineBuf = STRDUP(ReadLineBuf);
+    if (SaveReadLineBuf == NULL) {
         Error("No enough memory!", 0, FATAL);
         return;
     }
-    size_t readed = BytesLeft;
+    size_t SaveBytesLeft = BytesLeft;
     bool squotes = rlsquotes, dquotes = rldquotes, space = rlspace, comment = rlcomment, colon = rlcolon, newline = rlnewline;
 
     rldquotes = false;
@@ -296,16 +296,16 @@ void IncludeFile(const fs::path &nfilename) {
     rlcolon = false;
     rlnewline = true;
 
-    memset(rlbuf, 0, 8192);
+    memset(ReadLineBuf, 0, sizeof(ReadLineBuf));
 
     OpenFile(nfilename);
 
     rlsquotes = squotes, rldquotes = dquotes, rlspace = space, rlcomment = comment, rlcolon = colon, rlnewline = newline;
-    rlpbuf = pbuf;
-    STRCPY(rlbuf, 8192, buf);
-    BytesLeft = readed;
+    ReadLineBufPtr = SaveReadLineBufPtr;
+    STRCPY(ReadLineBuf, sizeof(ReadLineBuf), SaveReadLineBuf);
+    BytesLeft = SaveBytesLeft;
 
-    free(buf);
+    free(SaveReadLineBuf);
 
     pIFS = saveIFS;
 }
@@ -337,29 +337,29 @@ size_t readBuf(char *buf, size_t size) {
 }
 
 // TODO: Kill it with fire
-void ReadBufLine(bool Parse, bool SplitByColon) {
+void readBufLine(bool Parse, bool SplitByColon) {
     rlppos = line;
     if (rlcolon) {
         *(rlppos++) = '\t';
     }
-    while (SourceReaderEnabled && (BytesLeft > 0 || (BytesLeft = readBuf(rlbuf, 4096)))) {
-        if (!*rlpbuf) {
-            rlpbuf = rlbuf;
+    while (SourceReaderEnabled && (BytesLeft > 0 || (BytesLeft = readBuf(ReadLineBuf, 4096)))) {
+        if (!*ReadLineBufPtr) {
+            ReadLineBufPtr = ReadLineBuf;
         }
         while (BytesLeft > 0) {
-            if (*rlpbuf == '\n' || *rlpbuf == '\r') {
-                if (*rlpbuf == '\n') {
-                    rlpbuf++;
+            if (*ReadLineBufPtr == '\n' || *ReadLineBufPtr == '\r') {
+                if (*ReadLineBufPtr == '\n') {
+                    ReadLineBufPtr++;
                     BytesLeft--;
-                    if (*rlpbuf && *rlpbuf == '\r') {
-                        rlpbuf++;
+                    if (*ReadLineBufPtr && *ReadLineBufPtr == '\r') {
+                        ReadLineBufPtr++;
                         BytesLeft--;
                     }
-                } else if (*rlpbuf == '\r') {
-                    rlpbuf++;
+                } else if (*ReadLineBufPtr == '\r') {
+                    ReadLineBufPtr++;
                     BytesLeft--;
-                    if (*rlpbuf && *rlpbuf == '\n') {
-                        rlpbuf++;
+                    if (*ReadLineBufPtr && *ReadLineBufPtr == '\n') {
+                        ReadLineBufPtr++;
                         BytesLeft--;
                     }
                 }
@@ -384,9 +384,9 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
                     *(rlppos++) = ' ';
                 }
                 rlnewline = true;
-            } else if (SplitByColon && *rlpbuf == ':' && rlspace && !rldquotes && !rlsquotes && !rlcomment) {
-                while (*rlpbuf && *rlpbuf == ':') {
-                    rlpbuf++;
+            } else if (SplitByColon && *ReadLineBufPtr == ':' && rlspace && !rldquotes && !rlsquotes && !rlcomment) {
+                while (*ReadLineBufPtr && *ReadLineBufPtr == ':') {
+                    ReadLineBufPtr++;
                     BytesLeft--;
                 }
                 *rlppos = 0;
@@ -406,14 +406,14 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
                 if (rlcolon) {
                     *(rlppos++) = ' ';
                 }
-            } else if (*rlpbuf == ':' && !rlspace && !rlcolon && !rldquotes && !rlsquotes && !rlcomment) {
+            } else if (*ReadLineBufPtr == ':' && !rlspace && !rlcolon && !rldquotes && !rlsquotes && !rlcomment) {
                 lp = line;
                 *rlppos = 0;
                 char *n;
                 if ((!rlnewline || Options::IsPseudoOpBOF) && (n = getinstr(lp)) && DirectivesTable.find(n)) {
                     //it's directive
-                    while (*rlpbuf && *rlpbuf == ':') {
-                        rlpbuf++;
+                    while (*ReadLineBufPtr && *ReadLineBufPtr == ':') {
+                        ReadLineBufPtr++;
                         BytesLeft--;
                     }
                     if (strlen(line) == LINEMAX - 1) {
@@ -441,38 +441,38 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
                     *(rlppos++) = ':';
                     *(rlppos++) = ' ';
                     rlspace = true;
-                    while (*rlpbuf && *rlpbuf == ':') {
-                        rlpbuf++;
+                    while (*ReadLineBufPtr && *ReadLineBufPtr == ':') {
+                        ReadLineBufPtr++;
                         BytesLeft--;
                     }
                 }
             } else {
-                if (*rlpbuf == '\'' && !rldquotes && !rlcomment) {
+                if (*ReadLineBufPtr == '\'' && !rldquotes && !rlcomment) {
                     if (rlsquotes) {
                         rlsquotes = false;
                     } else {
                         rlsquotes = true;
                     }
-                } else if (*rlpbuf == '"' && !rlsquotes && !rlcomment) {
+                } else if (*ReadLineBufPtr == '"' && !rlsquotes && !rlcomment) {
                     if (rldquotes) {
                         rldquotes = false;
                     } else {
                         rldquotes = true;
                     }
-                } else if (*rlpbuf == ';' && !rlsquotes && !rldquotes) {
+                } else if (*ReadLineBufPtr == ';' && !rlsquotes && !rldquotes) {
                     rlcomment = true;
-                } else if (*rlpbuf == '/' && *(rlpbuf + 1) == '/' && !rlsquotes && !rldquotes) {
+                } else if (*ReadLineBufPtr == '/' && *(ReadLineBufPtr + 1) == '/' && !rlsquotes && !rldquotes) {
                     rlcomment = true;
-                    *(rlppos++) = *(rlpbuf++);
+                    *(rlppos++) = *(ReadLineBufPtr++);
                     BytesLeft--;
-                } else if (*rlpbuf <= ' ' && !rlsquotes && !rldquotes && !rlcomment) {
+                } else if (*ReadLineBufPtr <= ' ' && !rlsquotes && !rldquotes && !rlcomment) {
                     rlspace = true;
                 }
-                *(rlppos++) = *(rlpbuf++);
+                *(rlppos++) = *(ReadLineBufPtr++);
                 BytesLeft--;
             }
         }
-        rlpbuf = rlbuf;
+        ReadLineBufPtr = ReadLineBuf;
     }
     //for end line
     if (pIFS->eof() && BytesLeft <= 0 && line) {
@@ -671,7 +671,7 @@ EReturn ReadFile(const char *pp, const char *err) {
             ol = lijstp;
             lijstp = lijstp->next;
         } else {
-            ReadBufLine(false);
+            readBufLine(false);
             p = line;
             //_COUT "RF:" _CMDL rlcolon _CMDL line _ENDL;
         }
@@ -726,7 +726,7 @@ EReturn SkipFile(const char *pp, const char *err) {
             ol = lijstp;
             lijstp = lijstp->next;
         } else {
-            ReadBufLine(false);
+            readBufLine(false);
             p = line;
             //_COUT "SF:" _CMDL rlcolon _CMDL line _ENDL;
         }
@@ -781,7 +781,7 @@ int ReadLine(bool SplitByColon) {
         return 0;
     }
     int res = (BytesLeft > 0 || !pIFS->eof());
-    ReadBufLine(false, SplitByColon);
+    readBufLine(false, SplitByColon);
     return res;
 }
 
@@ -793,7 +793,7 @@ int ReadFileToCStringsList(CStringsList *&f, const char *end) {
         if (!SourceReaderEnabled) {
             return 0;
         }
-        ReadBufLine(false);
+        readBufLine(false);
         p = line;
 
         if (*p) {
