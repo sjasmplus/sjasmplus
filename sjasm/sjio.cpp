@@ -798,7 +798,7 @@ void ReadBufLine(bool Parse, bool SplitByColon) {
                 lp = line;
                 *rlppos = 0;
                 char *n;
-                if ((n = getinstr(lp)) && DirectivesTable.find(n)) {
+                if ((!rlnewline || Options::IsPseudoOpBOF) && (n = getinstr(lp)) && DirectivesTable.find(n)) {
                     //it's directive
                     while (*rlpbuf && *rlpbuf == ':') {
                         rlpbuf++;
