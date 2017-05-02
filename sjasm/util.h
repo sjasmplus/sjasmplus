@@ -11,7 +11,7 @@ std::string toHex8(aint Number);
 
 std::string toHex16(aint Number);
 
-void PrintHEX32(char *&p, aint h);
+std::string toHex32(aint Number);
 
 std::string toHexAlt(aint Number);
 

@@ -285,13 +285,10 @@ void CLabelTable::DumpSymbols(const fs::path &FileName) const {
     if (!OFS) {
         Error("Error opening file", FileName.string(), FATAL);
     }
-    char buf[9] = {0};
     for (int i = 1; i < NextLocation; ++i) {
         const CLabelTableEntry &label = LabelTable[i];
         if (isalpha(label.name[0])) {
-            char *p = buf;
-            PrintHEX32(p, label.value);
-            OFS << label.name << ": equ 0x" << buf << std::endl;
+            OFS << label.name << ": equ 0x" << toHex32(label.value) << std::endl;
         }
     }
 }

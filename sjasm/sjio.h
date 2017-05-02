@@ -77,6 +77,6 @@ EReturn SkipFile(const char *pp, const char *err); /* added */
 
 int ReadFileToCStringsList(CStringsList *&f, const char *end);
 
-void WriteExp(char *n, aint v);
+void writeExport(const std::string &Name, aint Value);
 
 #endif //SJASMPLUS_SJIO_H

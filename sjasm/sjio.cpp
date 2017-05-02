@@ -820,8 +820,7 @@ int ReadFileToCStringsList(CStringsList *&f, const char *end) {
     return 0;
 }
 
-void WriteExp(char *n, aint v) {
-    char lnrs[16], *l = lnrs;
+void writeExport(const std::string &Name, aint Value) {
     if (!OFSExport.is_open()) {
         try {
             OFSExport.open(Options::ExportFName);
@@ -829,14 +828,9 @@ void WriteExp(char *n, aint v) {
             Error("Error opening file"s, Options::ExportFName.string(), FATAL);
         }
     }
-    ErrorStr = n;
-    ErrorStr += ": EQU "s;
-    ErrorStr += "0x"s;
-    PrintHEX32(l, v);
-    *l = 0;
-    ErrorStr += lnrs;
-    ErrorStr += "\n"s;
-    OFSExport << ErrorStr;
+    std::string Str = Name;
+    Str += ": EQU 0x"s + toHex32(Value) + "\n"s;
+    OFSExport << Str;
 }
 
 //eof sjio.cpp

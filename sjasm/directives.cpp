@@ -1445,7 +1445,7 @@ void dirEXPORT() {
         Error("[EXPORT] Label not found", p, SUPPRESS);
         return;
     }
-    WriteExp(p, val);
+    writeExport(p, val);
 }
 
 /* added */
