@@ -1914,24 +1914,11 @@ void dirDEFARRAY() {
 void _lua_showerror() {
     int ln;
 
-    // part from Error(...)
-    char *err = STRDUP(lua_tostring(LUA, -1));
-    if (err == NULL) {
-        Error("No enough memory!", 0, FATAL);
-        return;
-    }
-    //_COUT err _ENDL;
-    err += 18;
-    char *pos = strstr(err, ":");
-    //_COUT err _ENDL;
-    //_COUT pos _ENDL;
-    *(pos++) = 0;
-    //_COUT err _ENDL;
-    ln = atoi(err) + LuaLine;
+    std::string LuaErr = std::string(lua_tostring(LUA, -1));
+    LuaErr = LuaErr.substr(18);
+    ln = std::stoi(LuaErr.substr(0, LuaErr.find(":"s))) + LuaLine;
 
-    // print error and other actions
-    ErrorStr = global::CurrentFilename.string() + "("s + std::to_string(ln) + "): error: [LUA]"s + pos;
-    free(err);
+    ErrorStr = global::CurrentFilename.string() + "("s + std::to_string(ln) + "): error: [LUA]:"s + LuaErr;
 
     if (ErrorStr.find('\n') == std::string::npos) {
         ErrorStr += "\n"s;
