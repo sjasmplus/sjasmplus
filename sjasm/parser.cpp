@@ -889,10 +889,11 @@ int ParseMacro() {
         return 0;
     }
     if (!(r = MacroTable.Emit(n, p))) {
-        //do none
-    } else if (r == 2) {
-        return 1; //return 1
-    } else if (StructureTable.Emit(n, 0, p, gl) || !gl) {
+        if (StructureTable.Emit(n, 0, p, gl)) {
+            lp = p;
+            return 1;
+        }
+    } else if (r == 2) { // Success
         return 1;
     }
     return 0;
