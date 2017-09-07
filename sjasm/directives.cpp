@@ -1275,6 +1275,9 @@ void dirDEFINE() {
     }
 
     SkipBlanks(lp); // FIXME: This is not enough: need to account for comments
+    if(DefineTable.find(id) != DefineTable.end()) {
+        Error("Duplicate define"s, id);
+    }
     DefineTable[id] = lp;
 
     *(lp) = 0;

@@ -101,6 +101,8 @@ void InitPass(int p) {
     lijst = 0;
     comlin = 0;
     StructureTable.Init();
+    DefineTable.clear();
+    DefArrayTable.clear();
     MacroTable.Init();
     MacroDefineTable.Init();
 
