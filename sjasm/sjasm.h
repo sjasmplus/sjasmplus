@@ -170,7 +170,7 @@ public:
     }
 
     bool isPagedMemory() {
-        return MemManager.isPagedMemory();
+        return MemManager.isActive() && MemManager.isPagedMemory();
     }
 
     int numMemPages() {
