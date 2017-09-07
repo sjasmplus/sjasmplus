@@ -38,6 +38,7 @@ using namespace std::string_literals;
 #include "sjdefs.h"
 #include "util.h"
 #include "listing.h"
+#include "directives.h"
 
 char ReadLineBuf[4096 * 2]; //x2 to prevent errors
 size_t BytesLeft;
@@ -263,6 +264,8 @@ void OpenFile(const fs::path &nfilename) {
     BytesLeft = 0;
     ReadLineBufPtr = ReadLineBuf;
     readBufLine(true);
+
+    checkRepeatStackAtEOF();
 
     pIFS->close();
     --IncludeLevel;

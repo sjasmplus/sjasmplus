@@ -490,6 +490,7 @@ void dirEND() {
     }
 
     SourceReaderEnabled = false;
+    checkRepeatStackAtEOF();
 }
 
 void dirSIZE() {
@@ -1862,6 +1863,13 @@ void dirEDUP() {
     free(ml);
 
     Listing.listFile();
+}
+
+void checkRepeatStackAtEOF() {
+    if (!RepeatStack.empty()) {
+        auto rsTop = RepeatStack.top();
+        Error("No matching EDUP for DUP/REPT at line"s, std::to_string(rsTop.CurrentLocalLine), FATAL);
+    }
 }
 
 void dirENDM() {

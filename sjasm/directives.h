@@ -32,6 +32,8 @@ extern FunctionTable DirectivesTable;
 
 void InsertDirectives();
 
+void checkRepeatStackAtEOF();
+
 bool LuaSetPage(aint n);
 
 bool LuaSetSlot(aint n);
