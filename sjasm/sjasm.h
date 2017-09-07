@@ -193,11 +193,11 @@ public:
     }
 
     // Save slot number set by the SLOT directive
-    boost::optional<std::string> setSlot(int Slot) {
-        auto Err = MemManager.validateSlot(Slot);
+    boost::optional<std::string> setSlot(int NewSlot) {
+        auto Err = MemManager.validateSlot(NewSlot);
         if (Err) return Err;
         else {
-            Slot = Slot;
+            Slot = NewSlot;
             return boost::none;
         }
     }
