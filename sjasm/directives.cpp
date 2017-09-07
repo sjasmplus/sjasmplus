@@ -1274,7 +1274,8 @@ void dirDEFINE() {
         return;
     }
 
-    DefineTable.Add(id, lp, 0);
+    SkipBlanks(lp); // FIXME: This is not enough: need to account for comments
+    DefineTable[id] = lp;
 
     *(lp) = 0;
 }
@@ -1293,17 +1294,43 @@ void dirUNDEFINE() {
         if (pass == PASS1) {
             LabelTable.RemoveAll();
         }
-        DefineTable.RemoveAll();
-    } else if (DefineTable.FindDuplicate(id)) {
-        DefineTable.Remove(id);
-    } else if (LabelTable.Find(id)) {
-        if (pass == PASS1) {
-            LabelTable.Remove(id);
-        }
+        DefineTable.clear();
+        DefArrayTable.clear();
     } else {
-        Warning("[UNDEFINE] Identifier not found", 0);
-        return;
+        bool FoundID = false;
+
+        auto it = DefineTable.find(id);
+        if (it != DefineTable.end()) {
+            DefineTable.erase(it);
+            FoundID = true;
+        }
+
+        auto it2 = DefArrayTable.find(id);
+        if (it2 != DefArrayTable.end()) {
+            DefArrayTable.erase(it2);
+            FoundID = true;
+        }
+
+        if (LabelTable.Find(id)) {
+            if (pass == PASS1) {
+                LabelTable.Remove(id);
+            }
+            FoundID = true;
+        }
+
+        if (!FoundID) {
+            Warning("[UNDEFINE] Identifier not found"s, id);
+        }
     }
+}
+
+bool ifDefName(const std::string &Name) {
+    if (DefineTable.count(Name) > 0)
+        return true;
+    else if (DefArrayTable.count(Name) > 0)
+        return true;
+    else
+        return false;
 }
 
 /* modified */
@@ -1325,7 +1352,7 @@ void dirIFDEF() {
         return;
     }
 
-    if (DefineTable.FindDuplicate(id)) {
+    if (ifDefName(id)) {
         Listing.listFile();
         /*switch (res=ReadFile()) {*/
         switch (res = ReadFile(lp, "[IFDEF] No endif")) {
@@ -1382,7 +1409,7 @@ void dirIFNDEF() {
         return;
     }
 
-    if (!DefineTable.FindDuplicate(id)) {
+    if (!ifDefName(id)) {
         Listing.listFile();
         /*switch (res=ReadFile()) {*/
         switch (res = ReadFile(lp, "[IFNDEF] No endif")) {
@@ -1847,8 +1874,6 @@ void dirDEFARRAY() {
     char *n;
     char *id;
     char ml[LINEMAX];
-    CStringsList *a;
-    CStringsList *f;
 
     if (!(id = GetID(lp))) {
         Error("[DEFARRAY] Syntax error", 0);
@@ -1856,12 +1881,11 @@ void dirDEFARRAY() {
     }
     SkipBlanks(lp);
     if (!*lp) {
-        Error("DEFARRAY must have less one entry", 0);
+        Error("DEFARRAY must have at least one entry", 0);
         return;
     }
 
-    a = new CStringsList();
-    f = a;
+    std::vector<std::string> Arr;
     while (*lp) {
         n = ml;
         SkipBlanks(lp);
@@ -1869,7 +1893,6 @@ void dirDEFARRAY() {
             ++lp;
             while (*lp != '>') {
                 if (!*lp) {
-                    delete a;
                     Error("[DEFARRAY] No closing bracket - <..>", 0);
                     return;
                 }
@@ -1893,22 +1916,15 @@ void dirDEFARRAY() {
             }
         }
         *n = 0;
-        //_COUT a->string _ENDL;
-        f->string = STRDUP(ml);
-        if (f->string == NULL) {
-            Error("[DEFARRAY] No enough memory", 0, FATAL);
-        }
+        Arr.push_back(std::string(ml));
         SkipBlanks(lp);
         if (*lp == ',') {
             ++lp;
         } else {
             break;
         }
-        f->next = new CStringsList();
-        f = f->next;
     }
-    DefineTable.Add(id, "\n", a);
-    //while (a) { STRCPY(ml,a->string); _COUT ml _ENDL; a=a->next; }
+    DefArrayTable[id] = Arr;
 }
 
 void _lua_showerror() {
@@ -1931,10 +1947,7 @@ void _lua_showerror() {
 
     ErrorCount++;
 
-    char count[25];
-    SPRINTF1(count, 25, "%lu", ErrorCount);
-    DefineTable.Replace("_ERRORS", count);
-    // end Error(...)
+    DefineTable["_ERRORS"s] = std::to_string(ErrorCount);
 
     lua_pop(LUA, 1);
 }

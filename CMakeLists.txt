@@ -72,8 +72,6 @@ set(SOURCE_FILES
 #        resources/SaveTAP_ZX_Spectrum_128K.bin.h
 #        resources/SaveTAP_ZX_Spectrum_256K.bin.h
 #        resources/SaveTAP_ZX_Spectrum_48K.bin.h
-        sjasm/defines.cpp
-        sjasm/defines.h
         sjasm/directives.cpp
         sjasm/directives.h
         sjasm/errors.cpp

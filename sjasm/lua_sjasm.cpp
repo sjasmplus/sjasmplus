@@ -39,8 +39,12 @@ static int tolua_sjasm_sj_get_define00(lua_State *tolua_S) {
     {
         char *tolua_var_1 = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
-            char *tolua_ret = (char *) DefineTable.Get(tolua_var_1);
-            tolua_pushstring(tolua_S, (const char *) tolua_ret);
+            std::string tolua_ret;
+            auto it = DefineTable.find(tolua_var_1);
+            if (it != DefineTable.end()) {
+                tolua_ret = it->second;
+            }
+            tolua_pushstring(tolua_S, tolua_ret.c_str());
         }
     }
     return 1;
@@ -71,7 +75,11 @@ static int tolua_sjasm_sj_insert_define00(lua_State *tolua_S) {
         char *tolua_var_2 = ((char *) tolua_tostring(tolua_S, 1, 0));
         char *tolua_var_3 = ((char *) tolua_tostring(tolua_S, 2, 0));
         {
-            bool tolua_ret = (bool) DefineTable.Replace(tolua_var_2, tolua_var_3);
+            bool tolua_ret = false;
+            if (DefineTable.count(tolua_var_2) == 0) {
+                tolua_ret = true; // Indicate that a new entry will be created
+            }
+            DefineTable[tolua_var_2] = tolua_var_3;
             tolua_pushboolean(tolua_S, (bool) tolua_ret);
         }
     }

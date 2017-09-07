@@ -79,7 +79,8 @@ extern stack<SRepeatStack> RepeatStack;
 
 extern CLabelTable LabelTable;
 extern CLocalLabelTable LocalLabelTable;
-extern CDefineTable DefineTable;
+extern std::map<std::string, std::string> DefineTable;
+extern std::map<std::string, std::vector<std::string>> DefArrayTable;
 extern CMacroDefineTable MacroDefineTable;
 extern CMacroTable MacroTable;
 extern CStructureTable StructureTable;

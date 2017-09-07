@@ -72,7 +72,8 @@ stack<SRepeatStack> RepeatStack; /* added */
 CStringsList *lijstp = 0;
 CLabelTable LabelTable;
 CLocalLabelTable LocalLabelTable;
-CDefineTable DefineTable;
+std::map<std::string, std::string> DefineTable;
+std::map<std::string, std::vector<std::string>> DefArrayTable;
 CMacroDefineTable MacroDefineTable;
 CMacroTable MacroTable;
 CStructureTable StructureTable;
@@ -101,15 +102,14 @@ void InitPass(int p) {
     comlin = 0;
     StructureTable.Init();
     MacroTable.Init();
-    DefineTable.Init();
     MacroDefineTable.Init();
 
     // predefined
-    DefineTable.Replace("_SJASMPLUS", "1");
-    DefineTable.Replace("_VERSION", "\"" SJASMPLUS_VERSION "\"");
-    DefineTable.Replace("_RELEASE", "0");
-    DefineTable.Replace("_ERRORS", "0");
-    DefineTable.Replace("_WARNINGS", "0");
+    DefineTable["_SJASMPLUS"s] = "1"s;
+    DefineTable["_VERSION"s] = "\"" SJASMPLUS_VERSION "\"";
+    DefineTable["_RELEASE"s] = "0"s;
+    DefineTable["_ERRORS"s] = "0"s;
+    DefineTable["_WARNINGS"s] = "0"s;
 }
 
 void FreeRAM() {

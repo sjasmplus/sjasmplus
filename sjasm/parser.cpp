@@ -422,7 +422,8 @@ char *ReplaceDefine(char *lp) {
     int definegereplaced = 0, dr;
     /*char *nl=new char[LINEMAX2];*/
     char *nl = sline; /* added. speed up! */
-    char *rp = nl, *nid, *kp, *ver, a;
+    char *rp = nl, *nid, *kp, a;
+    const char *ver = nullptr;
 //    int def = 0; /* added */
     if (++replacedefineteller > 20) {
         Error("Over 20 defines nested", 0, FATAL);
@@ -516,16 +517,18 @@ char *ReplaceDefine(char *lp) {
         nid = GetID(lp);
         dr = 1;
 
-        if (!(ver = DefineTable.Get(nid))) {
+        auto it = DefineTable.find(nid);
+        if (it != DefineTable.end()) {
+            ver = it->second.c_str();
+        } else {
             if (!macrolabp || !(ver = MacroDefineTable.getverv(nid))) {
                 dr = 0;
                 ver = nid;
             }
         }
 
-        /* (begin add) */
-        if (DefineTable.DefArrayList) {
-            CStringsList *a = DefineTable.DefArrayList;
+        if (DefArrayTable.find(nid) != DefArrayTable.end() && !DefArrayTable[nid].empty()) {
+            auto &Arr = (DefArrayTable.find(nid))->second;
             aint val;
             //_COUT lp _ENDL;
             while (*(lp++) && (*lp <= ' ' || *lp == '['));
@@ -541,16 +544,10 @@ char *ReplaceDefine(char *lp) {
                 Error("Number of cell must be positive", 0, CATCHALL);
                 break;
             }
-            val++;
-            while (a && val) {
-                STRCPY(ver, LINEMAX, a->string); // very danger!
-                /*_COUT val _CMDL "-" _CMDL ver _ENDL;*/
-                a = a->next;
-                val--;
-            }
-            if (val && !a) {
+            if(Arr.size() > val) {
+                ver = Arr[val].c_str();
+            } else {
                 Error("Cell of array not found", 0, CATCHALL);
-                break;
             }
         }
         /* (end add) */
@@ -582,9 +579,11 @@ char *ReplaceDefine(char *lp) {
         if (dr) {
             definegereplaced = 1;
         }
-        while (*rp = *ver) {
-            ++rp;
-            ++ver;
+        if (ver) {
+            while (*rp = *ver) {
+                ++rp;
+                ++ver;
+            }
         }
     }
     if (strlen(nl) > LINEMAX - 1) {
@@ -600,7 +599,8 @@ char *ReplaceDefine(char *lp) {
 char *ReplaceDefineNext(char *lp) {
     int definegereplaced = 0, dr;
     char *nl = sline2;
-    char *rp = nl, *nid, *kp, *ver, a;
+    char *rp = nl, *nid, *kp, a;
+    const char *ver = nullptr;
 //    int def = 0;
     if (++replacedefineteller > 20) {
         Error("Over 20 defines nested", 0, FATAL);
@@ -693,15 +693,18 @@ char *ReplaceDefineNext(char *lp) {
         nid = GetID(lp);
         dr = 1;
 
-        if (!(ver = DefineTable.Get(nid))) {
+        auto it = DefineTable.find(nid);
+        if (it != DefineTable.end()) {
+            ver = it->second.c_str();
+        } else {
             if (!macrolabp || !(ver = MacroDefineTable.getverv(nid))) {
                 dr = 0;
                 ver = nid;
             }
         }
 
-        if (DefineTable.DefArrayList) {
-            CStringsList *a = DefineTable.DefArrayList;
+        if (DefArrayTable.find(nid) != DefArrayTable.end() && !DefArrayTable[nid].empty()) {
+            auto &Arr = (DefArrayTable.find(nid))->second;
             aint val;
             //_COUT lp _ENDL;
             while (*(lp++) && (*lp <= ' ' || *lp == '['));
@@ -713,16 +716,11 @@ char *ReplaceDefineNext(char *lp) {
             //_COUT lp _ENDL;
             while (*lp == ']' && *(lp++));
             //_COUT "A" _CMDL val _ENDL;
-            val++;
-            while (a && val) {
-                STRCPY(ver, LINEMAX, a->string); //very danger!
-                /*_COUT val _CMDL "-" _CMDL ver _ENDL;*/
-                a = a->next;
-                val--;
-            }
-            if (val && !a) {
-                Error("Entry in array not found", 0, CATCHALL);
-                break;
+
+            if(Arr.size() > val) {
+                ver = Arr[val].c_str();
+            } else {
+                Error("Cell of array not found", 0, CATCHALL);
             }
         }
 
@@ -748,9 +746,11 @@ char *ReplaceDefineNext(char *lp) {
         if (dr) {
             definegereplaced = 1;
         }
-        while (*rp = *ver) {
-            ++rp;
-            ++ver;
+        if (ver) {
+            while (*rp = *ver) {
+                ++rp;
+                ++ver;
+            }
         }
     }
     if (strlen(nl) > LINEMAX - 1) {

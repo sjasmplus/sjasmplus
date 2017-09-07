@@ -17,7 +17,6 @@ int WarningCount = 0;
 // in sjasm.{h,cpp}
 extern aint CurrentLocalLine;
 extern int pass, ErrorCount;
-extern CDefineTable DefineTable;
 extern lua_State *LUA;
 extern int LuaLine;
 namespace global {
@@ -51,7 +50,7 @@ void Error(const char *fout, const char *bd, int type) {
     PreviousErrorLine = CurrentLocalLine;
     ++ErrorCount;
 
-    DefineTable.Replace("_ERRORS", std::to_string(ErrorCount).c_str());
+    DefineTable["_ERRORS"s] = std::to_string(ErrorCount);
 
     /*SPRINTF3(ep, LINEMAX2, "%s line %lu: %s", filename, CurrentLocalLine, fout);
     if (bd) {
@@ -108,7 +107,7 @@ void Warning(const char *fout, const char *bd, int type) {
     }
 
     ++WarningCount;
-    DefineTable.Replace("_WARNINGS", std::to_string(WarningCount).c_str());
+    DefineTable["_WARNINGS"s] = std::to_string(WarningCount);
 
     if (pass > LASTPASS) {
         ErrorStr = "warning: "s + fout;
