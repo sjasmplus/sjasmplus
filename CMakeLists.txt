@@ -124,7 +124,7 @@ set(SOURCE_FILES
         tolua++/tolua_push.c
         tolua++/tolua_to.c)
 
-include_directories(sjasm lua5.1 tolua++)
+include_directories(BEFORE sjasm lua5.1 tolua++)
 
 add_executable(sjasmplus ${SOURCE_FILES})
 
