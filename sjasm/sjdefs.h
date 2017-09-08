@@ -27,17 +27,6 @@
 #ifndef SJASMPLUS_SJDEFS_H
 #define SJASMPLUS_SJDEFS_H
 
-#ifndef MAX_PATH  // defined on Windows
-
-#include <limits.h>
-
-#ifdef PATH_MAX // defined on Unix
-#define MAX_PATH PATH_MAX
-#else
-#define MAX_PATH 0x1000
-#endif
-#endif
-
 // standard libraries
 #ifdef WIN32
 #include <windows.h>
