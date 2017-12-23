@@ -127,6 +127,16 @@ set(SOURCE_FILES
         tolua++/tolua_push.c
         tolua++/tolua_to.c)
 
+if (WIN32)
+  if (CMAKE_COMPILER_IS_GNUCC)
+    set (CMAKE_RC_COMPILER_INIT windres)
+    enable_language(RC)
+    set (CMAKE_RC_COMPILE_OBJECT
+      "<CMAKE_RC_COMPILER> -O coff <FLAGS> <DEFINES> <SOURCE> <OBJECT>")
+  endif ()
+  set (SOURCE_FILES ${SOURCE_FILES} "${PROJECT_SOURCE_DIR}/win32/sjasmplus.rc")
+endif ()
+
 include_directories(BEFORE sjasm lua5.1 tolua++)
 
 add_executable(sjasmplus ${SOURCE_FILES})
