@@ -72,7 +72,6 @@ set(SOURCE_FILES
 #        resources/SaveTAP_ZX_Spectrum_128K.bin.h
 #        resources/SaveTAP_ZX_Spectrum_256K.bin.h
 #        resources/SaveTAP_ZX_Spectrum_48K.bin.h
-        sjasm/defines.h
         sjasm/directives.cpp
         sjasm/directives.h
         sjasm/errors.cpp
@@ -143,3 +142,5 @@ include_directories(BEFORE sjasm lua5.1 tolua++)
 add_executable(sjasmplus ${SOURCE_FILES})
 
 target_link_libraries (sjasmplus ${Boost_LIBRARIES})
+
+add_subdirectory(tests tests EXCLUDE_FROM_ALL)
