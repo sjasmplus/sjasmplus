@@ -30,9 +30,7 @@
 #define __LABELS
 
 #include <string>
-#include <boost/filesystem.hpp>
-
-namespace fs = boost::filesystem;
+#include "fs.h"
 
 #define LABMAX 64
 #define LABTABSIZE 32768

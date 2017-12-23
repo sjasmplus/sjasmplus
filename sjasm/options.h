@@ -31,9 +31,7 @@
 
 #include <list>
 
-#include <boost/filesystem.hpp>
-
-namespace fs = boost::filesystem;
+#include "fs.h"
 
 namespace Options {
     extern fs::path SymbolListFName;

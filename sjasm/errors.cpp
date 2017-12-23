@@ -6,7 +6,7 @@ extern "C" {
 #include "errors.h"
 #include "listing.h"
 
-namespace fs = boost::filesystem;
+#include "fs.h"
 
 std::string ErrorStr;
 bool IsSkipErrors;

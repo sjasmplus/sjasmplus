@@ -26,14 +26,12 @@
 
 */
 
-#ifndef __SJASM
-#define __SJASM
+#ifndef SJASMPLUS_SJASM_H
+#define SJASMPLUS_SJASM_H
 
 #include <vector>
-#include <boost/filesystem.hpp>
 #include "memory.h"
-
-namespace fs = boost::filesystem;
+#include "fs.h"
 
 //extern CDevice *Devices;
 //extern CDevice *Device;
@@ -250,5 +248,4 @@ public:
 
 extern Assembler Asm;
 
-#endif
-//eof sjasm.h
+#endif // SJASMPLUS_SJASM_H

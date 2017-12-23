@@ -32,9 +32,7 @@
 #define SJASMPLUS_IO_TRD_H
 
 #include <string>
-#include <boost/filesystem.hpp>
-
-namespace fs = boost::filesystem;
+#include "fs.h"
 
 class HobetaFilename {
     std::string Content;

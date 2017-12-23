@@ -29,11 +29,9 @@
 #ifndef SJASMPLUS_SJIO_H
 #define SJASMPLUS_SJIO_H
 
-#include <boost/filesystem.hpp>
+#include "fs.h"
 #include "sjdefs.h"
 #include "errors.h"
-
-namespace fs = boost::filesystem;
 
 void EmitByte(uint8_t byte);
 

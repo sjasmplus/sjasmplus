@@ -3,9 +3,7 @@
 
 #include "sjdefs.h"
 #include <string>
-#include <boost/filesystem.hpp>
-
-namespace fs = boost::filesystem;
+#include "fs.h"
 
 std::string toHex8(aint Number);
 

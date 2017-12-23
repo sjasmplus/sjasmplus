@@ -29,9 +29,7 @@
 #ifndef SJASMPLUS_IO_SNAPSHOTS_H
 #define SJASMPLUS_IO_SNAPSHOTS_H
 
-#include <boost/filesystem.hpp>
-
-namespace fs = boost::filesystem;
+#include "fs.h"
 
 int SaveSNA_ZX(const fs::path &fname, unsigned short start);
 
