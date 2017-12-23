@@ -1,14 +1,5 @@
-#result
-/sjasmplus
-/sjasmplus.exe
-
-#objects
-*.o
-
-#depends
-*.d
-
 .idea
 build
 cmake-build-debug
 build-*
+sjasmplus.srctrl*
