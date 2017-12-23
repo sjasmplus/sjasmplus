@@ -32,17 +32,13 @@
 #include <vector>
 #include "memory.h"
 #include "fs.h"
+#include "global.h"
 
 //extern CDevice *Devices;
 //extern CDevice *Device;
 //extern CDeviceSlot *Slot;
 //extern CDevicePage *Page;
 //extern char *DeviceID;
-
-namespace global {
-    extern fs::path CurrentDirectory;
-    extern fs::path CurrentFilename;
-}
 
 // extend
 extern char *lp, line[LINEMAX], *bp;

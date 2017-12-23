@@ -5,7 +5,7 @@ extern "C" {
 #include "tables.h"
 #include "errors.h"
 #include "listing.h"
-
+#include "global.h"
 #include "fs.h"
 
 std::string ErrorStr;
@@ -19,10 +19,6 @@ extern aint CurrentLocalLine;
 extern int pass, ErrorCount;
 extern lua_State *LUA;
 extern int LuaLine;
-namespace global {
-    extern fs::path CurrentDirectory;
-    extern fs::path CurrentFilename;
-}
 
 void ExitASM(int p);
 // sjasm.{h,cpp}

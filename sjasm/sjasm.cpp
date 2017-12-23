@@ -28,6 +28,7 @@
 
 // sjasm.cpp
 
+#include "global.h"
 #include "sjdefs.h"
 #include "lua_sjasm.h"
 #include "listing.h"
@@ -41,11 +42,6 @@ CDevice *Device = 0;
 CDeviceSlot *Slot = 0;
 CDevicePage *Page = 0;
 char *DeviceID = 0;
-
-namespace global {
-    fs::path CurrentDirectory;
-    fs::path CurrentFilename;
-}
 
 char *lp, line[LINEMAX], *bp;
 char sline[LINEMAX2], sline2[LINEMAX2];
