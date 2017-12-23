@@ -3,3 +3,6 @@ build
 cmake-build-debug
 build-*
 sjasmplus.srctrl*
+
+tests/*.o
+tests/*.hi
