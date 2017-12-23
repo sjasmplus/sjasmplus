@@ -1591,9 +1591,7 @@ void dirDISPLAY() {
         ++lp;
     }
 
-    if (pass != LASTPASS) {
-        // do none
-    } else {
+    if (pass == LASTPASS) {
         _COUT "> " _CMDL Message _ENDL;
     }
 }
