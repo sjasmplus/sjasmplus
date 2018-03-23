@@ -92,6 +92,7 @@ void Error(const std::string &fout, const std::string &bd, int type) {
 
 void Fatal(const std::string &errstr) {
     Error(errstr, ""s, FATAL);
+    throw("Unreachable code executed!");
 }
 
 void Warning(const char *fout, const char *bd, int type) {
