@@ -90,6 +90,9 @@ void Error(const std::string &fout, const std::string &bd, int type) {
     Error(fout.c_str(), bd.c_str(), type);
 }
 
+void Fatal(const std::string &errstr) {
+    Error(errstr, ""s, FATAL);
+}
 
 void Warning(const char *fout, const char *bd, int type) {
     int ln;

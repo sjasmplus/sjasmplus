@@ -88,10 +88,9 @@ TextOutput::~TextOutput() {
 
 void TextOutput::open(const fs::path &FileName) {
     if (!FileName.empty()) {
-        try {
-            OFS.open(FileName);
-        } catch (std::ios_base::failure &e) {
-            Error("Error opening file"s, FileName.string(), FATAL);
+        OFS.open(FileName);
+        if (OFS.fail()) {
+            Fatal("Error opening file: "s + FileName.string());
         }
     }
 }

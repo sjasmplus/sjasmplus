@@ -28,6 +28,7 @@ misrepresented as being the original software.
 
 #include <vector>
 #include <cstdint>
+#include <cstddef>
 
 #include "sjdefs.h"
 
@@ -44,7 +45,7 @@ std::ostream &writenumber(std::ostream &stream, unsigned int);
 
 std::ostream &writeword(std::ostream &stream, unsigned int);
 
-std::ostream &writecode(std::ostream &stream, unsigned char *block, aint length,
+std::ostream &writecode(std::ostream &stream, unsigned char *block, uint16_t length,
                         unsigned short loadaddr, bool header);
 
 void remove_basic_sp(unsigned char *ram);
@@ -53,21 +54,20 @@ void detect_vars_changes();
 
 bool has_screen_changes();
 
-aint remove_unused_space(unsigned char *ram, aint length);
+uint16_t remove_unused_space(const unsigned char *ram, uint16_t length);
 
-aint detect_ram_start(unsigned char *ram, aint length);
+uint16_t detect_ram_start(const unsigned char *ram, uint16_t length);
 
 int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
 
     fs::ofstream ofs;
-    try {
-        ofs.open(fname, std::ios_base::binary);
-    } catch (std::ofstream::failure &e) {
-        Error("Error opening file"s, fname.string(), FATAL);
+    ofs.open(fname, std::ios_base::binary);
+    if (ofs.fail()) {
+        Fatal("Error opening file: "s + fname.string());
     }
 
-    aint datastart = 0x5E00;
-    aint exeat = 0x5E00;
+    uint16_t datastart = 0x5E00;
+    uint16_t exeat = 0x5E00;
 
     ofs << (char) 19;                // header length
     ofs << (char) 0;
@@ -75,7 +75,7 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
     parity = 0;                        // initial checksum
     writebyte(ofs, 0);            // block type "BASIC"
 
-    char filename[] = "Loader    ";
+    uint8_t filename[] = "Loader    ";
     for (aint i = 0; i <= 9; i++)
         writebyte(ofs, filename[i]);
 
@@ -147,12 +147,9 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
 
     if (!Asm.isPagedMemory()) {
         // prepare code block
-        aint ram_length = 0xA200;
-        aint ram_start = 0x0000;
-        unsigned char *ram = (unsigned char *) malloc(ram_length);
-        if (ram == NULL) {
-            Error("No enough memory", 0, FATAL);
-        }
+        uint16_t ram_length = 0xA200;
+        uint16_t ram_start = 0x0000;
+        auto *ram = new uint8_t[ram_length];
         Asm.getBytes(ram, 0x4000 + 0x1E00, 0x2200);
         Asm.getBytes(ram + 0x2200, 0x8000, 0x4000);
         Asm.getBytes(ram + 0x6200, 0xC000, 0x4000);
@@ -167,19 +164,16 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
         ram_length -= ram_start;
 
         // write loader
-        unsigned char *loader = new unsigned char[SaveTAP_ZX_Spectrum_48K_SZ];
+        auto *loader = new uint8_t[SaveTAP_ZX_Spectrum_48K_SZ];
         memcpy(loader, (char *) &SaveTAP_ZX_Spectrum_48K[0], SaveTAP_ZX_Spectrum_48K_SZ);
-        if (loader == NULL) {
-            Error("No enough memory!", 0, FATAL);
-        }
         // Settings.LoadScreen
-        loader[SaveTAP_ZX_Spectrum_48K_SZ - 7] = char(has_screen_changes());
-        loader[SaveTAP_ZX_Spectrum_48K_SZ - 6] = char(start & 0x00FF);
-        loader[SaveTAP_ZX_Spectrum_48K_SZ - 5] = char(start >> 8);
-        loader[SaveTAP_ZX_Spectrum_48K_SZ - 4] = char((ram_start + 0x5E00) & 0x00FF);
-        loader[SaveTAP_ZX_Spectrum_48K_SZ - 3] = char((ram_start + 0x5E00) >> 8);
-        loader[SaveTAP_ZX_Spectrum_48K_SZ - 2] = char(ram_length & 0x00FF);
-        loader[SaveTAP_ZX_Spectrum_48K_SZ - 1] = char(ram_length >> 8);
+        loader[SaveTAP_ZX_Spectrum_48K_SZ - 7] = uint8_t(has_screen_changes());
+        loader[SaveTAP_ZX_Spectrum_48K_SZ - 6] = uint8_t(start & 0x00FF);
+        loader[SaveTAP_ZX_Spectrum_48K_SZ - 5] = uint8_t(start >> 8);
+        loader[SaveTAP_ZX_Spectrum_48K_SZ - 4] = uint8_t((ram_start + 0x5E00) & 0x00FF);
+        loader[SaveTAP_ZX_Spectrum_48K_SZ - 3] = uint8_t((ram_start + 0x5E00) >> 8);
+        loader[SaveTAP_ZX_Spectrum_48K_SZ - 2] = uint8_t(ram_length & 0x00FF);
+        loader[SaveTAP_ZX_Spectrum_48K_SZ - 1] = uint8_t(ram_length >> 8);
         writecode(ofs, loader, SaveTAP_ZX_Spectrum_48K_SZ, 0x5E00, true);
 
         // write screen$
@@ -191,18 +185,16 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
         }
 
         // write code block
-        writecode(ofs, ram + ram_start, ram_length, 0x5E00 + ram_start, false);
+        writecode(ofs, ram + ram_start, ram_length, (uint16_t)0x5E00 + ram_start, false);
 
         delete[] ram;
     } else {  // Paged memory
         detect_vars_changes();
 
         // prepare main code block
-        aint ram_length = 0x6200, ram_start = 0x0000;
-        unsigned char *ram = (unsigned char *) malloc(ram_length);
-        if (ram == NULL) {
-            Error("No enough memory", 0, FATAL);
-        }
+        uint16_t ram_length = 0x6200;
+        uint16_t ram_start = 0x0000;
+        auto *ram = new uint8_t[ram_length];
         Asm.getBytes(ram, 1, 0x1E00, 0x2200);
         Asm.getBytes(ram + 0x2200, 2, 0, 0x4000);
 
@@ -211,7 +203,7 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
         ram_length -= ram_start;
 
         // init loader
-        aint loader_defsize;
+        uint16_t loader_defsize;
         unsigned char *loader_code;
         if (Asm.getMemModelName() == "ZXSPECTRUM128"s) {
             loader_defsize = SaveTAP_ZX_Spectrum_128K_SZ;
@@ -220,34 +212,31 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
             loader_defsize = SaveTAP_ZX_Spectrum_256K_SZ;
             loader_code = (unsigned char *) &SaveTAP_ZX_Spectrum_256K[0];
         }
-        aint loader_len = loader_defsize + (Asm.numMemPages() - 2) * 5;
-        unsigned char *loader = new unsigned char[loader_len];
+        uint16_t loader_len = loader_defsize + (uint16_t)((Asm.numMemPages() - 2) * 5);
+        auto *loader = new uint8_t[loader_len];
         memcpy(loader, loader_code, loader_defsize);
-        if (loader == NULL) {
-            Error("No enough memory!", 0, FATAL);
-        }
         // Settings.Start
-        loader[loader_defsize - 8] = char(start & 0x00FF);
-        loader[loader_defsize - 7] = char(start >> 8);
+        loader[loader_defsize - 8] = uint8_t(start & 0x00FF);
+        loader[loader_defsize - 7] = uint8_t(start >> 8);
         // Settings.MainBlockStart
-        loader[loader_defsize - 6] = char((ram_start + 0x5E00) & 0x00FF);
-        loader[loader_defsize - 5] = char((ram_start + 0x5E00) >> 8);
+        loader[loader_defsize - 6] = uint8_t((ram_start + 0x5E00) & 0x00FF);
+        loader[loader_defsize - 5] = uint8_t((ram_start + 0x5E00) >> 8);
         // Settings.MainBlockLength
-        loader[loader_defsize - 4] = char(ram_length & 0x00FF);
-        loader[loader_defsize - 3] = char(ram_length >> 8);
+        loader[loader_defsize - 4] = uint8_t(ram_length & 0x00FF);
+        loader[loader_defsize - 3] = uint8_t(ram_length >> 8);
         // Settings.Page
-        loader[loader_defsize - 2] = char(Asm.getPageNumInSlot(3));
+        loader[loader_defsize - 2] = uint8_t(Asm.getPageNumInSlot(3));
 
         //
         unsigned char *pages_ram[1024];
-        aint pages_len[1024];
-        aint pages_start[1024];
+        uint16_t pages_len[1024];
+        uint16_t pages_start[1024];
 
         // build pages table
-        aint count = 0;
-        for (aint i = 0; i < Asm.numMemPages(); i++) {
+        int count = 0;
+        for (int i = 0; i < Asm.numMemPages(); i++) {
             if (Asm.getPageNumInSlot(2) != i && Asm.getPageNumInSlot(1) != i) {
-                aint length = 0x4000;
+                uint16_t length = 0x4000;
                 length = remove_unused_space(Asm.getPtrToPage(i), length);
                 if (length > 0) {
                     pages_ram[count] = Asm.getPtrToPage(i);
@@ -281,11 +270,11 @@ int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
 
         // write code blocks
         for (aint i = 0; i < count; i++) {
-            writecode(ofs, pages_ram[i] + pages_start[i], pages_len[i], 0xC000 + pages_start[i], false);
+            writecode(ofs, pages_ram[i] + pages_start[i], pages_len[i], (uint16_t)0xC000 + pages_start[i], false);
         }
 
         // write main code block
-        writecode(ofs, ram + ram_start, ram_length, 0x5E00 + ram_start, false);
+        writecode(ofs, ram + ram_start, ram_length, (uint16_t)0x5E00 + ram_start, false);
 
         delete[] ram;
     }
@@ -324,7 +313,7 @@ std::ostream &writebyte(std::ostream &stream, unsigned char c) {
     return stream;
 }
 
-std::ostream &writecode(std::ostream &stream, unsigned char *block, aint length,
+std::ostream &writecode(std::ostream &stream, unsigned char *block, uint16_t length,
                         unsigned short loadaddr, bool header) {
     if (header) {
         /* Write out the code header file */
@@ -339,8 +328,8 @@ std::ostream &writecode(std::ostream &stream, unsigned char *block, aint length,
         for	(aint i=0;i<=9;i++)
             writebyte(blockname[i], fp);
         delete[] blockname;*/
-        char filename[] = "Loader    ";
-        for (aint i = 0; i <= 9; i++)
+        uint8_t filename[] = "Loader    ";
+        for (int i = 0; i <= 9; i++)
             writebyte(stream, filename[i]);
 
         writeword(stream, length);
@@ -392,7 +381,7 @@ void detect_vars_changes() {
     }
 
     if (nosys && nobas48) {
-        Warning("[SAVETAP] Tape file will not contains data from 0x5B00 to 0x5E00", NULL, LASTPASS);
+        Warning("[SAVETAP] Tape file will not contain data from 0x5B00 to 0x5E00", nullptr, LASTPASS);
     }
 }
 
@@ -414,7 +403,7 @@ bool has_screen_changes() {
     return false;
 }
 
-aint remove_unused_space(unsigned char *ram, aint length) {
+uint16_t remove_unused_space(const unsigned char *ram, uint16_t length) {
     while (length > 0 && ram[length - 1] == 0) {
         length--;
     }
@@ -422,8 +411,8 @@ aint remove_unused_space(unsigned char *ram, aint length) {
     return length;
 }
 
-aint detect_ram_start(unsigned char *ram, aint length) {
-    aint start = 0;
+uint16_t detect_ram_start(const unsigned char *ram, uint16_t length) {
+    uint16_t start = 0;
 
     while (start < length && ram[start] == 0) {
         start++;

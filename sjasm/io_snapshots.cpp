@@ -32,10 +32,9 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
     unsigned char snbuf[31];
 
     fs::ofstream ofs;
-    try {
-        ofs.open(fname, std::ios_base::binary);
-    } catch (std::ofstream::failure &e) {
-        Error("Error opening file"s, fname.string(), FATAL);
+    ofs.open(fname, std::ios_base::binary);
+    if (ofs.fail()) {
+        Fatal("Error opening file: "s + fname.string());
     }
 
     memset(snbuf, 0, sizeof(snbuf));
@@ -90,54 +89,52 @@ int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
     snbuf[25] = 1; //im 1
     snbuf[26] = 7; //border 7
 
-    try {
-        ofs.write((const char *) snbuf, sizeof(snbuf) - 4);
-    } catch (std::ofstream::failure &e) {
-        Error("Write error (disk full?)"s, fname.string(), CATCHALL);
+    ofs.write((const char *) snbuf, sizeof(snbuf) - 4);
+    if (ofs.fail()) {
+        Error("Error writing to "s + fname.string() + ": "s + strerror(errno), ""s, CATCHALL);
         ofs.close();
         return 0;
     }
 
-    try {
-        if (!Asm.isPagedMemory()) {
-            // 48K
-            ofs.write((const char *) Asm.getPtrToMem() + 0x4000, 0xC000);
-        } else {
-            // 128K
-            ofs.write((const char *) Asm.getPtrToPage(5), 0x4000);
-            ofs.write((const char *) Asm.getPtrToPage(2), 0x4000);
-            ofs.write((const char *) Asm.getPtrToPageInSlot(3), 0x4000);
-        }
+    if (!Asm.isPagedMemory()) {
+        // 48K
+        ofs.write((const char *) Asm.getPtrToMem() + 0x4000, 0xC000);
+    } else {
+        // 128K
+        ofs.write((const char *) Asm.getPtrToPage(5), 0x4000);
+        ofs.write((const char *) Asm.getPtrToPage(2), 0x4000);
+        ofs.write((const char *) Asm.getPtrToPageInSlot(3), 0x4000);
+    }
 
-        if (!Asm.isPagedMemory()) {
+    if (!Asm.isPagedMemory()) {
 
-        } else { // 128K
-            snbuf[27] = (uint8_t) (start & 0x00FF); //pc
-            snbuf[28] = (uint8_t) (start >> 8); //pc
-            snbuf[29] = 0x10 + Asm.getPageNumInSlot(3); //7ffd
-            snbuf[30] = 0; //tr-dos
-            ofs.write((const char *) snbuf + 27, 4);
-        }
+    } else { // 128K
+        snbuf[27] = (uint8_t) (start & 0x00FF); //pc
+        snbuf[28] = (uint8_t) (start >> 8); //pc
+        snbuf[29] = 0x10 + Asm.getPageNumInSlot(3); //7ffd
+        snbuf[30] = 0; //tr-dos
+        ofs.write((const char *) snbuf + 27, 4);
+    }
 
-        //if (DeviceID) {
-        if (!Asm.isPagedMemory()) {
-            /*for (int i = 0; i < 5; i++) {
-                if (fwrite(Device->GetPage(0)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
-                    Error("Write error (disk full?)", fname, CATCHALL);
-                    fclose(ff);
-                    return 0;
-                }
-            }*/
-        } else { // 128K
-            for (int i = 0; i < 8; i++) {
-                if (i != Asm.getPageNumInSlot(3) && i != 2 && i != 5) {
-                    ofs.write((const char *) Asm.getPtrToPage(i), 0x4000);
-                }
+    //if (DeviceID) {
+    if (!Asm.isPagedMemory()) {
+        /*for (int i = 0; i < 5; i++) {
+            if (fwrite(Device->GetPage(0)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
+                Error("Write error (disk full?)", fname, CATCHALL);
+                fclose(ff);
+                return 0;
+            }
+        }*/
+    } else { // 128K
+        for (int i = 0; i < 8; i++) {
+            if (i != Asm.getPageNumInSlot(3) && i != 2 && i != 5) {
+                ofs.write((const char *) Asm.getPtrToPage(i), 0x4000);
             }
         }
+    }
 
-    } catch (std::ofstream::failure &e) {
-        Error("Write error (disk full?)"s, fname.string(), CATCHALL);
+    if (ofs.fail()) {
+        Error("Error writing to "s + fname.string() + ": "s + strerror(errno), ""s, CATCHALL);
         ofs.close();
         return 0;
     }

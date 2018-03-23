@@ -550,7 +550,7 @@ void dirINCHOB() {
     unsigned char len[2];
     int offset = 17, length = -1;
 
-    fs::path fnaam = fs::path(GetString(lp)); // FIXME
+    fs::path FileName = fs::path(GetString(lp)); // FIXME
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
@@ -577,23 +577,21 @@ void dirINCHOB() {
     }
 
     //used for implicit format check
-    fnaamh = getAbsPath(fnaam);
-    try {
-        fs::ifstream IFSH(fnaamh, std::ios::binary);
-        try {
-            IFSH.seekg(0x0b, std::ios::beg);
-            IFSH.read((char *) len, 2);
-        } catch (std::ifstream::failure &e) {
-            Error("[INCHOB] Hobeta file has wrong format"s, fnaam.string(), FATAL);
-        }
-        IFSH.close();
-    } catch (std::ifstream::failure &e) {
-        Error("[INCHOB] Error opening file"s, fnaam.string(), FATAL);
+    fnaamh = getAbsPath(FileName);
+    fs::ifstream IFSH(fnaamh, std::ios::binary);
+    if (IFSH.fail()) {
+        Fatal("[INCHOB] Error opening file "s + FileName.string() + ": "s + strerror(errno));
     }
+    IFSH.seekg(0x0b, std::ios::beg);
+    IFSH.read((char *) len, 2);
+    if (IFSH.fail()) {
+        Fatal("[INCHOB] Hobeta file has wrong format: "s + FileName.string() + ": "s + strerror(errno));
+    }
+    IFSH.close();
     if (length == -1) {
         length = len[0] + (len[1] << 8);
     }
-    includeBinaryFile(fnaam, offset, length);
+    includeBinaryFile(FileName, offset, length);
 }
 
 /* added */
@@ -602,17 +600,17 @@ void dirINCTRD() {
     char hdr[16];
     int offset = -1, length = -1, i;
 
-    fs::path fnaam = fs::path(GetString(lp));
-    HobetaFilename fnaamh;
+    fs::path FileName = fs::path(GetString(lp));
+    HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
-            fnaamh = GetHobetaFileName(lp);
+            HobetaFileName = GetHobetaFileName(lp);
         } else {
             Error("[INCTRD] Syntax error", bp, CATCHALL);
             return;
         }
     }
-    if (fnaamh.Empty()) {
+    if (HobetaFileName.Empty()) {
         Error("[INCTRD] Syntax error", bp, CATCHALL);
         return;
     }
@@ -642,29 +640,27 @@ void dirINCTRD() {
     }
     //TODO: extract code to io_trd
     // open TRD
-    fs::path fnaamh2 = getAbsPath(fnaam);
+    fs::path fnaamh2 = getAbsPath(FileName);
     fs::ifstream ifs;
-    try {
-        ifs.open(fnaamh2, std::ios_base::binary);
-    } catch (std::ifstream::failure &e) {
-        Error("[INCTRD] Error opening file"s, fnaam.string(), FATAL);
+    ifs.open(fnaamh2, std::ios_base::binary);
+    if (ifs.fail()) {
+        Fatal("[INCTRD] Error opening file "s + FileName.string() + ": "s + strerror(errno));
     }
     // find file
     ifs.seekg(0, std::ios_base::beg);
     for (i = 0; i < 128; i++) {
-        try {
-            ifs.read(hdr, 16);
-        } catch (std::ifstream::failure &e) {
-            Error("[INCTRD] Read error"s, fnaam.string(), CATCHALL);
+        ifs.read(hdr, 16);
+        if (ifs.fail()) {
+            Error("[INCTRD] Read error"s, FileName.string(), CATCHALL);
             return;
         }
-        if (0 == std::memcmp(hdr, fnaamh.GetTrDosEntry(), fnaamh.GetTrdDosEntrySize())) {
+        if (0 == std::memcmp(hdr, HobetaFileName.GetTrDosEntry(), HobetaFileName.GetTrdDosEntrySize())) {
             i = 0;
             break;
         }
     }
     if (i) {
-        Error("[INCTRD] File not found in TRD image", fnaamh.c_str(), CATCHALL);
+        Error("[INCTRD] File not found in TRD image", HobetaFileName.c_str(), CATCHALL);
         return;
     }
     if (length > 0) {
@@ -684,7 +680,7 @@ void dirINCTRD() {
     offset += (((unsigned char) hdr[0x0f]) << 12) + (((unsigned char) hdr[0x0e]) << 8);
     ifs.close();
 
-    includeBinaryFile(fnaam, offset, length);
+    includeBinaryFile(FileName, offset, length);
 }
 
 /* added */

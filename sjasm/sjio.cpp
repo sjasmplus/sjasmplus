@@ -242,10 +242,9 @@ void OpenFile(const fs::path &nfilename) {
 
     fullpath = getAbsPath(nfilename);
 
-    try {
-        pIFS->open(fullpath, std::ios::binary);
-    } catch (std::ifstream::failure &e) {
-        Error("Error opening file"s, nfilename.string(), FATAL);
+    pIFS->open(fullpath, std::ios::binary);
+    if (pIFS->fail()) {
+        Error("Error opening file "s + nfilename.string() + ": "s + strerror(errno), ""s, FATAL);
     }
 
     aint oCurrentLocalLine = CurrentLocalLine;
@@ -507,9 +506,8 @@ int SaveRAM(fs::ofstream &ofs, int start, int length) {
 */
 
     if (start + length > 0x10000) {
-        Error("SaveRAM(): start("s + std::to_string(start) + ") + length("s +
-              std::to_string(length) + ") > 0x10000"s, ""s, FATAL);
-        return 0;
+        Fatal("SaveRAM(): start("s + std::to_string(start) + ") + length("s +
+              std::to_string(length) + ") > 0x10000"s);
     }
     if (length <= 0) {
         length = 0x10000 - start;
@@ -517,13 +515,11 @@ int SaveRAM(fs::ofstream &ofs, int start, int length) {
 
     char *data = new char[length];
     Asm.getBytes((uint8_t *) data, start, length);
-    try {
-        ofs.write(data, length);
-    } catch (std::ofstream::failure &e) {
-        delete[] data;
-        return 0;
-    }
+    ofs.write(data, length);
     delete[] data;
+    if (ofs.fail()) {
+        Fatal("SaveRAM(): Error writing "s + std::to_string(length) + " bytes: "s + strerror(errno));
+    }
 
 
 /*
@@ -631,30 +627,23 @@ uint8_t MemGetByte(uint16_t address) {
 }
 
 
-int saveBinaryFile(const fs::path &FileName, int Start, int Length) {
+bool saveBinaryFile(const fs::path &FileName, int Start, int Length) {
 
     fs::ofstream OFS(FileName, std::ios_base::binary);
     if (!OFS) {
-        Error("Error opening file"s, FileName.string(), FATAL);
-        return 0;
+        Fatal("Error opening file: "s + FileName.string());
     }
-    try {
-        if (Length + Start > 0xFFFF) {
-            Length = -1;
-        }
-        if (Length <= 0) {
-            Length = 0x10000 - Start;
-        }
-
-        //_COUT "Start: " _CMDL start _CMDL " Length: " _CMDL length _ENDL;
-        SaveRAM(OFS, Start, Length);
-        OFS.close();
-    } catch (std::ofstream::failure &e) {
-        OFS.close();
-        return 0;
+    if (Length + Start > 0xFFFF) {
+        Length = -1;
+    }
+    if (Length <= 0) {
+        Length = 0x10000 - Start;
     }
 
-    return 1;
+    //_COUT "Start: " _CMDL start _CMDL " Length: " _CMDL length _ENDL;
+    SaveRAM(OFS, Start, Length);
+    OFS.close();
+    return !OFS.fail();
 }
 
 EReturn ReadFile(const char *pp, const char *err) {
@@ -825,10 +814,9 @@ int ReadFileToCStringsList(CStringsList *&f, const char *end) {
 
 void writeExport(const std::string &Name, aint Value) {
     if (!OFSExport.is_open()) {
-        try {
-            OFSExport.open(Options::ExportFName);
-        } catch (std::ofstream::failure &e) {
-            Error("Error opening file"s, Options::ExportFName.string(), FATAL);
+        OFSExport.open(Options::ExportFName);
+        if (OFSExport.fail()) {
+            Fatal("Error opening file "s + Options::ExportFName.string());
         }
     }
     std::string Str = Name;
