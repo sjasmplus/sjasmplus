@@ -366,16 +366,6 @@ std::istream &sja_getline(std::istream &stream, std::string &str) {
     return stream;
 }
 
-// Attempt to read from IFS and return number of bytes or 0
-// TODO: Delete this after switching to proper reading/parsing
-/*
-std::streamsize readBuf() {
-    pIFS->read((char *)ReadLineBuf.data(), ReadLineBuf.size());
-    ReadLineBuf.reset(pIFS->gcount());
-    return pIFS->gcount();
-}
-*/
-
 // TODO: Kill it with fire
 void readBufLine(bool Parse, bool SplitByColon) {
     rlppos = line;
