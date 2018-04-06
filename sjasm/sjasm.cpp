@@ -158,7 +158,7 @@ int main(int argc, const char *argv[]) {
     tolua_sjasm_open(LUA);
 
     // init vars
-    Options::NoDestinationFile = true; // not *.out files by default
+    Options::NoDestinationFile = true; // no *.out files by default
 
     // get current directory
     // TODO: Switch to first source file's location
