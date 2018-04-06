@@ -1137,7 +1137,7 @@ void dirIFUSED() {
         }
     }
 
-    if (LabelTable.IsUsed(id)) {
+    if (LabelTable.isUsed(id)) {
         Listing.listFile();
         switch (ReadFile(lp, "[IFUSED] No endif")) {
             case ELSE:
@@ -1184,7 +1184,7 @@ void dirIFNUSED() {
         }
     }
 
-    if (!LabelTable.IsUsed(id)) {
+    if (!LabelTable.isUsed(id)) {
         Listing.listFile();
         switch (ReadFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
@@ -1292,7 +1292,7 @@ void dirUNDEFINE() {
     if (*lp == '*') {
         lp++;
         if (pass == PASS1) {
-            LabelTable.RemoveAll();
+            LabelTable.removeAll();
         }
         DefineTable.clear();
         DefArrayTable.clear();
@@ -1311,9 +1311,9 @@ void dirUNDEFINE() {
             FoundID = true;
         }
 
-        if (LabelTable.Find(id)) {
+        if (LabelTable.find(id)) {
             if (pass == PASS1) {
-                LabelTable.Remove(id);
+                LabelTable.remove(id);
             }
             FoundID = true;
         }
@@ -1481,7 +1481,7 @@ void dirDISPLAY() {
     std::string Message;
     aint val;
     int t = 0;
-    while (1) {
+    while (true) {
         SkipBlanks(lp);
         if (!*lp) {
             Error("[DISPLAY] Expression expected", 0, PASS3);
@@ -1921,7 +1921,7 @@ void dirDEFARRAY() {
             }
         }
         *n = 0;
-        Arr.push_back(std::string(ml));
+        Arr.emplace_back(std::string(ml));
         SkipBlanks(lp);
         if (*lp == ',') {
             ++lp;
@@ -1964,11 +1964,11 @@ typedef struct luaMemFile {
 
 const char *readMemFile(lua_State *, void *ud, size_t *size) {
     // Convert the ud pointer (UserData) to a pointer of our structure
-    luaMemFile *luaMF = (luaMemFile *) ud;
+    auto *luaMF = (luaMemFile *) ud;
 
     // Are we done?
     if (luaMF->size == 0)
-        return NULL;
+        return nullptr;
 
     // Read everything at once
     // And set size to zero to tell the next call we're done
@@ -1982,7 +1982,7 @@ const char *readMemFile(lua_State *, void *ud, size_t *size) {
 void dirLUA() {
     int error;
     char *rp, *id;
-    char *buff = new char[32768];
+    auto *buff = new char[32768];
     char *bp = buff;
 //    char size = 0;
     int ln = 0;
@@ -2017,7 +2017,7 @@ void dirLUA() {
 
     ln = CurrentLocalLine;
     Listing.listFile();
-    while (1) {
+    while (true) {
         if (!ReadLine(false)) {
             Error("[LUA] Unexpected end of lua script", 0, PASS3);
             break;

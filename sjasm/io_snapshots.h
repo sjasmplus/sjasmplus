@@ -29,8 +29,9 @@
 #ifndef SJASMPLUS_IO_SNAPSHOTS_H
 #define SJASMPLUS_IO_SNAPSHOTS_H
 
+#include <cstdint>
 #include "fs.h"
 
-int SaveSNA_ZX(const fs::path &fname, unsigned short start);
+int SaveSNA_ZX(const fs::path &fname, uint16_t start);
 
 #endif //SJASMPLUS_IO_SNAPSHOTS_H

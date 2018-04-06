@@ -849,7 +849,7 @@ void ParseLabel() {
             }
         }
         if (pass == LASTPASS) {
-            if (IsDEFL && !LabelTable.Insert(tp, val, false, IsDEFL)) {
+            if (IsDEFL && !LabelTable.insert(tp, val, false, IsDEFL)) {
                 Error("Duplicate label", tp, PASS3);
             }
             if (!GetLabelValue(ttp, oval)) {
@@ -863,13 +863,13 @@ void ParseLabel() {
                 Warning("Label has different value in pass 3", buf);
                 //_COUT "" _CMDL filename _CMDL ":" _CMDL CurrentLocalLine _CMDL ":(DEBUG)  " _CMDL "Label has different value in pass 2: ";
                 //_COUT val _CMDL "!=" _CMDL oval _ENDL;
-                LabelTable.Update(tp, val);
+                LabelTable.updateValue(tp, val);
 
                 delete[] buf;
             }
-        } else if (pass == 2 && !LabelTable.Insert(tp, val, false, IsDEFL) && !LabelTable.Update(tp, val)) {
+        } else if (pass == 2 && !LabelTable.insert(tp, val, false, IsDEFL) && !LabelTable.updateValue(tp, val)) {
             Error("Duplicate label", tp, PASS2);
-        } else if (!LabelTable.Insert(tp, val, false, IsDEFL)) {
+        } else if (!LabelTable.insert(tp, val, false, IsDEFL)) {
             Error("Duplicate label", tp, PASS1);
         }
 

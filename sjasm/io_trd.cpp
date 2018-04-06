@@ -33,7 +33,7 @@ namespace {
 
     //TODO: extract
     inline void SaveLEWord(void *dst, unsigned data) {
-        unsigned char *p = static_cast<unsigned char *>(dst);
+        auto *p = static_cast<unsigned char *>(dst);
         p[0] = data & 0xff;
         p[1] = data >> 8;
     }
@@ -245,16 +245,16 @@ namespace {
         void *AddFile(const HobetaFilename &name, unsigned start, unsigned size) {
             //assume that catalogue is fixed
             if (Service->TotalFiles == Catalogue::LIMIT) {
-                return 0;
+                return nullptr;
             }
             if (size >= MAX_FILE_SIZE) {
-                return 0;
+                return nullptr;
             }
             CatEntry entry;
             entry.SetSize(size);
             entry.Location = Service->FreeSpace;
             if (entry.SectorsCount > Service->GetFreeSpaceSize()) {
-                return 0;
+                return nullptr;
             }
             entry.SetStart(start);
             entry.SetName(name);//can overlap start value if long filename used

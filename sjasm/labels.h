@@ -29,53 +29,48 @@
 #ifndef __LABELS
 #define __LABELS
 
+#include <cstdint>
 #include <string>
+#include <map>
 #include "fs.h"
 
 #define LABMAX 64
 #define LABTABSIZE 32768
 
-class CLabelTableEntry {
-public:
-    const char *name;
-    char page; /* added */
-    bool IsDEFL; /* added */
-    unsigned char forwardref; /* added */
+struct LabelInfo {
+    int8_t page;
+    bool IsDEFL;
     aint value;
-    char used;
-
-    CLabelTableEntry();
+    int8_t used;
 };
+
+typedef std::map<std::string, LabelInfo> LabelMap;
 
 class CLabelTable {
 public:
-    CLabelTable();
 
-    bool Insert(const char *name, aint value, bool undefined = false, bool isDefl = false);
+    bool insert(const std::string &name, aint value, bool Undefined = false, bool isDefl = false);
 
-    bool Update(const char *name, aint value);
+    bool updateValue(const std::string &name, aint value);
 
-    bool GetValue(const char *name, aint &value);
+    bool getValue(const std::string &name, aint &value);
 
-    bool Find(const char *name);
+    bool find(const std::string &name);
 
-    bool Remove(const char *name);
+    bool remove(const std::string &name);
 
-    bool IsUsed(const char *name);
+    bool isUsed(const std::string &name);
 
-    void RemoveAll();
+    void removeAll();
 
-    std::string Dump() const;
+    std::string dump() const;
 
-    void DumpForUnreal(const fs::path &FileName) const;
+    void dumpForUnreal(const fs::path &FileName) const;
 
-    void DumpSymbols(const fs::path &FileName) const;
+    void dumpSymbols(const fs::path &FileName) const;
 
 private:
-    int HashTable[LABTABSIZE], NextLocation;
-    CLabelTableEntry LabelTable[LABTABSIZE];
-
-    int Hash(const char *);
+    LabelMap _LabelMap;
 };
 
 #endif

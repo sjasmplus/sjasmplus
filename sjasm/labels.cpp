@@ -32,233 +32,131 @@
 #include "util.h"
 #include <sstream>
 
-CLabelTableEntry::CLabelTableEntry() {
-    name = NULL;
-    value = used = 0;
-}
-
-CLabelTable::CLabelTable() {
-    NextLocation = 1;
-}
-
-/* modified */
-bool CLabelTable::Insert(const char *nname, aint nvalue, bool undefined, bool IsDEFL) {
-    if (NextLocation >= LABTABSIZE * 2 / 3) {
-        Error("Label table full", 0, FATAL);
-    }
-
-    // find label in label table
-    int tr, htr;
-    tr = Hash(nname);
-    while ((htr = HashTable[tr])) {
-        if (!strcmp((LabelTable[htr].name), nname)) {
-            /*if (LabelTable[htr].IsDEFL) {
-                            _COUT "A" _CMDL LabelTable[htr].value _ENDL;
-                        }*/
-            //old: if (LabelTable[htr].page!=-1) return 0;
-            if (!LabelTable[htr].IsDEFL && LabelTable[htr].page != -1) {
-                return false;
-            } else {
-                //if label already added as used
-                LabelTable[htr].value = nvalue;
-                LabelTable[htr].page = 0;
-                LabelTable[htr].IsDEFL = IsDEFL; /* added */
-                return true;
-            }
-        } else if (++tr >= LABTABSIZE) {
-            tr = 0;
-        }
-    }
-    HashTable[tr] = NextLocation;
-    LabelTable[NextLocation].name = STRDUP(nname);
-    if (LabelTable[NextLocation].name == NULL) {
-        Error("No enough memory!", 0, FATAL);
-    }
-    LabelTable[NextLocation].IsDEFL = IsDEFL; /* added */
-    LabelTable[NextLocation].value = nvalue;
-    if (!undefined) {
-        LabelTable[NextLocation].used = -1;
-        LabelTable[NextLocation].page = 0;
-    } else {
-        LabelTable[NextLocation].used = 1;
-        LabelTable[NextLocation].page = -1;
-    } /* added */
-    ++NextLocation;
-    return true;
-}
-
-/* added */
-bool CLabelTable::Update(const char *nname, aint nvalue) {
-    int tr, htr, otr;
-    otr = tr = Hash(nname);
-    while ((htr = HashTable[tr])) {
-        if (!strcmp((LabelTable[htr].name), nname)) {
-            LabelTable[htr].value = nvalue;
+bool CLabelTable::insert(const std::string &Name, aint Value, bool Undefined, bool IsDEFL) {
+    auto it = _LabelMap.find(Name);
+    if (it != _LabelMap.end()) {
+        auto &LabelData = it->second;
+        if (!LabelData.IsDEFL && LabelData.page != -1) {
+            return false;
+        } else {
+            //if label already added as used
+            LabelData.value = Value;
+            LabelData.page = 0;
+            LabelData.IsDEFL = IsDEFL;
             return true;
         }
-        if (++tr >= LABTABSIZE) {
-            tr = 0;
-        }
-        if (tr == otr) {
-            break;
-        }
     }
+
+    LabelInfo LD = {0, IsDEFL, Value, -1};
+    if (Undefined) {
+        LD.used = 1;
+        LD.page = -1;
+    }
+    _LabelMap[Name] = LD;
+
     return true;
 }
 
-bool CLabelTable::GetValue(const char *nname, aint &nvalue) {
-    int tr, htr, otr;
-    otr = tr = Hash(nname);
-    while ((htr = HashTable[tr])) {
-        if (!strcmp((LabelTable[htr].name), nname)) {
-            if (LabelTable[htr].used == -1 && pass != LASTPASS) {
-                LabelTable[htr].used = 1;
-            }
+bool CLabelTable::updateValue(const std::string &Name, aint Value) {
+    auto it = _LabelMap.find(Name);
+    if (it != _LabelMap.end()) {
+        it->second.value = Value;
+    }
+    // FIXME: Always returns true?
+    return true;
+}
 
-            if (LabelTable[htr].page == -1) {
-                IsLabelNotFound = 2;
-                nvalue = 0;
-                return false;
-            } else {
-                nvalue = LabelTable[htr].value;
-                //if (pass == LASTPASS - 1) {
+bool CLabelTable::getValue(const std::string &Name, aint &Value) {
+    auto it = _LabelMap.find(Name);
+    if (it != _LabelMap.end()) {
+        auto &LD = it->second;
 
-                //}
-
-                return true;
-            }
+        if (LD.used == -1 && pass != LASTPASS) {
+            LD.used = 1;
         }
-        if (++tr >= LABTABSIZE) {
-            tr = 0;
-        }
-        if (tr == otr) {
-            break;
+
+        if (LD.page == -1) {
+            IsLabelNotFound = 2;
+            Value = 0;
+            return false;
+        } else {
+            Value = LD.value;
+            return true;
         }
     }
-    this->Insert(nname, 0, true);
+
+    this->insert(Name, 0, true);
     IsLabelNotFound = 1;
-    nvalue = 0;
+    Value = 0;
     return false;
 }
 
-bool CLabelTable::Find(const char *nname) {
-    int tr, htr, otr;
-    otr = tr = Hash(nname);
-    while ((htr = HashTable[tr])) {
-        if (!strcmp((LabelTable[htr].name), nname)) {
-            if (LabelTable[htr].page == -1) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-        if (++tr >= LABTABSIZE) {
-            tr = 0;
-        }
-        if (tr == otr) {
-            break;
-        }
-    }
-    return false;
-}
-
-bool CLabelTable::IsUsed(const char *nname) {
-    int tr, htr, otr;
-    otr = tr = Hash(nname);
-    while ((htr = HashTable[tr])) {
-        if (!strcmp((LabelTable[htr].name), nname)) {
-            if (LabelTable[htr].used > 0) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        if (++tr >= LABTABSIZE) {
-            tr = 0;
-        }
-        if (tr == otr) {
-            break;
-        }
-    }
-    return false;
-}
-
-bool CLabelTable::Remove(const char *nname) {
-    int tr, htr, otr;
-    otr = tr = Hash(nname);
-    while ((htr = HashTable[tr])) {
-        if (!strcmp((LabelTable[htr].name), nname)) {
-            free((void *) LabelTable[htr].name);
-            LabelTable[htr].name = 0;
-            LabelTable[htr].value = 0;
-            LabelTable[htr].used = 0;
-            LabelTable[htr].page = 0;
-            LabelTable[htr].forwardref = 0;
-
+bool CLabelTable::find(const std::string &Name) {
+    auto it = _LabelMap.find(Name);
+    if (it != _LabelMap.end()) {
+        if (it->second.page == -1) {
+            return false;
+        } else {
             return true;
         }
-        if (++tr >= LABTABSIZE) {
-            tr = 0;
-        }
-        if (tr == otr) {
-            break;
+
+    }
+    return false;
+}
+
+bool CLabelTable::isUsed(const std::string &Name) {
+    auto it = _LabelMap.find(Name);
+    if (it != _LabelMap.end()) {
+        if (it->second.used > 0) {
+            return true;
+        } else {
+            return false;
         }
     }
     return false;
 }
 
-void CLabelTable::RemoveAll() {
-    for (int i = 1; i < NextLocation; ++i) {
-        free((void *) LabelTable[i].name);
-        LabelTable[i].name = 0;
-        LabelTable[i].value = 0;
-        LabelTable[i].used = 0;
-        LabelTable[i].page = 0;
-        LabelTable[i].forwardref = 0;
+bool CLabelTable::remove(const std::string &Name) {
+    auto it = _LabelMap.find(Name);
+    if (it != _LabelMap.end()) {
+        _LabelMap.erase(it);
+        return true;
     }
-    NextLocation = 0;
+
+    return false;
 }
 
-int CLabelTable::Hash(const char *s) {
-    const char *ss = s;
-    unsigned int h = 0, g;
-    for (; *ss != '\0'; ss++) {
-        h = (h << 4) + *ss;
-        if ((g = h & 0xf0000000)) {
-            h ^= g >> 24;
-            h ^= g;
-        }
-    }
-    return h % LABTABSIZE;
+void CLabelTable::removeAll() {
+    _LabelMap.clear();
 }
 
-std::string CLabelTable::Dump() const {
+std::string CLabelTable::dump() const {
     std::stringstream Str;
     Str << std::endl
         << "Value    Label" << std::endl
         << "------ - -----------------------------------------------------------" << std::endl;
-    for (int i = 1; i < NextLocation; ++i) {
-        const CLabelTableEntry &label = LabelTable[i];
-        if (label.page != -1) {
-            Str << "0x" << toHexAlt(label.value)
-                << (label.used > 0 ? "   " : " X ") << label.name
+    for (const auto &it : _LabelMap) {
+        const auto &LD = it.second;
+        if (LD.page != -1) {
+            Str << "0x" << toHexAlt(LD.value)
+                << (LD.used > 0 ? "   " : " X ") << it.first
                 << std::endl;
         }
     }
     return Str.str();
 }
 
-void CLabelTable::DumpForUnreal(const fs::path &FileName) const {
+void CLabelTable::dumpForUnreal(const fs::path &FileName) const {
     fs::ofstream OFS(FileName);
     if (!OFS.is_open()) {
         Error("Error opening file", FileName.string(), FATAL);
     }
-    for (int i = 1; i < NextLocation; ++i) {
-        const CLabelTableEntry &label = LabelTable[i];
-        if (label.page == -1) {
+    for (const auto &it : _LabelMap) {
+        const auto &LD = it.second;
+        if (LD.page == -1) {
             continue;
         }
-        aint lvalue = label.value;
+        aint lvalue = LD.value;
         int page = 0;
         if (lvalue >= 0 && lvalue < 0x4000) {
             page = -1;
@@ -276,19 +174,19 @@ void CLabelTable::DumpForUnreal(const fs::path &FileName) const {
         }
         OFS << ':';
         OFS << toHexAlt(lvalue);
-        OFS << ' ' << label.name << std::endl;
+        OFS << ' ' << it.first << std::endl;
     }
 }
 
-void CLabelTable::DumpSymbols(const fs::path &FileName) const {
+void CLabelTable::dumpSymbols(const fs::path &FileName) const {
     fs::ofstream OFS(FileName);
     if (!OFS) {
         Error("Error opening file", FileName.string(), FATAL);
     }
-    for (int i = 1; i < NextLocation; ++i) {
-        const CLabelTableEntry &label = LabelTable[i];
-        if (isalpha(label.name[0])) {
-            OFS << label.name << ": equ 0x" << toHex32(label.value) << std::endl;
+    for (const auto &it : _LabelMap) {
+        const auto &LD = it.second;
+        if (isalpha(it.first[0])) {
+            OFS << it.first << ": equ 0x" << toHex32(LD.value) << std::endl;
         }
     }
 }

@@ -58,7 +58,7 @@ uint16_t remove_unused_space(const unsigned char *ram, uint16_t length);
 
 uint16_t detect_ram_start(const unsigned char *ram, uint16_t length);
 
-int SaveTAP_ZX(const fs::path &fname, unsigned short start) {
+int SaveTAP_ZX(const fs::path &fname, uint16_t start) {
 
     fs::ofstream ofs;
     ofs.open(fname, std::ios_base::binary);

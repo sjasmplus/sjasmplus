@@ -169,7 +169,7 @@ int main(int argc, const char *argv[]) {
     while (argv[i]) {
         Options::GetOptions(argv, i);
         if (argv[i]) {
-            SourceFNames.push_back(fs::path(argv[i++]));
+            SourceFNames.emplace_back(fs::path(argv[i++]));
             SourceFNamesCount++;
         }
     }
@@ -232,17 +232,17 @@ int main(int argc, const char *argv[]) {
 
     pass = 9999; /* added for detect end of compiling */
     if (Options::AddLabelListing) {
-        Listing.write(LabelTable.Dump());
+        Listing.write(LabelTable.dump());
     }
 
     // closeListingFile();
 
     if (!Options::UnrealLabelListFName.empty()) {
-        LabelTable.DumpForUnreal(Options::UnrealLabelListFName);
+        LabelTable.dumpForUnreal(Options::UnrealLabelListFName);
     }
 
     if (!Options::SymbolListFName.empty()) {
-        LabelTable.DumpSymbols(Options::SymbolListFName);
+        LabelTable.dumpSymbols(Options::SymbolListFName);
     }
 
     _COUT "Errors: " _CMDL ErrorCount _CMDL ", warnings: " _CMDL WarningCount _CMDL ", compiled: " _CMDL CompiledCurrentLine _CMDL " lines" _ENDL;

@@ -151,7 +151,7 @@ int GetLabelValue(char *&p, aint &val) {
             np = temp;
             g = 1;
             do {
-                if (LabelTable.GetValue(np, val)) {
+                if (LabelTable.getValue(np, val)) {
                     return 1;
                 }
                 IsLabelNotFound = oIsLabelNotFound;
@@ -207,11 +207,11 @@ int GetLabelValue(char *&p, aint &val) {
         Error("Label too long", temp + len);
         temp[LABMAX + len] = 0;
     }
-    if (LabelTable.GetValue(temp, val)) {
+    if (LabelTable.getValue(temp, val)) {
         return 1;
     }
     IsLabelNotFound = oIsLabelNotFound;
-    if (!l && !g && LabelTable.GetValue(temp + len, val)) {
+    if (!l && !g && LabelTable.getValue(temp + len, val)) {
         return 1;
     }
     if (pass == LASTPASS) {
@@ -941,7 +941,7 @@ void CStructure::deflab() {
             Error("Label has different value in pass 2", temp);
         }
     } else {
-        if (!LabelTable.Insert(p, noffset)) {
+        if (!LabelTable.insert(p, noffset)) {
             Error("Duplicate label", 0, PASS1);
         }
     }
@@ -962,7 +962,7 @@ void CStructure::deflab() {
                 Error("Label has different value in pass 2", temp);
             }
         } else {
-            if (!LabelTable.Insert(p, np->offset)) {
+            if (!LabelTable.insert(p, np->offset)) {
                 Error("Duplicate label", 0, PASS1);
             }
         }
@@ -986,7 +986,7 @@ void CStructure::emitlab(char *iid) {
             Error("Label has different value in pass 2", temp);
         }
     } else {
-        if (!LabelTable.Insert(p, Asm.getCPUAddress())) {
+        if (!LabelTable.insert(p, Asm.getCPUAddress())) {
             Error("Duplicate label", 0, PASS1);
         }
     }
@@ -1007,7 +1007,7 @@ void CStructure::emitlab(char *iid) {
                 Error("Label has different value in pass 2", temp);
             }
         } else {
-            if (!LabelTable.Insert(p, np->offset + Asm.getCPUAddress())) {
+            if (!LabelTable.insert(p, np->offset + Asm.getCPUAddress())) {
                 Error("Duplicate label", 0, PASS1);
             }
         }
@@ -1298,7 +1298,7 @@ CDevicePage::~CDevicePage() {
 int LuaGetLabel(char *name) {
     aint val;
 
-    if (!LabelTable.GetValue(name, val)) {
+    if (!LabelTable.getValue(name, val)) {
         return -1;
     } else {
         return val;

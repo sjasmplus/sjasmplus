@@ -28,7 +28,7 @@
 
 #include "sjdefs.h"
 
-int SaveSNA_ZX(const fs::path &fname, unsigned short start) {
+int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
     unsigned char snbuf[31];
 
     fs::ofstream ofs;
