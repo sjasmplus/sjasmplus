@@ -926,8 +926,8 @@ void ParseLine(bool parselabels) {
     replacedefineteller = comnxtlin = 0;
     /* (begin add) */
     if (!RepeatStack.empty()) {
-        SRepeatStack &dup = RepeatStack.top();
-        if (!dup.IsInWork) {
+        RepeatInfo &dup = RepeatStack.top();
+        if (!dup.Complete) {
             lp = line;
             CStringsList *f;
             f = new CStringsList(lp, nullptr);

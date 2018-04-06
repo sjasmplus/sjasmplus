@@ -64,7 +64,7 @@ aint destlen = 0, size = (aint) -1, MaxLineNumber = 0, comlin = 0;
 void (*GetCPUInstruction)(void);
 
 char *vorlabp = NULL, *macrolabp = NULL, *LastParsedLabel = NULL;
-stack<SRepeatStack> RepeatStack; /* added */
+stack<RepeatInfo> RepeatStack; /* added */
 CStringsList *lijstp = 0;
 CLabelTable LabelTable;
 CLocalLabelTable LocalLabelTable;

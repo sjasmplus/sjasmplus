@@ -1764,8 +1764,8 @@ void dirDUP() {
     IsLabelNotFound = 0;
 
     if (!RepeatStack.empty()) {
-        SRepeatStack &dup = RepeatStack.top();
-        if (!dup.IsInWork) {
+        RepeatInfo &dup = RepeatStack.top();
+        if (!dup.Complete) {
             if (!ParseExpression(lp, val)) {
                 Error("[DUP/REPT] Syntax error", 0, CATCHALL);
                 return;
@@ -1787,7 +1787,7 @@ void dirDUP() {
         return;
     }
 
-    SRepeatStack dup;
+    RepeatInfo dup;
     dup.RepeatCount = val;
     dup.Level = 0;
 
@@ -1796,7 +1796,7 @@ void dirDUP() {
     dup.lp = lp; //чтобы брать код перед EDUP
     dup.CurrentGlobalLine = CurrentGlobalLine;
     dup.CurrentLocalLine = CurrentLocalLine;
-    dup.IsInWork = false;
+    dup.Complete = false;
     RepeatStack.push(dup);
 }
 
@@ -1806,8 +1806,8 @@ void dirEDUP() {
         Error("[EDUP/ENDR] End repeat without repeat", 0);
         return;
     } else {
-        SRepeatStack &dup = RepeatStack.top();
-        if (!dup.IsInWork && dup.Level) {
+        RepeatInfo &dup = RepeatStack.top();
+        if (!dup.Complete && dup.Level) {
             dup.Level--;
             return;
         }
@@ -1815,8 +1815,8 @@ void dirEDUP() {
     int olistmacro;
     long gcurln, lcurln;
     char *ml;
-    SRepeatStack &dup = RepeatStack.top();
-    dup.IsInWork = true;
+    RepeatInfo &dup = RepeatStack.top();
+    dup.Complete = true;
     dup.Pointer->string = new char[LINEMAX];
     if (dup.Pointer->string == NULL) {
         Error("[EDUP/ENDR] No enough memory!", 0, FATAL);

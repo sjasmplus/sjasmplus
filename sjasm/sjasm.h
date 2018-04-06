@@ -69,7 +69,7 @@ enum EEncoding {
 void ExitASM(int p);
 
 extern CStringsList *lijstp;
-extern stack<SRepeatStack> RepeatStack;
+extern stack<RepeatInfo> RepeatStack;
 
 extern CLabelTable LabelTable;
 extern CLocalLabelTable LocalLabelTable;
