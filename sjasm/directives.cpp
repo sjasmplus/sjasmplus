@@ -1791,7 +1791,7 @@ void dirDUP() {
     dup.RepeatCount = val;
     dup.Level = 0;
 
-    dup.Lines = new CStringsList(lp, NULL);
+    dup.Lines = new CStringsList(lp, nullptr);
     dup.Pointer = dup.Lines;
     dup.lp = lp; //чтобы брать код перед EDUP
     dup.CurrentGlobalLine = CurrentGlobalLine;
@@ -1805,9 +1805,7 @@ void dirEDUP() {
     if (RepeatStack.empty()) {
         Error("[EDUP/ENDR] End repeat without repeat", 0);
         return;
-    }
-
-    if (!RepeatStack.empty()) {
+    } else {
         SRepeatStack &dup = RepeatStack.top();
         if (!dup.IsInWork && dup.Level) {
             dup.Level--;

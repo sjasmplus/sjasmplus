@@ -48,8 +48,8 @@ extern "C" {
 }
 
 // global defines
-#define LINEMAX 2048
-#define LINEMAX2 LINEMAX*2
+constexpr size_t LINEMAX = 2048;
+constexpr size_t LINEMAX2 = LINEMAX * 2;
 
 // include all headers
 extern "C" {

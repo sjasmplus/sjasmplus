@@ -930,7 +930,7 @@ void ParseLine(bool parselabels) {
         if (!dup.IsInWork) {
             lp = line;
             CStringsList *f;
-            f = new CStringsList(lp, NULL);
+            f = new CStringsList(lp, nullptr);
             dup.Pointer->next = f;
             dup.Pointer = f;
             dup.lp = lp;
@@ -940,7 +940,7 @@ void ParseLine(bool parselabels) {
     }
     lp = ReplaceDefine(line);
     if (!ConvertEncoding) {
-        unsigned char *lp2 = (unsigned char *) lp;
+        auto *lp2 = (unsigned char *) lp;
         while (*(lp2++)) {
             if ((*lp2) >= 128) {
                 *lp2 = win2dos[(*lp2) - 128];
