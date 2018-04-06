@@ -2,25 +2,19 @@ extern "C" {
 #include "lua_sjasm.h"
 }
 
-#include "errors.h"
 #include "listing.h"
 #include "global.h"
+#include "lua_support.h"
 #include "fs.h"
+#include "sjasm.h"
+
+#include "errors.h"
 
 std::string ErrorStr;
 bool IsSkipErrors;
 int PreviousErrorLine = -1;
 
 int WarningCount = 0;
-
-// in sjasm.{h,cpp}
-extern aint CurrentLocalLine;
-extern int pass, ErrorCount;
-extern lua_State *LUA;
-extern int LuaLine;
-
-void ExitASM(int p);
-// sjasm.{h,cpp}
 
 void Error(const char *fout, const char *bd, int type) {
     lua_Debug ar;

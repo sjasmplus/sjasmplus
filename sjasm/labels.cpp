@@ -201,9 +201,6 @@ char *ValidateLabel(char *naam) {
     char *np = naam, *lp, *label, *mlp = macrolabp;
     int p = 0, l = 0;
     label = new char[LINEMAX];
-    if (label == NULL) {
-        Error("No enough memory!", 0, FATAL);
-    }
     lp = label;
     label[0] = 0;
     if (mlp && *np == '@') {
