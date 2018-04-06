@@ -35,7 +35,6 @@
 #include "fs.h"
 
 #define LABMAX 64
-#define LABTABSIZE 32768
 
 struct LabelInfo {
     int8_t page;
