@@ -82,10 +82,7 @@ public:
 
 TyReadLineBuf ReadLineBuf;
 
-//std::streamsize BytesLeft;
-
 bool rldquotes = false, rlsquotes = false, rlspace = false, rlcomment = false, rlcolon = false, rlnewline = true;
-//uint8_t *ReadLineBufPtr;
 char *rlppos;
 
 fs::ifstream realIFS;
