@@ -1,8 +1,10 @@
-#include "sjdefs.h"
 #include <iostream>
 #include <string>
-#include "listing.h"
+#include "global.h"
+#include "options.h"
 #include "util.h"
+#include "sjasm.h"
+#include "listing.h"
 
 bool donotlist = false, listmacro = false;
 
@@ -75,12 +77,11 @@ std::string ListingWriter::printCurrentLocalLine() {
 }
 
 void ListingWriter::listBytesLong(int pad, const std::string &Prefix) {
-    int t;
     auto it = ByteBuffer.begin();
     auto end = ByteBuffer.end();
     while (it < end) {
         OFS << Prefix << toHex16(pad) << ' ';
-        t = 0;
+        int t = 0;
         while (it < end && t < 32) {
             OFS << toHex8(*it);
             ++it;

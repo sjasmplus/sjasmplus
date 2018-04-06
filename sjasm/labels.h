@@ -36,6 +36,8 @@
 
 #define LABMAX 64
 
+extern char tempLabel[LINEMAX];
+
 struct LabelInfo {
     int8_t page;
     bool IsDEFL;
@@ -71,6 +73,38 @@ public:
 private:
     LabelMap _LabelMap;
 };
+
+char *ValidateLabel(char *);
+
+extern char *PreviousIsLabel;
+
+int GetLabelValue(char *&p, aint &val);
+
+int GetLocalLabelValue(char *&op, aint &val);
+
+class CLocalLabelTableEntry {
+public:
+    aint regel, nummer, value;
+    CLocalLabelTableEntry *next, *prev;
+
+    CLocalLabelTableEntry(aint, aint, CLocalLabelTableEntry *);
+};
+
+class CLocalLabelTable {
+public:
+    CLocalLabelTable();
+
+    aint zoekf(aint);
+
+    aint zoekb(aint);
+
+    void Insert(aint, aint);
+
+private:
+    CLocalLabelTableEntry *first, *last;
+};
+
+int LuaGetLabel(char *name);
 
 #endif
 //eof labels.h

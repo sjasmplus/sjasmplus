@@ -2,7 +2,6 @@ extern "C" {
 #include "lua_sjasm.h"
 }
 
-#include "tables.h"
 #include "errors.h"
 #include "listing.h"
 #include "global.h"
@@ -24,7 +23,6 @@ void ExitASM(int p);
 // sjasm.{h,cpp}
 
 void Error(const char *fout, const char *bd, int type) {
-    int ln;
     lua_Debug ar;
 
     if (IsSkipErrors && PreviousErrorLine == CurrentLocalLine && type != FATAL) {
@@ -59,6 +57,7 @@ void Error(const char *fout, const char *bd, int type) {
     if (pass > LASTPASS) {
         ErrorStr = "error: "s + fout;
     } else {
+        int ln;
         if (LuaLine >= 0) {
             lua_getstack(LUA, 1, &ar);
             lua_getinfo(LUA, "l", &ar);
@@ -96,7 +95,6 @@ void Fatal(const std::string &errstr) {
 }
 
 void Warning(const char *fout, const char *bd, int type) {
-    int ln;
     lua_Debug ar;
 
     if (type == PASS1 && pass != 1) {
@@ -112,6 +110,7 @@ void Warning(const char *fout, const char *bd, int type) {
     if (pass > LASTPASS) {
         ErrorStr = "warning: "s + fout;
     } else {
+        int ln;
         if (LuaLine >= 0) {
             lua_getstack(LUA, 1, &ar);
             lua_getinfo(LUA, "l", &ar);

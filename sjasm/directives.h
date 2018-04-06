@@ -26,7 +26,10 @@
 
 */
 
-// direct.h
+#ifndef SJASMPLUS_DIRECTIVES_H
+#define SJASMPLUS_DIRECTIVES_H
+
+#include "tables.h"
 
 extern FunctionTable DirectivesTable;
 
@@ -38,5 +41,4 @@ bool LuaSetPage(aint n);
 
 bool LuaSetSlot(aint n);
 
-//eof direct.h
-
+#endif // SJASMPLUS_DIRECTIVES_H

@@ -26,9 +26,11 @@
 
 */
 
-// reader.h
+#ifndef SJASMPLUS_READER_H
+#define SJASMPLUS_READER_H
 
 #include "io_trd.h"
+#include "tables.h"
 
 int White();
 
@@ -86,5 +88,5 @@ int needbparen(char *&p);
 int islabchar(char p);
 
 EStructureMembers GetStructMemberId(char *&p);
-//eof reader.h
 
+#endif // SJASMPLUS_READER_H

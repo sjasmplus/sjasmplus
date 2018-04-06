@@ -24,9 +24,10 @@
 
 */
 
-// io_snapshots.cpp
-
-#include "sjdefs.h"
+#include "defines.h"
+#include "errors.h"
+#include "sjasm.h"
+#include "io_snapshots.h"
 
 int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
     unsigned char snbuf[31];

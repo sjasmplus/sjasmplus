@@ -26,7 +26,7 @@
 
 // io_trd.cpp
 
-#include "sjdefs.h"
+#include "sjio.h"
 #include <numeric>
 
 namespace {
@@ -347,11 +347,11 @@ int TRD_AddFile(const fs::path &FileName, const HobetaFilename &HobetaFileName, 
     }
 */
     if (Start > 0xFFFF) {
-        Error("zx.trdimage_addfile: start address more than 0FFFFh are not allowed", bp, PASS3);
+        Error("zx.trdimage_addfile: start address more than 0FFFFh are not allowed", std::to_string(Start), PASS3);
         return 0;
     }
     if (Length > 0x10000) {
-        Error("zx.trdimage_addfile: length more than 10000h are not allowed", bp, PASS3);
+        Error("zx.trdimage_addfile: length more than 10000h are not allowed", std::to_string(Length), PASS3);
         return 0;
     }
     if (Start < 0) {

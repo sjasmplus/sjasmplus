@@ -26,13 +26,25 @@
 
 */
 
-// direct.cpp
-
 #include <string>
 #include <boost/optional.hpp>
-#include "sjdefs.h"
+
+#include "global.h"
+#include "options.h"
+#include "support.h"
+#include "reader.h"
+#include "parser.h"
+#include "z80.h"
+#include "sjio.h"
 #include "util.h"
 #include "listing.h"
+#include "sjio.h"
+#include "io_snapshots.h"
+#include "io_tape.h"
+#include "lua_support.h"
+#include "sjasm.h"
+
+#include "directives.h"
 
 using namespace std::string_literals;
 

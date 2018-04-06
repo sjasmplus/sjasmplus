@@ -94,6 +94,8 @@ set(SOURCE_FILES
         sjasm/lua_lpack.h
         sjasm/lua_sjasm.cpp
         sjasm/lua_sjasm.h
+        sjasm/lua_support.cpp
+        sjasm/lua_support.h
         sjasm/memory.cpp
         sjasm/memory.h
         sjasm/modules.cpp
@@ -106,7 +108,6 @@ set(SOURCE_FILES
         sjasm/reader.h
         sjasm/sjasm.cpp
         sjasm/sjasm.h
-        sjasm/sjdefs.h
         sjasm/sjio.cpp
         sjasm/sjio.h
         sjasm/support.cpp

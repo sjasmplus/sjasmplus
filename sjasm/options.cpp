@@ -26,9 +26,9 @@
 
 */
 
-// options.cpp
-
-#include "sjdefs.h"
+#include "errors.h"
+#include "global.h"
+#include "options.h"
 
 namespace {
     const char HELP[] = "help";

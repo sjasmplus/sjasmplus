@@ -30,8 +30,11 @@
 #define SJASMPLUS_SJASM_H
 
 #include <vector>
+#include "defines.h"
+#include "tables.h"
 #include "memory.h"
 #include "fs.h"
+#include "modules.h"
 #include "global.h"
 
 //extern CDevice *Devices;
@@ -40,49 +43,19 @@
 //extern CDevicePage *Page;
 //extern char *DeviceID;
 
-// extend
-extern char *lp, line[LINEMAX], *bp;
-extern char sline[LINEMAX2], sline2[LINEMAX2];
-
 extern std::vector<fs::path> SourceFNames;
 extern int CurrentSourceFName;
 
-extern int ConvertEncoding; /* added */
-extern int pass, IsLabelNotFound, ErrorCount, IncludeLevel;
 extern bool SourceReaderEnabled; // Reset by the END directive
 //physical address, disp != org mode flag
 extern int adrdisp, PseudoORG; /* added for spectrum mode */
 extern char *MemoryPointer; /* added for spectrum ram */
 extern int StartAddress;
-extern int macronummer, lijst, synerr;
 //$, ...
-extern aint CurAddress, CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine, destlen, /* size, */ MaxLineNumber, comlin;
 
 extern void (*GetCPUInstruction)(void);
 
-extern char *vorlabp, *macrolabp, *LastParsedLabel;
-
-enum EEncoding {
-    ENCDOS, ENCWIN
-};
-
 void ExitASM(int p);
-
-extern CStringsList *lijstp;
-extern stack<RepeatInfo> RepeatStack;
-
-extern CLabelTable LabelTable;
-extern CLocalLabelTable LocalLabelTable;
-extern std::map<std::string, std::string> DefineTable;
-extern std::map<std::string, std::vector<std::string>> DefArrayTable;
-extern CMacroDefineTable MacroDefineTable;
-extern CMacroTable MacroTable;
-extern CStructureTable StructureTable;
-
-extern lua_State *LUA;
-extern int LuaLine;
-
-extern ModulesList Modules;
 
 enum class OutputMode {
     Truncate, Rewind, Append

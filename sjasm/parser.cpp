@@ -26,10 +26,16 @@
 
 */
 
-// parser.cpp
-
-#include "sjdefs.h"
 #include "listing.h"
+#include "reader.h"
+#include "sjio.h"
+#include "z80.h"
+#include "global.h"
+#include "options.h"
+#include "support.h"
+#include "sjasm.h"
+
+#include "parser.h"
 
 int replacedefineteller = 0, comnxtlin;
 char dirDEFl[] = "def", dirDEFu[] = "DEF"; /* added for ReplaceDefine */
@@ -97,9 +103,9 @@ int ParseExpPrim(char *&p, aint &nval) {
 }
 
 int ParseExpUnair(char *&p, aint &nval) {
-    aint right;
     int oper;
     if ((oper = need(p, "! ~ + - ")) || (oper = needa(p, "not", '!', "low", 'l', "high", 'h'))) {
+        aint right;
         switch (oper) {
             case '!':
                 if (!ParseExpUnair(p, right)) {
@@ -428,7 +434,7 @@ char *ReplaceDefine(char *lp) {
     if (++replacedefineteller > 20) {
         Error("Over 20 defines nested", 0, FATAL);
     }
-    while ('o') {
+    while (true) {
         if (comlin || comnxtlin) {
             if (*lp == '*' && *(lp + 1) == '/') {
                 *rp = ' ';
@@ -466,7 +472,7 @@ char *ReplaceDefine(char *lp) {
             ++lp;
 
             if (a != '\'' || (*(lp - 2) != 'f' || *(lp - 3) != 'a') && (*(lp - 2) != 'F' || *(lp - 3) != 'A')) {
-                while ('o') {
+                while (true) {
                     if (!*lp) {
                         *rp = 0;
                         return nl;
@@ -605,7 +611,7 @@ char *ReplaceDefineNext(char *lp) {
     if (++replacedefineteller > 20) {
         Error("Over 20 defines nested", 0, FATAL);
     }
-    while ('o') {
+    while (true) {
         if (comlin || comnxtlin) {
             if (*lp == '*' && *(lp + 1) == '/') {
                 *rp = ' ';
@@ -642,7 +648,7 @@ char *ReplaceDefineNext(char *lp) {
             }
             ++lp;
             if (a != '\'' || (*(lp - 2) != 'f' || *(lp - 3) != 'a') && (*(lp - 2) != 'F' && *(lp - 3) != 'A')) {
-                while ('o') {
+                while (true) {
                     if (!*lp) {
                         *rp = 0;
                         return nl;
@@ -764,13 +770,13 @@ char *ReplaceDefineNext(char *lp) {
 
 /* modified */
 void ParseLabel() {
-    char *tp, temp[LINEMAX], *ttp;
-    aint val, oval;
+    char *tp, temp[LINEMAX];
+    aint val;
     if (White()) {
         return;
     }
-    if (Options::IsPseudoOpBOF && ParseDirective(1)) {
-        while (*lp && *lp == ':') {
+    if (Options::IsPseudoOpBOF && ParseDirective(true)) {
+        while (*lp == ':') {
             ++lp;
         }
         return;
@@ -799,7 +805,8 @@ void ParseLabel() {
             LocalLabelTable.Insert(val, Asm.getCPUAddress());
         }
     } else {
-        bool IsDEFL = 0; /* added */
+        bool IsDEFL = 0;
+        char *ttp;
         if (NeedEQU()) {
             if (!ParseExpression(lp, val)) {
                 Error("Expression error", lp);
@@ -852,6 +859,7 @@ void ParseLabel() {
             if (IsDEFL && !LabelTable.insert(tp, val, false, IsDEFL)) {
                 Error("Duplicate label", tp, PASS3);
             }
+            aint oval;
             if (!GetLabelValue(ttp, oval)) {
                 Error("Internal error. ParseLabel()", 0, FATAL);
             }

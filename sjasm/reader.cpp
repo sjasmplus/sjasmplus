@@ -26,13 +26,12 @@
 
 */
 
-// reader.cpp
-
-#include "sjdefs.h"
+#include "global.h"
+#include "parser.h"
+#include "reader.h"
 
 /* modified */
 int cmphstr(char *&p1, const char *p2) {
-    unsigned int i = 0;
     /* old:
     if (isupper(*p1))
       while (p2[i]) {
@@ -45,8 +44,9 @@ int cmphstr(char *&p1, const char *p2) {
         ++i;
       }*/
     /* (begin) */
-    unsigned int v = 0;
     if (strlen(p1) >= strlen(p2)) {
+        unsigned int i = 0;
+        unsigned int v = 0;
         if (isupper(*p1)) {
             while (p2[i]) {
                 if (p1[i] != toupper(p2[i])) {
@@ -93,7 +93,7 @@ int White() {
 }
 
 void SkipBlanks(char *&p) {
-    while (*p && *p > 0 && *p <= ' ') {
+    while ((*p > 0) && (*p <= ' ')) {
         ++p;
     }
 }
@@ -608,7 +608,7 @@ int GetCharConst(char *&p, aint &val) {
 int GetBytes(char *&p, int e[], int add, int dc) {
     aint val;
     int t = 0;
-    while ('o') {
+    while (true) {
         SkipBlanks(p);
         if (!*p) {
             Error("Expression expected", 0, SUPPRESS);
@@ -837,7 +837,7 @@ EStructureMembers GetStructMemberId(char *&p) {
 int GetArray(char *&p, int e[], int add, int dc) {
     aint val;
     int t = 0;
-    while ('o') {
+    while (true) {
         SkipBlanks(p);
         if (!*p) {
             Error("Expression expected", 0, SUPPRESS);

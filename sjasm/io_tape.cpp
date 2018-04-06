@@ -30,7 +30,15 @@ misrepresented as being the original software.
 #include <cstdint>
 #include <cstddef>
 
-#include "sjdefs.h"
+#include <string>
+using namespace std::string_literals;
+
+#include "defines.h"
+#include "errors.h"
+#include "memory.h"
+#include "sjasm.h"
+
+#include "io_tape.h"
 
 #include "../resources/SaveTAP_ZX_Spectrum_48K.bin.h"
 #include "../resources/SaveTAP_ZX_Spectrum_128K.bin.h"

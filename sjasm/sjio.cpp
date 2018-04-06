@@ -26,8 +26,6 @@
 
 */
 
-// sjio.cpp
-
 #include <string>
 #include <iostream>
 #include <iterator>
@@ -36,10 +34,16 @@
 
 using namespace std::string_literals;
 
-#include "sjdefs.h"
 #include "util.h"
 #include "listing.h"
 #include "directives.h"
+#include "parser.h"
+#include "reader.h"
+#include "global.h"
+#include "sjasm.h"
+#include "options.h"
+#include "support.h"
+#include "sjio.h"
 
 class TyReadLineBuf : public std::array<uint8_t, LINEMAX * 2> {
 private:

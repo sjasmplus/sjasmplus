@@ -20,7 +20,7 @@ protected:
     std::string Name;
     bool ZXSysVarsInitialized = false;
 public:
-    MemModel(const std::string &name) { Name = name; }
+    MemModel(const std::string &name) : Name(name) { }
 
     virtual ~MemModel() = 0;
 

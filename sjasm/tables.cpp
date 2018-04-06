@@ -26,249 +26,21 @@
 
 */
 
-// tables.cpp
-
 #include <boost/algorithm/string/case_conv.hpp>
 
 using boost::algorithm::to_upper_copy;
 
-#include "sjdefs.h"
+#include "reader.h"
+#include "parser.h"
 #include "listing.h"
+#include "sjio.h"
+#include "support.h"
+#include "global.h"
+#include "sjasm.h"
+#include "tables.h"
 
-char temp[LINEMAX];
-
-char *PreviousIsLabel;
-
-char *ValidateLabel(char *naam) {
-    char *np = naam, *lp, *label, *mlp = macrolabp;
-    int p = 0, l = 0;
-    label = new char[LINEMAX];
-    if (label == NULL) {
-        Error("No enough memory!", 0, FATAL);
-    }
-    lp = label;
-    label[0] = 0;
-    if (mlp && *np == '@') {
-        ++np;
-        mlp = 0;
-    }
-    switch (*np) {
-        case '@':
-            p = 1;
-            ++np;
-            break;
-        case '.':
-            l = 1;
-            ++np;
-            break;
-        default:
-            break;
-    }
-    naam = np;
-    if (!isalpha((unsigned char) *np) && *np != '_') {
-        Error("Invalid labelname", naam);
-        return 0;
-    }
-    while (*np) {
-        if (isalnum((unsigned char) *np) || *np == '_' || *np == '.' || *np == '?' || *np == '!' || *np == '#' ||
-            *np == '@') {
-            ++np;
-        } else {
-            Error("Invalid labelname", naam);
-            return 0;
-        }
-    }
-    if (strlen(naam) > LABMAX) {
-        Error("Label too long", naam, PASS1);
-        naam[LABMAX] = 0;
-    }
-    if (mlp && l) {
-        STRCAT(lp, LINEMAX, macrolabp);
-        STRCAT(lp, LINEMAX, ">");
-    } else {
-        if (!p && !Modules.IsEmpty()) {
-            STRCAT(lp, LINEMAX, Modules.GetPrefix().c_str());
-        }
-        if (l) {
-            STRCAT(lp, LINEMAX, vorlabp);
-            STRCAT(lp, LINEMAX, ".");
-        } else {
-            free(vorlabp);
-            vorlabp = STRDUP(naam);
-            if (vorlabp == NULL) {
-                Error("No enough memory!", 0, FATAL);
-            }
-        }
-    }
-    STRCAT(lp, LINEMAX, naam);
-    return label;
-}
-
-int GetLabelValue(char *&p, aint &val) {
-    char *mlp = macrolabp, *op = p;
-    int g = 0, l = 0, oIsLabelNotFound = IsLabelNotFound, plen;
-    unsigned int len;
-    char *np;
-    if (mlp && *p == '@') {
-        ++op;
-        mlp = 0;
-    }
-    if (mlp) {
-        switch (*p) {
-            case '@':
-                g = 1;
-                ++p;
-                break;
-            case '.':
-                l = 1;
-                ++p;
-                break;
-            default:
-                break;
-        }
-        temp[0] = 0;
-        if (l) {
-            STRCAT(temp, LINEMAX, macrolabp);
-            STRCAT(temp, LINEMAX, ">");
-            len = strlen(temp);
-            np = temp + len;
-            plen = 0;
-            if (!isalpha((unsigned char) *p) && *p != '_') {
-                Error("Invalid labelname", temp);
-                return 0;
-            }
-            while (isalnum((unsigned char) *p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' ||
-                   *p == '@') {
-                *np = *p;
-                ++np;
-                ++p;
-            }
-            *np = 0;
-            if (strlen(temp) > LABMAX + len) {
-                Error("Label too long", temp + len);
-                temp[LABMAX + len] = 0;
-            }
-            np = temp;
-            g = 1;
-            do {
-                if (LabelTable.getValue(np, val)) {
-                    return 1;
-                }
-                IsLabelNotFound = oIsLabelNotFound;
-                while ('o') {
-                    if (*np == '>') {
-                        g = 0;
-                        break;
-                    }
-                    if (*np == '.') {
-                        ++np;
-                        break;
-                    }
-                    ++np;
-                }
-            } while (g);
-        }
-    }
-
-    p = op;
-    switch (*p) {
-        case '@':
-            g = 1;
-            ++p;
-            break;
-        case '.':
-            l = 1;
-            ++p;
-            break;
-        default:
-            break;
-    }
-    temp[0] = 0;
-    if (!g && !Modules.IsEmpty()) {
-        STRCAT(temp, LINEMAX, Modules.GetPrefix().c_str());
-    }
-    if (l) {
-        STRCAT(temp, LINEMAX, vorlabp);
-        STRCAT(temp, LINEMAX, ".");
-    }
-    len = strlen(temp);
-    np = temp + len;
-    if (!isalpha((unsigned char) *p) && *p != '_') {
-        Error("Invalid labelname", temp);
-        return 0;
-    }
-    while (isalnum((unsigned char) *p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' || *p == '@') {
-        *np = *p;
-        ++np;
-        ++p;
-    }
-    *np = 0;
-    if (strlen(temp) > LABMAX + len) {
-        Error("Label too long", temp + len);
-        temp[LABMAX + len] = 0;
-    }
-    if (LabelTable.getValue(temp, val)) {
-        return 1;
-    }
-    IsLabelNotFound = oIsLabelNotFound;
-    if (!l && !g && LabelTable.getValue(temp + len, val)) {
-        return 1;
-    }
-    if (pass == LASTPASS) {
-        Error("Label not found", temp);
-        return 1;
-    }
-    val = 0;
-    return 1;
-}
-
-int GetLocalLabelValue(char *&op, aint &val) {
-    aint nval = 0;
-    int nummer = 0;
-    char *p = op, naam[LINEMAX], *np, ch;
-    SkipBlanks(p);
-    np = naam;
-    if (!isdigit((unsigned char) *p)) {
-        return 0;
-    }
-    while (*p) {
-        if (!isdigit((unsigned char) *p)) {
-            break;
-        }
-        *np = *p;
-        ++p;
-        ++np;
-    }
-    *np = 0;
-    nummer = atoi(naam);
-    ch = *p++;
-    if (isalnum((unsigned char) *p)) {
-        return 0;
-    }
-    switch (ch) {
-        case 'b':
-        case 'B':
-            nval = LocalLabelTable.zoekb(nummer);
-            break;
-        case 'f':
-        case 'F':
-            nval = LocalLabelTable.zoekf(nummer);
-            break;
-        default:
-            return 0;
-    }
-    if (nval == (aint) -1) {
-        if (pass == LASTPASS) {
-            Error("Local label not found", naam, SUPPRESS);
-            return 1;
-        } else {
-            nval = 0;
-        }
-    }
-    op = p;
-    val = nval;
-    return 1;
-}
+int macronummer = 0;
+int lijst = 0, synerr = 1;
 
 bool FunctionTable::insert(const std::string &Name, void(*FuncPtr)(void)) {
     std::string uName = to_upper_copy(Name);
@@ -309,72 +81,6 @@ bool FunctionTable::find(const std::string &Name) {
     } else {
         return false;
     }
-}
-
-/* modified */
-CLocalLabelTableEntry::CLocalLabelTableEntry(aint nnummer, aint nvalue, CLocalLabelTableEntry *n) {
-    regel = CompiledCurrentLine;
-    nummer = nnummer;
-    value = nvalue;
-    //regel=CurrentLocalLine; nummer=nnummer; value=nvalue;
-    prev = n;
-    next = NULL;
-    if (n) {
-        n->next = this;
-    }
-}
-
-CLocalLabelTable::CLocalLabelTable() {
-    first = last = NULL;
-}
-
-void CLocalLabelTable::Insert(aint nnummer, aint nvalue) {
-    last = new CLocalLabelTableEntry(nnummer, nvalue, last);
-    if (!first) {
-        first = last;
-    }
-}
-
-/* modified */
-aint CLocalLabelTable::zoekf(aint nnum) {
-    CLocalLabelTableEntry *l = first;
-    while (l) {
-        if (l->regel <= CompiledCurrentLine) {
-            l = l->next;
-        } else {
-            break;
-        }
-    }
-    //while (l) if (l->regel<=CurrentLocalLine) l=l->next; else break;
-    while (l) {
-        if (l->nummer == nnum) {
-            return l->value;
-        } else {
-            l = l->next;
-        }
-    }
-    return (aint) -1;
-}
-
-/* modified */
-aint CLocalLabelTable::zoekb(aint nnum) {
-    CLocalLabelTableEntry *l = last;
-    while (l) {
-        if (l->regel > CompiledCurrentLine) {
-            l = l->prev;
-        } else {
-            break;
-        }
-    }
-    //while (l) if (l->regel>CurrentLocalLine) l=l->prev; else break;
-    while (l) {
-        if (l->nummer == nnum) {
-            return l->value;
-        } else {
-            l = l->prev;
-        }
-    }
-    return (aint) -1;
 }
 
 CDefineTableEntry::CDefineTableEntry(const char *nname, const char *nvalue, CStringsList *nnss/*added*/,
@@ -938,7 +644,7 @@ void CStructure::deflab() {
             Error("Internal error. ParseLabel()", 0, FATAL);
         }
         if (noffset != oval) {
-            Error("Label has different value in pass 2", temp);
+            Error("Label has different value in pass 2", tempLabel);
         }
     } else {
         if (!LabelTable.insert(p, noffset)) {
@@ -959,7 +665,7 @@ void CStructure::deflab() {
                 Error("Internal error. ParseLabel()", 0, FATAL);
             }
             if (np->offset != oval) {
-                Error("Label has different value in pass 2", temp);
+                Error("Label has different value in pass 2", tempLabel);
             }
         } else {
             if (!LabelTable.insert(p, np->offset)) {
@@ -983,7 +689,7 @@ void CStructure::emitlab(char *iid) {
             Error("Internal error. ParseLabel()", 0, FATAL);
         }
         if (Asm.getCPUAddress() != oval) {
-            Error("Label has different value in pass 2", temp);
+            Error("Label has different value in pass 2", tempLabel);
         }
     } else {
         if (!LabelTable.insert(p, Asm.getCPUAddress())) {
@@ -1004,7 +710,7 @@ void CStructure::emitlab(char *iid) {
                 Error("Internal error. ParseLabel()", 0, FATAL);
             }
             if (np->offset + Asm.getCPUAddress() != oval) {
-                Error("Label has different value in pass 2", temp);
+                Error("Label has different value in pass 2", tempLabel);
             }
         } else {
             if (!LabelTable.insert(p, np->offset + Asm.getCPUAddress())) {
@@ -1023,7 +729,7 @@ void CStructure::emitmembs(char *&p) {
     aint val;
     int haakjes = 0;
     SkipBlanks(p);
-    if (*p && *p == '{') {
+    if (*p == '{') {
         ++haakjes;
         ++p;
     }
@@ -1293,16 +999,6 @@ CDevicePage::~CDevicePage() {
     /*if (Next) {
         delete Next;
     }*/
-}
-
-int LuaGetLabel(char *name) {
-    aint val;
-
-    if (!LabelTable.getValue(name, val)) {
-        return -1;
-    } else {
-        return val;
-    }
 }
 
 //eof tables.cpp

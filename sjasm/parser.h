@@ -26,7 +26,10 @@
 
 */
 
-// parser.h
+#ifndef SJASMPLUS_PARSER_H
+#define SJASMPLUS_PARSER_H
+
+#include "tables.h"
 
 int ParseExpression(char *&lp, aint &val);
 
@@ -48,5 +51,5 @@ unsigned long LuaCalculate(char *str);
 void LuaParseLine(char *str);
 
 void LuaParseCode(char *str);
-//eof parser.h
 
+#endif // SJASMPLUS_READER_H

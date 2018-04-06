@@ -7,14 +7,22 @@
 #include "stdlib.h"
 #endif
 
-#include "string.h"
+#include <cstring>
+
+#include "lua_support.h"
 
 #include "tolua++.h"
 
 /* Exported function */
 TOLUA_API int tolua_sjasm_open(lua_State *tolua_S);
 
-#include "sjdefs.h"
+#include "sjio.h"
+#include "directives.h"
+#include "parser.h"
+#include "options.h"
+#include "global.h"
+#include "io_snapshots.h"
+#include "sjasm.h"
 
 using namespace Options;
 

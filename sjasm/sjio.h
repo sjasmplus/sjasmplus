@@ -29,9 +29,11 @@
 #ifndef SJASMPLUS_SJIO_H
 #define SJASMPLUS_SJIO_H
 
+#include "defines.h"
 #include "fs.h"
-#include "sjdefs.h"
 #include "errors.h"
+#include "tables.h"
+#include "io_trd.h"
 
 void EmitByte(uint8_t byte);
 

@@ -26,7 +26,8 @@
 
 */
 
-// support.h
+#ifndef SJASMPLUS_SUPPORT_H
+#define SJASMPLUS_SUPPORT_H
 
 #include "defines.h"
 
@@ -50,10 +51,6 @@ char *strpad(char *string, char ch, aint length);
 #include <sys/time.h>
 #include <unistd.h>
 
-#ifndef TCHAR
-#define TCHAR char
-#endif
-
 void GetCurrentDirectory(int, char *);
 // int SearchPath(const char *, const char *, const char *, int, char *, char **);
 
@@ -70,6 +67,4 @@ void GetCurrentDirectory(int, char *);
 
 #endif
 
-void LuaShellExec(char *command);
-
-//eof support.h
+#endif // SJASMPLUS_SUPPORT_H

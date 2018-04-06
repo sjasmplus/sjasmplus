@@ -43,17 +43,12 @@ using std::endl;
 #include "labels.h"
 #include "errors.h"
 
+extern int macronummer;
+extern int lijst, synerr;
+
 enum EStructureMembers {
     SMEMBUNKNOWN, SMEMBALIGN, SMEMBBYTE, SMEMBWORD, SMEMBBLOCK, SMEMBDWORD, SMEMBD24, SMEMBPARENOPEN, SMEMBPARENCLOSE
 };
-
-char *ValidateLabel(char *);
-
-extern char *PreviousIsLabel;
-
-int GetLabelValue(char *&p, aint &val);
-
-int GetLocalLabelValue(char *&op, aint &val);
 
 class FunctionTable {
 public:
@@ -67,28 +62,6 @@ public:
 
 private:
     std::map<std::string, void (*)(void)> Map;
-};
-
-class CLocalLabelTableEntry {
-public:
-    aint regel, nummer, value;
-    CLocalLabelTableEntry *next, *prev;
-
-    CLocalLabelTableEntry(aint, aint, CLocalLabelTableEntry *);
-};
-
-class CLocalLabelTable {
-public:
-    CLocalLabelTable();
-
-    aint zoekf(aint);
-
-    aint zoekb(aint);
-
-    void Insert(aint, aint);
-
-private:
-    CLocalLabelTableEntry *first, *last;
 };
 
 class CStringsList {
@@ -331,8 +304,5 @@ private:
     CDeviceSlot *Slots[256];
     CDevicePage *Pages[256];
 };
-
-
-int LuaGetLabel(char *name);
 
 #endif //SJASMPLUS_TABLES_H

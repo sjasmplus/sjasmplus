@@ -26,6 +26,9 @@
 
 */
 
+#ifndef SJASMPLUS_Z80_H
+#define SJASMPLUS_Z80_H
+
 namespace Z80 {
     void GetOpCode();
 
@@ -34,5 +37,4 @@ namespace Z80 {
 
 void InitCPU();
 
-//eof z80.h
-
+#endif // SJASMPLUS_Z80_H

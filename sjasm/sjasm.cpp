@@ -29,9 +29,13 @@
 // sjasm.cpp
 
 #include "global.h"
-#include "sjdefs.h"
-#include "lua_sjasm.h"
+#include "sjasm.h"
 #include "listing.h"
+#include "z80.h"
+#include "sjio.h"
+#include "lua_support.h"
+#include "support.h"
+#include "options.h"
 #include <sjasmplus_conf.h>
 #include <sstream>
 
@@ -43,42 +47,18 @@ CDeviceSlot *Slot = 0;
 CDevicePage *Page = 0;
 char *DeviceID = 0;
 
-char *lp, line[LINEMAX], *bp;
-char sline[LINEMAX2], sline2[LINEMAX2];
-
 std::vector<fs::path> SourceFNames;
 int CurrentSourceFName = 0;
 int SourceFNamesCount = 0;
 
-int ConvertEncoding = ENCWIN; /* added */
-
-int pass = 0, IsLabelNotFound = 0, ErrorCount = 0, IncludeLevel = -1;
 bool SourceReaderEnabled = false;
 /* int adrdisp = 0, PseudoORG = 0; */ /* added for spectrum ram */
 char *MemoryPointer = NULL; /* added for spectrum ram */
 int StartAddress = -1;
-int macronummer = 0, lijst = 0, synerr = 1;
-aint CurAddress = 0, CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;
-aint destlen = 0, size = (aint) -1, MaxLineNumber = 0, comlin = 0;
+aint destlen = 0, size = (aint) -1;
 
 void (*GetCPUInstruction)(void);
 
-char *vorlabp = NULL, *macrolabp = NULL, *LastParsedLabel = NULL;
-stack<RepeatInfo> RepeatStack; /* added */
-CStringsList *lijstp = 0;
-CLabelTable LabelTable;
-CLocalLabelTable LocalLabelTable;
-std::map<std::string, std::string> DefineTable;
-std::map<std::string, std::vector<std::string>> DefArrayTable;
-CMacroDefineTable MacroDefineTable;
-CMacroTable MacroTable;
-CStructureTable StructureTable;
-ModulesList Modules;
-
-lua_State *LUA;
-int LuaLine = -1;
-
-/* modified */
 void InitPass(int p) {
     if (LastParsedLabel != NULL) {
         free(LastParsedLabel);
@@ -130,11 +110,6 @@ void ExitASM(int p) {
 }
 
 
-void LuaFatalError(lua_State *L) {
-    Error((char *) lua_tostring(L, -1), 0, FATAL);
-}
-
-
 int main(int argc, const char *argv[]) {
     int base_encoding; /* added */
     const char *logo = "SjASMPlus Z80 Cross-Assembler v." SJASMPLUS_VERSION;
@@ -150,12 +125,7 @@ int main(int argc, const char *argv[]) {
     }
 
     // init LUA
-    LUA = lua_open();
-    lua_atpanic(LUA, (lua_CFunction) LuaFatalError);
-    luaL_openlibs(LUA);
-    luaopen_pack(LUA);
-
-    tolua_sjasm_open(LUA);
+    initLUA();
 
     // init vars
     Options::NoDestinationFile = true; // no *.out files by default
@@ -253,8 +223,8 @@ int main(int argc, const char *argv[]) {
     if (Devices) {
         delete Devices;
     }
-    // close Lua
-    lua_close(LUA);
+    // Shutdown Lua
+    shutdownLUA();
 
     return (ErrorCount != 0);
 }

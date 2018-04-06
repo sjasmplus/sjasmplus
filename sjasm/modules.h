@@ -26,8 +26,8 @@
 
 */
 
-#ifndef __MODULES
-#define __MODULES
+#ifndef SJASMPLUS_MODULES_H
+#define SJASMPLUS_MODULES_H
 
 #include <stack>
 #include <string>
@@ -46,4 +46,4 @@ private:
     std::stack<std::string> Names;
 };
 
-#endif
+#endif // SJASMPLUS_MODULES_H

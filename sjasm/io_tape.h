@@ -26,15 +26,12 @@ misrepresented as being the original software.
 
 */
 
-// io_tape.h
-
-#ifndef __IO_TAPE
-#define __IO_TAPE
+#ifndef SJASMPLUS_IO_TAPE_H
+#define SJASMPLUS_IO_TAPE_H
 
 #include <cstdint>
+#include "fs.h"
 
 int SaveTAP_ZX(const fs::path &fname, uint16_t start);
 
-#endif
-
-//eof io_tape.h
+#endif // SJASMPLUS_IO_TAPE_H

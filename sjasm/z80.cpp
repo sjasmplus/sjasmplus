@@ -24,7 +24,15 @@
 
 */
 
-#include "sjdefs.h"
+#include "global.h"
+#include "reader.h"
+#include "parser.h"
+#include "directives.h"
+#include "options.h"
+#include "sjio.h"
+#include "support.h"
+#include "sjasm.h"
+#include "z80.h"
 
 namespace Z80 {
     enum Z80Reg {
@@ -688,7 +696,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -854,7 +862,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -948,7 +956,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -1007,7 +1015,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -1079,7 +1087,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -1177,7 +1185,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -1314,7 +1322,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -1349,7 +1357,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -1550,7 +1558,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -1647,7 +1655,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -1797,7 +1805,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -1863,7 +1871,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -3358,7 +3366,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -3535,7 +3543,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -3828,7 +3836,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -3992,7 +4000,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -4079,7 +4087,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -4279,7 +4287,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -4324,7 +4332,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -4425,7 +4433,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -4496,7 +4504,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -4593,7 +4601,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -4664,7 +4672,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -4722,7 +4730,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -4842,7 +4850,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -4920,7 +4928,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -5002,7 +5010,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -5087,7 +5095,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -5172,7 +5180,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -5257,7 +5265,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -5385,7 +5393,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 
@@ -5479,7 +5487,7 @@ namespace Z80 {
             } else {
                 break;
             }
-        } while ('o');
+        } while (true);
         /* (end add) */
     }
 

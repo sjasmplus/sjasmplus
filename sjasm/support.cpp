@@ -26,9 +26,10 @@
 
 */
 
-// support.cpp
+#include <cstring>
+#include <cstdlib>
 
-#include "sjdefs.h"
+#include "support.h"
 
 // http://legacy.imatix.com/html/sfl/sfl282.htm
 char *strpad(char *string, char ch, aint length) {
@@ -78,14 +79,3 @@ int SearchPath(const char *oudzp, const fs::path& fileName, const char *whatever
 */
 
 #endif
-
-void LuaShellExec(char *command) {
-#ifdef WIN32
-
-    WinExec(command, SW_SHOWNORMAL);
-#else
-    system(command);
-#endif
-}
-
-//eof support.cpp

@@ -26,8 +26,8 @@
 
 */
 
-#ifndef __OPTIONS
-#define __OPTIONS
+#ifndef SJASMPLUS_OPTIONS_H
+#define SJASMPLUS_OPTIONS_H
 
 #include <list>
 
@@ -55,5 +55,4 @@ namespace Options {
     void ShowHelp();
 } // eof namespace Options
 
-#endif
-//eof options.h
+#endif // SJASMPLUS_OPTIONS_H
