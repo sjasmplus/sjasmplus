@@ -54,7 +54,13 @@ private:
 public:
     void clear() { reset(0); }
 
-    uint8_t cur() { return this->at(CurIdx); }
+    uint8_t cur() {
+        if (BytesLeft > 0) {
+            return this->at(CurIdx);
+        } else {
+            return 0;
+        }
+    }
 
     uint8_t cur2() { // Return character next to current if available
         if (BytesLeft >= 2) {
