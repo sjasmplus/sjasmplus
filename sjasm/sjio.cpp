@@ -534,7 +534,7 @@ int SaveRAM(fs::ofstream &ofs, int start, int length) {
         length = 0x10000 - start;
     }
 
-    char *data = new char[length];
+    auto *data = new char[length];
     Asm.getBytes((uint8_t *) data, start, length);
     ofs.write(data, length);
     delete[] data;
@@ -578,7 +578,7 @@ void *SaveRAM(void *dst, int start, int length) {
     }
 */
 
-    unsigned char *target = static_cast<unsigned char *>(dst);
+    auto *target = static_cast<unsigned char *>(dst);
     if (start + length > 0x10000) {
         Error("*SaveRAM(): start("s + std::to_string(start) + ") + length("s +
               std::to_string(length) + ") > 0x10000"s, ""s, FATAL);

@@ -104,7 +104,7 @@ void ListingWriter::listFile() {
         return;
     }
     if (listmacro) {
-        if (ByteBuffer.size() == 0) {
+        if (ByteBuffer.empty()) {
             return;
         }
     }
@@ -170,7 +170,7 @@ void ListingWriter::listFileSkip(char *line) {
     ByteBuffer.clear();
 }
 
-void ListingWriter::addByte(const uint8_t Byte) {
+void ListingWriter::addByte(uint8_t Byte) {
     ByteBuffer.push_back(Byte);
 }
 

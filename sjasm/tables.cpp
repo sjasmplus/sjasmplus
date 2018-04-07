@@ -42,7 +42,7 @@ using boost::algorithm::to_upper_copy;
 int macronummer = 0;
 int lijst = 0, synerr = 1;
 
-bool FunctionTable::insert(const std::string &Name, void(*FuncPtr)(void)) {
+bool FunctionTable::insert(const std::string &Name, void(*FuncPtr)()) {
     std::string uName = to_upper_copy(Name);
     if (Map.find(uName) != Map.end()) {
         return false;
@@ -51,7 +51,7 @@ bool FunctionTable::insert(const std::string &Name, void(*FuncPtr)(void)) {
     return true;
 }
 
-bool FunctionTable::insertDirective(const std::string &Name, void(*FuncPtr)(void)) {
+bool FunctionTable::insertDirective(const std::string &Name, void(*FuncPtr)()) {
     if (!insert(Name, FuncPtr)) {
         return false;
     }

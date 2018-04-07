@@ -53,7 +53,7 @@ extern char *MemoryPointer; /* added for spectrum ram */
 extern int StartAddress;
 //$, ...
 
-extern void (*GetCPUInstruction)(void);
+extern void (*GetCPUInstruction)();
 
 void ExitASM(int p);
 

@@ -25,7 +25,7 @@ private:
     std::string printCurrentLocalLine();
 
 public:
-    void init();
+    void init() override;
 
     void initPass();
 
@@ -33,7 +33,7 @@ public:
 
     void listFileSkip(char *line);
 
-    void addByte(const uint8_t Byte);
+    void addByte(uint8_t Byte);
 
     void setPreviousAddress(int Value) {
         PreviousAddress = Value;

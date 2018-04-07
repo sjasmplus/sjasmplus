@@ -52,11 +52,11 @@ enum EStructureMembers {
 
 class FunctionTable {
 public:
-    bool insert(const std::string &Name, void(*FuncPtr)(void));
+    bool insert(const std::string &Name, void(*FuncPtr)());
 
-    bool insertDirective(const std::string &, void(*)(void));
+    bool insertDirective(const std::string &, void(*)());
 
-    bool callIfExists(const std::string &, bool = 0);
+    bool callIfExists(const std::string &, bool = false);
 
     bool find(const std::string &);
 

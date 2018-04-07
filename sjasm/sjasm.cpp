@@ -91,12 +91,8 @@ void InitPass(int p) {
 }
 
 void FreeRAM() {
-    if (Devices) {
-        delete Devices;
-    }
-    if (lijstp) {
-        delete lijstp;
-    }
+    delete Devices;
+    delete lijstp;
     free(vorlabp);
 }
 
@@ -220,9 +216,7 @@ int main(int argc, const char *argv[]) {
     cout << flush;
 
     // free RAM
-    if (Devices) {
-        delete Devices;
-    }
+    delete Devices;
     // Shutdown Lua
     shutdownLUA();
 
