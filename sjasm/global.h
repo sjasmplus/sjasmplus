@@ -24,7 +24,7 @@ extern int pass, IsLabelNotFound;
 
 extern aint CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine;
 
-extern aint MaxLineNumber, comlin;
+extern aint MaxLineNumber;
 
 extern int ErrorCount, IncludeLevel;
 

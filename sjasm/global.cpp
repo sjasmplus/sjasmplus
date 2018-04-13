@@ -14,7 +14,7 @@ int pass = 0, IsLabelNotFound = 0;
 
 aint CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;
 
-aint MaxLineNumber = 0, comlin = 0;
+aint MaxLineNumber = 0;
 
 int ErrorCount = 0, IncludeLevel = -1;
 

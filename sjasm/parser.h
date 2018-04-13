@@ -31,6 +31,8 @@
 
 #include "tables.h"
 
+void initParser();
+
 int ParseExpression(char *&lp, aint &val);
 
 int ParseDirective(bool bol = 0);

@@ -36,6 +36,7 @@
 #include "lua_support.h"
 #include "support.h"
 #include "options.h"
+#include "parser.h"
 #include <sjasmplus_conf.h>
 #include <sstream>
 
@@ -75,7 +76,7 @@ void InitPass(int p) {
     Listing.initPass();
     macronummer = 0;
     lijst = 0;
-    comlin = 0;
+    initParser();
     StructureTable.Init();
     DefineTable.clear();
     DefArrayTable.clear();

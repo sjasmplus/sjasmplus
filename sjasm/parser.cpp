@@ -37,10 +37,14 @@
 
 #include "parser.h"
 
+aint comlin = 0;
 int replacedefineteller = 0, comnxtlin;
 char dirDEFl[] = "def", dirDEFu[] = "DEF"; /* added for ReplaceDefine */
 
-/* modified */
+void initParser() {
+    comlin = 0;
+}
+
 int ParseExpPrim(char *&p, aint &nval) {
     int res = 0;
     SkipBlanks(p);
