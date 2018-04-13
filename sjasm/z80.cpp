@@ -1343,9 +1343,7 @@ namespace Z80 {
             }
             jmp = nad - Asm.getCPUAddress() - 2;
             if (jmp < -128 || jmp > 127) {
-                char el[LINEMAX];
-                SPRINTF1(el, LINEMAX, "[DJNZ] Target out of range (%i)", jmp);
-                Error(el, 0);
+                Error("[DJNZ] Target out of range ("s + std::to_string(jmp) + ")"s, ""s);
                 jmp = 0;
             }
             e[0] = 0x10;
@@ -1855,12 +1853,10 @@ namespace Z80 {
             }
             jmp = jrad - Asm.getCPUAddress() - 2;
             if (jmp < -128 || jmp > 127) {
-                char el[LINEMAX];
                 /*if (pass == LASTPASS) {
 					_COUT "AAAAAAA:" _CMDL jmp _CMDL " " _CMDL jrad _CMDL " " _CMDL CurAddress _ENDL;
 				}*/
-                SPRINTF1(el, LINEMAX, "[JR] Target out of range (%i)", jmp);
-                Error(el, 0, LASTPASS);
+                Error("[JR] Target out of range ("s + std::to_string(jmp) + ")"s, ""s, LASTPASS);
                 jmp = 0;
             }
             e[1] = jmp < 0 ? 256 + jmp : jmp;

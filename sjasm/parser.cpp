@@ -869,15 +869,11 @@ void ParseLabel() {
             }
             /*if (val!=oval) Error("Label has different value in pass 2",temp);*/
             if (!IsDEFL && val != oval) {
-                char *buf = new char[LINEMAX];
-
-                SPRINTF2(buf, LINEMAX, "previous value %lu not equal %lu", oval, val);
-                Warning("Label has different value in pass 3", buf);
+                std::string ErrStr = "previous value "s + std::to_string(oval) + " not equal "s + std::to_string(val);
+                Warning("Label has different value in pass 3"s, ErrStr);
                 //_COUT "" _CMDL filename _CMDL ":" _CMDL CurrentLocalLine _CMDL ":(DEBUG)  " _CMDL "Label has different value in pass 2: ";
                 //_COUT val _CMDL "!=" _CMDL oval _ENDL;
                 LabelTable.updateValue(tp, val);
-
-                delete[] buf;
             }
         } else if (pass == 2 && !LabelTable.insert(tp, val, false, IsDEFL) && !LabelTable.updateValue(tp, val)) {
             Error("Duplicate label", tp, PASS2);
