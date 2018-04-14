@@ -45,18 +45,18 @@ void initParser() {
     comlin = 0;
 }
 
-int ParseExpPrim(char *&p, aint &nval) {
-    int res = 0;
+bool ParseExpPrim(char *&p, aint &nval) {
+    bool res = false;
     SkipBlanks(p);
     if (!*p) {
-        return 0;
+        return false;
     }
     if (*p == '(') {
         ++p;
         res = ParseExpression(p, nval);
         if (!need(p, ')')) {
             Error("')' expected", 0);
-            return 0;
+            return false;
         }
     } else if (*p == '{') {
         ++p;
@@ -66,16 +66,16 @@ int ParseExpPrim(char *&p, aint &nval) {
         } */
         if (nval > 0xFFFE) {
             Error("Address in {..} must be less than FFFEh", 0);
-            return 0;
+            return false;
         }
         if (!need(p, '}')) {
             Error("'}' expected", 0);
-            return 0;
+            return false;
         }
 
         nval = (aint) (MemGetByte(nval) + (MemGetByte(nval + 1) << 8));
 
-        return 1;
+        return true;
     } else if (isdigit((unsigned char) *p) || (*p == '#' && isalnum((unsigned char) *(p + 1))) ||
                (*p == '$' && isalnum((unsigned char) *(p + 1))) || *p == '%') {
         res = GetConstant(p, nval);
@@ -90,82 +90,82 @@ int ParseExpPrim(char *&p, aint &nval) {
         ++p;
         nval = Asm.getPage();
 
-        return 1;
+        return true;
     } else if (*p == '$') {
         ++p;
         nval = Asm.getCPUAddress();
 
-        return 1;
+        return true;
     } else if (!(res = GetCharConst(p, nval))) {
         if (synerr) {
             Error("Syntax error", p, CATCHALL);
         }
 
-        return 0;
+        return false;
     }
     return res;
 }
 
-int ParseExpUnair(char *&p, aint &nval) {
+bool ParseExpUnair(char *&p, aint &nval) {
     int oper;
     if ((oper = need(p, "! ~ + - ")) || (oper = needa(p, "not", '!', "low", 'l', "high", 'h'))) {
         aint right;
         switch (oper) {
             case '!':
                 if (!ParseExpUnair(p, right)) {
-                    return 0;
+                    return false;
                 }
                 nval = -!right;
                 break;
             case '~':
                 if (!ParseExpUnair(p, right)) {
-                    return 0;
+                    return false;
                 }
                 nval = ~right;
                 break;
             case '+':
                 if (!ParseExpUnair(p, right)) {
-                    return 0;
+                    return false;
                 }
                 nval = right;
                 break;
             case '-':
                 if (!ParseExpUnair(p, right)) {
-                    return 0;
+                    return false;
                 }
                 nval = ~right + 1;
                 break;
             case 'l':
                 if (!ParseExpUnair(p, right)) {
-                    return 0;
+                    return false;
                 }
                 nval = right & 255;
                 break;
             case 'h':
                 if (!ParseExpUnair(p, right)) {
-                    return 0;
+                    return false;
                 }
                 nval = (right >> 8) & 255;
                 break;
             default:
                 Error("Parser error", 0);
-                return 0;
+                return false;
         }
-        return 1;
+        return true;
     } else {
         return ParseExpPrim(p, nval);
     }
 }
 
-int ParseExpMul(char *&p, aint &nval) {
+bool ParseExpMul(char *&p, aint &nval) {
     aint left, right;
     int oper;
     if (!ParseExpUnair(p, left)) {
-        return 0;
+        return false;
     }
     while ((oper = need(p, "* / % ")) || (oper = needa(p, "mod", '%'))) {
         if (!ParseExpUnair(p, right)) {
-            return 0;
+            return false;
         }
         switch (oper) {
             case '*':
@@ -193,18 +193,18 @@ int ParseExpMul(char *&p, aint &nval) {
         }
     }
     nval = left;
-    return 1;
+    return true;
 }
 
-int ParseExpAdd(char *&p, aint &nval) {
+bool ParseExpAdd(char *&p, aint &nval) {
     aint left, right;
     int oper;
     if (!ParseExpMul(p, left)) {
-        return 0;
+        return false;
     }
     while ((oper = need(p, "+ - "))) {
         if (!ParseExpMul(p, right)) {
-            return 0;
+            return false;
         }
         switch (oper) {
             case '+':
@@ -219,15 +219,15 @@ int ParseExpAdd(char *&p, aint &nval) {
         }
     }
     nval = left;
-    return 1;
+    return true;
 }
 
-int ParseExpShift(char *&p, aint &nval) {
+bool ParseExpShift(char *&p, aint &nval) {
     aint left, right;
     unsigned long l;
     int oper;
     if (!ParseExpAdd(p, left)) {
-        return 0;
+        return false;
     }
     while ((oper = need(p, "<<>>")) || (oper = needa(p, "shl", '<' + '<', "shr", '>'))) {
         if (oper == '>' + '>' && *p == '>') {
@@ -235,7 +235,7 @@ int ParseExpShift(char *&p, aint &nval) {
             oper = '>' + '@';
         }
         if (!ParseExpAdd(p, right)) {
-            return 0;
+            return false;
         }
         switch (oper) {
             case '<' + '<':
@@ -256,18 +256,18 @@ int ParseExpShift(char *&p, aint &nval) {
         }
     }
     nval = left;
-    return 1;
+    return true;
 }
 
-int ParseExpMinMax(char *&p, aint &nval) {
+bool ParseExpMinMax(char *&p, aint &nval) {
     aint left, right;
     int oper;
     if (!ParseExpShift(p, left)) {
-        return 0;
+        return false;
     }
     while ((oper = need(p, "<?>?"))) {
         if (!ParseExpShift(p, right)) {
-            return 0;
+            return false;
         }
         switch (oper) {
             case '<' + '?':
@@ -282,18 +282,18 @@ int ParseExpMinMax(char *&p, aint &nval) {
         }
     }
     nval = left;
-    return 1;
+    return true;
 }
 
-int ParseExpCmp(char *&p, aint &nval) {
+bool ParseExpCmp(char *&p, aint &nval) {
     aint left, right;
     int oper;
     if (!ParseExpMinMax(p, left)) {
-        return 0;
+        return false;
     }
     while ((oper = need(p, "<=>=< > "))) {
         if (!ParseExpMinMax(p, right)) {
-            return 0;
+            return false;
         }
         switch (oper) {
             case '<':
@@ -314,18 +314,18 @@ int ParseExpCmp(char *&p, aint &nval) {
         }
     }
     nval = left;
-    return 1;
+    return true;
 }
 
-int ParseExpEqu(char *&p, aint &nval) {
+bool ParseExpEqu(char *&p, aint &nval) {
     aint left, right;
     int oper;
     if (!ParseExpCmp(p, left)) {
-        return 0;
+        return false;
     }
     while ((oper = need(p, "=_==!="))) {
         if (!ParseExpCmp(p, right)) {
-            return 0;
+            return false;
         }
         switch (oper) {
             case '=':
@@ -341,90 +341,90 @@ int ParseExpEqu(char *&p, aint &nval) {
         }
     }
     nval = left;
-    return 1;
+    return true;
 }
 
-int ParseExpBitAnd(char *&p, aint &nval) {
+bool ParseExpBitAnd(char *&p, aint &nval) {
     aint left, right;
     if (!ParseExpEqu(p, left)) {
-        return 0;
+        return false;
     }
     while (need(p, "&_") || needa(p, "and", '&')) {
         if (!ParseExpEqu(p, right)) {
-            return 0;
+            return false;
         }
         left &= right;
     }
     nval = left;
-    return 1;
+    return true;
 }
 
-int ParseExpBitXor(char *&p, aint &nval) {
+bool ParseExpBitXor(char *&p, aint &nval) {
     aint left, right;
     if (!ParseExpBitAnd(p, left)) {
-        return 0;
+        return false;
     }
     while (need(p, "^ ") || needa(p, "xor", '^')) {
         if (!ParseExpBitAnd(p, right)) {
-            return 0;
+            return false;
         }
         left ^= right;
     }
     nval = left;
-    return 1;
+    return true;
 }
 
-int ParseExpBitOr(char *&p, aint &nval) {
+bool ParseExpBitOr(char *&p, aint &nval) {
     aint left, right;
     if (!ParseExpBitXor(p, left)) {
-        return 0;
+        return false;
     }
     while (need(p, "|_") || needa(p, "or", '|')) {
         if (!ParseExpBitXor(p, right)) {
-            return 0;
+            return false;
         }
         left |= right;
     }
     nval = left;
-    return 1;
+    return true;
 }
 
-int ParseExpLogAnd(char *&p, aint &nval) {
+bool ParseExpLogAnd(char *&p, aint &nval) {
     aint left, right;
     if (!ParseExpBitOr(p, left)) {
-        return 0;
+        return false;
     }
     while (need(p, "&&")) {
         if (!ParseExpBitOr(p, right)) {
-            return 0;
+            return false;
         }
         left = -(left && right);
     }
     nval = left;
-    return 1;
+    return true;
 }
 
-int ParseExpLogOr(char *&p, aint &nval) {
+bool ParseExpLogOr(char *&p, aint &nval) {
     aint left, right;
     if (!ParseExpLogAnd(p, left)) {
-        return 0;
+        return false;
     }
     while (need(p, "||")) {
         if (!ParseExpLogAnd(p, right)) {
-            return 0;
+            return false;
         }
         left = -(left || right);
     }
     nval = left;
-    return 1;
+    return true;
 }
 
-int ParseExpression(char *&p, aint &nval) {
+bool ParseExpression(char *&p, aint &nval) {
     if (ParseExpLogOr(p, nval)) {
-        return 1;
+        return true;
     }
     nval = 0;
-    return 0;
+    return false;
 }
 
 /* modified */
@@ -885,7 +885,7 @@ void ParseLabel() {
     }
 }
 
-int ParseMacro() {
+bool ParseMacro() {
     int gl = 0, r;
     char *p = lp, *n;
     SkipBlanks(p);
@@ -894,17 +894,17 @@ int ParseMacro() {
         ++p;
     }
     if (!(n = GetID(p))) {
-        return 0;
+        return false;
     }
     if (!(r = MacroTable.Emit(n, p))) {
         if (StructureTable.Emit(n, 0, p, gl)) {
             lp = p;
-            return 1;
+            return true;
         }
     } else if (r == 2) { // Success
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 
 void ParseInstruction() {

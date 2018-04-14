@@ -259,14 +259,14 @@ char *ValidateLabel(char *naam) {
     return label;
 }
 
-int GetLabelValue(char *&p, aint &val) {
+bool GetLabelValue(char *&p, aint &val) {
     char *mlp = macrolabp, *op = p;
     int g = 0, l = 0, oIsLabelNotFound = IsLabelNotFound, plen;
     unsigned int len;
     char *np;
     if (mlp && *p == '@') {
         ++op;
-        mlp = 0;
+        mlp = nullptr;
     }
     if (mlp) {
         switch (*p) {
@@ -290,7 +290,7 @@ int GetLabelValue(char *&p, aint &val) {
             plen = 0;
             if (!isalpha((unsigned char) *p) && *p != '_') {
                 Error("Invalid labelname", tempLabel);
-                return 0;
+                return false;
             }
             while (isalnum((unsigned char) *p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' ||
                    *p == '@') {
@@ -307,7 +307,7 @@ int GetLabelValue(char *&p, aint &val) {
             g = 1;
             do {
                 if (LabelTable.getValue(np, val)) {
-                    return 1;
+                    return true;
                 }
                 IsLabelNotFound = oIsLabelNotFound;
                 while (true) {
@@ -350,7 +350,7 @@ int GetLabelValue(char *&p, aint &val) {
     np = tempLabel + len;
     if (!isalpha((unsigned char) *p) && *p != '_') {
         Error("Invalid labelname", tempLabel);
-        return 0;
+        return false;
     }
     while (isalnum((unsigned char) *p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' || *p == '@') {
         *np = *p;
@@ -363,28 +363,28 @@ int GetLabelValue(char *&p, aint &val) {
         tempLabel[LABMAX + len] = 0;
     }
     if (LabelTable.getValue(tempLabel, val)) {
-        return 1;
+        return true;
     }
     IsLabelNotFound = oIsLabelNotFound;
     if (!l && !g && LabelTable.getValue(tempLabel + len, val)) {
-        return 1;
+        return true;
     }
     if (pass == LASTPASS) {
         Error("Label not found", tempLabel);
-        return 1;
+        return true;
     }
     val = 0;
-    return 1;
+    return true;
 }
 
-int GetLocalLabelValue(char *&op, aint &val) {
+bool GetLocalLabelValue(char *&op, aint &val) {
     aint nval = 0;
     int nummer = 0;
     char *p = op, naam[LINEMAX], *np, ch;
     SkipBlanks(p);
     np = naam;
     if (!isdigit((unsigned char) *p)) {
-        return 0;
+        return false;
     }
     while (*p) {
         if (!isdigit((unsigned char) *p)) {
@@ -398,7 +398,7 @@ int GetLocalLabelValue(char *&op, aint &val) {
     nummer = atoi(naam);
     ch = *p++;
     if (isalnum((unsigned char) *p)) {
-        return 0;
+        return false;
     }
     switch (ch) {
         case 'b':
@@ -410,19 +410,19 @@ int GetLocalLabelValue(char *&op, aint &val) {
             nval = LocalLabelTable.zoekf(nummer);
             break;
         default:
-            return 0;
+            return false;
     }
     if (nval == (aint) -1) {
         if (pass == LASTPASS) {
             Error("Local label not found", naam, SUPPRESS);
-            return 1;
+            return true;
         } else {
             nval = 0;
         }
     }
     op = p;
     val = nval;
-    return 1;
+    return true;
 }
 
 CLocalLabelTableEntry::CLocalLabelTableEntry(aint nnummer, aint nvalue, CLocalLabelTableEntry *n) {

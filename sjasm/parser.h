@@ -33,11 +33,11 @@
 
 void initParser();
 
-int ParseExpression(char *&lp, aint &val);
+bool ParseExpression(char *&lp, aint &val);
 
-int ParseDirective(bool bol = 0);
+bool ParseDirective(bool bol = false);
 
-int ParseDirective_REPT();
+bool ParseDirective_REPT();
 
 void ParseInstruction(); /* added */
 char *ReplaceDefine(char *lp); /* added */

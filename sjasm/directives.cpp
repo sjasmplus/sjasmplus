@@ -52,17 +52,17 @@ FunctionTable DirectivesTable;
 FunctionTable DirectivesTable_dup;
 
 /* modified */
-int ParseDirective(bool bol) {
+bool ParseDirective(bool bol) {
     char *olp = lp;
     char *n;
     bp = lp;
     if (!(n = getinstr(lp))) {
         lp = olp;
-        return 0;
+        return false;
     }
 
     if (DirectivesTable.callIfExists(n, bol)) {
-        return 1;
+        return true;
     }
         /* (begin add) */
     else if ((!bol || Options::IsPseudoOpBOF) && *n == '.' && (isdigit((unsigned char) *(n + 1)) || *lp == '(')) {
@@ -72,22 +72,22 @@ int ParseDirective(bool bol) {
             if (!ParseExpression(n, val)) {
                 Error("Syntax error", 0, CATCHALL);
                 lp = olp;
-                return 0;
+                return false;
             }
         } else if (*lp == '(') {
             if (!ParseExpression(lp, val)) {
                 Error("Syntax error", 0, CATCHALL);
                 lp = olp;
-                return 0;
+                return false;
             }
         } else {
             lp = olp;
-            return 0;
+            return false;
         }
         if (val < 1) {
             Error(".X must be positive integer", 0, CATCHALL);
             lp = olp;
-            return 0;
+            return false;
         }
 
         char mline[LINEMAX2];
@@ -108,7 +108,7 @@ int ParseDirective(bool bol) {
         ml = STRDUP(line);
         if (ml == nullptr) {
             Error("No enough memory!", 0, FATAL);
-            return 0;
+            return false;
         }
         do {
             STRCPY(line, LINEMAX, pp);
@@ -119,28 +119,28 @@ int ParseDirective(bool bol) {
         donotlist = true;
 
         free(ml);
-        return 1;
+        return true;
     }
     /* (end add) */
     lp = olp;
-    return 0;
+    return false;
 }
 
 /* added */
-int ParseDirective_REPT() {
+bool ParseDirective_REPT() {
     char *olp = lp;
     char *n;
     bp = lp;
     if (!(n = getinstr(lp))) {
         lp = olp;
-        return 0;
+        return false;
     }
 
     if (DirectivesTable_dup.callIfExists(n)) {
-        return 1;
+        return true;
     }
     lp = olp;
-    return 0;
+    return false;
 }
 
 /* modified */

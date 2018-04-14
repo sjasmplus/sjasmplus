@@ -30,8 +30,7 @@
 #include "parser.h"
 #include "reader.h"
 
-/* modified */
-int cmphstr(char *&p1, const char *p2) {
+bool cmphstr(char *&p1, const char *p2) {
     /* old:
     if (isupper(*p1))
       while (p2[i]) {
@@ -57,7 +56,7 @@ int cmphstr(char *&p1, const char *p2) {
                 ++i;
             }
             if (strlen(p2) != v) {
-                return 0;
+                return false;
             }
         } else {
             while (p2[i]) {
@@ -69,26 +68,26 @@ int cmphstr(char *&p1, const char *p2) {
                 ++i;
             }
             if (strlen(p2) != v) {
-                return 0;
+                return false;
             }
         }
         /* (end) */
 
         if (i <= strlen(p1) && p1[i] > ' '/* && p1[i]!=':'*/) {
-            return 0;
+            return false;
         }
         p1 += i;
-        return 1;
+        return true;
     } else {
-        return 0;
+        return false;
     }
 }
 
-int White(char c) {
+bool White(char c) {
     return isspace(c);
 }
 
-int White() {
+bool White() {
     return White(*lp);
 }
 
@@ -98,7 +97,7 @@ void SkipBlanks(char *&p) {
     }
 }
 
-int SkipBlanks() {
+bool SkipBlanks() {
     SkipBlanks(lp);
     return (*lp == 0);
 }
@@ -114,8 +113,7 @@ void SkipParam(char *&p) {
     }
 }
 
-/* modified */
-int NeedEQU() {
+bool NeedEQU() {
     char *olp = lp;
     SkipBlanks();
     /*if (*lp=='=') { ++lp; return 1; }*/
@@ -124,46 +122,46 @@ int NeedEQU() {
         ++lp;
     }
     if (cmphstr(lp, "equ")) {
-        return 1;
+        return true;
     }
     lp = olp;
-    return 0;
+    return false;
 }
 
 /* added */
-int NeedDEFL() {
+bool NeedDEFL() {
     char *olp = lp;
     SkipBlanks();
     if (*lp == '=') {
         ++lp;
-        return 1;
+        return true;
     }
     if (*lp == '.') {
         ++lp;
     }
     if (cmphstr(lp, "defl")) {
-        return 1;
+        return true;
     }
     lp = olp;
-    return 0;
+    return false;
 }
 
-int comma(char *&p) {
+bool comma(char *&p) {
     SkipBlanks(p);
     if (*p != ',') {
-        return 0;
+        return false;
     }
     ++p;
-    return 1;
+    return true;
 }
 
 int cpc = '4';
 
 /* not modified */
-int oparen(char *&p, char c) {
+bool oparen(char *&p, char c) {
     SkipBlanks(p);
     if (*p != c) {
-        return 0;
+        return false;
     }
     if (c == '[') {
         cpc = ']';
@@ -175,16 +173,16 @@ int oparen(char *&p, char c) {
         cpc = '}';
     }
     ++p;
-    return 1;
+    return true;
 }
 
-int cparen(char *&p) {
+bool cparen(char *&p) {
     SkipBlanks(p);
     if (*p != cpc) {
-        return 0;
+        return false;
     }
     ++p;
-    return 1;
+    return true;
 }
 
 char *getparen(char *p) {
@@ -203,7 +201,7 @@ char *getparen(char *p) {
         }
         ++p;
     }
-    return 0;
+    return nullptr;
 }
 
 char nidtemp[LINEMAX]; /* added */
@@ -214,7 +212,7 @@ char *GetID(char *&p) {
     SkipBlanks(p);
     //if (!isalpha(*p) && *p!='_') return 0;
     if (*p && !isalpha((unsigned char) *p) && *p != '_') {
-        return 0;
+        return nullptr;
     }
     while (*p) {
         if (!isalnum((unsigned char) *p) && *p != '_' && *p != '.' && *p != '?' && *p != '!' && *p != '#' &&
@@ -237,7 +235,7 @@ char *getinstr(char *&p) {
     np = instrtemp;
     SkipBlanks(p);
     if (!isalpha((unsigned char) *p) && *p != '.') {
-        return 0;
+        return nullptr;
     } else {
         *np = *p;
         ++p;
@@ -257,48 +255,48 @@ char *getinstr(char *&p) {
 }
 
 /* changes applied from SjASM 0.39g */
-int check8(aint val, bool error) {
+bool check8(aint val, bool error) {
     if (val != (val & 255) && ~val > 127 && error) {
         Error("Bytes lost", 0);
-        return 0;
+        return false;
     }
-    return 1;
+    return true;
 }
 
 /* changes applied from SjASM 0.39g */
-int check8o(long val) {
+bool check8o(long val) {
     if (val < -128 || val > 127) {
         Error("check8o(): Offset out of range: "s + std::to_string(val), ""s);
-        return 0;
+        return false;
     }
-    return 1;
+    return true;
 }
 
 /* changes applied from SjASM 0.39g */
-int check16(aint val, bool error) {
+bool check16(aint val, bool error) {
     if (val != (val & 65535) && ~val > 32767 && error) {
         Error("Bytes lost", 0);
-        return 0;
+        return false;
     }
-    return 1;
+    return true;
 }
 
 /* changes applied from SjASM 0.39g */
-int check24(aint val, bool error) {
+bool check24(aint val, bool error) {
     if (val != (val & 16777215) && ~val > 8388607 && error) {
         Error("Bytes lost", 0);
-        return 0;
+        return false;
     }
-    return 1;
+    return true;
 }
 
-int need(char *&p, char c) {
+bool need(char *&p, char c) {
     SkipBlanks(p);
     if (*p != c) {
-        return 0;
+        return false;
     }
     ++p;
-    return 1;
+    return true;
 }
 
 int needa(char *&p, const char *c1, int r1, const char *c2, int r2, const char *c3, int r3) {
@@ -367,7 +365,7 @@ int getval(int p) {
     }
 }
 
-int GetConstant(char *&op, aint &val) {
+bool GetConstant(char *&op, aint &val) {
     aint base, pb = 1, v, oval;
     char *p = op, *p2, *p3;
 
@@ -383,7 +381,7 @@ int GetConstant(char *&op, aint &val) {
             while (isalnum((unsigned char) *p)) {
                 if ((v = getval(*p)) >= 16) {
                     Error("Digit not in base", op);
-                    return 0;
+                    return false;
                 }
                 oval = val;
                 val = val * 16 + v;
@@ -395,18 +393,18 @@ int GetConstant(char *&op, aint &val) {
 
             if (p - p3 < 2) {
                 Error("Syntax error", op, CATCHALL);
-                return 0;
+                return false;
             }
 
             op = p;
 
-            return 1;
+            return true;
         case '%':
             ++p;
             while (isdigit((unsigned char) *p)) {
                 if ((v = getval(*p)) >= 2) {
                     Error("Digit not in base", op);
-                    return 0;
+                    return false;
                 }
                 oval = val;
                 val = val * 2 + v;
@@ -417,12 +415,12 @@ int GetConstant(char *&op, aint &val) {
             }
             if (p - p3 < 2) {
                 Error("Syntax error", op, CATCHALL);
-                return 0;
+                return false;
             }
 
             op = p;
 
-            return 1;
+            return true;
         case '0':
             ++p;
             if (*p == 'x' || *p == 'X') {
@@ -430,7 +428,7 @@ int GetConstant(char *&op, aint &val) {
                 while (isalnum((unsigned char) *p)) {
                     if ((v = getval(*p)) >= 16) {
                         Error("Digit not in base", op);
-                        return 0;
+                        return false;
                     }
                     oval = val;
                     val = val * 16 + v;
@@ -441,12 +439,12 @@ int GetConstant(char *&op, aint &val) {
                 }
                 if (p - p3 < 3) {
                     Error("Syntax error", op, CATCHALL);
-                    return 0;
+                    return false;
                 }
 
                 op = p;
 
-                return 1;
+                return true;
             }
         default:
             while (isalnum((unsigned char) *p)) {
@@ -486,12 +484,12 @@ int GetConstant(char *&op, aint &val) {
                 base = 10;
                 --p;
             } else {
-                return 0;
+                return false;
             }
             do {
                 if ((v = getval(*p)) >= base) {
                     Error("Digit not in base", op);
-                    return 0;
+                    return false;
                 }
                 oval = val;
                 val += v * pb;
@@ -503,93 +501,93 @@ int GetConstant(char *&op, aint &val) {
 
             op = p2;
 
-            return 1;
+            return true;
     }
 }
 
-int GetCharConstChar(char *&op, aint &val) {
+bool GetCharConstChar(char *&op, aint &val) {
     if ((val = *op++) != '\\') {
-        return 1;
+        return true;
     }
     switch (val = *op++) {
         case '\\':
         case '\'':
         case '\"':
         case '\?':
-            return 1;
+            return true;
         case 'n':
         case 'N':
             val = 10;
-            return 1;
+            return true;
         case 't':
         case 'T':
             val = 9;
-            return 1;
+            return true;
         case 'v':
         case 'V':
             val = 11;
-            return 1;
+            return true;
         case 'b':
         case 'B':
             val = 8;
-            return 1;
+            return true;
         case 'r':
         case 'R':
             val = 13;
-            return 1;
+            return true;
         case 'f':
         case 'F':
             val = 12;
-            return 1;
+            return true;
         case 'a':
         case 'A':
             val = 7;
-            return 1;
+            return true;
         case 'e':
         case 'E':
             val = 27;
-            return 1;
+            return true;
         case 'd':
         case 'D':
             val = 127;
-            return 1;
+            return true;
         default:
             --op;
             val = '\\';
 
             Error("Unknown escape", op);
 
-            return 1;
+            return true;
     }
-    return 0;
+    return false;
 }
 
 /* added */
-int GetCharConstCharSingle(char *&op, aint &val) {
+bool GetCharConstCharSingle(char *&op, aint &val) {
     if ((val = *op++) != '\\') {
-        return 1;
+        return true;
     }
     switch (val = *op++) {
         case '\'':
-            return 1;
+            return true;
     }
     --op;
     val = '\\';
-    return 1;
+    return true;
 }
 
-int GetCharConst(char *&p, aint &val) {
+bool GetCharConst(char *&p, aint &val) {
     aint s = 24, r, t = 0;
     val = 0;
     char *op = p, q;
     if (*p != '\'' && *p != '"') {
-        return 0;
+        return false;
     }
     q = *p++;
     do {
         if (!*p || *p == q) {
             p = op;
-            return 0;
+            return false;
         }
         GetCharConstChar(p, r);
         val += r << s;
@@ -601,7 +599,7 @@ int GetCharConst(char *&p, aint &val) {
     }
     val = val >> (s + 8);
     ++p;
-    return 1;
+    return true;
 }
 
 /* modified */
@@ -721,7 +719,7 @@ HobetaFilename GetHobetaFileName(char *&p) {
     return HobetaFilename(result);
 }
 
-int needcomma(char *&p) {
+bool needcomma(char *&p) {
     SkipBlanks(p);
     if (*p != ',') {
         Error("Comma expected", 0);
@@ -729,7 +727,7 @@ int needcomma(char *&p) {
     return (*(p++) == ',');
 }
 
-int needbparen(char *&p) {
+bool needbparen(char *&p) {
     SkipBlanks(p);
     if (*p != ']') {
         Error("']' expected", 0);
@@ -737,11 +735,11 @@ int needbparen(char *&p) {
     return (*(p++) == ']');
 }
 
-int islabchar(char p) {
+bool islabchar(char p) {
     if (isalnum((unsigned char) p) || p == '_' || p == '.' || p == '?' || p == '!' || p == '#' || p == '@') {
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 
 EStructureMembers GetStructMemberId(char *&p) {

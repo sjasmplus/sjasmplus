@@ -78,9 +78,9 @@ char *ValidateLabel(char *);
 
 extern char *PreviousIsLabel;
 
-int GetLabelValue(char *&p, aint &val);
+bool GetLabelValue(char *&p, aint &val);
 
-int GetLocalLabelValue(char *&op, aint &val);
+bool GetLocalLabelValue(char *&op, aint &val);
 
 class CLocalLabelTableEntry {
 public:
