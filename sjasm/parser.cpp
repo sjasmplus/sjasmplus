@@ -475,7 +475,7 @@ char *ReplaceDefine(char *lp) {
             }
             ++lp;
 
-            if (a != '\'' || (*(lp - 2) != 'f' || *(lp - 3) != 'a') && (*(lp - 2) != 'F' || *(lp - 3) != 'A')) {
+            if (a != '\'' || ((*(lp - 2) != 'f' || *(lp - 3) != 'a') && (*(lp - 2) != 'F' || *(lp - 3) != 'A'))) {
                 while (true) {
                     if (!*lp) {
                         *rp = 0;
@@ -590,7 +590,7 @@ char *ReplaceDefine(char *lp) {
             definegereplaced = 1;
         }
         if (ver) {
-            while (*rp = *ver) {
+            while ((*rp = *ver)) {
                 ++rp;
                 ++ver;
             }
@@ -651,7 +651,7 @@ char *ReplaceDefineNext(char *lp) {
                 ++rp;
             }
             ++lp;
-            if (a != '\'' || (*(lp - 2) != 'f' || *(lp - 3) != 'a') && (*(lp - 2) != 'F' && *(lp - 3) != 'A')) {
+            if (a != '\'' || ((*(lp - 2) != 'f' || *(lp - 3) != 'a') && (*(lp - 2) != 'F' && *(lp - 3) != 'A'))) {
                 while (true) {
                     if (!*lp) {
                         *rp = 0;
@@ -757,7 +757,7 @@ char *ReplaceDefineNext(char *lp) {
             definegereplaced = 1;
         }
         if (ver) {
-            while (*rp = *ver) {
+            while ((*rp = *ver)) {
                 ++rp;
                 ++ver;
             }
