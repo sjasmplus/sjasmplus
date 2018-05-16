@@ -93,7 +93,6 @@ public:
 TyReadLineBuf ReadLineBuf;
 
 bool rldquotes = false, rlsquotes = false, rlspace = false, rlcomment = false, rlcolon = false, rlnewline = true;
-char *rlppos;
 
 fs::ifstream realIFS;
 fs::ifstream *pIFS = &realIFS;
@@ -372,7 +371,7 @@ std::istream &sja_getline(std::istream &stream, std::string &str) {
 
 // TODO: Kill it with fire
 void readBufLine(bool Parse, bool SplitByColon) {
-    rlppos = line;
+    char *rlppos = line;
     if (rlcolon) {
         *(rlppos++) = '\t';
     }
