@@ -916,7 +916,7 @@ void dirEMPTYTRD() {
         SkipParam(lp);
         return;
     }
-    const fs::path &FileName = GetFileName(lp);
+    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
     if (FileName.empty()) {
         Error("[EMPTYTRD] Syntax error", bp, CATCHALL);
         return;
@@ -1032,7 +1032,7 @@ void dirLABELSLIST() {
         SkipParam(lp);
         return;
     }
-    const fs::path &FileName = GetFileName(lp);
+    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
     if (FileName.empty()) {
         Error("[LABELSLIST] Syntax error. File name not specified", bp, CATCHALL);
         return;
@@ -1249,7 +1249,7 @@ void dirINCLUDE() {
 }
 
 void dirOUTPUT() {
-    const fs::path &FileName = GetFileName(lp);
+    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
 
     auto Mode = OutputMode::Truncate;
     if (comma(lp)) {
