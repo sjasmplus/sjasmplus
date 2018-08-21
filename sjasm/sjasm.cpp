@@ -128,7 +128,6 @@ int main(int argc, const char *argv[]) {
     Options::NoDestinationFile = true; // no *.out files by default
 
     // get current directory
-    // TODO: Switch to first source file's location
     global::CurrentDirectory = fs::current_path();
 
     // get arguments
