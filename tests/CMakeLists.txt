@@ -11,11 +11,18 @@ function(testOutput SUBDIR)
   foreach(file ${files})
     file(RELATIVE_PATH f ${CMAKE_CURRENT_SOURCE_DIR} ${file})
     string(REPLACE "/" "_" f ${f})
-    add_test(NAME "Test_${f}" COMMAND ${TESTDRIVER} raw ${BIN} ${file}
+    get_filename_component(file_we ${file} NAME_WE)
+    if(EXISTS "${SRCDIR}/${file_we}.out")
+      set(TEST_TYPE "raw")
+    else()
+      set(TEST_TYPE "sna")
+    endif()
+    add_test(NAME "Test_${f}" COMMAND ${TESTDRIVER} ${TEST_TYPE} ${BIN} ${file}
       "${PROJECT_BINARY_DIR}/tests")
   endforeach()
 endfunction()
 
 testOutput("dup")
+testOutput("sna")
 
 add_dependencies(check sjasmplus)

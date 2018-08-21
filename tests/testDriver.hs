@@ -1,6 +1,6 @@
 #!/usr/bin/env stack
 {- stack --resolver=lts-12.7 --install-ghc runghc --package typed-process
-    --package optparse-applicative --package path -}
+    --package optparse-applicative --package path --package path-io -}
 {-#LANGUAGE OverloadedStrings #-}
 {-#LANGUAGE GADTs #-}
 --import System.IO (hPutStr, hClose)
@@ -12,11 +12,12 @@ import qualified Data.ByteString.Lazy as L
 import Options.Applicative
 import Data.Semigroup ((<>))
 import Path
+import Path.IO
 import System.Exit (exitWith, ExitCode(..), exitFailure)
 
 data Command =
     CompareRawOutput FilePath FilePath FilePath
-  | CompareSnaOutput FilePath -- TODO
+  | CompareSnaOutput FilePath FilePath FilePath
   deriving (Show)
 
 newtype Options = Options Command
@@ -32,7 +33,7 @@ parseOptions = Options <$> parseCommand
 run :: Options -> IO ()
 run (Options cmd) = case cmd of
     CompareRawOutput asm fn destpath -> doCompareRawOutput asm fn destpath
-    CompareSnaOutput fn -> putStrLn fn
+    CompareSnaOutput asm fn destpath -> doCompareSna asm fn destpath
 
 withInfo :: Parser a -> String -> ParserInfo a
 withInfo opts desc = info (helper <*> opts) $ progDesc desc
@@ -45,14 +46,16 @@ parseCompareRawOutput = CompareRawOutput
 
 parseCompareSnaOutput :: Parser Command
 parseCompareSnaOutput = CompareSnaOutput
-  <$> argument str (metavar "SOURCE")
+  <$> strArgument (metavar "ASM" <> help "Full path to sjasmplus")
+  <*> strArgument (metavar "SOURCE" <> help "Full path to *.asm file")
+  <*> strArgument (metavar "DESTDIR" <> help "Output directory")
 
 parseCommand :: Parser Command
 parseCommand = subparser $
     command "raw" (parseCompareRawOutput
     `withInfo` "Assemble a file and compare *.out with a specimen") <>
     command "sna" (parseCompareSnaOutput
-    `withInfo` "Assemble a file and compare *.out with a specimen")
+    `withInfo` "Assemble a file and compare *.sna with a specimen")
 
 doCompareRawOutput :: FilePath -> FilePath -> FilePath -> IO ()
 doCompareRawOutput a f p = do
@@ -68,6 +71,19 @@ doCompareRawOutput a f p = do
     ExitSuccess -> compareFiles specimen outFile
     _ -> exitWith exitCode
 
+doCompareSna :: FilePath -> FilePath -> FilePath -> IO ()
+doCompareSna a f p = do
+  asm <- parseAbsFile a
+  asmFile <- parseAbsFile f
+  destDir <- parseAbsDir p
+  specimen <- setFileExtension "sna" asmFile
+  let outFile = destDir </> filename specimen
+  exitCode <- runProcess $ proc (toFilePath asm)
+    ["--output-dir=" ++ toFilePath destDir, toFilePath asmFile]
+  case exitCode of
+    ExitSuccess -> compareFiles specimen outFile
+    _ -> exitWith exitCode
+    
 compareFiles :: Path Abs File -> Path Abs File -> IO ()
 compareFiles f1 f2 = do
   c1 <- L.readFile $ toFilePath f1
