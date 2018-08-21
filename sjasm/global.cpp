@@ -3,6 +3,7 @@
 namespace global {
     fs::path CurrentDirectory;
     fs::path CurrentFilename;
+    fs::path OutputDirectory;
 }
 
 char *lp, line[LINEMAX], *bp;

@@ -9,6 +9,7 @@
 namespace global {
     extern fs::path CurrentDirectory;
     extern fs::path CurrentFilename;
+    extern fs::path OutputDirectory;
 }
 
 extern char *lp, line[LINEMAX], *bp;

@@ -271,7 +271,6 @@ void Assembler::doEnt() {
 
 void Assembler::setRawOutputOptions(bool Override, const fs::path &FileName) {
     OverrideRawOutput = Override;
-    RawOutputFileName = FileName;
     setRawOutput(FileName);
 }
 
@@ -291,7 +290,8 @@ void Assembler::setRawOutput(const fs::path &FileName, OutputMode Mode) {
         default:
             break;
     }
-    RawOFS.open(FileName, OpenMode);
+    RawOutputFileName = global::OutputDirectory.empty() ? FileName : resolveOutputPath(FileName);
+    RawOFS.open(RawOutputFileName, OpenMode);
 }
 
 boost::optional<std::string> Assembler::seekRawOutput(std::streamoff Offset, std::ios_base::seekdir Method) {

@@ -55,6 +55,8 @@ fs::path getAbsPath(const fs::path &p);
 
 fs::path getAbsPath(const fs::path &p, fs::path &f);
 
+fs::path resolveOutputPath(const fs::path &p);
+
 // char *GetPath(const char *fname, TCHAR **filenamebegin); /* added */
 void includeBinaryFile(const fs::path &FileName, int Offset, int Length);
 

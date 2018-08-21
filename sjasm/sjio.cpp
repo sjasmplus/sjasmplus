@@ -190,6 +190,14 @@ fs::path getAbsPath(const fs::path &p) {
     return fs::absolute(p, global::CurrentDirectory);
 }
 
+fs::path resolveOutputPath(const fs::path &p) {
+    if (!global::OutputDirectory.empty()) {
+        return fs::absolute(p, global::OutputDirectory);
+    } else {
+        return getAbsPath(p);
+    }
+}
+
 /*
 fs::path GetAbsPath(const fs::path &p, fs::path &f) {
     return fs::absolute(p / f, global::CurrentDirectory);

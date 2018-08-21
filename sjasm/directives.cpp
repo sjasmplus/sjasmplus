@@ -709,7 +709,7 @@ void dirSAVESNA() {
     aint val;
     int start = -1;
 
-    const fs::path fnaam = getAbsPath(GetString(lp));
+    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
     if (comma(lp)) {
         if (!comma(lp) && StartAddress < 0) {
             if (!ParseExpression(lp, val)) {
@@ -732,7 +732,7 @@ void dirSAVESNA() {
         start = StartAddress;
     }
 
-    if (exec && !SaveSNA_ZX(fnaam, start)) {
+    if (exec && !SaveSNA_ZX(FileName, start)) {
         Error("[SAVESNA] Error writing file (Disk full?)", bp, CATCHALL);
         return;
     }
@@ -754,7 +754,7 @@ void dirSAVETAP() {
     aint val;
     int start = -1;
 
-    const fs::path filename = getAbsPath(GetString(lp));
+    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
@@ -777,7 +777,7 @@ void dirSAVETAP() {
         start = StartAddress;
     }
 
-    if (exec && !SaveTAP_ZX(filename, start)) {
+    if (exec && !SaveTAP_ZX(FileName, start)) {
         Error("[SAVETAP] Error writing file (Disk full?)", bp, CATCHALL);
         return;
     }
@@ -798,7 +798,7 @@ void dirSAVEBIN() {
     aint val;
     int start = -1, length = -1;
 
-    const fs::path &FileName = GetFileName(lp);
+    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
@@ -853,7 +853,7 @@ void dirSAVEHOB() {
         exec = false;
     }
 
-    const fs::path &FileName = GetFileName(lp);
+    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
     HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
@@ -939,7 +939,7 @@ void dirSAVETRD() {
     aint val;
     int start = -1, length = -1, autostart = -1; //autostart added by boo_boo 19_0ct_2008
 
-    const fs::path &FileName = GetFileName(lp);
+    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
     HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {

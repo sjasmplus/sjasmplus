@@ -44,6 +44,7 @@ namespace {
     const char DOS866[] = "dos866";
     const char DIRBOL[] = "dirbol";
     const char INC[] = "inc";
+    const char OUTPUT_DIR[] = "output-dir";
 }
 
 namespace Options {
@@ -128,7 +129,14 @@ namespace Options {
                     //TODO: fail
                     _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;
                 }
-            } else {
+            } else if (optName == OUTPUT_DIR) {
+                if (!optValue.empty()) {
+                    global::OutputDirectory = optValue;
+                } else {
+                    Fatal("No parameter specified for --output-dir");
+                }
+            }
+            else {
                 _COUT "Unrecognized option: " _CMDL option _ENDL;
             }
         }
@@ -144,6 +152,7 @@ namespace Options {
         _COUT "  --" _CMDL SYM _CMDL "=<filename>         Save symbols list to <filename>" _ENDL;
         _COUT "  --" _CMDL EXP _CMDL "=<filename>         Save exports to <filename> (see EXPORT pseudo-op)" _ENDL;
         _COUT "  --" _CMDL RAW _CMDL "=<filename>         Save all output to <filename> ignoring OUTPUT pseudo-ops" _ENDL;
+        _COUT "  --" _CMDL OUTPUT_DIR _CMDL "=<directory> Write all output files to the specified directory" _ENDL;
         _COUT "  Note: use OUTPUT, LUA/ENDLUA and other pseudo-ops to control output" _ENDL;
         _COUT " Logging:" _ENDL;
         _COUT "  --" _CMDL NOLOGO _CMDL "                 Do not show startup message" _ENDL;
