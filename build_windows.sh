@@ -1,5 +1,3 @@
-#!/bin/sh
-# 
 # Cross compilation for Windows
 # This works on Arch Linux out of the box, just install mingw-w64-cmake from
 # AUR. (e.g. with yaourt -ySa mingw-w64-cmake)
