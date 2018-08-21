@@ -1,5 +1,5 @@
 #!/usr/bin/env stack
-{- stack --resolver=lts-10.1 --install-ghc runghc --package typed-process
+{- stack --resolver=lts-12.7 --install-ghc runghc --package typed-process
     --package optparse-applicative --package path -}
 {-#LANGUAGE OverloadedStrings #-}
 {-#LANGUAGE GADTs #-}
@@ -73,7 +73,7 @@ compareFiles f1 f2 = do
   c1 <- L.readFile $ toFilePath f1
   c2 <- L.readFile $ toFilePath f2
   if c1 == c2
-  then putStrLn "Output mathes the specimen"
+  then putStrLn "Output matches the specimen"
   else do
     putStrLn "Output does not match the specimen"
     exitFailure
