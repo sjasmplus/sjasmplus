@@ -1,6 +1,9 @@
 # Change Log
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## 2018-xx-yy (WIP)
+- New option: --output-dir
+
 ## 2017-03-11
 - Version 20170311
 
