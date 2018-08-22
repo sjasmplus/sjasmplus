@@ -152,6 +152,9 @@ int main(int argc, const char *argv[]) {
     if (Options::RawOutputFileName.empty()) {
         Options::RawOutputFileName = SourceFNames[0];
         Options::RawOutputFileName.replace_extension(".out");
+        if (!global::OutputDirectory.empty()) {
+            Options::RawOutputFileName = Options::RawOutputFileName.filename();
+        }
     }
     Asm.setRawOutputOptions(Options::OverrideRawOutput, Options::RawOutputFileName);
 
