@@ -131,7 +131,7 @@ namespace Options {
                 }
             } else if (optName == OUTPUT_DIR) {
                 if (!optValue.empty()) {
-                    global::OutputDirectory = optValue;
+                    global::OutputDirectory = fs::absolute(optValue);
                 } else {
                     Fatal("No parameter specified for --output-dir");
                 }
