@@ -153,14 +153,14 @@ int SaveTAP_ZX(const fs::path &fname, uint16_t start) {
     writebyte(ofs, 0x0d);
     writebyte(ofs, parity);
 
-    if (!Asm.isPagedMemory()) {
+    if (!Em.isPagedMemory()) {
         // prepare code block
         uint16_t ram_length = 0xA200;
         uint16_t ram_start = 0x0000;
         auto *ram = new uint8_t[ram_length];
-        Asm.getBytes(ram, 0x4000 + 0x1E00, 0x2200);
-        Asm.getBytes(ram + 0x2200, 0x8000, 0x4000);
-        Asm.getBytes(ram + 0x6200, 0xC000, 0x4000);
+        Em.getBytes(ram, 0x4000 + 0x1E00, 0x2200);
+        Em.getBytes(ram + 0x2200, 0x8000, 0x4000);
+        Em.getBytes(ram + 0x6200, 0xC000, 0x4000);
 
         // remove basic vars
         remove_basic_sp(ram + ram_length - sizeof(BASin48SP));
@@ -188,7 +188,7 @@ int SaveTAP_ZX(const fs::path &fname, uint16_t start) {
         if (loader[SaveTAP_ZX_Spectrum_48K_SZ - 7]) {
             const int sz = 6192;
             uint8_t buf[sz];
-            Asm.getBytes(buf, 0x4000, sz);
+            Em.getBytes(buf, 0x4000, sz);
             writecode(ofs, buf, sz, 16384, false);
         }
 
@@ -203,8 +203,8 @@ int SaveTAP_ZX(const fs::path &fname, uint16_t start) {
         uint16_t ram_length = 0x6200;
         uint16_t ram_start = 0x0000;
         auto *ram = new uint8_t[ram_length];
-        Asm.getBytes(ram, 1, 0x1E00, 0x2200);
-        Asm.getBytes(ram + 0x2200, 2, 0, 0x4000);
+        Em.getBytes(ram, 1, 0x1E00, 0x2200);
+        Em.getBytes(ram + 0x2200, 2, 0, 0x4000);
 
         ram_length = remove_unused_space(ram, ram_length);
         ram_start = detect_ram_start(ram, ram_length);
@@ -213,14 +213,14 @@ int SaveTAP_ZX(const fs::path &fname, uint16_t start) {
         // init loader
         uint16_t loader_defsize;
         unsigned char *loader_code;
-        if (Asm.getMemModelName() == "ZXSPECTRUM128"s) {
+        if (Em.getMemModelName() == "ZXSPECTRUM128"s) {
             loader_defsize = SaveTAP_ZX_Spectrum_128K_SZ;
             loader_code = (unsigned char *) &SaveTAP_ZX_Spectrum_128K[0];
         } else {
             loader_defsize = SaveTAP_ZX_Spectrum_256K_SZ;
             loader_code = (unsigned char *) &SaveTAP_ZX_Spectrum_256K[0];
         }
-        uint16_t loader_len = loader_defsize + (uint16_t)((Asm.numMemPages() - 2) * 5);
+        uint16_t loader_len = loader_defsize + (uint16_t)((Em.numMemPages() - 2) * 5);
         auto *loader = new uint8_t[loader_len];
         memcpy(loader, loader_code, loader_defsize);
         // Settings.Start
@@ -233,7 +233,7 @@ int SaveTAP_ZX(const fs::path &fname, uint16_t start) {
         loader[loader_defsize - 4] = uint8_t(ram_length & 0x00FF);
         loader[loader_defsize - 3] = uint8_t(ram_length >> 8);
         // Settings.Page
-        loader[loader_defsize - 2] = uint8_t(Asm.getPageNumInSlot(3));
+        loader[loader_defsize - 2] = uint8_t(Em.getPageNumInSlot(3));
 
         //
         unsigned char *pages_ram[1024];
@@ -242,12 +242,12 @@ int SaveTAP_ZX(const fs::path &fname, uint16_t start) {
 
         // build pages table
         int count = 0;
-        for (int i = 0; i < Asm.numMemPages(); i++) {
-            if (Asm.getPageNumInSlot(2) != i && Asm.getPageNumInSlot(1) != i) {
+        for (int i = 0; i < Em.numMemPages(); i++) {
+            if (Em.getPageNumInSlot(2) != i && Em.getPageNumInSlot(1) != i) {
                 uint16_t length = 0x4000;
-                length = remove_unused_space(Asm.getPtrToPage(i), length);
+                length = remove_unused_space(Em.getPtrToPage(i), length);
                 if (length > 0) {
-                    pages_ram[count] = Asm.getPtrToPage(i);
+                    pages_ram[count] = Em.getPtrToPage(i);
                     pages_start[count] = detect_ram_start(pages_ram[count], length);
                     pages_len[count] = length - pages_start[count];
 
@@ -273,7 +273,7 @@ int SaveTAP_ZX(const fs::path &fname, uint16_t start) {
 
         // write screen$
         if (loader[loader_defsize - 9]) {
-            writecode(ofs, Asm.getPtrToPageInSlot(1), 6912, 0x4000, false);
+            writecode(ofs, Em.getPtrToPageInSlot(1), 6912, 0x4000, false);
         }
 
         // write code blocks
@@ -372,7 +372,7 @@ void remove_basic_sp(unsigned char *ram) {
 }
 
 void detect_vars_changes() {
-    unsigned char *psys = Asm.getPtrToPageInSlot(1) + 0x1C00;
+    unsigned char *psys = Em.getPtrToPageInSlot(1) + 0x1C00;
 
     bool nobas48 = false;
     for (size_t i = 0; i < sizeof(BASin48Vars); i++) {
@@ -394,7 +394,7 @@ void detect_vars_changes() {
 }
 
 bool has_screen_changes() {
-    unsigned char *pscr = Asm.getPtrToPageInSlot(1);
+    unsigned char *pscr = Em.getPtrToPageInSlot(1);
 
     for (int i = 0; i < 0x1800; i++) {
         if (0 != pscr[i]) {

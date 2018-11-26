@@ -1339,9 +1339,9 @@ namespace Z80 {
             /* added */
             e[0] = e[1] = e[2] = -1;
             if (!GetAddress(lp, nad)) {
-                nad = Asm.getCPUAddress() + 2;
+                nad = Em.getCPUAddress() + 2;
             }
-            jmp = nad - Asm.getCPUAddress() - 2;
+            jmp = nad - Em.getCPUAddress() - 2;
             if (jmp < -128 || jmp > 127) {
                 Error("[DJNZ] Target out of range ("s + std::to_string(jmp) + ")"s, ""s);
                 jmp = 0;
@@ -1849,9 +1849,9 @@ namespace Z80 {
 				_COUT "JUST BREAKPOINT" _ENDL;
 			}*/
             if (!(GetAddress(lp, jrad))) {
-                jrad = Asm.getCPUAddress() + 2;
+                jrad = Em.getCPUAddress() + 2;
             }
-            jmp = jrad - Asm.getCPUAddress() - 2;
+            jmp = jrad - Em.getCPUAddress() - 2;
             if (jmp < -128 || jmp > 127) {
                 /*if (pass == LASTPASS) {
 					_COUT "AAAAAAA:" _CMDL jmp _CMDL " " _CMDL jrad _CMDL " " _CMDL CurAddress _ENDL;

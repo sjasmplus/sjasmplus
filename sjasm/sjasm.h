@@ -61,7 +61,7 @@ enum class OutputMode {
     Truncate, Rewind, Append
 };
 
-class Assembler {
+class CodeEmitter {
 
 private:
 
@@ -84,7 +84,7 @@ private:
 
 public:
 
-    ~Assembler() {
+    ~CodeEmitter() {
         if (RawOFS.is_open()) {
             RawOFS.close();
             enforceFileSize();
@@ -215,6 +215,6 @@ public:
     bool isForcedRawOutputSize() { return ForcedRawOutputSize > 0; }
 };
 
-extern Assembler Asm;
+extern CodeEmitter Em;
 
 #endif // SJASMPLUS_SJASM_H

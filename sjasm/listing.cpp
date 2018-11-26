@@ -135,7 +135,7 @@ void ListingWriter::listFile() {
         OFS << line << endl;
         listBytesLong(pad, Prefix);
     }
-    epadres = Asm.getCPUAddress();
+    epadres = Em.getCPUAddress();
     PreviousAddress = -1;
     ByteBuffer.clear();
 }
@@ -165,7 +165,7 @@ void ListingWriter::listFileSkip(char *line) {
         OFS << ">";
     }
     OFS << line << endl;
-    epadres = Asm.getCPUAddress();
+    epadres = Em.getCPUAddress();
     PreviousAddress = -1;
     ByteBuffer.clear();
 }

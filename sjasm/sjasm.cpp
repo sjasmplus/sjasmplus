@@ -40,7 +40,7 @@
 #include <sjasmplus_conf.h>
 #include <sstream>
 
-Assembler Asm;
+CodeEmitter Em;
 
 CDevice *Devices = 0;
 CDevice *Device = 0;
@@ -70,7 +70,7 @@ void InitPass(int p) {
     STRCPY(vorlabp, sizeof("_"), "_");
     macrolabp = NULL;
     pass = p;
-    Asm.reset();
+    Em.reset();
     SourceReaderEnabled = true;
     CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
     Listing.initPass();
@@ -156,7 +156,7 @@ int main(int argc, const char *argv[]) {
             Options::RawOutputFileName = Options::RawOutputFileName.filename();
         }
     }
-    Asm.setRawOutputOptions(Options::OverrideRawOutput, Options::RawOutputFileName);
+    Em.setRawOutputOptions(Options::OverrideRawOutput, Options::RawOutputFileName);
 
     // init some vars
     InitCPU();
@@ -191,7 +191,7 @@ int main(int argc, const char *argv[]) {
             OpenFile(SourceFNames[i]);
         }
 
-        Asm.reset();
+        Em.reset();
         if (pass != LASTPASS) {
             _COUT "Pass " _CMDL pass _CMDL " complete (" _CMDL ErrorCount _CMDL " errors)" _ENDL;
         } else {
@@ -227,7 +227,7 @@ int main(int argc, const char *argv[]) {
 }
 
 
-boost::optional<std::string> Assembler::emitByte(uint8_t Byte) {
+boost::optional<std::string> CodeEmitter::emitByte(uint8_t Byte) {
     const std::string ErrMsg = "CPU address space overflow"s;
     if (CPUAddrOverflow) {
         return ErrMsg;
@@ -245,7 +245,7 @@ boost::optional<std::string> Assembler::emitByte(uint8_t Byte) {
 }
 
 // Increase address and return true on overflow
-bool Assembler::incAddress() {
+bool CodeEmitter::incAddress() {
     CPUAddress++;
     if (CPUAddress == 0)
         CPUAddrOverflow = true;
@@ -260,24 +260,24 @@ bool Assembler::incAddress() {
 }
 
 // DISP directive
-void Assembler::doDisp(uint16_t DispAddress) {
+void CodeEmitter::doDisp(uint16_t DispAddress) {
     EmitAddress = CPUAddress;
     CPUAddress = DispAddress;
     Disp = true;
 }
 
 // ENT directive (undoes DISP)
-void Assembler::doEnt() {
+void CodeEmitter::doEnt() {
     CPUAddress = EmitAddress;
     Disp = false;
 }
 
-void Assembler::setRawOutputOptions(bool Override, const fs::path &FileName) {
+void CodeEmitter::setRawOutputOptions(bool Override, const fs::path &FileName) {
     OverrideRawOutput = Override;
     setRawOutput(FileName);
 }
 
-void Assembler::setRawOutput(const fs::path &FileName, OutputMode Mode) {
+void CodeEmitter::setRawOutput(const fs::path &FileName, OutputMode Mode) {
     if (RawOFS.is_open()) {
         RawOFS.close();
         enforceFileSize();
@@ -297,7 +297,7 @@ void Assembler::setRawOutput(const fs::path &FileName, OutputMode Mode) {
     RawOFS.open(RawOutputFileName, OpenMode);
 }
 
-boost::optional<std::string> Assembler::seekRawOutput(std::streamoff Offset, std::ios_base::seekdir Method) {
+boost::optional<std::string> CodeEmitter::seekRawOutput(std::streamoff Offset, std::ios_base::seekdir Method) {
     if (RawOFS.is_open()) {
 
         std::streampos NewPos;
@@ -317,7 +317,7 @@ boost::optional<std::string> Assembler::seekRawOutput(std::streamoff Offset, std
     return boost::none;
 }
 
-void Assembler::enforceFileSize() {
+void CodeEmitter::enforceFileSize() {
     // File must be closed at this point
     assert(!RawOFS.is_open());
     if (ForcedRawOutputSize > 0) {

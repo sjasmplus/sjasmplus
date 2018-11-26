@@ -688,11 +688,11 @@ void CStructure::emitlab(char *iid) {
         if (!GetLabelValue(op, oval)) {
             Error("Internal error. ParseLabel()", 0, FATAL);
         }
-        if (Asm.getCPUAddress() != oval) {
+        if (Em.getCPUAddress() != oval) {
             Error("Label has different value in pass 2", tempLabel);
         }
     } else {
-        if (!LabelTable.insert(p, Asm.getCPUAddress())) {
+        if (!LabelTable.insert(p, Em.getCPUAddress())) {
             Error("Duplicate label", 0, PASS1);
         }
     }
@@ -709,11 +709,11 @@ void CStructure::emitlab(char *iid) {
             if (!GetLabelValue(op, oval)) {
                 Error("Internal error. ParseLabel()", 0, FATAL);
             }
-            if (np->offset + Asm.getCPUAddress() != oval) {
+            if (np->offset + Em.getCPUAddress() != oval) {
                 Error("Label has different value in pass 2", tempLabel);
             }
         } else {
-            if (!LabelTable.insert(p, np->offset + Asm.getCPUAddress())) {
+            if (!LabelTable.insert(p, np->offset + Em.getCPUAddress())) {
                 Error("Duplicate label", 0, PASS1);
             }
         }

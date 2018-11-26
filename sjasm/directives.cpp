@@ -340,9 +340,9 @@ void dirBLOCK() {
 
 void dirORG() {
     aint val;
-    if (Asm.isPagedMemory()) {
+    if (Em.isPagedMemory()) {
         if (ParseExpression(lp, val)) {
-            Asm.setAddress(val);
+            Em.setAddress(val);
         } else {
             Error("[ORG] Syntax error", lp, CATCHALL);
             return;
@@ -352,7 +352,7 @@ void dirORG() {
                 Error("[ORG] Syntax error", lp, CATCHALL);
                 return;
             }
-            boost::optional<std::string> err = Asm.setPage(val);
+            boost::optional<std::string> err = Em.setPage(val);
             if (err) {
                 Error("[ORG] "s + *err, lp, CATCHALL);
                 return;
@@ -360,7 +360,7 @@ void dirORG() {
         }
     } else {
         if (ParseExpression(lp, val)) {
-            Asm.setAddress(val);
+            Em.setAddress(val);
         } else {
             Error("[ORG] Syntax error", 0, CATCHALL);
         }
@@ -370,7 +370,7 @@ void dirORG() {
 void dirDISP() {
     aint val;
     if (ParseExpression(lp, val)) {
-        Asm.doDisp(val);
+        Em.doDisp(val);
     } else {
         Error("[DISP] Syntax error", 0, CATCHALL);
         return;
@@ -378,15 +378,15 @@ void dirDISP() {
 }
 
 void dirENT() {
-    if (!Asm.isDisp()) {
+    if (!Em.isDisp()) {
         Error("ENT should be after DISP", 0);
         return;
     }
-    Asm.doEnt();
+    Em.doEnt();
 }
 
 void dirPAGE() {
-    if (!Asm.isMemManagerActive()) {
+    if (!Em.isMemManagerActive()) {
         Error("[PAGE] works in device emulation mode only"s, ""s);
         return;
     }
@@ -395,7 +395,7 @@ void dirPAGE() {
         Error("Syntax error", 0, CATCHALL);
         return;
     }
-    boost::optional<std::string> err = Asm.setPage(val);
+    boost::optional<std::string> err = Em.setPage(val);
     if (err) {
         Error("[PAGE] "s + *err, lp);
         return;
@@ -403,7 +403,7 @@ void dirPAGE() {
 }
 
 void dirSLOT() {
-    if (!Asm.isMemManagerActive()) {
+    if (!Em.isMemManagerActive()) {
         Error("[SLOT] works in device emulation mode only"s, ""s);
         return;
     }
@@ -412,7 +412,7 @@ void dirSLOT() {
         Error("Syntax error", 0, CATCHALL);
         return;
     }
-    auto err = Asm.setSlot(val);
+    auto err = Em.setSlot(val);
     if (err) {
         Error("[SLOT] "s + *err, lp);
         return;
@@ -445,7 +445,7 @@ void dirALIGN() {
         case 8192:
         case 16384:
         case 32768:
-            val = (~(Asm.getCPUAddress()) + 1) & (val - 1);
+            val = (~(Em.getCPUAddress()) + 1) & (val - 1);
             if (!noexp && comma(lp)) {
                 if (!ParseExpression(lp, byte)) {
                     EmitBlock(0, val, true);
@@ -514,11 +514,11 @@ void dirSIZE() {
     if (pass == LASTPASS) {
         return;
     }
-    if (Asm.isForcedRawOutputSize()) {
+    if (Em.isForcedRawOutputSize()) {
         Error("[SIZE] Multiple SIZE directives?", 0);
         return;
     }
-    Asm.setForcedRawOutputFileSize(val);
+    Em.setForcedRawOutputFileSize(val);
 }
 
 void dirINCBIN() {
@@ -697,7 +697,7 @@ void dirINCTRD() {
 
 /* added */
 void dirSAVESNA() {
-    if (!Asm.isMemManagerActive()) {
+    if (!Em.isMemManagerActive()) {
         Error("[SAVESNA] works in device emulation mode only"s, ""s);
         return;
     }
@@ -740,7 +740,7 @@ void dirSAVESNA() {
 
 /* added */
 void dirSAVETAP() {
-    if (!Asm.isMemManagerActive()) {
+    if (!Em.isMemManagerActive()) {
         Error("[SAVETAP] works in device emulation mode only"s, ""s);
         return;
     }
@@ -785,7 +785,7 @@ void dirSAVETAP() {
 
 /* added */
 void dirSAVEBIN() {
-    if (!Asm.isMemManagerActive()) {
+    if (!Em.isMemManagerActive()) {
         Error("[SAVEBIN] works in device emulation mode only"s, ""s);
         return;
     }
@@ -841,7 +841,7 @@ void dirSAVEBIN() {
 
 /* added */
 void dirSAVEHOB() {
-    if (!Asm.isMemManagerActive()) {
+    if (!Em.isMemManagerActive()) {
         Error("[SAVEHOB] works in device emulation mode only"s, ""s);
         return;
     }
@@ -908,7 +908,7 @@ void dirSAVEHOB() {
 
 /* added */
 void dirEMPTYTRD() {
-    if (!Asm.isMemManagerActive()) {
+    if (!Em.isMemManagerActive()) {
         Error("[EMPTYTRD] works in device emulation mode only"s, ""s);
         return;
     }
@@ -926,7 +926,7 @@ void dirEMPTYTRD() {
 
 /* added */
 void dirSAVETRD() {
-    if (!Asm.isMemManagerActive()) {
+    if (!Em.isMemManagerActive()) {
         Error("[SAVETRD] works in device emulation mode only"s, ""s);
         return;
     }
@@ -1266,8 +1266,8 @@ void dirOUTPUT() {
         }
     }
     if (pass == LASTPASS) {
-        if (!Asm.isRawOutputOverriden()) {
-            Asm.setRawOutput(FileName, Mode);
+        if (!Em.isRawOutputOverriden()) {
+            Em.setRawOutput(FileName, Mode);
         } else {
             Warning("OUTPUT directive had no effect as output is overriden"s, ""s);
         }
@@ -1757,7 +1757,7 @@ void dirFPOS() {
         Error("[FPOS] Syntax error"s, ""s, CATCHALL);
     }
     if (pass == LASTPASS) {
-        auto Err = Asm.seekRawOutput(Offset, Method);
+        auto Err = Em.seekRawOutput(Offset, Method);
         if (Err) {
             Error(*Err, ""s);
         }
@@ -2112,7 +2112,7 @@ void dirDEVICE() {
     char *id;
 
     if ((id = GetID(lp))) {
-        Asm.setMemModel(id);
+        Em.setMemModel(id);
     } else {
         Error("[DEVICE] Syntax error", 0, CATCHALL);
     }
@@ -2220,7 +2220,7 @@ void InsertDirectives() {
 }
 
 bool LuaSetPage(aint n) {
-    auto err = Asm.setPage(n);
+    auto err = Em.setPage(n);
     if (err) {
         Error("sj.set_page: "s + *err, lp, CATCHALL);
         return false;
@@ -2229,7 +2229,7 @@ bool LuaSetPage(aint n) {
 }
 
 bool LuaSetSlot(aint n) {
-    auto err = Asm.setSlot(n);
+    auto err = Em.setSlot(n);
     if (err) {
         Error("sj.set_slot: "s + *err, lp, CATCHALL);
         return false;

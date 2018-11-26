@@ -85,15 +85,15 @@ bool ParseExpPrim(char *&p, aint &nval) {
                (isalpha((unsigned char) *(p + 1)) || *(p + 1) == '_' || *(p + 1) == '.' || *(p + 1) == '@')) {
         ++p;
         res = GetLabelValue(p, nval);
-    } else if (Asm.isPagedMemory() && *p == '$' && *(p + 1) == '$') {
+    } else if (Em.isPagedMemory() && *p == '$' && *(p + 1) == '$') {
         ++p;
         ++p;
-        nval = Asm.getPage();
+        nval = Em.getPage();
 
         return true;
     } else if (*p == '$') {
         ++p;
-        nval = Asm.getCPUAddress();
+        nval = Em.getCPUAddress();
 
         return true;
     } else if (!(res = GetCharConst(p, nval))) {
@@ -806,7 +806,7 @@ void ParseLabel() {
         val = atoi(tp);
         //_COUT CurrentLine _CMDL " " _CMDL val _CMDL " " _CMDL CurAddress _ENDL;
         if (pass == 1) {
-            LocalLabelTable.Insert(val, Asm.getCPUAddress());
+            LocalLabelTable.Insert(val, Em.getCPUAddress());
         }
     } else {
         bool IsDEFL = 0;
@@ -842,7 +842,7 @@ void ParseLabel() {
                 lp = p;
                 return;
             }
-            val = Asm.getCPUAddress();
+            val = Em.getCPUAddress();
         }
         ttp = tp;
         if (!(tp = ValidateLabel(tp))) {

@@ -124,29 +124,29 @@ void CheckPage() {
 void Emit(uint8_t byte) {
     Listing.addByte(byte);
     if (pass == LASTPASS) {
-        auto err = Asm.emitByte(byte);
+        auto err = Em.emitByte(byte);
         if (err) {
             Error(*err, ""s, FATAL);
             return;
         }
   } else {
-        Asm.incAddress();
+        Em.incAddress();
     }
 }
 
 void EmitByte(uint8_t byte) {
-    Listing.setPreviousAddress(Asm.getCPUAddress());
+    Listing.setPreviousAddress(Em.getCPUAddress());
     Emit(byte);
 }
 
 void EmitWord(uint16_t word) {
-    Listing.setPreviousAddress(Asm.getCPUAddress());
+    Listing.setPreviousAddress(Em.getCPUAddress());
     Emit(word % 256);
     Emit(word / 256);
 }
 
 void EmitBytes(int *bytes) {
-    Listing.setPreviousAddress(Asm.getCPUAddress());
+    Listing.setPreviousAddress(Em.getCPUAddress());
     if (*bytes == -1) {
         Error("Illegal instruction", line, CATCHALL);
         *lp = 0;
@@ -157,7 +157,7 @@ void EmitBytes(int *bytes) {
 }
 
 void EmitWords(int *words) {
-    Listing.setPreviousAddress(Asm.getCPUAddress());
+    Listing.setPreviousAddress(Em.getCPUAddress());
     while (*words != -1) {
         Emit((*words) % 256);
         Emit((*words++) / 256);
@@ -165,23 +165,23 @@ void EmitWords(int *words) {
 }
 
 void EmitBlock(uint8_t byte, aint len, bool nulled) {
-    Listing.setPreviousAddress(Asm.getCPUAddress());
+    Listing.setPreviousAddress(Em.getCPUAddress());
     if (len) {
         Listing.addByte(byte);
     }
     while (len--) {
         if (pass == LASTPASS) {
             if (!nulled) { // Should be called "filled"
-                auto err = Asm.emitByte(byte);
+                auto err = Em.emitByte(byte);
                 if (err) {
                     Error(*err, ""s, FATAL);
                     return;
                 }
             } else {
-                Asm.incAddress();
+                Em.incAddress();
             }
         } else {
-            Asm.incAddress();
+            Em.incAddress();
         }
     }
 }
@@ -237,7 +237,7 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
 
     fs::path AbsFilePath = getAbsPath(FileName);
 
-    uint16_t DestAddr = Asm.getEmitAddress();
+    uint16_t DestAddr = Em.getEmitAddress();
     if ((int) DestAddr + Length > 0x10000) {
         Error(std::to_string(Length) + " bytes of file \""s + FileName.string() +
               "\" won't fit at current address="s +
@@ -277,7 +277,7 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
                       FATAL);
                 return;
             }
-            auto err = Asm.emitByte(Byte);
+            auto err = Em.emitByte(Byte);
             if (err) {
                 Error(*err, FileName.string(), FATAL);
                 return;
@@ -542,7 +542,7 @@ int SaveRAM(fs::ofstream &ofs, int start, int length) {
     }
 
     auto *data = new char[length];
-    Asm.getBytes((uint8_t *) data, start, length);
+    Em.getBytes((uint8_t *) data, start, length);
     ofs.write(data, length);
     delete[] data;
     if (ofs.fail()) {
@@ -595,7 +595,7 @@ void *SaveRAM(void *dst, int start, int length) {
         length = 0x10000 - start;
     }
 
-    Asm.getBytes(target, start, length);
+    Em.getBytes(target, start, length);
     target += length;
 
 /*
@@ -637,7 +637,7 @@ uint8_t MemGetByte(uint16_t address) {
         return 0;
     }
 
-    return Asm.getByte(address);
+    return Em.getByte(address);
 
 /*
     CDeviceSlot *S;
