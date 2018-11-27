@@ -28,8 +28,6 @@
 
 #include <string>
 #include <iostream>
-#include <iterator>
-#include <algorithm> // for std::copy()
 #include <array>
 
 using namespace std::string_literals;
