@@ -26,7 +26,8 @@
 
 #include "defines.h"
 #include "errors.h"
-#include "sjasm.h"
+#include "codeemitter.h"
+
 #include "io_snapshots.h"
 
 int SaveSNA_ZX(const fs::path &fname, uint16_t start) {

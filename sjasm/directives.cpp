@@ -43,10 +43,14 @@
 #include "io_tape.h"
 #include "lua_support.h"
 #include "sjasm.h"
+#include "codeemitter.h"
+#include "fsutil.h"
 
 #include "directives.h"
 
 using namespace std::string_literals;
+
+int StartAddress = -1;
 
 FunctionTable DirectivesTable;
 FunctionTable DirectivesTable_dup;
@@ -481,10 +485,6 @@ void dirENDMODULE() {
     } else {
         Modules.End();
     }
-}
-
-void dirZ80() {
-    GetCPUInstruction = Z80::GetOpCode;
 }
 
 // Do not process beyond the END directive
@@ -1465,7 +1465,7 @@ void dirEXPORT() {
     char *n, *p;
 
     if (Options::ExportFName.empty()) {
-        Options::ExportFName = SourceFNames[CurrentSourceFName];
+        Options::ExportFName = getSourceFileName();
         Options::ExportFName.replace_extension(".exp");
         Warning("[EXPORT] Filename for exportfile was not indicated. Output will be in"s,
                 Options::ExportFName.string());
@@ -2135,11 +2135,9 @@ void InsertDirectives() {
     DirectivesTable.insertDirective("fpos"s, dirFPOS);
     DirectivesTable.insertDirective("align"s, dirALIGN);
     DirectivesTable.insertDirective("module"s, dirMODULE);
-    //DirectivesTable.insertDirective("z80"s, dirZ80);
     DirectivesTable.insertDirective("size"s, dirSIZE);
     //DirectivesTable.insertDirective("textarea"s,dirTEXTAREA);
     DirectivesTable.insertDirective("textarea"s, dirDISP);
-    //DirectivesTable.insertDirective("msx"s, dirZ80);
     DirectivesTable.insertDirective("else"s, dirELSE);
     DirectivesTable.insertDirective("export"s, dirEXPORT);
     DirectivesTable.insertDirective("display"s, dirDISPLAY); /* added */

@@ -33,7 +33,8 @@
 #include "global.h"
 #include "options.h"
 #include "support.h"
-#include "sjasm.h"
+#include "codeemitter.h"
+
 
 #include "parser.h"
 

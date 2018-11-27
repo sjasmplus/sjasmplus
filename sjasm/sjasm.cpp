@@ -37,10 +37,10 @@
 #include "support.h"
 #include "options.h"
 #include "parser.h"
+#include "codeemitter.h"
+
 #include <sjasmplus_conf.h>
 #include <sstream>
-
-CodeEmitter Em;
 
 CDevice *Devices = 0;
 CDevice *Device = 0;
@@ -52,13 +52,9 @@ std::vector<fs::path> SourceFNames;
 int CurrentSourceFName = 0;
 int SourceFNamesCount = 0;
 
-bool SourceReaderEnabled = false;
 /* int adrdisp = 0, PseudoORG = 0; */ /* added for spectrum ram */
 char *MemoryPointer = NULL; /* added for spectrum ram */
-int StartAddress = -1;
 aint destlen = 0, size = (aint) -1;
-
-void (*GetCPUInstruction)(void);
 
 void InitPass(int p) {
     if (LastParsedLabel != NULL) {
@@ -106,6 +102,9 @@ void ExitASM(int p) {
     exit(p);
 }
 
+const fs::path getSourceFileName() {
+    return SourceFNames[CurrentSourceFName];
+}
 
 int main(int argc, const char *argv[]) {
     int base_encoding; /* added */
@@ -224,109 +223,4 @@ int main(int argc, const char *argv[]) {
     shutdownLUA();
 
     return (ErrorCount != 0);
-}
-
-
-boost::optional<std::string> CodeEmitter::emitByte(uint8_t Byte) {
-    const std::string ErrMsg = "CPU address space overflow"s;
-    if (CPUAddrOverflow) {
-        return ErrMsg;
-    } else if (EmitAddrOverflow) {
-        return ErrMsg + " (DISP shift = "s + std::to_string(EmitAddress - CPUAddress) + ")"s;
-    }
-    if (MemManager.isActive()) {
-        MemManager.writeByte(getEmitAddress(), Byte);
-    }
-    if (RawOFS.is_open()) {
-        RawOFS.write((char *)&Byte, 1);
-    }
-    incAddress();
-    return boost::none;
-}
-
-// Increase address and return true on overflow
-bool CodeEmitter::incAddress() {
-    CPUAddress++;
-    if (CPUAddress == 0)
-        CPUAddrOverflow = true;
-    if (Disp) {
-        EmitAddress++;
-        if (EmitAddress == 0)
-            EmitAddrOverflow = true;
-    }
-    if (CPUAddress == 0 || (Disp && EmitAddress == 0))
-        return true;
-    return false;
-}
-
-// DISP directive
-void CodeEmitter::doDisp(uint16_t DispAddress) {
-    EmitAddress = CPUAddress;
-    CPUAddress = DispAddress;
-    Disp = true;
-}
-
-// ENT directive (undoes DISP)
-void CodeEmitter::doEnt() {
-    CPUAddress = EmitAddress;
-    Disp = false;
-}
-
-void CodeEmitter::setRawOutputOptions(bool Override, const fs::path &FileName) {
-    OverrideRawOutput = Override;
-    setRawOutput(FileName);
-}
-
-void CodeEmitter::setRawOutput(const fs::path &FileName, OutputMode Mode) {
-    if (RawOFS.is_open()) {
-        RawOFS.close();
-        enforceFileSize();
-    }
-    auto OpenMode = std::ios_base::binary | std::ios_base::in | std::ios_base::out;
-    switch (Mode) {
-        case OutputMode::Truncate:
-            OpenMode |= std::ios_base::trunc;
-            break;
-        case OutputMode::Append:
-            OpenMode |= std::ios_base::ate;
-            break;
-        default:
-            break;
-    }
-    RawOutputFileName = global::OutputDirectory.empty() ? FileName : resolveOutputPath(FileName);
-    RawOFS.open(RawOutputFileName, OpenMode);
-}
-
-boost::optional<std::string> CodeEmitter::seekRawOutput(std::streamoff Offset, std::ios_base::seekdir Method) {
-    if (RawOFS.is_open()) {
-
-        std::streampos NewPos;
-        if (Method == std::ios_base::cur) {
-            NewPos = RawOFS.tellp() + Offset;
-        } else {
-            NewPos = Offset;
-        }
-
-        RawOFS.seekp(Offset, Method);
-
-        if (RawOFS.tellp() != NewPos) {
-            return "Could not seek to position "s + std::to_string(Offset) +
-                   " of file "s + RawOutputFileName.string();
-        }
-    }
-    return boost::none;
-}
-
-void CodeEmitter::enforceFileSize() {
-    // File must be closed at this point
-    assert(!RawOFS.is_open());
-    if (ForcedRawOutputSize > 0) {
-        auto Size = fs::file_size(RawOutputFileName);
-        if (ForcedRawOutputSize < Size) {
-            Warning("File "s + RawOutputFileName.string() +
-                    " truncated by SIZE directive by "s +
-                    std::to_string(Size - ForcedRawOutputSize) + " bytes"s, ""s);
-        }
-        fs::resize_file(RawOutputFileName, ForcedRawOutputSize);
-    }
 }

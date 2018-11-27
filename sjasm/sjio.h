@@ -35,6 +35,8 @@
 #include "tables.h"
 #include "io_trd.h"
 
+extern bool SourceReaderEnabled; // Reset by the END directive
+
 void EmitByte(uint8_t byte);
 
 void EmitWord(uint16_t word);
@@ -50,12 +52,6 @@ void OpenFile(const fs::path &nfilename);
 void IncludeFile(const fs::path &nfilename);
 
 void readBufLine(bool Parse = true, bool SplitByColon = true); /* added */
-
-fs::path getAbsPath(const fs::path &p);
-
-fs::path getAbsPath(const fs::path &p, fs::path &f);
-
-fs::path resolveOutputPath(const fs::path &p);
 
 // char *GetPath(const char *fname, TCHAR **filenamebegin); /* added */
 void includeBinaryFile(const fs::path &FileName, int Offset, int Length);

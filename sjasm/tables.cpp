@@ -36,7 +36,8 @@ using boost::algorithm::to_upper_copy;
 #include "sjio.h"
 #include "support.h"
 #include "global.h"
-#include "sjasm.h"
+#include "codeemitter.h"
+
 #include "tables.h"
 
 int macronummer = 0;

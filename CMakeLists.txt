@@ -72,11 +72,15 @@ set(SOURCE_FILES
 #        resources/SaveTAP_ZX_Spectrum_128K.bin.h
 #        resources/SaveTAP_ZX_Spectrum_256K.bin.h
 #        resources/SaveTAP_ZX_Spectrum_48K.bin.h
+        sjasm/codeemitter.cpp
+        sjasm/codeemitter.h
         sjasm/directives.cpp
         sjasm/directives.h
         sjasm/errors.cpp
         sjasm/errors.h
         sjasm/fs.h
+        sjasm/fsutil.cpp
+        sjasm/fsutil.h
         sjasm/global.cpp
         sjasm/global.h
         sjasm/io_snapshots.cpp

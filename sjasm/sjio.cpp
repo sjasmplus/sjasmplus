@@ -40,10 +40,14 @@ using namespace std::string_literals;
 #include "parser.h"
 #include "reader.h"
 #include "global.h"
-#include "sjasm.h"
 #include "options.h"
 #include "support.h"
+#include "fsutil.h"
+#include "codeemitter.h"
+
 #include "sjio.h"
+
+bool SourceReaderEnabled = false;
 
 class TyReadLineBuf : public std::array<uint8_t, LINEMAX * 2> {
 private:
@@ -185,24 +189,6 @@ void EmitBlock(uint8_t byte, aint len, bool nulled) {
         }
     }
 }
-
-fs::path getAbsPath(const fs::path &p) {
-    return fs::absolute(p, global::CurrentDirectory);
-}
-
-fs::path resolveOutputPath(const fs::path &p) {
-    if (!global::OutputDirectory.empty()) {
-        return fs::absolute(p, global::OutputDirectory);
-    } else {
-        return getAbsPath(p);
-    }
-}
-
-/*
-fs::path GetAbsPath(const fs::path &p, fs::path &f) {
-    return fs::absolute(p / f, global::CurrentDirectory);
-}
-*/
 
 /*
 char* GetPath(const char* fname, TCHAR** filenamebegin) {

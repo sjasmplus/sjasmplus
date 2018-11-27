@@ -3,7 +3,7 @@
 #include "global.h"
 #include "options.h"
 #include "util.h"
-#include "sjasm.h"
+#include "codeemitter.h"
 #include "listing.h"
 
 bool donotlist = false, listmacro = false;

@@ -31,7 +31,8 @@
 #include "options.h"
 #include "sjio.h"
 #include "support.h"
-#include "sjasm.h"
+#include "codeemitter.h"
+
 #include "z80.h"
 
 namespace Z80 {

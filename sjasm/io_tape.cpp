@@ -36,7 +36,7 @@ using namespace std::string_literals;
 #include "defines.h"
 #include "errors.h"
 #include "memory.h"
-#include "sjasm.h"
+#include "codeemitter.h"
 
 #include "io_tape.h"
 
