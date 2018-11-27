@@ -67,7 +67,7 @@ void InitPass(int p) {
     macrolabp = NULL;
     pass = p;
     Em.reset();
-    SourceReaderEnabled = true;
+    enableSourceReader();
     CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
     Listing.initPass();
     macronummer = 0;

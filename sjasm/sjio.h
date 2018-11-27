@@ -35,7 +35,9 @@
 #include "tables.h"
 #include "io_trd.h"
 
-extern bool SourceReaderEnabled; // Reset by the END directive
+void enableSourceReader();
+
+void disableSourceReader();
 
 void EmitByte(uint8_t byte);
 

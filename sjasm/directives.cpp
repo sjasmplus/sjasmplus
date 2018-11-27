@@ -501,7 +501,7 @@ void dirEND() {
         lp = p;
     }
 
-    SourceReaderEnabled = false;
+    disableSourceReader();
     checkRepeatStackAtEOF();
 }
 

@@ -47,7 +47,15 @@ using namespace std::string_literals;
 
 #include "sjio.h"
 
-bool SourceReaderEnabled = false;
+bool SourceReaderEnabled = false; // Reset by the END directive
+
+void enableSourceReader() {
+    SourceReaderEnabled = true;
+}
+
+void disableSourceReader() {
+    SourceReaderEnabled = false;
+}
 
 class TyReadLineBuf : public std::array<uint8_t, LINEMAX * 2> {
 private:
