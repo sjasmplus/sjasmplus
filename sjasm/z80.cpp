@@ -24,6 +24,8 @@
 
 */
 
+#include <cctype>
+
 #include "global.h"
 #include "reader.h"
 #include "parser.h"
@@ -145,30 +147,9 @@ namespace Z80 {
     Z80Cond getz80cond(char *&p) {
         char *pp = p;
         SkipBlanks(p);
-        switch (*(p++)) {
-            case 'n':
-                switch (*(p++)) {
-                    case 'z':
-                        if (!islabchar(*p)) {
-                            return Z80C_NZ;
-                        }
-                        break;
-                    case 'c':
-                        if (!islabchar(*p)) {
-                            return Z80C_NC;
-                        }
-                        break;
-                    case 's':
-                        if (!islabchar(*p)) {
-                            return Z80C_P;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                break;
+        switch (toupper(*(p++))) {
             case 'N':
-                switch (*(p++)) {
+                switch (toupper(*(p++))) {
                     case 'Z':
                         if (!islabchar(*p)) {
                             return Z80C_NZ;
@@ -188,43 +169,20 @@ namespace Z80 {
                         break;
                 }
                 break;
-            case 'z':
             case 'Z':
                 if (!islabchar(*p)) {
                     return Z80C_Z;
                 }
                 break;
-            case 'c':
             case 'C':
                 if (!islabchar(*p)) {
                     return Z80C_C;
                 }
                 break;
-            case 'm':
             case 'M':
-            case 's':
             case 'S':
                 if (!islabchar(*p)) {
                     return Z80C_M;
-                }
-                break;
-            case 'p':
-                if (!islabchar(*p)) {
-                    return Z80C_P;
-                }
-                switch (*(p++)) {
-                    case 'e':
-                        if (!islabchar(*p)) {
-                            return Z80C_PE;
-                        }
-                        break;
-                    case 'o':
-                        if (!islabchar(*p)) {
-                            return Z80C_PO;
-                        }
-                        break;
-                    default:
-                        break;
                 }
                 break;
             case 'P':
@@ -257,170 +215,12 @@ namespace Z80 {
     Z80Reg GetRegister(char *&p) {
         char *pp = p;
         SkipBlanks(p);
-        switch (*(p++)) {
-            case 'a':
-                if (!islabchar(*p)) {
-                    return Z80_A;
-                }
-                if (*p == 'f' && !islabchar(*(p + 1))) {
-                    ++p;
-                    return Z80_AF;
-                }
-                break;
-            case 'b':
-                if (!islabchar(*p)) {
-                    return Z80_B;
-                }
-                if (*p == 'c' && !islabchar(*(p + 1))) {
-                    ++p;
-                    return Z80_BC;
-                }
-                break;
-            case 'c':
-                if (!islabchar(*p)) {
-                    return Z80_C;
-                }
-                break;
-            case 'd':
-                if (!islabchar(*p)) {
-                    return Z80_D;
-                }
-                if (*p == 'e' && !islabchar(*(p + 1))) {
-                    ++p;
-                    return Z80_DE;
-                }
-                break;
-            case 'e':
-                if (!islabchar(*p)) {
-                    return Z80_E;
-                }
-                break;
-            case 'f':
-                if (!islabchar(*p)) {
-                    return Z80_F;
-                }
-                break;
-            case 'h':
-                /* (begin add) */
-                if (*p == 'x') {
-                    if (!islabchar(*(p + 1))) {
-                        ++p;
-                        return Z80_IXH;
-                    }
-                }
-                if (*p == 'y') {
-                    if (!islabchar(*(p + 1))) {
-                        ++p;
-                        return Z80_IYH;
-                    }
-                }
-                /* (end add) */
-                if (!islabchar(*p)) {
-                    return Z80_H;
-                }
-                if (*p == 'l' && !islabchar(*(p + 1))) {
-                    ++p;
-                    return Z80_HL;
-                }
-                break;
-            case 'i':
-                if (*p == 'x') {
-                    if (!islabchar(*(p + 1))) {
-                        ++p;
-                        return Z80_IX;
-                    }
-                    if (*(p + 1) == 'h' && !islabchar(*(p + 2))) {
-                        p += 2;
-                        return Z80_IXH;
-                    }
-                    if (*(p + 1) == 'l' && !islabchar(*(p + 2))) {
-                        p += 2;
-                        return Z80_IXL;
-                    }
-                }
-                if (*p == 'y') {
-                    if (!islabchar(*(p + 1))) {
-                        ++p;
-                        return Z80_IY;
-                    }
-                    if (*(p + 1) == 'h' && !islabchar(*(p + 2))) {
-                        p += 2;
-                        return Z80_IYH;
-                    }
-                    if (*(p + 1) == 'l' && !islabchar(*(p + 2))) {
-                        p += 2;
-                        return Z80_IYL;
-                    }
-                }
-                if (!islabchar(*p)) {
-                    return Z80_I;
-                }
-                break;
-                /* (begin add) */
-            case 'y':
-                if (*p == 'h') {
-                    if (!islabchar(*(p + 1))) {
-                        ++p;
-                        return Z80_IYH;
-                    }
-                }
-                if (*p == 'l') {
-                    if (!islabchar(*(p + 1))) {
-                        ++p;
-                        return Z80_IYL;
-                    }
-                }
-                break;
-            case 'x':
-                if (*p == 'h') {
-                    if (!islabchar(*(p + 1))) {
-                        ++p;
-                        return Z80_IXH;
-                    }
-                }
-                if (*p == 'l') {
-                    if (!islabchar(*(p + 1))) {
-                        ++p;
-                        return Z80_IXL;
-                    }
-                }
-                break;
-                /* (end add) */
-            case 'l':
-                /* (begin add) */
-                if (*p == 'x') {
-                    if (!islabchar(*(p + 1))) {
-                        ++p;
-                        return Z80_IXL;
-                    }
-                }
-                if (*p == 'y') {
-                    if (!islabchar(*(p + 1))) {
-                        ++p;
-                        return Z80_IYL;
-                    }
-                }
-                /* (end add) */
-                if (!islabchar(*p)) {
-                    return Z80_L;
-                }
-                break;
-            case 'r':
-                if (!islabchar(*p)) {
-                    return Z80_R;
-                }
-                break;
-            case 's':
-                if (*p == 'p' && !islabchar(*(p + 1))) {
-                    ++p;
-                    return Z80_SP;
-                }
-                break;
+        switch (toupper(*(p++))) {
             case 'A':
                 if (!islabchar(*p)) {
                     return Z80_A;
                 }
-                if (*p == 'F' && !islabchar(*(p + 1))) {
+                if (toupper(*p) == 'F' && !islabchar(*(p + 1))) {
                     ++p;
                     return Z80_AF;
                 }
@@ -429,7 +229,7 @@ namespace Z80 {
                 if (!islabchar(*p)) {
                     return Z80_B;
                 }
-                if (*p == 'C' && !islabchar(*(p + 1))) {
+                if (toupper(*p) == 'C' && !islabchar(*(p + 1))) {
                     ++p;
                     return Z80_BC;
                 }
@@ -443,7 +243,7 @@ namespace Z80 {
                 if (!islabchar(*p)) {
                     return Z80_D;
                 }
-                if (*p == 'E' && !islabchar(*(p + 1))) {
+                if (toupper(*p) == 'E' && !islabchar(*(p + 1))) {
                     ++p;
                     return Z80_DE;
                 }
@@ -458,54 +258,57 @@ namespace Z80 {
                     return Z80_F;
                 }
                 break;
-            case 'H':
-                /* (begin add) */
-                if (*p == 'X') {
+            case 'H': {
+                char c2 = (char) toupper(*p);
+                if (c2 == 'X') {
                     if (!islabchar(*(p + 1))) {
                         ++p;
                         return Z80_IXH;
                     }
                 }
-                if (*p == 'Y') {
+                if (c2 == 'Y') {
                     if (!islabchar(*(p + 1))) {
                         ++p;
                         return Z80_IYH;
                     }
                 }
-                /* (end add) */
-                if (!islabchar(*p)) {
+                if (!islabchar(c2)) {
                     return Z80_H;
                 }
-                if (*p == 'L' && !islabchar(*(p + 1))) {
+                if (c2 == 'L' && !islabchar(*(p + 1))) {
                     ++p;
                     return Z80_HL;
                 }
+            }
                 break;
-            case 'I':
-                if (*p == 'X') {
-                    if (!islabchar(*(p + 1))) {
+            case 'I': {
+                char c2 = (char) toupper(*p);
+                if (c2 == 'X') {
+                    char c3 = (char) toupper(*(p + 1));
+                    if (!islabchar(c3)) {
                         ++p;
                         return Z80_IX;
                     }
-                    if (*(p + 1) == 'H' && !islabchar(*(p + 2))) {
+                    if (c3 == 'H' && !islabchar(*(p + 2))) {
                         p += 2;
                         return Z80_IXH;
                     }
-                    if (*(p + 1) == 'L' && !islabchar(*(p + 2))) {
+                    if (c3 == 'L' && !islabchar(*(p + 2))) {
                         p += 2;
                         return Z80_IXL;
                     }
                 }
-                if (*p == 'Y') {
-                    if (!islabchar(*(p + 1))) {
+                if (c2 == 'Y') {
+                    char c3 = (char) toupper(*(p + 1));
+                    if (!islabchar(c3)) {
                         ++p;
                         return Z80_IY;
                     }
-                    if (*(p + 1) == 'H' && !islabchar(*(p + 2))) {
+                    if (c3 == 'H' && !islabchar(*(p + 2))) {
                         p += 2;
                         return Z80_IYH;
                     }
-                    if (*(p + 1) == 'L' && !islabchar(*(p + 2))) {
+                    if (c3 == 'L' && !islabchar(*(p + 2))) {
                         p += 2;
                         return Z80_IYL;
                     }
@@ -515,64 +318,71 @@ namespace Z80 {
                 }
                 break;
                 /* (begin add) */
-            case 'Y':
-                if (*p == 'H') {
+            }
+            case 'Y': {
+                char c2 = (char) toupper(*p);
+                if (c2 == 'H') {
                     if (!islabchar(*(p + 1))) {
                         ++p;
                         return Z80_IYH;
                     }
                 }
-                if (*p == 'L') {
+                if (c2 == 'L') {
                     if (!islabchar(*(p + 1))) {
                         ++p;
                         return Z80_IYL;
                     }
                 }
+            }
                 break;
-            case 'X':
-                if (*p == 'H') {
+            case 'X': {
+                char c2 = (char) toupper(*p);
+                if (c2 == 'H') {
                     if (!islabchar(*(p + 1))) {
                         ++p;
                         return Z80_IXH;
                     }
                 }
-                if (*p == 'L') {
+                if (c2 == 'L') {
                     if (!islabchar(*(p + 1))) {
                         ++p;
                         return Z80_IXL;
                     }
                 }
+            }
                 break;
-                /* (end add) */
-            case 'L':
-                /* (begin add) */
-                if (*p == 'X') {
+            case 'L': {
+                char c2 = (char) toupper(*p);
+                if (c2 == 'X') {
                     if (!islabchar(*(p + 1))) {
                         ++p;
                         return Z80_IXL;
                     }
                 }
-                if (*p == 'Y') {
+                if (c2 == 'Y') {
                     if (!islabchar(*(p + 1))) {
                         ++p;
                         return Z80_IYL;
                     }
                 }
                 /* (end add) */
-                if (!islabchar(*p)) {
+                if (!islabchar(c2)) {
                     return Z80_L;
                 }
+            }
                 break;
             case 'R':
                 if (!islabchar(*p)) {
                     return Z80_R;
                 }
                 break;
-            case 'S':
-                if (*p == 'P' && !islabchar(*(p + 1))) {
+            case 'S': {
+                char c2 = (char) toupper(*p);
+                if (c2 == 'P' && !islabchar(*(p + 1))) {
                     ++p;
                     return Z80_SP;
                 }
+            }
                 break;
             default:
                 break;
