@@ -27,6 +27,7 @@
 */
 
 #include <sstream>
+#include <algorithm>
 #include "defines.h"
 #include "reader.h"
 #include "util.h"
@@ -137,11 +138,26 @@ std::string CLabelTable::dump() const {
     Str << std::endl
         << "Value    Label" << std::endl
         << "------ - -----------------------------------------------------------" << std::endl;
-    for (const auto &it : _LabelMap) {
-        const auto &LD = it.second;
-        if (LD.page != -1) {
-            Str << "0x" << toHexAlt(LD.value)
-                << (LD.used > 0 ? "   " : " X ") << it.first
+
+    // sort labels by address ("value")
+    typedef std::tuple<aint, std::string, int8_t, int8_t> L;
+    std::vector<L> v;
+    v.resize(_LabelMap.size());
+    auto it = _LabelMap.begin();
+    std::generate(v.begin(), v.end(), [it]() mutable {
+        L r = std::make_tuple(it->second.value, it->first, it->second.page, it->second.used);
+        it++;
+        return r;
+    });
+    std::sort(v.begin(), v.end(), [](L a, L b) {
+        return std::get<0>(a) < std::get<0>(b);
+    });
+
+    // output sorted labels
+    for (const auto &it : v) {
+        if (std::get<2>(it) != -1) { // page
+            Str << "0x" << toHexAlt(std::get<0>(it)) // value
+                << (std::get<3>(it) /* used */ > 0 ? "   " : " X ") << std::get<1>(it) // name
                 << std::endl;
         }
     }
