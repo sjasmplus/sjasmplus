@@ -31,6 +31,9 @@ private:
     void enforceFileSize();
 
 public:
+    CodeEmitter() {
+	reset();
+    }
 
     ~CodeEmitter() {
         if (RawOFS.is_open()) {
