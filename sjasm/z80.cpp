@@ -86,11 +86,11 @@ namespace Z80 {
         char *n;
         bp = lp;
         if (!(n = getinstr(lp))) {
-            Error("Unrecognized instruction", lp, LASTPASS);
+            Error("Unrecognized instruction"s, lp, LASTPASS);
             return;
         }
         if (!OpCodeTable.callIfExists(n)) {
-            Error("Unrecognized instruction", bp, LASTPASS);
+            Error("Unrecognized instruction"s, bp, LASTPASS);
             *lp = 0;
         }
     }
@@ -98,7 +98,7 @@ namespace Z80 {
     int GetByte(char *&p) {
         aint val;
         if (!ParseExpression(p, val)) {
-            Error("Operand expected", NULL, LASTPASS);
+            Error("Operand expected"s, LASTPASS);
             return 0;
         }
         check8(val);
@@ -108,7 +108,7 @@ namespace Z80 {
     int GetWord(char *&p) {
         aint val;
         if (!ParseExpression(p, val)) {
-            Error("Operand expected", NULL, LASTPASS);
+            Error("Operand expected"s, LASTPASS);
             return 0;
         }
         check16(val);
@@ -126,7 +126,7 @@ namespace Z80 {
             return 0;
         }
         if (!ParseExpression(p, val)) {
-            Error("Operand expected", NULL, LASTPASS);
+            Error("Operand expected"s, LASTPASS);
             return 0;
         }
         check8o(val);
@@ -140,7 +140,7 @@ namespace Z80 {
         if (ParseExpression(p, ad)) {
             return 1;
         }
-        Error("Operand expected", 0, CATCHALL);
+        Error("Operand expected"s, CATCHALL);
         return 0;
     }
 
@@ -401,7 +401,7 @@ namespace Z80 {
             switch (reg = GetRegister(lp)) {
                 case Z80_HL:
                     if (!comma(lp)) {
-                        Error("[ADC] Comma expected", 0);
+                        Error("[ADC] Comma expected"s);
                         break;
                     }
                     switch (GetRegister(lp)) {
@@ -521,7 +521,7 @@ namespace Z80 {
             switch (reg = GetRegister(lp)) {
                 case Z80_HL:
                     if (!comma(lp)) {
-                        Error("[ADD] Comma expected", 0);
+                        Error("[ADD] Comma expected"s);
                         break;
                     }
                     switch (GetRegister(lp)) {
@@ -542,7 +542,7 @@ namespace Z80 {
                     break;
                 case Z80_IX:
                     if (!comma(lp)) {
-                        Error("[ADD] Comma expected", 0);
+                        Error("[ADD] Comma expected"s);
                         break;
                     }
                     switch (GetRegister(lp)) {
@@ -567,7 +567,7 @@ namespace Z80 {
                     break;
                 case Z80_IY:
                     if (!comma(lp)) {
-                        Error("[ADD] Comma expected", 0);
+                        Error("[ADD] Comma expected"s);
                         break;
                     }
                     switch (GetRegister(lp)) {
@@ -889,7 +889,7 @@ namespace Z80 {
             e[1] = callad & 255;
             e[2] = (callad >> 8) & 255;
             if (b > 65535) {
-                Error("[CALL] Bytes lost", 0);
+                Error("[CALL] Value truncated, does not fit into 16 bits"s, std::to_string(b));
             }
             EmitBytes(e);
             /* (begin add) */
@@ -1154,7 +1154,7 @@ namespace Z80 {
             }
             jmp = nad - Em.getCPUAddress() - 2;
             if (jmp < -128 || jmp > 127) {
-                Error("[DJNZ] Target out of range ("s + std::to_string(jmp) + ")"s, ""s);
+                Error("[DJNZ] Target out of range"s, std::to_string(jmp));
                 jmp = 0;
             }
             e[0] = 0x10;
@@ -1193,7 +1193,7 @@ namespace Z80 {
                 break;
             case Z80_DE:
                 if (!comma(lp)) {
-                    Error("[EX] Comma expected", 0);
+                    Error("[EX] Comma expected"s);
                     break;
                 }
                 if (GetRegister(lp) != Z80_HL) {
@@ -1203,7 +1203,7 @@ namespace Z80 {
                 break;
             case Z80_HL:
                 if (!comma(lp)) {
-                    Error("[EX] Comma expected", 0);
+                    Error("[EX] Comma expected"s);
                     break;
                 }
                 if (GetRegister(lp) != Z80_DE) {
@@ -1222,7 +1222,7 @@ namespace Z80 {
                     break;
                 }
                 if (!comma(lp)) {
-                    Error("[EX] Comma expected", 0);
+                    Error("[EX] Comma expected"s);
                     break;
                 }
                 switch (reg = GetRegister(lp)) {
@@ -1604,7 +1604,7 @@ namespace Z80 {
                 e[1] = jpad & 255;
                 e[2] = (jpad >> 8) & 255;
                 if (b > 65535) {
-                    Error("[JP] Bytes lost", 0);
+                    Error("[JP] Value truncated, does not fit into 16 bits"s, std::to_string(b));
                 }
             }
             EmitBytes(e);
@@ -1650,7 +1650,7 @@ namespace Z80 {
                 case Z80C_P:
                 case Z80C_PE:
                 case Z80C_PO:
-                    Error("[JR] Illegal condition", 0);
+                    Error("[JR] Illegal condition"s);
                     break;
                 default:
                     e[0] = 0x18;
@@ -1667,7 +1667,7 @@ namespace Z80 {
                 /*if (pass == LASTPASS) {
 					_COUT "AAAAAAA:" _CMDL jmp _CMDL " " _CMDL jrad _CMDL " " _CMDL CurAddress _ENDL;
 				}*/
-                Error("[JR] Target out of range ("s + std::to_string(jmp) + ")"s, ""s, LASTPASS);
+                Error("[JR] Target out of range"s, std::to_string(jmp), LASTPASS);
                 jmp = 0;
             }
             e[1] = jmp < 0 ? 256 + jmp : jmp;
@@ -2534,7 +2534,7 @@ namespace Z80 {
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if ((b = z80GetIDxoffset(lp)) == 127) {
                                         // _COUT "E1 " _CMDL b _ENDL;
-                                        Error("Offset out of range1", 0);
+                                        Error("Offset out of range1"s);
                                     }
                                     if (cparen(lp)) {
                                         e[0] = e[3] = reg;
@@ -2633,7 +2633,7 @@ namespace Z80 {
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if ((b = z80GetIDxoffset(lp)) == 127) {
                                         // _COUT "E2 " _CMDL b _ENDL;
-                                        Error("Offset out of range2", 0);
+                                        Error("Offset out of range2"s);
                                     }
                                     if (cparen(lp)) {
                                         e[0] = e[3] = reg;
@@ -2721,7 +2721,7 @@ namespace Z80 {
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if ((b = z80GetIDxoffset(lp)) == 127) {
                                         // _COUT "E3 " _CMDL b _ENDL;
-                                        Error("Offset out of range3", 0);
+                                        Error("Offset out of range3"s);
                                     }
                                     if (cparen(lp)) {
                                         e[0] = e[3] = reg;
@@ -3008,7 +3008,7 @@ namespace Z80 {
                                 case Z80_BC:
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if (e[2] == 127) {
-                                        Error("(IX)Z80_BC: Offset out of range", 0, LASTPASS);
+                                        Error("(IX)Z80_BC: Offset out of range"s, LASTPASS);
                                     }
                                     e[0] = e[3] = 0xdd;
                                     e[1] = 0x71;
@@ -3018,7 +3018,7 @@ namespace Z80 {
                                 case Z80_DE:
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if (e[2] == 127) {
-                                        Error("(IX)Z80_DE: Offset out of range", 0, LASTPASS);
+                                        Error("(IX)Z80_DE: Offset out of range"s, LASTPASS);
                                     }
                                     e[0] = e[3] = 0xdd;
                                     e[1] = 0x73;
@@ -3028,7 +3028,7 @@ namespace Z80 {
                                 case Z80_HL:
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if (e[2] == 127) {
-                                        Error("(IX)Z80_HL: Offset out of range", 0, LASTPASS);
+                                        Error("(IX)Z80_HL: Offset out of range"s, LASTPASS);
                                     }
                                     e[0] = e[3] = 0xdd;
                                     e[1] = 0x75;
@@ -3076,7 +3076,7 @@ namespace Z80 {
                                 case Z80_BC:
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if (e[2] == 127) {
-                                        Error("(IY)Z80_BC: Offset out of range", 0, LASTPASS);
+                                        Error("(IY)Z80_BC: Offset out of range"s, LASTPASS);
                                     }
                                     e[0] = e[3] = 0xfd;
                                     e[1] = 0x71;
@@ -3086,7 +3086,7 @@ namespace Z80 {
                                 case Z80_DE:
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if (e[2] == 127) {
-                                        Error("(IY)Z80_DE: Offset out of range", 0, LASTPASS);
+                                        Error("(IY)Z80_DE: Offset out of range"s, LASTPASS);
                                     }
                                     e[0] = e[3] = 0xfd;
                                     e[1] = 0x73;
@@ -3096,7 +3096,7 @@ namespace Z80 {
                                 case Z80_HL:
                                     ASSERT_FAKE_INSTRUCTIONS(break);
                                     if (e[2] == 127) {
-                                        Error("(IY)Z80_HL: Offset out of range", 0, LASTPASS);
+                                        Error("(IY)Z80_HL: Offset out of range"s, LASTPASS);
                                     }
                                     e[0] = e[3] = 0xfd;
                                     e[1] = 0x75;
@@ -4077,7 +4077,7 @@ namespace Z80 {
                                         e[3] = 8 * bit + 0x80 + reg;
                                         break;
                                     default:
-                                        Error("[RES] Illegal operand", lp, SUPPRESS);
+                                        Error("[RES] Illegal operand"s, lp, SUPPRESS);
                                 }
                             }
                             break;
@@ -4226,7 +4226,7 @@ namespace Z80 {
                                         e[3] = 0x10 + reg;
                                         break;
                                     default:
-                                        Error("[RL] Illegal operand", lp, SUPPRESS);
+                                        Error("[RL] Illegal operand"s, lp, SUPPRESS);
                                 }
                             }
                             break;
@@ -4297,7 +4297,7 @@ namespace Z80 {
                                         e[3] = reg;
                                         break;
                                     default:
-                                        Error("[RLC] Illegal operand", lp, SUPPRESS);
+                                        Error("[RLC] Illegal operand"s, lp, SUPPRESS);
                                 }
                             }
                             break;
@@ -4394,7 +4394,7 @@ namespace Z80 {
                                         e[3] = 0x18 + reg;
                                         break;
                                     default:
-                                        Error("[RR] Illegal operand", lp, SUPPRESS);
+                                        Error("[RR] Illegal operand"s, lp, SUPPRESS);
                                 }
                             }
                             break;
@@ -4465,7 +4465,7 @@ namespace Z80 {
                                         e[3] = 0x8 + reg;
                                         break;
                                     default:
-                                        Error("[RRC] Illegal operand", lp, SUPPRESS);
+                                        Error("[RRC] Illegal operand"s, lp, SUPPRESS);
                                 }
                             }
                             break;
@@ -4526,7 +4526,7 @@ namespace Z80 {
                     e = 0xff;
                     break;
                 default:
-                    Error("[RST] Illegal operand", line);
+                    Error("[RST] Illegal operand"s, line);
                     *lp = 0;
                     return;
             }
@@ -4551,7 +4551,7 @@ namespace Z80 {
             switch (reg = GetRegister(lp)) {
                 case Z80_HL:
                     if (!comma(lp)) {
-                        Error("[SBC] Comma expected", 0);
+                        Error("[SBC] Comma expected"s);
                         break;
                     }
                     switch (GetRegister(lp)) {
@@ -4718,7 +4718,7 @@ namespace Z80 {
                                         e[3] = 8 * bit + 0xc0 + reg;
                                         break;
                                     default:
-                                        Error("[SET] Illegal operand", lp, SUPPRESS);
+                                        Error("[SET] Illegal operand"s, lp, SUPPRESS);
                                 }
                             }
                             break;
@@ -4803,7 +4803,7 @@ namespace Z80 {
                                         e[3] = 0x20 + reg;
                                         break;
                                     default:
-                                        Error("[SLA] Illegal operand", lp, SUPPRESS);
+                                        Error("[SLA] Illegal operand"s, lp, SUPPRESS);
                                 }
                             }
                             break;
@@ -4888,7 +4888,7 @@ namespace Z80 {
                                         e[3] = 0x30 + reg;
                                         break;
                                     default:
-                                        Error("[SLL] Illegal operand", lp, SUPPRESS);
+                                        Error("[SLL] Illegal operand"s, lp, SUPPRESS);
                                 }
                             }
                             break;
@@ -4973,7 +4973,7 @@ namespace Z80 {
                                         e[3] = 0x28 + reg;
                                         break;
                                     default:
-                                        Error("[SRA] Illegal operand", lp, SUPPRESS);
+                                        Error("[SRA] Illegal operand"s, lp, SUPPRESS);
                                 }
                             }
                             break;
@@ -5058,7 +5058,7 @@ namespace Z80 {
                                         e[3] = 0x38 + reg;
                                         break;
                                     default:
-                                        Error("[SRL] Illegal operand", lp, SUPPRESS);
+                                        Error("[SRL] Illegal operand"s, lp, SUPPRESS);
                                 }
                             }
                             break;
@@ -5114,7 +5114,7 @@ namespace Z80 {
                             e[2] = 0x72;
                             break;
                         default:
-                            Error("[SUB] Illegal operand", lp, SUPPRESS);
+                            Error("[SUB] Illegal operand"s, lp, SUPPRESS);
                             break;
                     }
                     break;

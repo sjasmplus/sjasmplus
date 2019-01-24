@@ -216,7 +216,7 @@ namespace {
             TRDImage tmp;
             if (
                     in.read(&tmp.Content[0], tmp.Content.size())
-                    && in.gcount() == Content.size()
+                    && in.gcount() == (std::streamsize) Content.size()
                     && tmp.Service->IsValid()
                     ) {
                 tmp.FixCatalogue();
@@ -323,14 +323,14 @@ int TRD_SaveEmpty(const fs::path &FileName) {
     fs::ofstream OFS(FileName, std::ios::binary);
 
     if (!OFS) {
-        Error("Error opening file", FileName.string(), CATCHALL);
+        Error("Error opening file"s, FileName.string(), CATCHALL);
         return 0;
     }
 
     TRDImage Image;
     Image.Save(OFS);
     if (!OFS) {
-        Error("Write error (disk full?)", FileName.string(), CATCHALL);
+        Error("Write error (disk full?)"s, FileName.string(), CATCHALL);
         return 0;
     } else {
         return 1;
@@ -347,11 +347,11 @@ int TRD_AddFile(const fs::path &FileName, const HobetaFilename &HobetaFileName, 
     }
 */
     if (Start > 0xFFFF) {
-        Error("zx.trdimage_addfile: start address more than 0FFFFh are not allowed", std::to_string(Start), PASS3);
+        Error("zx.trdimage_addfile: start address more than 0FFFFh are not allowed"s, std::to_string(Start), PASS3);
         return 0;
     }
     if (Length > 0x10000) {
-        Error("zx.trdimage_addfile: length more than 10000h are not allowed", std::to_string(Length), PASS3);
+        Error("zx.trdimage_addfile: length more than 10000h are not allowed"s, std::to_string(Length), PASS3);
         return 0;
     }
     if (Start < 0) {
@@ -364,13 +364,12 @@ int TRD_AddFile(const fs::path &FileName, const HobetaFilename &HobetaFileName, 
     fs::fstream OFS(FileName, std::ios::binary | std::ios::in | std::ios::out);
 
     if (!OFS) {
-        Error("Error opening file", FileName.string(), FATAL);
-        return 0;
+        Fatal("Error opening file"s, FileName.string());
     }
 
     TRDImage Image;
     if (!Image.Load(OFS)) {
-        Error("Failed to read TRD image from (I/O error or invalid format)", FileName.string(), CATCHALL);
+        Error("Failed to read TRD image from (I/O error or invalid format)"s, FileName.string(), CATCHALL);
         return 0;
     }
     Image.DeleteFile(HobetaFileName);
@@ -385,13 +384,13 @@ int TRD_AddFile(const fs::path &FileName, const HobetaFilename &HobetaFileName, 
             std::memcpy(end, AutostartData, sizeof(AutostartData));
         }
     } else {
-        Error("No space in TRD image", FileName.string(), CATCHALL);
+        Error("No space in TRD image"s, FileName.string(), CATCHALL);
         return 0;
     }
     if (OFS.seekg(0) && Image.Save(OFS)) {
         return 1;
     }
-    Error("Failed to save TRD image", FileName.string(), CATCHALL);
+    Error("Failed to save TRD image"s, FileName.string(), CATCHALL);
     return 0;
 }
 
@@ -400,7 +399,7 @@ int SaveHobeta(const fs::path &FileName, const HobetaFilename &HobetaFileName, i
     fs::ofstream OFS(FileName, std::ios::binary);
 
     if (!OFS) {
-        Error("Error opening file", FileName.string(), CATCHALL);
+        Error("Error opening file"s, FileName.string(), CATCHALL);
         return 0;
     }
 
@@ -427,7 +426,7 @@ int SaveHobeta(const fs::path &FileName, const HobetaFilename &HobetaFileName, i
     if (OFS.write(&buffer.front(), buffer.size())) {
         return 1;
     }
-    Error("Failed to save hobeta file", FileName.string(), CATCHALL);
+    Error("Failed to save hobeta file"s, FileName.string(), CATCHALL);
     return 0;
 }
 

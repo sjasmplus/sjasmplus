@@ -55,7 +55,6 @@ int StartAddress = -1;
 FunctionTable DirectivesTable;
 FunctionTable DirectivesTable_dup;
 
-/* modified */
 bool ParseDirective(bool bol) {
     char *olp = lp;
     char *n;
@@ -67,20 +66,18 @@ bool ParseDirective(bool bol) {
 
     if (DirectivesTable.callIfExists(n, bol)) {
         return true;
-    }
-        /* (begin add) */
-    else if ((!bol || Options::IsPseudoOpBOF) && *n == '.' && (isdigit((unsigned char) *(n + 1)) || *lp == '(')) {
+    } else if ((!bol || Options::IsPseudoOpBOF) && *n == '.' && (isdigit((unsigned char) *(n + 1)) || *lp == '(')) {
         aint val;
         if (isdigit((unsigned char) *(n + 1))) {
             ++n;
             if (!ParseExpression(n, val)) {
-                Error("Syntax error", 0, CATCHALL);
+                Error("Syntax error"s, CATCHALL);
                 lp = olp;
                 return false;
             }
         } else if (*lp == '(') {
             if (!ParseExpression(lp, val)) {
-                Error("Syntax error", 0, CATCHALL);
+                Error("Syntax error"s, CATCHALL);
                 lp = olp;
                 return false;
             }
@@ -89,7 +86,7 @@ bool ParseDirective(bool bol) {
             return false;
         }
         if (val < 1) {
-            Error(".X must be positive integer", 0, CATCHALL);
+            Error(".X must be positive integer"s, CATCHALL);
             lp = olp;
             return false;
         }
@@ -111,8 +108,7 @@ bool ParseDirective(bool bol) {
         listmacro = true;
         ml = STRDUP(line);
         if (ml == nullptr) {
-            Error("No enough memory!", 0, FATAL);
-            return false;
+            Fatal("Out of memory!"s);
         }
         do {
             STRCPY(line, LINEMAX, pp);
@@ -125,12 +121,10 @@ bool ParseDirective(bool bol) {
         free(ml);
         return true;
     }
-    /* (end add) */
     lp = olp;
     return false;
 }
 
-/* added */
 bool ParseDirective_REPT() {
     char *olp = lp;
     char *n;
@@ -147,12 +141,11 @@ bool ParseDirective_REPT() {
     return false;
 }
 
-/* modified */
 void dirBYTE() {
     int teller, e[256];
     teller = GetBytes(lp, e, 0, 0);
     if (!teller) {
-        Error("BYTE/DEFB/DB with no arguments", 0);
+        Error("BYTE/DEFB/DB with no arguments"s);
         return;
     }
     EmitBytes(e);
@@ -162,7 +155,7 @@ void dirDC() {
     int teller, e[129];
     teller = GetBytes(lp, e, 0, 1);
     if (!teller) {
-        Error("DC with no arguments", 0);
+        Error("DC with no arguments"s);
         return;
     }
     EmitBytes(e);
@@ -172,7 +165,7 @@ void dirDZ() {
     int teller, e[130];
     teller = GetBytes(lp, e, 0, 0);
     if (!teller) {
-        Error("DZ with no arguments", 0);
+        Error("DZ with no arguments"s);
         return;
     }
     e[teller++] = 0;
@@ -188,12 +181,12 @@ void dirABYTE() {
         add &= 255;
         teller = GetBytes(lp, e, add, 0);
         if (!teller) {
-            Error("ABYTE with no arguments", 0);
+            Error("ABYTE with no arguments"s);
             return;
         }
         EmitBytes(e);
     } else {
-        Error("[ABYTE] Expression expected", 0);
+        Error("[ABYTE] Expression expected"s);
     }
 }
 
@@ -205,12 +198,12 @@ void dirABYTEC() {
         add &= 255;
         teller = GetBytes(lp, e, add, 1);
         if (!teller) {
-            Error("ABYTEC with no arguments", 0);
+            Error("ABYTEC with no arguments"s);
             return;
         }
         EmitBytes(e);
     } else {
-        Error("[ABYTEC] Expression expected", 0);
+        Error("[ABYTEC] Expression expected"s);
     }
 }
 
@@ -222,14 +215,14 @@ void dirABYTEZ() {
         add &= 255;
         teller = GetBytes(lp, e, add, 0);
         if (!teller) {
-            Error("ABYTEZ with no arguments", 0);
+            Error("ABYTEZ with no arguments"s);
             return;
         }
         e[teller++] = 0;
         e[teller] = -1;
         EmitBytes(e);
     } else {
-        Error("[ABYTEZ] Expression expected", 0);
+        Error("[ABYTEZ] Expression expected"s);
     }
 }
 
@@ -241,11 +234,11 @@ void dirWORD() {
         if (ParseExpression(lp, val)) {
             check16(val);
             if (teller > 127) {
-                Error("Over 128 values in DW/DEFW/WORD", 0, FATAL);
+                Fatal("Over 128 values in DW/DEFW/WORD"s);
             }
             e[teller++] = val & 65535;
         } else {
-            Error("[DW/DEFW/WORD] Syntax error", lp, CATCHALL);
+            Error("[DW/DEFW/WORD] Syntax error"s, lp, CATCHALL);
             return;
         }
         SkipBlanks();
@@ -257,7 +250,7 @@ void dirWORD() {
     }
     e[teller] = -1;
     if (!teller) {
-        Error("DW/DEFW/WORD with no arguments", 0);
+        Error("DW/DEFW/WORD with no arguments"s);
         return;
     }
     EmitWords(e);
@@ -270,13 +263,13 @@ void dirDWORD() {
     while (*lp) {
         if (ParseExpression(lp, val)) {
             if (teller > 127) {
-                Error("[DWORD] Over 128 values", 0, FATAL);
+                Fatal("[DWORD] Over 128 values"s);
             }
             e[teller * 2] = val & 65535;
             e[teller * 2 + 1] = val >> 16;
             ++teller;
         } else {
-            Error("[DWORD] Syntax error", lp, CATCHALL);
+            Error("[DWORD] Syntax error"s, lp, CATCHALL);
             return;
         }
         SkipBlanks();
@@ -288,7 +281,7 @@ void dirDWORD() {
     }
     e[teller * 2] = -1;
     if (!teller) {
-        Error("DWORD with no arguments", 0);
+        Error("DWORD with no arguments"s);
         return;
     }
     EmitWords(e);
@@ -302,14 +295,14 @@ void dirD24() {
         if (ParseExpression(lp, val)) {
             check24(val);
             if (teller > 127) {
-                Error("[D24] Over 128 values", 0, FATAL);
+                Fatal("[D24] Over 128 values"s);
             }
             e[teller * 3] = val & 255;
             e[teller * 3 + 1] = (val >> 8) & 255;
             e[teller * 3 + 2] = (val >> 16) & 255;
             ++teller;
         } else {
-            Error("[D24] Syntax error", lp, CATCHALL);
+            Error("[D24] Syntax error"s, lp, CATCHALL);
             return;
         }
         SkipBlanks();
@@ -321,7 +314,7 @@ void dirD24() {
     }
     e[teller * 3] = -1;
     if (!teller) {
-        Error("D24 with no arguments", 0);
+        Error("D24 with no arguments"s);
         return;
     }
     EmitBytes(e);
@@ -331,14 +324,14 @@ void dirBLOCK() {
     aint teller, val = 0;
     if (ParseExpression(lp, teller)) {
         if ((signed) teller < 0) {
-            Error("Negative BLOCK?", 0, FATAL);
+            Fatal("Negative BLOCK?"s);
         }
         if (comma(lp)) {
             ParseExpression(lp, val);
         }
         EmitBlock(val, teller);
     } else {
-        Error("[BLOCK] Syntax Error", lp, CATCHALL);
+        Error("[BLOCK] Syntax Error"s, lp, CATCHALL);
     }
 }
 
@@ -348,15 +341,15 @@ void dirORG() {
         if (ParseExpression(lp, val)) {
             Em.setAddress(val);
         } else {
-            Error("[ORG] Syntax error", lp, CATCHALL);
+            Error("[ORG] Syntax error"s, lp, CATCHALL);
             return;
         }
         if (comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[ORG] Syntax error", lp, CATCHALL);
+                Error("[ORG] Syntax error"s, lp, CATCHALL);
                 return;
             }
-            boost::optional<std::string> err = Em.setPage(val);
+            auto err = Em.setPage(val);
             if (err) {
                 Error("[ORG] "s + *err, lp, CATCHALL);
                 return;
@@ -366,7 +359,7 @@ void dirORG() {
         if (ParseExpression(lp, val)) {
             Em.setAddress(val);
         } else {
-            Error("[ORG] Syntax error", 0, CATCHALL);
+            Error("[ORG] Syntax error"s, CATCHALL);
         }
     }
 }
@@ -376,14 +369,14 @@ void dirDISP() {
     if (ParseExpression(lp, val)) {
         Em.doDisp(val);
     } else {
-        Error("[DISP] Syntax error", 0, CATCHALL);
+        Error("[DISP] Syntax error"s, CATCHALL);
         return;
     }
 }
 
 void dirENT() {
     if (!Em.isDisp()) {
-        Error("ENT should be after DISP", 0);
+        Error("ENT should be after DISP"s);
         return;
     }
     Em.doEnt();
@@ -391,15 +384,15 @@ void dirENT() {
 
 void dirPAGE() {
     if (!Em.isMemManagerActive()) {
-        Error("[PAGE] works in device emulation mode only"s, ""s);
+        Error("[PAGE] works in device emulation mode only"s);
         return;
     }
     aint val;
     if (!ParseExpression(lp, val)) {
-        Error("Syntax error", 0, CATCHALL);
+        Error("Syntax error"s, CATCHALL);
         return;
     }
-    boost::optional<std::string> err = Em.setPage(val);
+    auto err = Em.setPage(val);
     if (err) {
         Error("[PAGE] "s + *err, lp);
         return;
@@ -408,12 +401,12 @@ void dirPAGE() {
 
 void dirSLOT() {
     if (!Em.isMemManagerActive()) {
-        Error("[SLOT] works in device emulation mode only"s, ""s);
+        Error("[SLOT] works in device emulation mode only"s);
         return;
     }
     aint val;
     if (!ParseExpression(lp, val)) {
-        Error("Syntax error", 0, CATCHALL);
+        Error("Syntax error"s, CATCHALL);
         return;
     }
     auto err = Em.setSlot(val);
@@ -454,7 +447,7 @@ void dirALIGN() {
                 if (!ParseExpression(lp, byte)) {
                     EmitBlock(0, val, true);
                 } else if (byte > 255 || byte < 0) {
-                    Error("[ALIGN] Illegal align byte", 0);
+                    Error("[ALIGN] Illegal align byte"s);
                     break;
                 } else {
                     EmitBlock(byte, val, false);
@@ -464,7 +457,7 @@ void dirALIGN() {
             }
             break;
         default:
-            Error("[ALIGN] Illegal align", 0);
+            Error("[ALIGN] Illegal align"s);
             break;
     }
 }
@@ -474,14 +467,14 @@ void dirMODULE() {
     if (const char *name = GetID(lp)) {
         Modules.Begin(name);
     } else {
-        Error("[MODULE] Syntax error", 0, CATCHALL);
+        Error("[MODULE] Syntax error"s, CATCHALL);
     }
 }
 
 void dirENDMODULE() {
 
     if (Modules.IsEmpty()) {
-        Error("ENDMODULE without MODULE", 0);
+        Error("ENDMODULE without MODULE"s);
     } else {
         Modules.End();
     }
@@ -493,7 +486,7 @@ void dirEND() {
     aint val;
     if (ParseExpression(lp, val)) {
         if (val > 65535 || val < 0) {
-            Error("[END] Invalid address: "s + std::to_string(val), ""s, CATCHALL);
+            Error("[END] Invalid address: "s + std::to_string(val), CATCHALL);
             return;
         }
         StartAddress = val;
@@ -508,14 +501,14 @@ void dirEND() {
 void dirSIZE() {
     aint val;
     if (!ParseExpression(lp, val)) {
-        Error("[SIZE] Syntax error", bp, CATCHALL);
+        Error("[SIZE] Syntax error"s, bp, CATCHALL);
         return;
     }
     if (pass == LASTPASS) {
         return;
     }
     if (Em.isForcedRawOutputSize()) {
-        Error("[SIZE] Multiple SIZE directives?", 0);
+        Error("[SIZE] Multiple SIZE directives?"s);
         return;
     }
     Em.setForcedRawOutputFileSize(val);
@@ -529,22 +522,22 @@ void dirINCBIN() {
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[INCBIN] Syntax error", bp, CATCHALL);
+                Error("[INCBIN] Syntax error"s, bp, CATCHALL);
                 return;
             }
             if (val < 0) {
-                Error("[INCBIN] Negative values are not allowed", bp);
+                Error("[INCBIN] Negative values are not allowed"s, bp);
                 return;
             }
             offset = val;
         }
         if (comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[INCBIN] Syntax error", bp, CATCHALL);
+                Error("[INCBIN] Syntax error"s, bp, CATCHALL);
                 return;
             }
             if (val < 0) {
-                Error("[INCBIN] Negative values are not allowed", bp);
+                Error("[INCBIN] Negative values are not allowed"s, bp);
                 return;
             }
             length = val;
@@ -555,7 +548,6 @@ void dirINCBIN() {
     includeBinaryFile(FileName, offset, length);
 }
 
-/* added */
 void dirINCHOB() {
     aint val;
     fs::path fnaamh;
@@ -566,22 +558,22 @@ void dirINCHOB() {
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[INCHOB] Syntax error", bp, CATCHALL);
+                Error("[INCHOB] Syntax error"s, bp, CATCHALL);
                 return;
             }
             if (val < 0) {
-                Error("[INCHOB] Negative values are not allowed", bp);
+                Error("[INCHOB] Negative values are not allowed"s, bp);
                 return;
             }
             offset += val;
         }
         if (comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[INCHOB] Syntax error", bp, CATCHALL);
+                Error("[INCHOB] Syntax error"s, bp, CATCHALL);
                 return;
             }
             if (val < 0) {
-                Error("[INCHOB] Negative values are not allowed", bp);
+                Error("[INCHOB] Negative values are not allowed"s, bp);
                 return;
             }
             length = val;
@@ -606,7 +598,6 @@ void dirINCHOB() {
     includeBinaryFile(FileName, offset, length);
 }
 
-/* added */
 void dirINCTRD() {
     aint val;
     char hdr[16];
@@ -618,33 +609,33 @@ void dirINCTRD() {
         if (!comma(lp)) {
             HobetaFileName = GetHobetaFileName(lp);
         } else {
-            Error("[INCTRD] Syntax error", bp, CATCHALL);
+            Error("[INCTRD] Syntax error"s, bp, CATCHALL);
             return;
         }
     }
     if (HobetaFileName.Empty()) {
-        Error("[INCTRD] Syntax error", bp, CATCHALL);
+        Error("[INCTRD] Syntax error"s, bp, CATCHALL);
         return;
     }
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[INCTRD] Syntax error", bp, CATCHALL);
+                Error("[INCTRD] Syntax error"s, bp, CATCHALL);
                 return;
             }
             if (val < 0) {
-                Error("[INCTRD] Negative values are not allowed", bp);
+                Error("[INCTRD] Negative values are not allowed"s, bp);
                 return;
             }
             offset += val;
         }
         if (comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[INCTRD] Syntax error", bp, CATCHALL);
+                Error("[INCTRD] Syntax error"s, bp, CATCHALL);
                 return;
             }
             if (val < 0) {
-                Error("[INCTRD] Negative values are not allowed", bp);
+                Error("[INCTRD] Negative values are not allowed"s, bp);
                 return;
             }
             length = val;
@@ -672,7 +663,7 @@ void dirINCTRD() {
         }
     }
     if (i) {
-        Error("[INCTRD] File not found in TRD image", HobetaFileName.c_str(), CATCHALL);
+        Error("[INCTRD] File not found in TRD image"s, HobetaFileName.string(), CATCHALL);
         return;
     }
     if (length > 0) {
@@ -695,10 +686,9 @@ void dirINCTRD() {
     includeBinaryFile(FileName, offset, length);
 }
 
-/* added */
 void dirSAVESNA() {
     if (!Em.isMemManagerActive()) {
-        Error("[SAVESNA] works in device emulation mode only"s, ""s);
+        Error("[SAVESNA] works in device emulation mode only"s);
         return;
     }
     bool exec = true;
@@ -713,35 +703,34 @@ void dirSAVESNA() {
     if (comma(lp)) {
         if (!comma(lp) && StartAddress < 0) {
             if (!ParseExpression(lp, val)) {
-                Error("[SAVESNA] Syntax error", bp, PASS3);
+                Error("[SAVESNA] Syntax error"s, bp, PASS3);
                 return;
             }
             if (val < 0) {
-                Error("[SAVESNA] Negative values are not allowed", bp, PASS3);
+                Error("[SAVESNA] Negative values are not allowed"s, bp, PASS3);
                 return;
             }
             start = val;
         } else {
-            Error("[SAVESNA] Syntax error. No parameters", bp, PASS3);
+            Error("[SAVESNA] Syntax error. No parameters"s, bp, PASS3);
             return;
         }
     } else if (StartAddress < 0) {
-        Error("[SAVESNA] Syntax error. No parameters", bp, PASS3);
+        Error("[SAVESNA] Syntax error. No parameters"s, bp, PASS3);
         return;
     } else {
         start = StartAddress;
     }
 
     if (exec && !SaveSNA_ZX(FileName, start)) {
-        Error("[SAVESNA] Error writing file (Disk full?)", bp, CATCHALL);
+        Error("[SAVESNA] Error writing file (Disk full?)"s, bp, CATCHALL);
         return;
     }
 }
 
-/* added */
 void dirSAVETAP() {
     if (!Em.isMemManagerActive()) {
-        Error("[SAVETAP] works in device emulation mode only"s, ""s);
+        Error("[SAVETAP] works in device emulation mode only"s);
         return;
     }
 
@@ -758,35 +747,34 @@ void dirSAVETAP() {
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[SAVETAP] Syntax error", bp, PASS3);
+                Error("[SAVETAP] Syntax error"s, bp, PASS3);
                 return;
             }
             if (val < 0) {
-                Error("[SAVETAP] Negative values are not allowed", bp, PASS3);
+                Error("[SAVETAP] Negative values are not allowed"s, bp, PASS3);
                 return;
             }
             start = val;
         } else {
-            Error("[SAVETAP] Syntax error. No parameters", bp, PASS3);
+            Error("[SAVETAP] Syntax error. No parameters"s, bp, PASS3);
             return;
         }
     } else if (StartAddress < 0) {
-        Error("[SAVETAP] Syntax error. No parameters", bp, PASS3);
+        Error("[SAVETAP] Syntax error. No parameters"s, bp, PASS3);
         return;
     } else {
         start = StartAddress;
     }
 
     if (exec && !SaveTAP_ZX(FileName, start)) {
-        Error("[SAVETAP] Error writing file (Disk full?)", bp, CATCHALL);
+        Error("[SAVETAP] Error writing file (Disk full?)"s, bp, CATCHALL);
         return;
     }
 }
 
-/* added */
 void dirSAVEBIN() {
     if (!Em.isMemManagerActive()) {
-        Error("[SAVEBIN] works in device emulation mode only"s, ""s);
+        Error("[SAVEBIN] works in device emulation mode only"s);
         return;
     }
     bool exec = true;
@@ -802,47 +790,46 @@ void dirSAVEBIN() {
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[SAVEBIN] Syntax error", bp, PASS3);
+                Error("[SAVEBIN] Syntax error"s, bp, PASS3);
                 return;
             }
             if (val < 0) {
-                Error("[SAVEBIN] Values less than 0000h are not allowed", bp, PASS3);
+                Error("[SAVEBIN] Values less than 0000h are not allowed"s, bp, PASS3);
                 return;
             } else if (val > 0xFFFF) {
-                Error("[SAVEBIN] Values more than FFFFh are not allowed", bp, PASS3);
+                Error("[SAVEBIN] Values more than FFFFh are not allowed"s, bp, PASS3);
                 return;
             }
             start = val;
         } else {
-            Error("[SAVEBIN] Syntax error. No parameters", bp, PASS3);
+            Error("[SAVEBIN] Syntax error. No parameters"s, bp, PASS3);
             return;
         }
         if (comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[SAVEBIN] Syntax error", bp, PASS3);
+                Error("[SAVEBIN] Syntax error"s, bp, PASS3);
                 return;
             }
             if (val < 0) {
-                Error("[SAVEBIN] Negative values are not allowed", bp, PASS3);
+                Error("[SAVEBIN] Negative values are not allowed"s, bp, PASS3);
                 return;
             }
             length = val;
         }
     } else {
-        Error("[SAVEBIN] Syntax error. No parameters", bp, PASS3);
+        Error("[SAVEBIN] Syntax error. No parameters"s, bp, PASS3);
         return;
     }
 
     if (exec && !saveBinaryFile(FileName, start, length)) {
-        Error("[SAVEBIN] Error writing file (Disk full?)", bp, CATCHALL);
+        Error("[SAVEBIN] Error writing file (Disk full?)"s, bp, CATCHALL);
         return;
     }
 }
 
-/* added */
 void dirSAVEHOB() {
     if (!Em.isMemManagerActive()) {
-        Error("[SAVEHOB] works in device emulation mode only"s, ""s);
+        Error("[SAVEHOB] works in device emulation mode only"s);
         return;
     }
     aint val;
@@ -859,57 +846,56 @@ void dirSAVEHOB() {
         if (!comma(lp)) {
             HobetaFileName = GetHobetaFileName(lp);
         } else {
-            Error("[SAVEHOB] Syntax error. No parameters", bp, PASS3);
+            Error("[SAVEHOB] Syntax error. No parameters"s, bp, PASS3);
             return;
         }
     }
     if (HobetaFileName.Empty()) {
-        Error("[SAVEHOB] Syntax error", bp, PASS3);
+        Error("[SAVEHOB] Syntax error"s, bp, PASS3);
         return;
     }
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[SAVEHOB] Syntax error", bp, PASS3);
+                Error("[SAVEHOB] Syntax error"s, bp, PASS3);
                 return;
             }
             if (val < 0x4000) {
-                Error("[SAVEHOB] Values less than 4000h are not allowed", bp, PASS3);
+                Error("[SAVEHOB] Values less than 4000h are not allowed"s, bp, PASS3);
                 return;
             } else if (val > 0xFFFF) {
-                Error("[SAVEHOB] Values more than FFFFh are not allowed", bp, PASS3);
+                Error("[SAVEHOB] Values more than FFFFh are not allowed"s, bp, PASS3);
                 return;
             }
             start = val;
         } else {
-            Error("[SAVEHOB] Syntax error. No parameters", bp, PASS3);
+            Error("[SAVEHOB] Syntax error. No parameters"s, bp, PASS3);
             return;
         }
         if (comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[SAVEHOB] Syntax error", bp, PASS3);
+                Error("[SAVEHOB] Syntax error"s, bp, PASS3);
                 return;
             }
             if (val < 0) {
-                Error("[SAVEHOB] Negative values are not allowed", bp, PASS3);
+                Error("[SAVEHOB] Negative values are not allowed"s, bp, PASS3);
                 return;
             }
             length = val;
         }
     } else {
-        Error("[SAVEHOB] Syntax error. No parameters", bp, PASS3);
+        Error("[SAVEHOB] Syntax error. No parameters"s, bp, PASS3);
         return;
     }
     if (exec && !SaveHobeta(FileName, HobetaFileName, start, length)) {
-        Error("[SAVEHOB] Error writing file (Disk full?)", bp, CATCHALL);
+        Error("[SAVEHOB] Error writing file (Disk full?)"s, bp, CATCHALL);
         return;
     }
 }
 
-/* added */
 void dirEMPTYTRD() {
     if (!Em.isMemManagerActive()) {
-        Error("[EMPTYTRD] works in device emulation mode only"s, ""s);
+        Error("[EMPTYTRD] works in device emulation mode only"s);
         return;
     }
     if (pass != LASTPASS) {
@@ -918,16 +904,15 @@ void dirEMPTYTRD() {
     }
     const fs::path &FileName = resolveOutputPath(GetFileName(lp));
     if (FileName.empty()) {
-        Error("[EMPTYTRD] Syntax error", bp, CATCHALL);
+        Error("[EMPTYTRD] Syntax error"s, bp, CATCHALL);
         return;
     }
     TRD_SaveEmpty(FileName);
 }
 
-/* added */
 void dirSAVETRD() {
     if (!Em.isMemManagerActive()) {
-        Error("[SAVETRD] works in device emulation mode only"s, ""s);
+        Error("[SAVETRD] works in device emulation mode only"s);
         return;
     }
     bool exec = true;
@@ -945,58 +930,58 @@ void dirSAVETRD() {
         if (!comma(lp)) {
             HobetaFileName = GetHobetaFileName(lp);
         } else {
-            Error("[SAVETRD] Syntax error. No parameters", bp, PASS3);
+            Error("[SAVETRD] Syntax error. No parameters"s, bp, PASS3);
             return;
         }
     }
     if (HobetaFileName.Empty()) {
-        Error("[SAVETRD] Syntax error. Filename should not be empty", bp, PASS3);
+        Error("[SAVETRD] Syntax error. Filename should not be empty"s, bp, PASS3);
         return;
     }
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!ParseExpression(lp, val)) {
-                Error("[SAVETRD] Syntax error", bp, PASS3);
+                Error("[SAVETRD] Syntax error"s, bp, PASS3);
                 return;
             }
             if (val > 0xFFFF) {
-                Error("[SAVETRD] Values more than 0FFFFh are not allowed", bp, PASS3);
+                Error("[SAVETRD] Values more than 0FFFFh are not allowed"s, bp, PASS3);
                 return;
             }
             start = val;
         } else {
-            Error("[SAVETRD] Syntax error. No parameters", bp, PASS3);
+            Error("[SAVETRD] Syntax error. No parameters"s, bp, PASS3);
             return;
         }
         if (comma(lp)) {
             if (!comma(lp)) {
                 if (!ParseExpression(lp, val)) {
-                    Error("[SAVETRD] Syntax error", bp, PASS3);
+                    Error("[SAVETRD] Syntax error"s, bp, PASS3);
                     return;
                 }
                 if (val < 0) {
-                    Error("[SAVETRD] Negative values are not allowed", bp, PASS3);
+                    Error("[SAVETRD] Negative values are not allowed"s, bp, PASS3);
                     return;
                 }
                 length = val;
             } else {
-                Error("[SAVETRD] Syntax error. No parameters", bp, PASS3);
+                Error("[SAVETRD] Syntax error. No parameters"s, bp, PASS3);
                 return;
             }
         }
         if (comma(lp)) { //added by boo_boo 19_0ct_2008
             if (!ParseExpression(lp, val)) {
-                Error("[SAVETRD] Syntax error", bp, PASS3);
+                Error("[SAVETRD] Syntax error"s, bp, PASS3);
                 return;
             }
             if (val < 0) {
-                Error("[SAVETRD] Negative values are not allowed", bp, PASS3);
+                Error("[SAVETRD] Negative values are not allowed"s, bp, PASS3);
                 return;
             }
             autostart = val;
         }
     } else {
-        Error("[SAVETRD] Syntax error. No parameters", bp, PASS3);
+        Error("[SAVETRD] Syntax error. No parameters"s, bp, PASS3);
         return;
     }
 
@@ -1005,11 +990,10 @@ void dirSAVETRD() {
     }
 }
 
-/* added */
 void dirENCODING() {
     const std::string &enc = GetString(lp);
     if (enc.empty()) {
-        Error("[ENCODING] Syntax error. No parameters", bp, CATCHALL);
+        Error("[ENCODING] Syntax error. No parameters"s, bp, CATCHALL);
         return;
     }
     //TODO: make compare function or type
@@ -1022,11 +1006,10 @@ void dirENCODING() {
     } else if (lowercased == "win") {
         ConvertEncoding = ENCWIN;
     } else {
-        Error("[ENCODING] Syntax error. Bad parameter", bp, CATCHALL);
+        Error("[ENCODING] Syntax error. Bad parameter"s, bp, CATCHALL);
     }
 }
 
-/* added */
 void dirLABELSLIST() {
     if (pass != 1) {
         SkipParam(lp);
@@ -1034,29 +1017,23 @@ void dirLABELSLIST() {
     }
     const fs::path &FileName = resolveOutputPath(GetFileName(lp));
     if (FileName.empty()) {
-        Error("[LABELSLIST] Syntax error. File name not specified", bp, CATCHALL);
+        Error("[LABELSLIST] Syntax error. File name not specified"s, bp, CATCHALL);
         return;
     }
     Options::UnrealLabelListFName = FileName;
 }
 
-/* deleted */
-/*void dirTEXTAREA() {
-
-}*/
-
-/* modified */
 void dirIF() {
     aint val;
     IsLabelNotFound = 0;
     /*if (!ParseExpression(p,val)) { Error("Syntax error",0,CATCHALL); return; }*/
     if (!ParseExpression(lp, val)) {
-        Error("[IF] Syntax error", 0, CATCHALL);
+        Error("[IF] Syntax error"s, CATCHALL);
         return;
     }
     /*if (IsLabelNotFound) Error("Forward reference",0,ALL);*/
     if (IsLabelNotFound) {
-        Error("[IF] Forward reference", 0, ALL);
+        Error("[IF] Forward reference"s, ALL);
     }
 
     if (val) {
@@ -1064,13 +1041,13 @@ void dirIF() {
         switch (ReadFile(lp, "[IF] No endif")) {
             case ELSE:
                 if (SkipFile(lp, "[IF] No endif") != ENDIF) {
-                    Error("[IF] No endif", 0);
+                    Error("[IF] No endif"s);
                 }
                 break;
             case ENDIF:
                 break;
             default:
-                Error("[IF] No endif!", 0);
+                Error("[IF] No endif!"s);
                 break;
         }
     } else {
@@ -1078,28 +1055,27 @@ void dirIF() {
         switch (SkipFile(lp, "[IF] No endif")) {
             case ELSE:
                 if (ReadFile(lp, "[IF] No endif") != ENDIF) {
-                    Error("[IF] No endif", 0);
+                    Error("[IF] No endif"s);
                 }
                 break;
             case ENDIF:
                 break;
             default:
-                Error("[IF] No endif!", 0);
+                Error("[IF] No endif!"s);
                 break;
         }
     }
 }
 
-/* added */
 void dirIFN() {
     aint val;
     IsLabelNotFound = 0;
     if (!ParseExpression(lp, val)) {
-        Error("[IFN] Syntax error", 0, CATCHALL);
+        Error("[IFN] Syntax error"s, CATCHALL);
         return;
     }
     if (IsLabelNotFound) {
-        Error("[IFN] Forward reference", 0, ALL);
+        Error("[IFN] Forward reference"s, ALL);
     }
 
     if (!val) {
@@ -1107,13 +1083,13 @@ void dirIFN() {
         switch (ReadFile(lp, "[IFN] No endif")) {
             case ELSE:
                 if (SkipFile(lp, "[IFN] No endif") != ENDIF) {
-                    Error("[IFN] No endif", 0);
+                    Error("[IFN] No endif"s);
                 }
                 break;
             case ENDIF:
                 break;
             default:
-                Error("[IFN] No endif!", 0);
+                Error("[IFN] No endif!"s);
                 break;
         }
     } else {
@@ -1121,13 +1097,13 @@ void dirIFN() {
         switch (SkipFile(lp, "[IFN] No endif")) {
             case ELSE:
                 if (ReadFile(lp, "[IFN] No endif") != ENDIF) {
-                    Error("[IFN] No endif", 0);
+                    Error("[IFN] No endif"s);
                 }
                 break;
             case ENDIF:
                 break;
             default:
-                Error("[IFN] No endif!", 0);
+                Error("[IFN] No endif!"s);
                 break;
         }
     }
@@ -1136,7 +1112,7 @@ void dirIFN() {
 void dirIFUSED() {
     char *id;
     if (((id = GetID(lp)) == NULL || *id == 0) && LastParsedLabel == NULL) {
-        Error("[IFUSED] Syntax error", 0, CATCHALL);
+        Error("[IFUSED] Syntax error"s, CATCHALL);
         return;
     }
     if (id == NULL || *id == 0) {
@@ -1144,7 +1120,7 @@ void dirIFUSED() {
     } else {
         id = ValidateLabel(id);
         if (id == NULL) {
-            Error("[IFUSED] Invalid label name", 0, CATCHALL);
+            Error("[IFUSED] Invalid label name"s, CATCHALL);
             return;
         }
     }
@@ -1154,13 +1130,13 @@ void dirIFUSED() {
         switch (ReadFile(lp, "[IFUSED] No endif")) {
             case ELSE:
                 if (SkipFile(lp, "[IFUSED] No endif") != ENDIF) {
-                    Error("[IFUSED] No endif", 0);
+                    Error("[IFUSED] No endif"s);
                 }
                 break;
             case ENDIF:
                 break;
             default:
-                Error("[IFUSED] No endif!", 0);
+                Error("[IFUSED] No endif!"s);
                 break;
         }
     } else {
@@ -1168,13 +1144,13 @@ void dirIFUSED() {
         switch (SkipFile(lp, "[IFUSED] No endif")) {
             case ELSE:
                 if (ReadFile(lp, "[IFUSED] No endif") != ENDIF) {
-                    Error("[IFUSED] No endif", 0);
+                    Error("[IFUSED] No endif"s);
                 }
                 break;
             case ENDIF:
                 break;
             default:
-                Error("[IFUSED] No endif!", 0);
+                Error("[IFUSED] No endif!"s);
                 break;
         }
     }
@@ -1183,7 +1159,7 @@ void dirIFUSED() {
 void dirIFNUSED() {
     char *id;
     if (((id = GetID(lp)) == NULL || *id == 0) && LastParsedLabel == NULL) {
-        Error("[IFUSED] Syntax error", 0, CATCHALL);
+        Error("[IFUSED] Syntax error"s, CATCHALL);
         return;
     }
     if (id == NULL || *id == 0) {
@@ -1191,7 +1167,7 @@ void dirIFNUSED() {
     } else {
         id = ValidateLabel(id);
         if (id == NULL) {
-            Error("[IFUSED] Invalid label name", 0, CATCHALL);
+            Error("[IFUSED] Invalid label name"s, CATCHALL);
             return;
         }
     }
@@ -1201,13 +1177,13 @@ void dirIFNUSED() {
         switch (ReadFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
                 if (SkipFile(lp, "[IFNUSED] No endif") != ENDIF) {
-                    Error("[IFNUSED] No endif", 0);
+                    Error("[IFNUSED] No endif"s);
                 }
                 break;
             case ENDIF:
                 break;
             default:
-                Error("[IFNUSED] No endif!", 0);
+                Error("[IFNUSED] No endif!"s);
                 break;
         }
     } else {
@@ -1215,32 +1191,26 @@ void dirIFNUSED() {
         switch (SkipFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
                 if (ReadFile(lp, "[IFNUSED] No endif") != ENDIF) {
-                    Error("[IFNUSED] No endif", 0);
+                    Error("[IFNUSED] No endif"s);
                 }
                 break;
             case ENDIF:
                 break;
             default:
-                Error("[IFNUSED] No endif!", 0);
+                Error("[IFNUSED] No endif!"s);
                 break;
         }
     }
 }
 
 void dirELSE() {
-    Error("ELSE without IF/IFN/IFUSED/IFNUSED/IFDEF/IFNDEF", 0);
+    Error("ELSE without IF/IFN/IFUSED/IFNUSED/IFDEF/IFNDEF"s);
 }
 
 void dirENDIF() {
-    Error("ENDIF without IF/IFN/IFUSED/IFNUSED/IFDEF/IFNDEF", 0);
+    Error("ENDIF without IF/IFN/IFUSED/IFNUSED/IFDEF/IFNDEF"s);
 }
 
-/* deleted */
-/*void dirENDTEXTAREA() {
-  Error("ENDT without TEXTAREA",0);
-}*/
-
-/* modified */
 void dirINCLUDE() {
     const fs::path &FileName = GetFileName(lp);
     Listing.listFile();
@@ -1269,22 +1239,21 @@ void dirOUTPUT() {
         if (!Em.isRawOutputOverriden()) {
             Em.setRawOutput(FileName, Mode);
         } else {
-            Warning("OUTPUT directive had no effect as output is overriden"s, ""s);
+            Warning("OUTPUT directive had no effect as output is overriden"s);
         }
     }
 }
 
-/* modified */
 void dirDEFINE() {
     char *id;
 
     if (!(id = GetID(lp))) {
-        Error("[DEFINE] Illegal syntax", 0);
+        Error("[DEFINE] Illegal syntax"s);
         return;
     }
 
     SkipBlanks(lp); // FIXME: This is not enough: need to account for comments
-    if(DefineTable.find(id) != DefineTable.end()) {
+    if (DefineTable.find(id) != DefineTable.end()) {
         Error("Duplicate define"s, id);
     }
     DefineTable[id] = lp;
@@ -1292,12 +1261,11 @@ void dirDEFINE() {
     *(lp) = 0;
 }
 
-/* added */
 void dirUNDEFINE() {
     char *id;
 
     if (!(id = GetID(lp)) && *lp != '*') {
-        Error("[UNDEFINE] Illegal syntax", 0);
+        Error("[UNDEFINE] Illegal syntax"s);
         return;
     }
 
@@ -1345,7 +1313,6 @@ bool ifDefName(const std::string &Name) {
         return false;
 }
 
-/* modified */
 void dirIFDEF() {
     /*char *p=line,*id;*/
     char *id;
@@ -1360,7 +1327,7 @@ void dirIFDEF() {
     */
     EReturn res;
     if (!(id = GetID(lp))) {
-        Error("[IFDEF] Illegal identifier", 0, PASS1);
+        Error("[IFDEF] Illegal identifier"s, PASS1);
         return;
     }
 
@@ -1371,14 +1338,14 @@ void dirIFDEF() {
             /*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
             case ELSE:
                 if (SkipFile(lp, "[IFDEF] No endif") != ENDIF) {
-                    Error("[IFDEF] No endif", 0);
+                    Error("[IFDEF] No endif"s);
                 }
                 break;
             case ENDIF:
                 break;
                 /*default: Error("No endif!",0); break;*/
             default:
-                Error("[IFDEF] No endif!", 0);
+                Error("[IFDEF] No endif!"s);
                 break;
         }
     } else {
@@ -1388,21 +1355,20 @@ void dirIFDEF() {
             /*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
             case ELSE:
                 if (ReadFile(lp, "[IFDEF] No endif") != ENDIF) {
-                    Error("[IFDEF] No endif", 0);
+                    Error("[IFDEF] No endif"s);
                 }
                 break;
             case ENDIF:
                 break;
                 /*default: Error(" No endif!",0); break;*/
             default:
-                Error("[IFDEF] No endif!", 0);
+                Error("[IFDEF] No endif!"s);
                 break;
         }
     }
     /**lp=0;*/
 }
 
-/* modified */
 void dirIFNDEF() {
     /*char *p=line,*id;*/
     char *id;
@@ -1417,7 +1383,7 @@ void dirIFNDEF() {
     */
     EReturn res;
     if (!(id = GetID(lp))) {
-        Error("[IFNDEF] Illegal identifier", 0, PASS1);
+        Error("[IFNDEF] Illegal identifier"s, PASS1);
         return;
     }
 
@@ -1428,14 +1394,14 @@ void dirIFNDEF() {
             /*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
             case ELSE:
                 if (SkipFile(lp, "[IFNDEF] No endif") != ENDIF) {
-                    Error("[IFNDEF] No endif", 0);
+                    Error("[IFNDEF] No endif"s);
                 }
                 break;
             case ENDIF:
                 break;
                 /*default: Error("No endif!",0); break;*/
             default:
-                Error("[IFNDEF] No endif!", 0);
+                Error("[IFNDEF] No endif!"s);
                 break;
         }
     } else {
@@ -1445,21 +1411,20 @@ void dirIFNDEF() {
             /*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
             case ELSE:
                 if (ReadFile(lp, "[IFNDEF] No endif") != ENDIF) {
-                    Error("[IFNDEF] No endif", 0);
+                    Error("[IFNDEF] No endif"s);
                 }
                 break;
             case ENDIF:
                 break;
                 /*default: Error("No endif!",0); break;*/
             default:
-                Error("[IFNDEF] No endif!", 0);
+                Error("[IFNDEF] No endif!"s);
                 break;
         }
     }
     /**lp=0;*/
 }
 
-/* modified */
 void dirEXPORT() {
     aint val;
     char *n, *p;
@@ -1471,7 +1436,7 @@ void dirEXPORT() {
                 Options::ExportFName.string());
     }
     if (!(n = p = GetID(lp))) {
-        Error("[EXPORT] Syntax error", lp, CATCHALL);
+        Error("[EXPORT] Syntax error"s, lp, CATCHALL);
         return;
     }
     if (pass != LASTPASS) {
@@ -1481,13 +1446,12 @@ void dirEXPORT() {
 
     GetLabelValue(n, val);
     if (IsLabelNotFound) {
-        Error("[EXPORT] Label not found", p, SUPPRESS);
+        Error("[EXPORT] Label not found"s, p, SUPPRESS);
         return;
     }
     writeExport(p, val);
 }
 
-/* added */
 void dirDISPLAY() {
     char decprint = 0;
     std::string Message;
@@ -1496,11 +1460,11 @@ void dirDISPLAY() {
     while (true) {
         SkipBlanks(lp);
         if (!*lp) {
-            Error("[DISPLAY] Expression expected", 0, PASS3);
+            Error("[DISPLAY] Expression expected"s, PASS3);
             break;
         }
         if (t == LINEMAX - 1) {
-            Error("[DISPLAY] Too many arguments", lp, PASS3);
+            Error("[DISPLAY] Too many arguments"s, lp, PASS3);
             break;
         }
         if (*(lp) == '/') {
@@ -1525,13 +1489,13 @@ void dirDISPLAY() {
                 case 't':
                     break;
                 default:
-                    Error("[DISPLAY] Syntax error", line, PASS3);
+                    Error("[DISPLAY] Syntax error"s, line, PASS3);
                     return;
             }
             SkipBlanks(lp);
 
             if ((*(lp) != 0x2c)) {
-                Error("[DISPLAY] Syntax error", line, PASS3);
+                Error("[DISPLAY] Syntax error"s, line, PASS3);
                 return;
             }
             ++lp;
@@ -1542,11 +1506,11 @@ void dirDISPLAY() {
             lp++;
             do {
                 if (!*lp || *lp == '"') {
-                    Error("[DISPLAY] Syntax error", line, PASS3);
+                    Error("[DISPLAY] Syntax error"s, line, PASS3);
                     return;
                 }
                 if (t == 128) {
-                    Error("[DISPLAY] Too many arguments", line, PASS3);
+                    Error("[DISPLAY] Too many arguments"s, line, PASS3);
                     return;
                 }
                 GetCharConstChar(lp, val);
@@ -1558,11 +1522,11 @@ void dirDISPLAY() {
             lp++;
             do {
                 if (!*lp || *lp == 0x27) {
-                    Error("[DISPLAY] Syntax error", line, PASS3);
+                    Error("[DISPLAY] Syntax error"s, line, PASS3);
                     return;
                 }
                 if (t == LINEMAX - 1) {
-                    Error("[DISPLAY] Too many arguments", line, PASS3);
+                    Error("[DISPLAY] Too many arguments"s, line, PASS3);
                     return;
                 }
                 GetCharConstCharSingle(lp, val);
@@ -1588,7 +1552,7 @@ void dirDISPLAY() {
                 }
                 decprint = 0;
             } else {
-                Error("[DISPLAY] Syntax error", line, PASS3);
+                Error("[DISPLAY] Syntax error"s, line, PASS3);
                 return;
             }
         }
@@ -1604,37 +1568,35 @@ void dirDISPLAY() {
     }
 }
 
-/* modified */
 void dirMACRO() {
     //if (lijst) Error("No macro definitions allowed here",0,FATAL);
     if (lijst) {
-        Error("[MACRO] No macro definitions allowed here", 0, FATAL);
+        Fatal("[MACRO] No macro definitions allowed here"s);
     }
     char *n;
     //if (!(n=GetID(lp))) { Error("Illegal macroname",0,PASS1); return; }
     if (!(n = GetID(lp))) {
-        Error("[MACRO] Illegal macroname", 0, PASS1);
+        Error("[MACRO] Illegal macroname"s, PASS1);
         return;
     }
     MacroTable.Add(n, lp);
 }
 
 void dirENDS() {
-    Error("[ENDS] End structre without structure", 0);
+    Error("[ENDS] End structre without structure"s);
 }
 
-/* modified */
 void dirASSERT() {
     char *p = lp;
     aint val;
     /*if (!ParseExpression(lp,val)) { Error("Syntax error",0,CATCHALL); return; }
     if (pass==2 && !val) Error("Assertion failed",p);*/
     if (!ParseExpression(lp, val)) {
-        Error("[ASSERT] Syntax error", 0, CATCHALL);
+        Error("[ASSERT] Syntax error"s, CATCHALL);
         return;
     }
     if (pass == LASTPASS && !val) {
-        Error("[ASSERT] Assertion failed", p);
+        Error("[ASSERT] Assertion failed"s, p);
     }
     /**lp=0;*/
 }
@@ -1665,7 +1627,7 @@ void dirSHELLEXEC() {
                 &si,              // Pointer to STARTUPINFO structure.
                 &pi )             // Pointer to PROCESS_INFORMATION structure.
                 ) {
-                Error( "[SHELLEXEC] Execution of command failed", log.c_str(), PASS3 );
+                Error( "[SHELLEXEC] Execution of command failed"s, log, PASS3 );
             } else {
                 CloseHandle(pi.hThread);
                 WaitForSingleObject(pi.hProcess, 500);
@@ -1683,7 +1645,7 @@ void dirSHELLEXEC() {
                 &si,              // Pointer to STARTUPINFO structure.
                 &pi )             // Pointer to PROCESS_INFORMATION structure.
                 ) {
-                Error( "[SHELLEXEC] Execution of command failed", command.c_str(), PASS3 );
+                Error( "[SHELLEXEC] Execution of command failed"s, command, PASS3 );
             } else {
                 CloseHandle(pi.hThread);
                 WaitForSingleObject(pi.hProcess, 500);
@@ -1694,7 +1656,7 @@ void dirSHELLEXEC() {
         ///WinExec ( command, SW_SHOWNORMAL );
 #else
         if (system(command.c_str()) == -1) {
-            Error("[SHELLEXEC] Execution of command failed", command.c_str(), PASS3);
+            Error("[SHELLEXEC] Execution of command failed"s, command, PASS3);
         }
 #endif
     }
@@ -1712,24 +1674,24 @@ void dirSTRUCT() {
     }
 
     if (!(naam = GetID(lp)) || !strlen(naam)) {
-        Error("[STRUCT] Illegal structure name", 0, PASS1);
+        Error("[STRUCT] Illegal structure name"s, PASS1);
         return;
     }
     if (comma(lp)) {
         IsLabelNotFound = 0;
         if (!ParseExpression(lp, offset)) {
-            Error("[STRUCT] Syntax error", 0, CATCHALL);
+            Error("[STRUCT] Syntax error"s, CATCHALL);
             return;
         }
         if (IsLabelNotFound) {
-            Error("[STRUCT] Forward reference", 0, ALL);
+            Error("[STRUCT] Forward reference"s, ALL);
         }
     }
     st = StructureTable.Add(naam, offset, bind, global);
     Listing.listFile();
     while ('o') {
         if (!ReadLine()) {
-            Error("[STRUCT] Unexpected end of structure", 0, PASS1);
+            Error("[STRUCT] Unexpected end of structure"s, PASS1);
             break;
         }
         lp = line; /*if (White()) { SkipBlanks(lp); if (*lp=='.') ++lp; if (cmphstr(lp,"ends")) break; }*/
@@ -1754,23 +1716,14 @@ void dirFPOS() {
         Method = std::ios_base::cur;
     }
     if (!ParseExpression(lp, Offset)) {
-        Error("[FPOS] Syntax error"s, ""s, CATCHALL);
+        Error("[FPOS] Syntax error"s, CATCHALL);
     }
     if (pass == LASTPASS) {
         auto Err = Em.seekRawOutput(Offset, Method);
-        if (Err) {
-            Error(*Err, ""s);
-        }
+        if (Err) Error(*Err);
     }
 }
 
-/* i didn't modify it */
-/*
-void dirBIND() {
-}
-*/
-
-/* added */
 void dirDUP() {
     aint val;
     IsLabelNotFound = 0;
@@ -1779,7 +1732,7 @@ void dirDUP() {
         RepeatInfo &dup = RepeatStack.top();
         if (!dup.Complete) {
             if (!ParseExpression(lp, val)) {
-                Error("[DUP/REPT] Syntax error", 0, CATCHALL);
+                Error("[DUP/REPT] Syntax error"s, CATCHALL);
                 return;
             }
             dup.Level++;
@@ -1788,14 +1741,14 @@ void dirDUP() {
     }
 
     if (!ParseExpression(lp, val)) {
-        Error("[DUP/REPT] Syntax error", 0, CATCHALL);
+        Error("[DUP/REPT] Syntax error"s, CATCHALL);
         return;
     }
     if (IsLabelNotFound) {
-        Error("[DUP/REPT] Forward reference", 0, ALL);
+        Error("[DUP/REPT] Forward reference"s, ALL);
     }
     if ((int) val < 1) {
-        Error("[DUP/REPT] Illegal repeat value", 0, CATCHALL);
+        Error("[DUP/REPT] Illegal repeat value"s, CATCHALL);
         return;
     }
 
@@ -1812,10 +1765,9 @@ void dirDUP() {
     RepeatStack.push(dup);
 }
 
-/* added */
 void dirEDUP() {
     if (RepeatStack.empty()) {
-        Error("[EDUP/ENDR] End repeat without repeat", 0);
+        Error("[EDUP/ENDR] End repeat without repeat"s);
         return;
     } else {
         RepeatInfo &dup = RepeatStack.top();
@@ -1831,7 +1783,7 @@ void dirEDUP() {
     dup.Complete = true;
     dup.Pointer->string = new char[LINEMAX];
     if (dup.Pointer->string == NULL) {
-        Error("[EDUP/ENDR] No enough memory!", 0, FATAL);
+        Fatal("[EDUP/ENDR] Out of memory!"s);
     }
     *dup.Pointer->string = 0;
     STRNCAT(dup.Pointer->string, LINEMAX, dup.lp, lp - dup.lp - 4); //чтобы взять код перед EDUP/ENDR/ENDM
@@ -1840,8 +1792,7 @@ void dirEDUP() {
     listmacro = true;
     ml = STRDUP(line);
     if (ml == nullptr) {
-        Error("[EDUP/ENDR] No enough memory", 0, FATAL);
-        return;
+        Fatal("[EDUP/ENDR] Out of memory"s);
     }
     gcurln = CurrentGlobalLine;
     lcurln = CurrentLocalLine;
@@ -1872,7 +1823,7 @@ void dirEDUP() {
 void checkRepeatStackAtEOF() {
     if (!RepeatStack.empty()) {
         auto rsTop = RepeatStack.top();
-        Error("No matching EDUP for DUP/REPT at line"s, std::to_string(rsTop.CurrentLocalLine), FATAL);
+        Fatal("No matching EDUP for DUP/REPT at line"s, std::to_string(rsTop.CurrentLocalLine));
     }
 }
 
@@ -1880,23 +1831,22 @@ void dirENDM() {
     if (!RepeatStack.empty()) {
         dirEDUP();
     } else {
-        Error("[ENDM] End macro without macro", 0);
+        Error("[ENDM] End macro without macro"s);
     }
 }
 
-/* modified */
 void dirDEFARRAY() {
     char *n;
     char *id;
     char ml[LINEMAX];
 
     if (!(id = GetID(lp))) {
-        Error("[DEFARRAY] Syntax error", 0);
+        Error("[DEFARRAY] Syntax error"s);
         return;
     }
     SkipBlanks(lp);
     if (!*lp) {
-        Error("DEFARRAY must have at least one entry", 0);
+        Error("DEFARRAY must have at least one entry"s);
         return;
     }
 
@@ -1908,13 +1858,13 @@ void dirDEFARRAY() {
             ++lp;
             while (*lp != '>') {
                 if (!*lp) {
-                    Error("[DEFARRAY] No closing bracket - <..>", 0);
+                    Error("[DEFARRAY] No closing bracket - <..>"s);
                     return;
                 }
                 if (*lp == '!') {
                     ++lp;
                     if (!*lp) {
-                        Error("[DEFARRAY] No closing bracket - <..>", 0);
+                        Error("[DEFARRAY] No closing bracket - <..>"s);
                         return;
                     }
                 }
@@ -2019,7 +1969,7 @@ void dirLUA() {
             execute = true;
         } else {
             //_COUT id _CMDL "A" _ENDL;
-            Error("[LUA] Syntax error", id);
+            Error("[LUA] Syntax error"s, id);
         }
     } else if (pass == LASTPASS) {
         execute = true;
@@ -2029,7 +1979,7 @@ void dirLUA() {
     Listing.listFile();
     while (true) {
         if (!ReadLine(false)) {
-            Error("[LUA] Unexpected end of lua script", 0, PASS3);
+            Error("[LUA] Unexpected end of lua script"s, PASS3);
             break;
         }
         lp = line;
@@ -2044,8 +1994,7 @@ void dirLUA() {
                     *(bp) = 0;
                 } else {
                     delete[] buff;
-                    Error("[LUA] Maximum size of Lua script is 32768 bytes", 0, FATAL);
-                    return;
+                    Fatal("[LUA] Maximum size of Lua script is 32768 bytes"s);
                 }
             }
             lp = rp;
@@ -2058,8 +2007,7 @@ void dirLUA() {
                 *(bp++) = '\n';
                 *(bp) = 0;
             } else {
-                Error("[LUA] Maximum size of Lua script is 32768 bytes", 0, FATAL);
-                return;
+                Fatal("[LUA] Maximum size of Lua script is 32768 bytes"s);
             }
         }
 
@@ -2083,25 +2031,24 @@ void dirLUA() {
 }
 
 void dirENDLUA() {
-    Error("[ENDLUA] End of lua script without script", 0);
+    Error("[ENDLUA] End of lua script without script"s);
 }
 
-/* modified */
 void dirINCLUDELUA() {
-    const fs::path &fnaam = getAbsPath(GetString(lp));
+    const fs::path &FileName = getAbsPath(GetString(lp));
     int error;
 
     if (pass != 1) {
         return;
     }
 
-    if (!fs::exists(fnaam)) {
-        Error("[INCLUDELUA] File doesn't exist"s, fnaam.string(), PASS1);
+    if (!fs::exists(FileName)) {
+        Error("[INCLUDELUA] File doesn't exist"s, FileName.string(), PASS1);
         return;
     }
 
     LuaLine = CurrentLocalLine;
-    error = luaL_loadfile(LUA, (const char *) fnaam.c_str()) || lua_pcall(LUA, 0, 0, 0);
+    error = luaL_loadfile(LUA, FileName.c_str()) || lua_pcall(LUA, 0, 0, 0);
     if (error) {
         _lua_showerror();
     }
@@ -2114,13 +2061,12 @@ void dirDEVICE() {
     if ((id = GetID(lp))) {
         Em.setMemModel(id);
     } else {
-        Error("[DEVICE] Syntax error", 0, CATCHALL);
+        Error("[DEVICE] Syntax error"s, CATCHALL);
     }
 
 
 }
 
-/* modified */
 void InsertDirectives() {
     DirectivesTable.insertDirective("assert"s, dirASSERT);
     DirectivesTable.insertDirective("byte"s, dirBYTE);
@@ -2136,7 +2082,6 @@ void InsertDirectives() {
     DirectivesTable.insertDirective("align"s, dirALIGN);
     DirectivesTable.insertDirective("module"s, dirMODULE);
     DirectivesTable.insertDirective("size"s, dirSIZE);
-    //DirectivesTable.insertDirective("textarea"s,dirTEXTAREA);
     DirectivesTable.insertDirective("textarea"s, dirDISP);
     DirectivesTable.insertDirective("else"s, dirELSE);
     DirectivesTable.insertDirective("export"s, dirEXPORT);
@@ -2195,9 +2140,7 @@ void InsertDirectives() {
     DirectivesTable.insertDirective("slot"s, dirSLOT); /* added */
     DirectivesTable.insertDirective("encoding"s, dirENCODING); /* added */
     DirectivesTable.insertDirective("labelslist"s, dirLABELSLIST); /* added */
-    //  DirectivesTable.insertDirective("bind"s, dirBIND); /* i didn't comment this */
     DirectivesTable.insertDirective("endif"s, dirENDIF);
-    //DirectivesTable.insertDirective("endt"s, dirENDTEXTAREA);
     DirectivesTable.insertDirective("endt"s, dirENT);
     DirectivesTable.insertDirective("endm"s, dirENDM);
     DirectivesTable.insertDirective("edup"s, dirEDUP); /* added */
@@ -2234,5 +2177,3 @@ bool LuaSetSlot(aint n) {
     }
     return true;
 }
-
-//eof direct.cpp

@@ -100,7 +100,7 @@ void CodeEmitter::enforceFileSize() {
         if (ForcedRawOutputSize < Size) {
             Warning("File "s + RawOutputFileName.string() +
                     " truncated by SIZE directive by "s +
-                    std::to_string(Size - ForcedRawOutputSize) + " bytes"s, ""s);
+                    std::to_string(Size - ForcedRawOutputSize) + " bytes"s);
         }
         fs::resize_file(RawOutputFileName, ForcedRawOutputSize);
     }

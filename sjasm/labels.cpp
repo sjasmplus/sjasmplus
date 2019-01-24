@@ -196,7 +196,7 @@ std::string CLabelTable::dump() const {
 void CLabelTable::dumpForUnreal(const fs::path &FileName) const {
     fs::ofstream OFS(FileName);
     if (!OFS.is_open()) {
-        Error("Error opening file", FileName.string(), FATAL);
+        Fatal("Error opening file"s, FileName.string());
     }
     for (const auto &it : _LabelContainer) {
         if (it.page == -1) {
@@ -227,7 +227,7 @@ void CLabelTable::dumpForUnreal(const fs::path &FileName) const {
 void CLabelTable::dumpSymbols(const fs::path &FileName) const {
     fs::ofstream OFS(FileName);
     if (!OFS) {
-        Error("Error opening file", FileName.string(), FATAL);
+        Fatal("Error opening file"s, FileName.string());
     }
     for (const auto &it : _LabelContainer) {
         if (isalpha(it.name[0])) {
@@ -264,7 +264,7 @@ char *ValidateLabel(char *naam) {
     }
     naam = np;
     if (!isalpha((unsigned char) *np) && *np != '_') {
-        Error("Invalid labelname", naam);
+        Error("Invalid labelname"s, naam);
         return 0;
     }
     while (*np) {
@@ -272,12 +272,12 @@ char *ValidateLabel(char *naam) {
             *np == '@') {
             ++np;
         } else {
-            Error("Invalid labelname", naam);
+            Error("Invalid labelname"s, naam);
             return 0;
         }
     }
     if (strlen(naam) > LABMAX) {
-        Error("Label too long", naam, PASS1);
+        Error("Label too long"s, naam, PASS1);
         naam[LABMAX] = 0;
     }
     if (mlp && l) {
@@ -294,7 +294,7 @@ char *ValidateLabel(char *naam) {
             free(vorlabp);
             vorlabp = STRDUP(naam);
             if (vorlabp == NULL) {
-                Error("No enough memory!", 0, FATAL);
+                Fatal("Out of memory!"s);
             }
         }
     }
@@ -332,7 +332,7 @@ bool GetLabelValue(char *&p, aint &val) {
             np = tempLabel + len;
             plen = 0;
             if (!isalpha((unsigned char) *p) && *p != '_') {
-                Error("Invalid labelname", tempLabel);
+                Error("Invalid labelname"s, tempLabel);
                 return false;
             }
             while (isalnum((unsigned char) *p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' ||
@@ -343,7 +343,7 @@ bool GetLabelValue(char *&p, aint &val) {
             }
             *np = 0;
             if (strlen(tempLabel) > LABMAX + len) {
-                Error("Label too long", tempLabel + len);
+                Error("Label too long"s, tempLabel + len);
                 tempLabel[LABMAX + len] = 0;
             }
             np = tempLabel;
@@ -392,7 +392,7 @@ bool GetLabelValue(char *&p, aint &val) {
     len = strlen(tempLabel);
     np = tempLabel + len;
     if (!isalpha((unsigned char) *p) && *p != '_') {
-        Error("Invalid labelname", tempLabel);
+        Error("Invalid labelname"s, tempLabel);
         return false;
     }
     while (isalnum((unsigned char) *p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' || *p == '@') {
@@ -402,7 +402,7 @@ bool GetLabelValue(char *&p, aint &val) {
     }
     *np = 0;
     if (strlen(tempLabel) > LABMAX + len) {
-        Error("Label too long", tempLabel + len);
+        Error("Label too long"s, tempLabel + len);
         tempLabel[LABMAX + len] = 0;
     }
     if (LabelTable.getValue(tempLabel, val)) {
@@ -413,7 +413,7 @@ bool GetLabelValue(char *&p, aint &val) {
         return true;
     }
     if (pass == LASTPASS) {
-        Error("Label not found", tempLabel);
+        Error("Label not found"s, tempLabel);
         return true;
     }
     val = 0;
@@ -457,7 +457,7 @@ bool GetLocalLabelValue(char *&op, aint &val) {
     }
     if (nval == (aint) -1) {
         if (pass == LASTPASS) {
-            Error("Local label not found", naam, SUPPRESS);
+            Error("Local label not found"s, naam, SUPPRESS);
             return true;
         } else {
             nval = 0;

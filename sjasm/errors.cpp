@@ -16,7 +16,7 @@ int PreviousErrorLine = -1;
 
 int WarningCount = 0;
 
-void Error(const char *fout, const char *bd, int type) {
+void _Error(const char *fout, const char *bd, int type) {
     lua_Debug ar;
 
     if (IsSkipErrors && PreviousErrorLine == CurrentLocalLine && type != FATAL) {
@@ -80,15 +80,24 @@ void Error(const char *fout, const char *bd, int type) {
 }
 
 void Error(const std::string &fout, const std::string &bd, int type) {
-    Error(fout.c_str(), bd.c_str(), type);
+    _Error(fout.c_str(), bd.c_str(), type);
+}
+
+void Error(const std::string &fout, int type) {
+    Error(fout, ""s, type);
 }
 
 void Fatal(const std::string &errstr) {
     Error(errstr, ""s, FATAL);
-    throw("Unreachable code executed!");
+    throw ("Unreachable code executed!");
 }
 
-void Warning(const char *fout, const char *bd, int type) {
+void Fatal(const std::string &errstr, const std::string &bd) {
+    Error(errstr, bd, FATAL);
+    throw ("Unreachable code executed!");
+}
+
+void _Warning(const char *fout, const char *bd, int type) {
     lua_Debug ar;
 
     if (type == PASS1 && pass != 1) {
@@ -127,5 +136,9 @@ void Warning(const char *fout, const char *bd, int type) {
 }
 
 void Warning(const std::string &fout, const std::string &bd, int type) {
-    Warning(fout.c_str(), bd.c_str(), type);
+    _Warning(fout.c_str(), bd.c_str(), type);
+}
+
+void Warning(const std::string &fout, int type) {
+    Warning(fout, ""s, type);
 }

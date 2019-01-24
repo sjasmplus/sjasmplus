@@ -56,7 +56,7 @@ bool ParseExpPrim(char *&p, aint &nval) {
         ++p;
         res = ParseExpression(p, nval);
         if (!need(p, ')')) {
-            Error("')' expected", 0);
+            Error("')' expected"s);
             return false;
         }
     } else if (*p == '{') {
@@ -66,11 +66,11 @@ bool ParseExpPrim(char *&p, aint &nval) {
             Error("Address in {..} must be more than 4000h", 0); return 0;
         } */
         if (nval > 0xFFFE) {
-            Error("Address in {..} must be less than FFFEh", 0);
+            Error("Address in {..} must be less than FFFEh"s);
             return false;
         }
         if (!need(p, '}')) {
-            Error("'}' expected", 0);
+            Error("'}' expected"s);
             return false;
         }
 
@@ -99,7 +99,7 @@ bool ParseExpPrim(char *&p, aint &nval) {
         return true;
     } else if (!(res = GetCharConst(p, nval))) {
         if (synerr) {
-            Error("Syntax error", p, CATCHALL);
+            Error("Syntax error"s, p, CATCHALL);
         }
 
         return false;
@@ -149,7 +149,7 @@ bool ParseExpUnair(char *&p, aint &nval) {
                 nval = (right >> 8) & 255;
                 break;
             default:
-                Error("Parser error", 0);
+                Error("Parser error"s);
                 return false;
         }
         return true;
@@ -176,7 +176,7 @@ bool ParseExpMul(char *&p, aint &nval) {
                 if (right) {
                     left /= right;
                 } else {
-                    Error("Division by zero", 0);
+                    Error("Division by zero"s);
                     left = 0;
                 }
                 break;
@@ -184,12 +184,12 @@ bool ParseExpMul(char *&p, aint &nval) {
                 if (right) {
                     left %= right;
                 } else {
-                    Error("Division by zero", 0);
+                    Error("Division by zero"s);
                     left = 0;
                 }
                 break;
             default:
-                Error("Parser error", 0);
+                Error("Parser error"s);
                 break;
         }
     }
@@ -215,7 +215,7 @@ bool ParseExpAdd(char *&p, aint &nval) {
                 left -= right;
                 break;
             default:
-                Error("Parser error", 0);
+                Error("Parser error"s);
                 break;
         }
     }
@@ -252,7 +252,7 @@ bool ParseExpShift(char *&p, aint &nval) {
                 left = l;
                 break;
             default:
-                Error("Parser error", 0);
+                Error("Parser error"s);
                 break;
         }
     }
@@ -278,7 +278,7 @@ bool ParseExpMinMax(char *&p, aint &nval) {
                 left = left > right ? left : right;
                 break;
             default:
-                Error("Parser error", 0);
+                Error("Parser error"s);
                 break;
         }
     }
@@ -310,7 +310,7 @@ bool ParseExpCmp(char *&p, aint &nval) {
                 left = -(left >= right);
                 break;
             default:
-                Error("Parser error", 0);
+                Error("Parser error"s);
                 break;
         }
     }
@@ -337,7 +337,7 @@ bool ParseExpEqu(char *&p, aint &nval) {
                 left = -(left != right);
                 break;
             default:
-                Error("Parser error", 0);
+                Error("Parser error"s);
                 break;
         }
     }
@@ -437,7 +437,7 @@ char *ReplaceDefine(char *lp) {
     const char *ver = nullptr;
 //    int def = 0; /* added */
     if (++replacedefineteller > 20) {
-        Error("Over 20 defines nested", 0, FATAL);
+        Fatal("Over 20 defines nested"s);
     }
     while (true) {
         if (comlin || comnxtlin) {
@@ -545,20 +545,20 @@ char *ReplaceDefine(char *lp) {
             while (*(lp++) && (*lp <= ' ' || *lp == '['));
             //_COUT lp _ENDL;
             if (!ParseExpression(lp, val)) {
-                Error("[ARRAY] Expression error", 0, CATCHALL);
+                Error("[ARRAY] Expression error"s, CATCHALL);
                 break;
             }
             //_COUT lp _ENDL;
             while (*lp == ']' && *(lp++));
             //_COUT "A" _CMDL val _ENDL;
             if (val < 0) {
-                Error("Number of cell must be positive", 0, CATCHALL);
+                Error("Number of cell must be positive"s, CATCHALL);
                 break;
             }
             if(Arr.size() > val) {
                 ver = Arr[val].c_str();
             } else {
-                Error("Cell of array not found", 0, CATCHALL);
+                Error("Cell of array not found"s, CATCHALL);
             }
         }
         /* (end add) */
@@ -598,7 +598,7 @@ char *ReplaceDefine(char *lp) {
         }
     }
     if (strlen(nl) > LINEMAX - 1) {
-        Error("line too long after macro expansion", 0, FATAL);
+        Fatal("Line too long after macro expansion"s);
     }
     if (definegereplaced) {
         return ReplaceDefineNext(nl);
@@ -614,7 +614,7 @@ char *ReplaceDefineNext(char *lp) {
     const char *ver = nullptr;
 //    int def = 0;
     if (++replacedefineteller > 20) {
-        Error("Over 20 defines nested", 0, FATAL);
+        Fatal("Over 20 defines nested"s);
     }
     while (true) {
         if (comlin || comnxtlin) {
@@ -721,7 +721,7 @@ char *ReplaceDefineNext(char *lp) {
             while (*(lp++) && (*lp <= ' ' || *lp == '['));
             //_COUT lp _ENDL;
             if (!ParseExpression(lp, val)) {
-                Error("Array error", 0, CATCHALL);
+                Error("Array error"s, CATCHALL);
                 break;
             }
             //_COUT lp _ENDL;
@@ -731,7 +731,7 @@ char *ReplaceDefineNext(char *lp) {
             if(Arr.size() > val) {
                 ver = Arr[val].c_str();
             } else {
-                Error("Cell of array not found", 0, CATCHALL);
+                Error("Cell of array not found"s, CATCHALL);
             }
         }
 
@@ -765,7 +765,7 @@ char *ReplaceDefineNext(char *lp) {
         }
     }
     if (strlen(nl) > LINEMAX - 1) {
-        Error("line too long after macro expansion", 0, FATAL);
+        Fatal("line too long after macro expansion"s);
     }
     if (definegereplaced) {
         return ReplaceDefine(nl);
@@ -801,7 +801,7 @@ void ParseLabel() {
     IsLabelNotFound = 0;
     if (isdigit((unsigned char) *tp)) {
         if (NeedEQU() || NeedDEFL()) {
-            Error("Number labels only allowed as address labels", 0);
+            Error("Number labels only allowed as address labels"s);
             return;
         }
         val = atoi(tp);
@@ -814,20 +814,20 @@ void ParseLabel() {
         char *ttp;
         if (NeedEQU()) {
             if (!ParseExpression(lp, val)) {
-                Error("Expression error", lp);
+                Error("Expression error"s, lp);
                 val = 0;
             }
             if (IsLabelNotFound) {
-                Error("Forward reference", 0, PASS1);
+                Error("Forward reference"s, PASS1);
             }
             /* begin add */
         } else if (NeedDEFL()) {
             if (!ParseExpression(lp, val)) {
-                Error("Expression error", lp);
+                Error("Expression error"s, lp);
                 val = 0;
             }
             if (IsLabelNotFound) {
-                Error("Forward reference", 0, PASS1);
+                Error("Forward reference"s, PASS1);
             }
             IsDEFL = 1;
             /* end add */
@@ -857,16 +857,16 @@ void ParseLabel() {
             }
             LastParsedLabel = STRDUP(tp);
             if (LastParsedLabel == NULL) {
-                Error("No enough memory!", 0, FATAL);
+                Fatal("Out of memory!"s);
             }
         }
         if (pass == LASTPASS) {
             if (IsDEFL && !LabelTable.insert(tp, val, false, IsDEFL)) {
-                Error("Duplicate label", tp, PASS3);
+                Error("Duplicate label"s, tp, PASS3);
             }
             aint oval;
             if (!GetLabelValue(ttp, oval)) {
-                Error("Internal error. ParseLabel()", 0, FATAL);
+                Fatal("Internal error. ParseLabel()"s);
             }
             /*if (val!=oval) Error("Label has different value in pass 2",temp);*/
             if (!IsDEFL && val != oval) {
@@ -877,9 +877,9 @@ void ParseLabel() {
                 LabelTable.updateValue(tp, val);
             }
         } else if (pass == 2 && !LabelTable.insert(tp, val, false, IsDEFL) && !LabelTable.updateValue(tp, val)) {
-            Error("Duplicate label", tp, PASS2);
+            Error("Duplicate label"s, tp, PASS2);
         } else if (!LabelTable.insert(tp, val, false, IsDEFL)) {
-            Error("Duplicate label", tp, PASS1);
+            Error("Duplicate label"s, tp, PASS1);
         }
 
         delete[] tp;
@@ -985,7 +985,7 @@ void ParseLine(bool parselabels) {
         return;
     }
     if (*lp) {
-        Error("Unexpected", lp, LASTPASS);
+        Error("Unexpected"s, lp, LASTPASS);
     }
     Listing.listFile();
 }
@@ -997,13 +997,13 @@ void ParseLineSafe(bool parselabels) {
     if (sline[0] > 0) {
         tmp = STRDUP(sline);
         if (tmp == NULL) {
-            Error("No enough memory!", 0, FATAL);
+            Fatal("Out of memory!"s);
         }
     }
     if (sline2[0] > 0) {
         tmp2 = STRDUP(sline2);
         if (tmp2 == NULL) {
-            Error("No enough memory!", 0, FATAL);
+            Fatal("Out of memory!"s);
         }
     }
 
@@ -1046,12 +1046,12 @@ void ParseStructLabel(CStructure *st) {
     tp = temp;
     SkipBlanks();
     if (isdigit((unsigned char) *tp)) {
-        Error("[STRUCT] Number labels not allowed within structs", 0);
+        Error("[STRUCT] Number labels not allowed within structs"s);
         return;
     }
     PreviousIsLabel = STRDUP(tp);
     if (PreviousIsLabel == NULL) {
-        Error("No enough memory!", 0, FATAL);
+        Fatal("Out of memory!"s);
     }
     st->AddLabel(tp);
 }
@@ -1064,12 +1064,12 @@ void ParseStructMember(CStructure *st) {
         case SMEMBBLOCK:
             if (!ParseExpression(lp, len)) {
                 len = 1;
-                Error("[STRUCT] Expression expected", 0, PASS1);
+                Error("[STRUCT] Expression expected"s, PASS1);
             }
             if (comma(lp)) {
                 if (!ParseExpression(lp, val)) {
                     val = 0;
-                    Error("[STRUCT] Expression expected", 0, PASS1);
+                    Error("[STRUCT] Expression expected"s, PASS1);
                 }
             } else {
                 val = 0;
@@ -1127,7 +1127,7 @@ void ParseStructMember(CStructure *st) {
             if ((n = GetID(pp)) && (s = StructureTable.zoek(n, gl))) {
                 /* begin add */
                 if (cmphstr(st->naam, n)) {
-                    Error("[STRUCT] Use structure itself", 0, CATCHALL);
+                    Error("[STRUCT] Use structure itself"s, CATCHALL);
                     break;
                 }
                 /* end add */
@@ -1159,7 +1159,7 @@ void ParseStructLine(CStructure *st) {
         return;
     }
     if (*lp) {
-        Error("[STRUCT] Unexpected", lp);
+        Error("[STRUCT] Unexpected"s, lp);
     }
 }
 
@@ -1177,7 +1177,7 @@ void LuaParseLine(char *str) {
 
     ml = STRDUP(line);
     if (ml == nullptr) {
-        Error("Not enough memory!", 0, FATAL);
+        Fatal("Out of memory!"s);
         return;
     }
 
@@ -1193,7 +1193,7 @@ void LuaParseCode(char *str) {
 
     ml = STRDUP(line);
     if (ml == nullptr) {
-        Error("Not enough memory!", 0, FATAL);
+        Fatal("Out of memory!"s);
         return;
     }
 

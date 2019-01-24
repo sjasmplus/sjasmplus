@@ -159,7 +159,7 @@ void ListingWriter::listFileSkip(char *line) {
     OFS << printCurrentLocalLine() << toHex16(pad);
     OFS << "~            ";
     if (!ByteBuffer.empty()) {
-        Error("Internal error lfs", 0, FATAL);
+        Fatal("Internal error lfs"s);
     }
     if (listmacro) {
         OFS << ">";

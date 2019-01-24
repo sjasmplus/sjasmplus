@@ -257,7 +257,7 @@ char *getinstr(char *&p) {
 /* changes applied from SjASM 0.39g */
 bool check8(aint val, bool error) {
     if (val != (val & 255) && ~val > 127 && error) {
-        Error("Bytes lost", 0);
+        Error("Value doesn't fit into 8 bits"s, std::to_string(val));
         return false;
     }
     return true;
@@ -266,7 +266,7 @@ bool check8(aint val, bool error) {
 /* changes applied from SjASM 0.39g */
 bool check8o(long val) {
     if (val < -128 || val > 127) {
-        Error("check8o(): Offset out of range: "s + std::to_string(val), ""s);
+        Error("check8o(): Offset out of range"s, std::to_string(val));
         return false;
     }
     return true;
@@ -275,7 +275,7 @@ bool check8o(long val) {
 /* changes applied from SjASM 0.39g */
 bool check16(aint val, bool error) {
     if (val != (val & 65535) && ~val > 32767 && error) {
-        Error("Bytes lost", 0);
+        Error("Value does not fit into 16 bits"s, std::to_string(val));
         return false;
     }
     return true;
@@ -284,7 +284,7 @@ bool check16(aint val, bool error) {
 /* changes applied from SjASM 0.39g */
 bool check24(aint val, bool error) {
     if (val != (val & 16777215) && ~val > 8388607 && error) {
-        Error("Bytes lost", 0);
+        Error("Value does not fit into 24 bits"s, std::to_string(val));
         return false;
     }
     return true;
@@ -380,19 +380,19 @@ bool GetConstant(char *&op, aint &val) {
             ++p;
             while (isalnum((unsigned char) *p)) {
                 if ((v = getval(*p)) >= 16) {
-                    Error("Digit not in base", op);
+                    Error("Digit not in base"s, op);
                     return false;
                 }
                 oval = val;
                 val = val * 16 + v;
                 ++p;
                 if (oval > val) {
-                    Error("Overflow", 0, SUPPRESS);
+                    Error("Overflow"s, SUPPRESS);
                 }
             }
 
             if (p - p3 < 2) {
-                Error("Syntax error", op, CATCHALL);
+                Error("Syntax error"s, op, CATCHALL);
                 return false;
             }
 
@@ -403,18 +403,18 @@ bool GetConstant(char *&op, aint &val) {
             ++p;
             while (isdigit((unsigned char) *p)) {
                 if ((v = getval(*p)) >= 2) {
-                    Error("Digit not in base", op);
+                    Error("Digit not in base"s, op);
                     return false;
                 }
                 oval = val;
                 val = val * 2 + v;
                 ++p;
                 if (oval > val) {
-                    Error("Overflow", 0, SUPPRESS);
+                    Error("Overflow"s, SUPPRESS);
                 }
             }
             if (p - p3 < 2) {
-                Error("Syntax error", op, CATCHALL);
+                Error("Syntax error"s, op, CATCHALL);
                 return false;
             }
 
@@ -427,18 +427,18 @@ bool GetConstant(char *&op, aint &val) {
                 ++p;
                 while (isalnum((unsigned char) *p)) {
                     if ((v = getval(*p)) >= 16) {
-                        Error("Digit not in base", op);
+                        Error("Digit not in base"s, op);
                         return false;
                     }
                     oval = val;
                     val = val * 16 + v;
                     ++p;
                     if (oval > val) {
-                        Error("Overflow", 0, SUPPRESS);
+                        Error("Overflow"s, SUPPRESS);
                     }
                 }
                 if (p - p3 < 3) {
-                    Error("Syntax error", op, CATCHALL);
+                    Error("Syntax error"s, op, CATCHALL);
                     return false;
                 }
 
@@ -488,13 +488,13 @@ bool GetConstant(char *&op, aint &val) {
             }
             do {
                 if ((v = getval(*p)) >= base) {
-                    Error("Digit not in base", op);
+                    Error("Digit not in base"s, op);
                     return false;
                 }
                 oval = val;
                 val += v * pb;
                 if (oval > val) {
-                    Error("Overflow", 0, SUPPRESS);
+                    Error("Overflow"s, SUPPRESS);
                 }
                 pb *= base;
             } while (p-- != p3);
@@ -555,7 +555,7 @@ bool GetCharConstChar(char *&op, aint &val) {
             --op;
             val = '\\';
 
-            Error("Unknown escape", op);
+            Error("Unknown escape"s, op);
 
             return true;
     }
@@ -595,7 +595,7 @@ bool GetCharConst(char *&p, aint &val) {
         ++t;
     } while (*p != q);
     if (t > 4) {
-        Error("Overflow", 0, SUPPRESS);
+        Error("Overflow"s, SUPPRESS);
     }
     val = val >> (s + 8);
     ++p;
@@ -609,23 +609,23 @@ int GetBytes(char *&p, int e[], int add, int dc) {
     while (true) {
         SkipBlanks(p);
         if (!*p) {
-            Error("Expression expected", 0, SUPPRESS);
+            Error("Expression expected"s, SUPPRESS);
             break;
         }
         if (t == 128) {
-            Error("Too many arguments", p, SUPPRESS);
+            Error("Too many arguments"s, p, SUPPRESS);
             break;
         }
         if (*p == '"') {
             p++;
             do {
                 if (!*p || *p == '"') {
-                    Error("Syntax error", p, SUPPRESS);
+                    Error("Syntax error"s, p, SUPPRESS);
                     e[t] = -1;
                     return t;
                 }
                 if (t == 128) {
-                    Error("Too many arguments", p, SUPPRESS);
+                    Error("Too many arguments"s, p, SUPPRESS);
                     e[t] = -1;
                     return t;
                 }
@@ -642,12 +642,12 @@ int GetBytes(char *&p, int e[], int add, int dc) {
             p++;
             do {
                 if (!*p || *p == 0x27) {
-                    Error("Syntax error", p, SUPPRESS);
+                    Error("Syntax error"s, p, SUPPRESS);
                     e[t] = -1;
                     return t;
                 }
                 if (t == 128) {
-                    Error("Too many arguments", p, SUPPRESS);
+                    Error("Too many arguments"s, p, SUPPRESS);
                     e[t] = -1;
                     return t;
                 }
@@ -667,7 +667,7 @@ int GetBytes(char *&p, int e[], int add, int dc) {
                 check8(val);
                 e[t++] = (val + add) & 255;
             } else {
-                Error("Syntax error", p, SUPPRESS);
+                Error("Syntax error"s, p, SUPPRESS);
                 break;
             }
         }
@@ -722,7 +722,7 @@ HobetaFilename GetHobetaFileName(char *&p) {
 bool needcomma(char *&p) {
     SkipBlanks(p);
     if (*p != ',') {
-        Error("Comma expected", 0);
+        Error("Comma expected"s);
     }
     return (*(p++) == ',');
 }
@@ -730,7 +730,7 @@ bool needcomma(char *&p) {
 bool needbparen(char *&p) {
     SkipBlanks(p);
     if (*p != ']') {
-        Error("']' expected", 0);
+        Error("']' expected"s);
     }
     return (*(p++) == ']');
 }
@@ -838,23 +838,23 @@ int GetArray(char *&p, int e[], int add, int dc) {
     while (true) {
         SkipBlanks(p);
         if (!*p) {
-            Error("Expression expected", 0, SUPPRESS);
+            Error("Expression expected"s, SUPPRESS);
             break;
         }
         if (t == 128) {
-            Error("Too many arguments", p, SUPPRESS);
+            Error("Too many arguments"s, p, SUPPRESS);
             break;
         }
         if (*p == '"') {
             p++;
             do {
                 if (!*p || *p == '"') {
-                    Error("Syntax error", p, SUPPRESS);
+                    Error("Syntax error"s, p, SUPPRESS);
                     e[t] = -1;
                     return t;
                 }
                 if (t == 128) {
-                    Error("Too many arguments", p, SUPPRESS);
+                    Error("Too many arguments"s, p, SUPPRESS);
                     e[t] = -1;
                     return t;
                 }
@@ -871,12 +871,12 @@ int GetArray(char *&p, int e[], int add, int dc) {
             p++;
             do {
                 if (!*p || *p == 0x27) {
-                    Error("Syntax error", p, SUPPRESS);
+                    Error("Syntax error"s, p, SUPPRESS);
                     e[t] = -1;
                     return t;
                 }
                 if (t == 128) {
-                    Error("Too many arguments", p, SUPPRESS);
+                    Error("Too many arguments"s, p, SUPPRESS);
                     e[t] = -1;
                     return t;
                 }
@@ -894,7 +894,7 @@ int GetArray(char *&p, int e[], int add, int dc) {
                 check8(val);
                 e[t++] = (val + add) & 255;
             } else {
-                Error("Syntax error", p, SUPPRESS);
+                Error("Syntax error"s, p, SUPPRESS);
                 break;
             }
         }

@@ -99,7 +99,7 @@ public:
     }
 
     virtual void getBytes(uint8_t *Dest, int Slot, uint16_t AddrInPage, uint16_t Size) override {
-        Error("GetBytes(): "s + *(setPage(0, 0)), ""s, FATAL);
+        Fatal("GetBytes()"s, *(setPage(0, 0)));
     }
 
     virtual uint8_t *getPtrToMem() override {
@@ -111,13 +111,11 @@ public:
     }
 
     virtual uint8_t *getPtrToPage(int Page) override {
-        Error("GetPtrToPage(): "s + *(setPage(0, 0)), ""s, FATAL);
-        return nullptr;
+        Fatal("GetPtrToPage()"s, *(setPage(0, 0)));
     }
 
     virtual uint8_t *getPtrToPageInSlot(int Slot) override {
-        Error("GetPtrToPageInSlot(): "s + *(setPage(0, 0)), ""s, FATAL);
-        return nullptr;
+        Fatal("GetPtrToPageInSlot()"s, *(setPage(0, 0)));
     }
 
     virtual void writeByte(uint16_t Addr, uint8_t Byte) override {

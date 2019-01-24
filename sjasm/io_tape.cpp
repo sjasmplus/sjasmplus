@@ -71,7 +71,7 @@ int SaveTAP_ZX(const fs::path &fname, uint16_t start) {
     fs::ofstream ofs;
     ofs.open(fname, std::ios_base::binary);
     if (ofs.fail()) {
-        Fatal("Error opening file: "s + fname.string());
+        Fatal("Error opening file"s, fname.string());
     }
 
     uint16_t datastart = 0x5E00;
@@ -389,7 +389,7 @@ void detect_vars_changes() {
     }
 
     if (nosys && nobas48) {
-        Warning("[SAVETAP] Tape file will not contain data from 0x5B00 to 0x5E00", nullptr, LASTPASS);
+        Warning("[SAVETAP] Tape file will not contain data from 0x5B00 to 0x5E00"s, LASTPASS);
     }
 }
 

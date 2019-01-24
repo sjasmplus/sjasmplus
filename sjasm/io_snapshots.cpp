@@ -36,7 +36,7 @@ int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
     fs::ofstream ofs;
     ofs.open(fname, std::ios_base::binary);
     if (ofs.fail()) {
-        Fatal("Error opening file: "s + fname.string());
+        Fatal("Error opening file"s, fname.string());
     }
 
     memset(snbuf, 0, sizeof(snbuf));
@@ -75,7 +75,7 @@ int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
             Em.writeByte(0xFF2D + 16, (uint8_t) (start & 0x00FF));  // pc
             Em.writeByte(0xFF2E + 16, (uint8_t) (start >> 8));      // pc
         } else {
-            Warning("[SAVESNA] RAM <0x4000-0x4001> will be overriden due to 48k snapshot imperfect format.", NULL,
+            Warning("[SAVESNA] RAM <0x4000-0x4001> will be overridden due to 48k snapshot imperfect format."s,
                     LASTPASS);
 
             snbuf[23] = 0x00; //sp
@@ -93,7 +93,7 @@ int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
 
     ofs.write((const char *) snbuf, sizeof(snbuf) - 4);
     if (ofs.fail()) {
-        Error("Error writing to "s + fname.string() + ": "s + strerror(errno), ""s, CATCHALL);
+        Error("Error writing to "s + fname.string(), strerror(errno), CATCHALL);
         ofs.close();
         return 0;
     }
@@ -136,7 +136,7 @@ int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
     }
 
     if (ofs.fail()) {
-        Error("Error writing to "s + fname.string() + ": "s + strerror(errno), ""s, CATCHALL);
+        Error("Error writing to "s + fname.string(), strerror(errno), CATCHALL);
         ofs.close();
         return 0;
     }

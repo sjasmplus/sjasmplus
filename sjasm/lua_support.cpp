@@ -5,7 +5,7 @@ lua_State *LUA;
 int LuaLine = -1;
 
 void LuaFatalError(lua_State *L) {
-    Error((char *) lua_tostring(L, -1), 0, FATAL);
+    Fatal((char *) lua_tostring(L, -1));
 }
 
 void initLUA() {

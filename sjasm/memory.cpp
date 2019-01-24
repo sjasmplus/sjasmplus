@@ -109,8 +109,7 @@ void MemoryManager::setMemModel(const std::string &name) {
                     CurrentMemModel->initZXSysVars();
                 }
             } catch (std::out_of_range &e) {
-                Error("Unknown memory model"s, uName, FATAL);
-                return;
+                Fatal("Unknown memory model"s, uName);
             }
         }
     }

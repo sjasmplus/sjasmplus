@@ -135,11 +135,8 @@ void Emit(uint8_t byte) {
     Listing.addByte(byte);
     if (pass == LASTPASS) {
         auto err = Em.emitByte(byte);
-        if (err) {
-            Error(*err, ""s, FATAL);
-            return;
-        }
-  } else {
+        if (err) Fatal(*err);
+    } else {
         Em.incAddress();
     }
 }
@@ -158,7 +155,7 @@ void EmitWord(uint16_t word) {
 void EmitBytes(int *bytes) {
     Listing.setPreviousAddress(Em.getCPUAddress());
     if (*bytes == -1) {
-        Error("Illegal instruction", line, CATCHALL);
+        Error("Illegal instruction"s, line, CATCHALL);
         *lp = 0;
     }
     while (*bytes != -1) {
@@ -183,10 +180,7 @@ void EmitBlock(uint8_t byte, aint len, bool nulled) {
         if (pass == LASTPASS) {
             if (!nulled) { // Should be called "filled"
                 auto err = Em.emitByte(byte);
-                if (err) {
-                    Error(*err, ""s, FATAL);
-                    return;
-                }
+                if (err) Fatal(*err);
             } else {
                 Em.incAddress();
             }
@@ -230,22 +224,14 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
     fs::path AbsFilePath = getAbsPath(FileName);
 
     uint16_t DestAddr = Em.getEmitAddress();
-    if ((int) DestAddr + Length > 0x10000) {
-        Error(std::to_string(Length) + " bytes of file \""s + FileName.string() +
+    if ((int) DestAddr + Length > 0x10000)
+        Fatal(std::to_string(Length) + " bytes of file \""s + FileName.string() +
               "\" won't fit at current address="s +
-              std::to_string(DestAddr), ""s, FATAL);
-        return;
-    }
+              std::to_string(DestAddr));
 
     fs::ifstream IFS(AbsFilePath, std::ios_base::binary);
-    if (!IFS) {
-        Error("Error opening file", FileName.string(), FATAL);
-        return;
-    }
-    if (Length < 0) {
-        Error("BinIncFile(): len < 0"s, FileName.string(), FATAL);
-        return;
-    }
+    if (!IFS) Fatal("Error opening file"s, FileName.string());
+    if (Length < 0) Fatal("BinIncFile(): len < 0"s, FileName.string());
     if (Length == 0) {
         // Load whole file
         IFS.seekg(0, IFS.end);
@@ -255,9 +241,8 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
     if (Offset > 0) {
         IFS.seekg(Offset, IFS.beg);
         if (IFS.tellg() != Offset) {
-            Error("Offset ("s + std::to_string(Offset) + ") is beyond file length"s,
-                  FileName.string(), FATAL);
-            return;
+            Fatal("Offset ("s + std::to_string(Offset) + ") is beyond file length"s,
+                  FileName.string());
         }
     }
     if (Length > 0) {
@@ -265,15 +250,11 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
         auto Remaining = Length;
         while (Remaining > 0) {
             if (!IFS.get(Byte)) {
-                Error("Could not read "s + std::to_string(Length) + " bytes. File too small?", FileName.string(),
-                      FATAL);
-                return;
+                Fatal("Could not read "s + std::to_string(Length) + " bytes. File too small?",
+                        FileName.string());
             }
             auto err = Em.emitByte(Byte);
-            if (err) {
-                Error(*err, FileName.string(), FATAL);
-                return;
-            }
+            if (err) Fatal(*err, FileName.string());
             Remaining--;
         }
     }
@@ -285,16 +266,13 @@ void OpenFile(const fs::path &nfilename) {
     fs::path oCurrentDirectory;
     fs::path fullpath;
 
-    if (++IncludeLevel > 20) {
-        Error("Over 20 files nested", 0, FATAL);
-    }
+    if (++IncludeLevel > 20) Fatal("Over 20 files nested");
 
     fullpath = getAbsPath(nfilename);
 
     pIFS->open(fullpath, std::ios::binary);
-    if (pIFS->fail()) {
-        Error("Error opening file "s + nfilename.string() + ": "s + strerror(errno), ""s, FATAL);
-    }
+    if (pIFS->fail())
+        Fatal("Error opening file "s + nfilename.string(), strerror(errno));
 
     aint oCurrentLocalLine = CurrentLocalLine;
     CurrentLocalLine = 0;
@@ -390,9 +368,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     }
                 }
                 *rlppos = 0;
-                if (strlen(line) == LINEMAX - 1) {
-                    Error("Line too long", 0, FATAL);
-                }
+                if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
                 //if (rlnewline) {
                 CurrentLocalLine++;
                 CompiledCurrentLine++;
@@ -415,9 +391,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     ReadLineBuf.next();
                 }
                 *rlppos = 0;
-                if (strlen(line) == LINEMAX - 1) {
-                    Error("Line too long", 0, FATAL);
-                }
+                if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
                 /*if (rlnewline) {
                     CurrentLocalLine++; CurrentLine++; CurrentGlobalLine++; rlnewline = false;
                 }*/
@@ -440,9 +414,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     while (ReadLineBuf.cur() == ':') {
                         ReadLineBuf.next();
                     }
-                    if (strlen(line) == LINEMAX - 1) {
-                        Error("Line too long", 0, FATAL);
-                    }
+                    if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
                     if (rlnewline) {
                         CurrentLocalLine++;
                         CompiledCurrentLine++;
@@ -578,11 +550,9 @@ void *SaveRAM(void *dst, int start, int length) {
 */
 
     auto *target = static_cast<unsigned char *>(dst);
-    if (start + length > 0x10000) {
-        Error("*SaveRAM(): start("s + std::to_string(start) + ") + length("s +
-              std::to_string(length) + ") > 0x10000"s, ""s, FATAL);
-        return target;
-    }
+    if (start + length > 0x10000)
+        Fatal("*SaveRAM(): start("s + std::to_string(start) + ") + length("s +
+              std::to_string(length) + ") > 0x10000"s);
     if (length <= 0) {
         length = 0x10000 - start;
     }
@@ -715,8 +685,7 @@ EReturn ReadFile(const char *pp, const char *err) {
         } // hmm??
         ParseLineSafe();
     }
-    Error("Unexpected end of file", 0, FATAL);
-    return END;
+    Fatal("Unexpected end of file"s);
 }
 
 
@@ -783,8 +752,7 @@ EReturn SkipFile(const char *pp, const char *err) {
         }
         Listing.listFileSkip(line);
     }
-    Error("Unexpected end of file", 0, FATAL);
-    return END;
+    Fatal("Unexpected end of file"s);
 }
 
 
@@ -828,8 +796,7 @@ int ReadFileToCStringsList(CStringsList *&f, const char *end) {
         l = s;
         Listing.listFileSkip(line);
     }
-    Error("Unexpected end of file", 0, FATAL);
-    return 0;
+    Fatal("Unexpected end of file"s);
 }
 
 void writeExport(const std::string &Name, aint Value) {

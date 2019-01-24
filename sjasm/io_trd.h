@@ -35,6 +35,7 @@
 #include "fs.h"
 
 class HobetaFilename {
+private:
     std::string Content;
     static const char FILLER = ' ';
     static const std::size_t NAME_SIZE = 8;
@@ -72,8 +73,8 @@ public:
         return Content.size();
     }
 
-    const char *c_str() const {
-        return Content.c_str();
+    const std::string &string() const {
+        return Content;
     }
 };
 

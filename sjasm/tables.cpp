@@ -90,11 +90,11 @@ CDefineTableEntry::CDefineTableEntry(const char *nname, const char *nvalue, CStr
     char *sbegin, *s2;
     name = STRDUP(nname);
     if (name == NULL) {
-        Error("No enough memory!", 0, FATAL);
+        Fatal("Out of memory!"s);
     }
     value = new char[strlen(nvalue) + 1];
     if (value == NULL) {
-        Error("No enough memory!", 0, FATAL);
+        Fatal("Out of memory!"s);
     }
     s1 = value;
     sbegin = s2 = strdup(nvalue);
@@ -205,7 +205,7 @@ void CMacroDefineTable::SplitToArray(const char *aName, char **&aArray, int &aCo
         }
 
         if (aCount == KTotalJoinedParams) {
-            Error("Too much joined params!", 0, FATAL);
+            Fatal("Too many joined params!"s);
         }
     }
 
@@ -223,7 +223,7 @@ void CMacroDefineTable::SplitToArray(const char *aName, char **&aArray, int &aCo
                 aArray[i] = new char[itemSize + 1];
                 Copy(aArray[i], 0, &aName[aPositions[i]], 0, itemSize);
             } else {
-                Error("Internal error. SplitToArray()", 0, FATAL);
+                Fatal("Internal error. SplitToArray()"s);
             }
         }
     }
@@ -302,20 +302,20 @@ void CMacroTable::Add(char *nnaam, char *&p) {
     CStringsList *s, *l = NULL, *f = NULL;
     /*if (FindDuplicate(nnaam)) Error("Duplicate macroname",0,PASS1);*/
     if (FindDuplicate(nnaam)) {
-        Error("Duplicate macroname", 0, PASS1);
+        Error("Duplicate macroname"s, PASS1);
         return;
     }
     char *macroname;
     macroname = STRDUP(nnaam); /* added */
     if (macroname == NULL) {
-        Error("No enough memory!", 0, FATAL);
+        Fatal("Out of memory!"s);
     }
     macs = new CMacroTableEntry(macroname/*nnaam*/, macs);
     used[*macroname/*nnaam*/] = 1;
     SkipBlanks(p);
     while (*p) {
         if (!(n = GetID(p))) {
-            Error("Illegal macro argument", p, PASS1);
+            Error("Illegal macro argument"s, p, PASS1);
             break;
         }
         s = new CStringsList(n, NULL);
@@ -335,11 +335,11 @@ void CMacroTable::Add(char *nnaam, char *&p) {
     }
     macs->args = f;
     if (*p/* && *p!=':'*/) {
-        Error("Unexpected", p, PASS1);
+        Error("Unexpected"s, p, PASS1);
     }
     Listing.listFile();
     if (!ReadFileToCStringsList(macs->body, "endm")) {
-        Error("Unexpected end of macro", 0, PASS1);
+        Error("Unexpected end of macro"s, PASS1);
     }
 }
 
@@ -401,7 +401,7 @@ int CMacroTable::Emit(char *naam, char *&p) {
         n = ml;
         SkipBlanks(p);
         if (!*p) {
-            Error("Not enough arguments for macro", naam);
+            Error("Not enough arguments for macro"s, naam);
             macrolabp = 0;
             return 1;
         }
@@ -409,14 +409,14 @@ int CMacroTable::Emit(char *naam, char *&p) {
             ++p;
             while (*p != '>') {
                 if (!*p) {
-                    Error("Not enough arguments for macro", naam);
+                    Error("Not enough arguments for macro"s, naam);
                     macrolabp = 0;
                     return 1;
                 }
                 if (*p == '!') {
                     ++p;
                     if (!*p) {
-                        Error("Not enough arguments for macro", naam);
+                        Error("Not enough arguments for macro"s, naam);
                         macrolabp = 0;
                         return 1;
                     }
@@ -438,7 +438,7 @@ int CMacroTable::Emit(char *naam, char *&p) {
         SkipBlanks(p);
         a = a->next;
         if (a && *p != ',') {
-            Error("Not enough arguments for macro", naam);
+            Error("Not enough arguments for macro"s, naam);
             macrolabp = 0;
             return 1;
         }
@@ -449,7 +449,7 @@ int CMacroTable::Emit(char *naam, char *&p) {
     SkipBlanks(p);
     lp = p;
     if (*p) {
-        Error("Too many arguments for macro", naam);
+        Error("Too many arguments for macro"s, naam);
     }
     /* (end new) */
     Listing.listFile();
@@ -482,7 +482,7 @@ CStructureEntry1::CStructureEntry1(char *nnaam, aint noffset) {
     next = 0;
     naam = STRDUP(nnaam);
     if (naam == NULL) {
-        Error("No enough memory!", 0, FATAL);
+        Fatal("Out of memory!"s);
     }
     offset = noffset;
 }
@@ -500,11 +500,11 @@ CStructure::CStructure(char *nnaam, char *nid, int idx, int no, int ngl, CStruct
     mbf = mbl = 0;
     naam = STRDUP(nnaam);
     if (naam == NULL) {
-        Error("No enough memory!", 0, FATAL);
+        Fatal("Out of memory!"s);
     }
     id = STRDUP(nid);
     if (id == NULL) {
-        Error("No enough memory!", 0, FATAL);
+        Fatal("Out of memory!"s);
     }
     binding = idx;
     next = p;
@@ -619,13 +619,13 @@ void CStructure::CopyMembers(CStructure *st, char *&lp) {
                 }
                 break;
             default:
-                Error("internalerror CStructure::CopyMembers", 0, FATAL);
+                Fatal("internalerror CStructure::CopyMembers"s);
         }
         ip = ip->next;
     }
     while (haakjes--) {
         if (!need(lp, '}')) {
-            Error("closing } missing", 0);
+            Error("closing } missing"s);
         }
     }
     ip = new CStructureEntry2(noffset, 0, 0, SMEMBPARENCLOSE);
@@ -642,14 +642,14 @@ void CStructure::deflab() {
     p = ValidateLabel(p);
     if (pass == LASTPASS) {
         if (!GetLabelValue(op, oval)) {
-            Error("Internal error. ParseLabel()", 0, FATAL);
+            Fatal("Internal error. ParseLabel()"s);
         }
         if (noffset != oval) {
-            Error("Label has different value in pass 2", tempLabel);
+            Error("Label has different value in pass 2"s, tempLabel);
         }
     } else {
         if (!LabelTable.insert(p, noffset)) {
-            Error("Duplicate label", 0, PASS1);
+            Error("Duplicate label"s, PASS1);
         }
     }
     free(p);
@@ -659,18 +659,18 @@ void CStructure::deflab() {
         STRCAT(ln, LINEMAX, np->naam);
         op = ln;
         if (!(p = ValidateLabel(ln))) {
-            Error("Illegal labelname", ln, PASS1);
+            Error("Illegal labelname"s, ln, PASS1);
         }
         if (pass == LASTPASS) {
             if (!GetLabelValue(op, oval)) {
-                Error("Internal error. ParseLabel()", 0, FATAL);
+                Fatal("Internal error. ParseLabel()"s);
             }
             if (np->offset != oval) {
-                Error("Label has different value in pass 2", tempLabel);
+                Error("Label has different value in pass 2"s, tempLabel);
             }
         } else {
             if (!LabelTable.insert(p, np->offset)) {
-                Error("Duplicate label", 0, PASS1);
+                Error("Duplicate label"s, PASS1);
             }
         }
         free(p);
@@ -687,14 +687,14 @@ void CStructure::emitlab(char *iid) {
     p = ValidateLabel(p);
     if (pass == LASTPASS) {
         if (!GetLabelValue(op, oval)) {
-            Error("Internal error. ParseLabel()", 0, FATAL);
+            Fatal("Internal error. ParseLabel()"s);
         }
         if (Em.getCPUAddress() != oval) {
-            Error("Label has different value in pass 2", tempLabel);
+            Error("Label has different value in pass 2"s, tempLabel);
         }
     } else {
         if (!LabelTable.insert(p, Em.getCPUAddress())) {
-            Error("Duplicate label", 0, PASS1);
+            Error("Duplicate label"s, PASS1);
         }
     }
     delete[] p;
@@ -704,18 +704,18 @@ void CStructure::emitlab(char *iid) {
         STRCAT(ln, LINEMAX, np->naam);
         op = ln;
         if (!(p = ValidateLabel(ln))) {
-            Error("Illegal labelname", ln, PASS1);
+            Error("Illegal labelname"s, ln, PASS1);
         }
         if (pass == LASTPASS) {
             if (!GetLabelValue(op, oval)) {
-                Error("Internal error. ParseLabel()", 0, FATAL);
+                Fatal("Internal error. ParseLabel()"s);
             }
             if (np->offset + Em.getCPUAddress() != oval) {
-                Error("Label has different value in pass 2", tempLabel);
+                Error("Label has different value in pass 2"s, tempLabel);
             }
         } else {
             if (!LabelTable.insert(p, np->offset + Em.getCPUAddress())) {
-                Error("Duplicate label", 0, PASS1);
+                Error("Duplicate label"s, PASS1);
             }
         }
         delete[] p;
@@ -804,18 +804,18 @@ void CStructure::emitmembs(char *&p) {
                 }
                 break;
             default:
-                Error("Internal Error CStructure::emitmembs", 0, FATAL);
+                Fatal("Internal Error CStructure::emitmembs"s);
         }
         ip = ip->next;
     }
     while (haakjes--) {
         if (!need(p, '}')) {
-            Error("closing } missing", 0);
+            Error("closing } missing"s);
         }
     }
     SkipBlanks(p);
     if (*p) {
-        Error("[STRUCT] Syntax error - too many arguments?", 0);
+        Error("[STRUCT] Syntax error - too many arguments?"s);
     } /* this line from SjASM 0.39g */
     e[et] = -1;
     EmitBytes(e);
@@ -837,7 +837,7 @@ CStructure *CStructureTable::Add(char *naam, int no, int idx, int gl) {
     STRCAT(sn, LINEMAX, naam);
     sp = sn;
     if (FindDuplicate(sp)) {
-        Error("Duplicate structure name", naam, PASS1);
+        Error("Duplicate structure name"s, naam, PASS1);
     }
     strs[*sp] = new CStructure(naam, sp, idx, 0, gl, strs[*sp]);
     if (no) {
@@ -949,7 +949,7 @@ CDeviceSlot *CDevice::GetSlot(aint num) {
         return Slots[num];
     }
 
-    Error("Wrong slot number", lp);
+    Error("Wrong slot number"s, lp);
     return Slots[0];
 }
 
@@ -958,7 +958,7 @@ CDevicePage *CDevice::GetPage(aint num) {
         return Pages[num];
     }
 
-    Error("Wrong page number", lp);
+    Error("Wrong page number"s, lp);
     return Pages[0];
 }
 
@@ -977,7 +977,7 @@ CDevicePage::CDevicePage(aint size, aint number /*, CDevicePage *n*/) {
     Number = number;
     RAM = (char *) calloc(size, sizeof(char));
     if (RAM == NULL) {
-        Error("No enough memory", 0, FATAL);
+        Fatal("Out of memory"s);
     }
     /*Next = NULL;
     if (n) {
