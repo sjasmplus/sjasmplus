@@ -31,21 +31,43 @@
 
 #include <cstdint>
 #include <string>
-#include <map>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/random_access_index.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/tag.hpp>
+#include <boost/multi_index/member.hpp>
 #include "fs.h"
+
+using ::boost::multi_index_container;
+using ::boost::multi_index::indexed_by;
+using ::boost::multi_index::random_access;
+using ::boost::multi_index::hashed_unique;
+using ::boost::multi_index::tag;
+using ::boost::multi_index::member;
 
 #define LABMAX 64
 
 extern char tempLabel[LINEMAX];
 
-struct LabelInfo {
+struct LabelData {
+    std::string name;
     int8_t page;
     bool IsDEFL;
     aint value;
     int8_t used;
 };
 
-typedef std::map<std::string, LabelInfo> LabelMap;
+struct name_tag {};
+
+typedef multi_index_container<
+    LabelData,
+    indexed_by<
+        random_access<>, // insertion order index
+        hashed_unique< tag<name_tag>, member<LabelData, std::string, &LabelData::name> >
+    >
+> LabelContainer;
+
+typedef LabelContainer::index<name_tag>::type LabelContainerByName;
 
 class CLabelTable {
 public:
@@ -71,7 +93,8 @@ public:
     void dumpSymbols(const fs::path &FileName) const;
 
 private:
-    LabelMap _LabelMap;
+    LabelContainer _LabelContainer;
+    LabelContainerByName &name_index = _LabelContainer.get<name_tag>();
 };
 
 char *ValidateLabel(char *);

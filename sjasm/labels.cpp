@@ -35,55 +35,97 @@
 #include "support.h"
 #include "labels.h"
 
+struct update_label {
+    update_label(int8_t new_page, bool new_IsDEFL, aint new_value, int8_t new_used) :
+            new_page(new_page), new_IsDEFL(new_IsDEFL), new_value(new_value), new_used(new_used) {}
+
+    void operator()(LabelData &L) {
+        L.page = new_page;
+        L.IsDEFL = new_IsDEFL;
+        L.value = new_value;
+        L.used = new_used;
+    }
+
+private:
+    int8_t new_page;
+    bool new_IsDEFL;
+    aint new_value;
+    int8_t new_used;
+};
+
+struct update_value {
+    update_value(aint new_value) : new_value(new_value) {}
+
+    void operator()(LabelData &L) {
+        L.value = new_value;
+    }
+
+private:
+    aint new_value;
+};
+
+struct update_used {
+    update_used(aint new_used) : new_used(new_used) {}
+
+    void operator()(LabelData &L) {
+        L.used = new_used;
+    }
+
+private:
+    int8_t new_used;
+};
+
+
 bool CLabelTable::insert(const std::string &Name, aint Value, bool Undefined, bool IsDEFL) {
-    auto it = _LabelMap.find(Name);
-    if (it != _LabelMap.end()) {
-        auto &LabelData = it->second;
+    auto it = name_index.find(Name);
+    if (it != name_index.end()) {
+        auto &LabelData = *it;
         if (!LabelData.IsDEFL && LabelData.page != -1) {
             return false;
         } else {
             //if label already added as used
-            LabelData.value = Value;
-            LabelData.page = 0;
-            LabelData.IsDEFL = IsDEFL;
+            name_index.modify(it, update_label(0, IsDEFL, Value, LabelData.used));
             return true;
         }
     }
 
-    LabelInfo LD = {0, IsDEFL, Value, -1};
+    LabelData LD = {Name, 0, IsDEFL, Value, -1};
     if (Undefined) {
         LD.used = 1;
         LD.page = -1;
     }
-    _LabelMap[Name] = LD;
+    if (it == name_index.end()) {
+        name_index.insert(LD);
+    } else {
+        name_index.modify(it, update_label(LD.page, LD.IsDEFL, LD.value, LD.used));
+    }
 
     return true;
 }
 
 bool CLabelTable::updateValue(const std::string &Name, aint Value) {
-    auto it = _LabelMap.find(Name);
-    if (it != _LabelMap.end()) {
-        it->second.value = Value;
+    auto it = name_index.find(Name);
+    if (it != name_index.end()) {
+        name_index.modify(it, update_value(Value));
     }
     // FIXME: Always returns true?
     return true;
 }
 
 bool CLabelTable::getValue(const std::string &Name, aint &Value) {
-    auto it = _LabelMap.find(Name);
-    if (it != _LabelMap.end()) {
-        auto &LD = it->second;
+    auto it = name_index.find(Name);
+    if (it != name_index.end()) {
 
-        if (LD.used == -1 && pass != LASTPASS) {
-            LD.used = 1;
+        if (it->used == -1 && pass != LASTPASS) {
+            name_index.modify(it, update_used(1));
         }
 
-        if (LD.page == -1) {
+        if (it->page == -1) {
             IsLabelNotFound = 2;
             Value = 0;
             return false;
         } else {
-            Value = LD.value;
+            Value = it->value;
             return true;
         }
     }
@@ -95,9 +137,9 @@ bool CLabelTable::getValue(const std::string &Name, aint &Value) {
 }
 
 bool CLabelTable::find(const std::string &Name) {
-    auto it = _LabelMap.find(Name);
-    if (it != _LabelMap.end()) {
-        if (it->second.page == -1) {
+    auto it = name_index.find(Name);
+    if (it != name_index.end()) {
+        if (it->page == -1) {
             return false;
         } else {
             return true;
@@ -108,9 +150,9 @@ bool CLabelTable::find(const std::string &Name) {
 }
 
 bool CLabelTable::isUsed(const std::string &Name) {
-    auto it = _LabelMap.find(Name);
-    if (it != _LabelMap.end()) {
-        if (it->second.used > 0) {
+    auto it = name_index.find(Name);
+    if (it != name_index.end()) {
+        if (it->used > 0) {
             return true;
         } else {
             return false;
@@ -120,9 +162,9 @@ bool CLabelTable::isUsed(const std::string &Name) {
 }
 
 bool CLabelTable::remove(const std::string &Name) {
-    auto it = _LabelMap.find(Name);
-    if (it != _LabelMap.end()) {
-        _LabelMap.erase(it);
+    auto it = name_index.find(Name);
+    if (it != name_index.end()) {
+        name_index.erase(it);
         return true;
     }
 
@@ -130,7 +172,7 @@ bool CLabelTable::remove(const std::string &Name) {
 }
 
 void CLabelTable::removeAll() {
-    _LabelMap.clear();
+    _LabelContainer.clear();
 }
 
 std::string CLabelTable::dump() const {
@@ -139,28 +181,15 @@ std::string CLabelTable::dump() const {
         << "Value    Label" << std::endl
         << "------ - -----------------------------------------------------------" << std::endl;
 
-    // sort labels by address ("value")
-    typedef std::tuple<aint, std::string, int8_t, int8_t> L;
-    std::vector<L> v;
-    v.resize(_LabelMap.size());
-    auto it = _LabelMap.begin();
-    std::generate(v.begin(), v.end(), [it]() mutable {
-        L r = std::make_tuple(it->second.value, it->first, it->second.page, it->second.used);
-        it++;
-        return r;
-    });
-    std::sort(v.begin(), v.end(), [](L a, L b) {
-        return std::get<0>(a) < std::get<0>(b);
-    });
-
-    // output sorted labels
-    for (const auto &it : v) {
-        if (std::get<2>(it) != -1) { // page
-            Str << "0x" << toHexAlt(std::get<0>(it)) // value
-                << (std::get<3>(it) /* used */ > 0 ? "   " : " X ") << std::get<1>(it) // name
+    // List labels in order of insertion
+    for (const auto &it : _LabelContainer) {
+        if (it.page != -1) {
+            Str << "0x" << toHexAlt(it.value)
+                << (it.used > 0 ? "   " : " X ") << it.name
                 << std::endl;
         }
     }
+
     return Str.str();
 }
 
@@ -169,12 +198,11 @@ void CLabelTable::dumpForUnreal(const fs::path &FileName) const {
     if (!OFS.is_open()) {
         Error("Error opening file", FileName.string(), FATAL);
     }
-    for (const auto &it : _LabelMap) {
-        const auto &LD = it.second;
-        if (LD.page == -1) {
+    for (const auto &it : _LabelContainer) {
+        if (it.page == -1) {
             continue;
         }
-        aint lvalue = LD.value;
+        aint lvalue = it.value;
         int page = 0;
         if (lvalue >= 0 && lvalue < 0x4000) {
             page = -1;
@@ -192,7 +220,7 @@ void CLabelTable::dumpForUnreal(const fs::path &FileName) const {
         }
         OFS << ':';
         OFS << toHexAlt(lvalue);
-        OFS << ' ' << it.first << std::endl;
+        OFS << ' ' << it.name << std::endl;
     }
 }
 
@@ -201,10 +229,9 @@ void CLabelTable::dumpSymbols(const fs::path &FileName) const {
     if (!OFS) {
         Error("Error opening file", FileName.string(), FATAL);
     }
-    for (const auto &it : _LabelMap) {
-        const auto &LD = it.second;
-        if (isalpha(it.first[0])) {
-            OFS << it.first << ": equ 0x" << toHex32(LD.value) << std::endl;
+    for (const auto &it : _LabelContainer) {
+        if (isalpha(it.name[0])) {
+            OFS << it.name << ": equ 0x" << toHex32(it.value) << std::endl;
         }
     }
 }
