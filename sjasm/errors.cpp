@@ -16,7 +16,7 @@ int PreviousErrorLine = -1;
 
 int WarningCount = 0;
 
-void _Error(const char *fout, const char *bd, int type) {
+void Error(const std::string &fout, const std::string &bd, int type) {
     lua_Debug ar;
 
     if (IsSkipErrors && PreviousErrorLine == CurrentLocalLine && type != FATAL) {
@@ -62,7 +62,7 @@ void _Error(const char *fout, const char *bd, int type) {
         ErrorStr = global::CurrentFilename.string() + "("s + std::to_string(ln) + "): error: "s + fout;
     }
 
-    if (bd) {
+    if (!bd.empty()) {
         ErrorStr += ": "s + bd;
     }
 //    if (ErrorStr.find('\n') != std::string::npos) {
@@ -79,10 +79,6 @@ void _Error(const char *fout, const char *bd, int type) {
     }
 }
 
-void Error(const std::string &fout, const std::string &bd, int type) {
-    _Error(fout.c_str(), bd.c_str(), type);
-}
-
 void Error(const std::string &fout, int type) {
     Error(fout, ""s, type);
 }
@@ -97,7 +93,7 @@ void Fatal(const std::string &errstr, const std::string &bd) {
     throw ("Unreachable code executed!");
 }
 
-void _Warning(const char *fout, const char *bd, int type) {
+void Warning(const std::string &fout, const std::string &bd, int type) {
     lua_Debug ar;
 
     if (type == PASS1 && pass != 1) {
@@ -124,7 +120,7 @@ void _Warning(const char *fout, const char *bd, int type) {
         ErrorStr = global::CurrentFilename.string() + "("s + std::to_string(ln) + "): warning: "s + fout;
     }
 
-    if (bd) {
+    if (!bd.empty()) {
         ErrorStr += ": "s + bd;
     }
 //    if (ErrorStr.find('\n') != std::string::npos) {
@@ -133,10 +129,6 @@ void _Warning(const char *fout, const char *bd, int type) {
 
     Listing.write(ErrorStr);
     _COUT ErrorStr _END;
-}
-
-void Warning(const std::string &fout, const std::string &bd, int type) {
-    _Warning(fout.c_str(), bd.c_str(), type);
 }
 
 void Warning(const std::string &fout, int type) {
