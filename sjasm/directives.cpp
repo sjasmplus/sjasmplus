@@ -2048,7 +2048,7 @@ void dirINCLUDELUA() {
     }
 
     LuaLine = CurrentLocalLine;
-    error = luaL_loadfile(LUA, FileName.c_str()) || lua_pcall(LUA, 0, 0, 0);
+    error = luaL_loadfile(LUA, FileName.string().c_str()) || lua_pcall(LUA, 0, 0, 0);
     if (error) {
         _lua_showerror();
     }
