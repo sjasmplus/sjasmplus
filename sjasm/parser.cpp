@@ -555,7 +555,7 @@ char *ReplaceDefine(char *lp) {
                 Error("Number of cell must be positive"s, CATCHALL);
                 break;
             }
-            if(Arr.size() > val) {
+            if (Arr.size() > (unsigned) val) {
                 ver = Arr[val].c_str();
             } else {
                 Error("Cell of array not found"s, CATCHALL);
@@ -728,7 +728,7 @@ char *ReplaceDefineNext(char *lp) {
             while (*lp == ']' && *(lp++));
             //_COUT "A" _CMDL val _ENDL;
 
-            if(Arr.size() > val) {
+            if (Arr.size() > (unsigned) val) {
                 ver = Arr[val].c_str();
             } else {
                 Error("Cell of array not found"s, CATCHALL);

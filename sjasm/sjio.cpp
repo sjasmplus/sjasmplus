@@ -637,7 +637,6 @@ bool saveBinaryFile(const fs::path &FileName, int Start, int Length) {
 }
 
 EReturn ReadFile(const char *pp, const char *err) {
-    CStringsList *ol;
     char *p;
     while (ReadLineBuf.left() > 0 || !pIFS->eof()) {
         if (!SourceReaderEnabled) {
@@ -650,7 +649,6 @@ EReturn ReadFile(const char *pp, const char *err) {
             //p = STRCPY(line, LINEMAX, lijstp->string); //mmm
             STRCPY(line, LINEMAX, lijstp->string);
             p = line;
-            ol = lijstp;
             lijstp = lijstp->next;
         } else {
             readBufLine(false);
@@ -690,7 +688,6 @@ EReturn ReadFile(const char *pp, const char *err) {
 
 
 EReturn SkipFile(const char *pp, const char *err) {
-    CStringsList *ol;
     char *p;
     int iflevel = 0;
     while (ReadLineBuf.left() > 0 || !pIFS->eof()) {
@@ -704,7 +701,6 @@ EReturn SkipFile(const char *pp, const char *err) {
             //p = STRCPY(line, LINEMAX, lijstp->string); //mmm
             STRCPY(line, LINEMAX, lijstp->string);
             p = line;
-            ol = lijstp;
             lijstp = lijstp->next;
         } else {
             readBufLine(false);

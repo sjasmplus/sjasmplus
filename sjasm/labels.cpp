@@ -304,7 +304,7 @@ char *ValidateLabel(char *naam) {
 
 bool GetLabelValue(char *&p, aint &val) {
     char *mlp = macrolabp, *op = p;
-    int g = 0, l = 0, oIsLabelNotFound = IsLabelNotFound, plen;
+    int g = 0, l = 0, oIsLabelNotFound = IsLabelNotFound;
     unsigned int len;
     char *np;
     if (mlp && *p == '@') {
@@ -330,7 +330,6 @@ bool GetLabelValue(char *&p, aint &val) {
             STRCAT(tempLabel, LINEMAX, ">");
             len = strlen(tempLabel);
             np = tempLabel + len;
-            plen = 0;
             if (!isalpha((unsigned char) *p) && *p != '_') {
                 Error("Invalid labelname"s, tempLabel);
                 return false;
