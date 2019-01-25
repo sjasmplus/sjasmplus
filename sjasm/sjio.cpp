@@ -93,6 +93,13 @@ public:
         }
     }
 
+    bool nextIf(char c) {
+        if (cur() == c) {
+            next();
+            return true;
+        } else return false;
+    }
+
     std::streamsize read(fs::ifstream &IFS) {
         IFS.read((char *) this->data(), this->size());
         this->reset(IFS.gcount());
@@ -353,19 +360,14 @@ void readBufLine(bool Parse, bool SplitByColon) {
     if (rlcolon) {
         *(rlppos++) = '\t';
     }
-    while (SourceReaderEnabled && (ReadLineBuf.left() > 0 || (ReadLineBuf.read(*pIFS)))) {
-        while (ReadLineBuf.left() > 0) {
-            if (ReadLineBuf.cur() == '\n' || ReadLineBuf.cur() == '\r') {
-                if (ReadLineBuf.cur() == '\n') {
-                    ReadLineBuf.next();
-                    if (ReadLineBuf.cur() == '\r') {
-                        ReadLineBuf.next();
-                    }
-                } else if (ReadLineBuf.cur() == '\r') {
-                    ReadLineBuf.next();
-                    if (ReadLineBuf.cur() == '\n') {
-                        ReadLineBuf.next();
-                    }
+    auto &B = ReadLineBuf;
+    while (SourceReaderEnabled && (B.left() > 0 || (B.read(*pIFS)))) {
+        while (B.left() > 0) {
+            if (B.cur() == '\n' || B.cur() == '\r') {
+                if (B.nextIf('\n')) {
+                    B.nextIf('\r');
+                } else if (B.nextIf('\r')) {
+                    B.nextIf('\n');
                 }
                 *rlppos = 0;
                 if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
@@ -386,10 +388,8 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     *(rlppos++) = ' ';
                 }
                 rlnewline = true;
-            } else if (SplitByColon && ReadLineBuf.cur() == ':' && rlspace && !rldquotes && !rlsquotes && !rlcomment) {
-                while (ReadLineBuf.cur() == ':') {
-                    ReadLineBuf.next();
-                }
+            } else if (SplitByColon && B.cur() == ':' && rlspace && !rldquotes && !rlsquotes && !rlcomment) {
+                while (B.nextIf(':'));
                 *rlppos = 0;
                 if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
                 /*if (rlnewline) {
@@ -405,15 +405,13 @@ void readBufLine(bool Parse, bool SplitByColon) {
                 if (rlcolon) {
                     *(rlppos++) = ' ';
                 }
-            } else if (ReadLineBuf.cur() == ':' && !rlspace && !rlcolon && !rldquotes && !rlsquotes && !rlcomment) {
+            } else if (B.cur() == ':' && !rlspace && !rlcolon && !rldquotes && !rlsquotes && !rlcomment) {
                 lp = line;
                 *rlppos = 0;
                 char *n;
                 if ((!rlnewline || Options::IsPseudoOpBOF) && (n = getinstr(lp)) && DirectivesTable.find(n)) {
                     // it's a directive
-                    while (ReadLineBuf.cur() == ':') {
-                        ReadLineBuf.next();
-                    }
+                    while (B.nextIf(':'));
                     if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
                     if (rlnewline) {
                         CurrentLocalLine++;
@@ -437,39 +435,37 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     *(rlppos++) = ':';
                     *(rlppos++) = ' ';
                     rlspace = true;
-                    while (ReadLineBuf.cur() == ':') {
-                        ReadLineBuf.next();
-                    }
+                    while (B.nextIf(':'));
                 }
             } else {
-                if (ReadLineBuf.cur() == '\'' && !rldquotes && !rlcomment) {
+                if (B.cur() == '\'' && !rldquotes && !rlcomment) {
                     if (rlsquotes) {
                         rlsquotes = false;
                     } else {
                         rlsquotes = true;
                     }
-                } else if (ReadLineBuf.cur() == '"' && !rlsquotes && !rlcomment) {
+                } else if (B.cur() == '"' && !rlsquotes && !rlcomment) {
                     if (rldquotes) {
                         rldquotes = false;
                     } else {
                         rldquotes = true;
                     }
-                } else if (ReadLineBuf.cur() == ';' && !rlsquotes && !rldquotes) {
+                } else if (B.cur() == ';' && !rlsquotes && !rldquotes) {
                     rlcomment = true;
-                } else if (ReadLineBuf.cur() == '/' && ReadLineBuf.cur2() == '/' && !rlsquotes && !rldquotes) {
+                } else if (B.cur() == '/' && B.cur2() == '/' && !rlsquotes && !rldquotes) {
                     rlcomment = true;
-                    *(rlppos++) = ReadLineBuf.cur();
-                    ReadLineBuf.next();
-                } else if (ReadLineBuf.cur() <= ' ' && !rlsquotes && !rldquotes && !rlcomment) {
+                    *(rlppos++) = B.cur();
+                    B.next();
+                } else if (B.cur() <= ' ' && !rlsquotes && !rldquotes && !rlcomment) {
                     rlspace = true;
                 }
-                *(rlppos++) = ReadLineBuf.cur();
-                ReadLineBuf.next();
+                *(rlppos++) = B.cur();
+                B.next();
             }
         }
     }
     //for end line
-    if (pIFS->eof() && ReadLineBuf.left() <= 0 && line) {
+    if (pIFS->eof() && B.left() <= 0 && line) {
         if (rlnewline) {
             CurrentLocalLine++;
             CompiledCurrentLine++;
