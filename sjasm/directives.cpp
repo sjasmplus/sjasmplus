@@ -1110,22 +1110,22 @@ void dirIFN() {
 }
 
 void dirIFUSED() {
-    char *id;
-    if (((id = GetID(lp)) == NULL || *id == 0) && LastParsedLabel == NULL) {
+    std::string Id;
+    if (((Id = GetID(lp)).empty()) && LastParsedLabel.empty()) {
         Error("[IFUSED] Syntax error"s, CATCHALL);
         return;
     }
-    if (id == NULL || *id == 0) {
-        id = LastParsedLabel;
+    if (Id.empty()) {
+        Id = LastParsedLabel;
     } else {
-        id = ValidateLabel(id);
-        if (id == NULL) {
+        Id = validateLabel(Id);
+        if (Id.empty()) {
             Error("[IFUSED] Invalid label name"s, CATCHALL);
             return;
         }
     }
 
-    if (LabelTable.isUsed(id)) {
+    if (LabelTable.isUsed(Id)) {
         Listing.listFile();
         switch (ReadFile(lp, "[IFUSED] No endif")) {
             case ELSE:
@@ -1157,22 +1157,22 @@ void dirIFUSED() {
 }
 
 void dirIFNUSED() {
-    char *id;
-    if (((id = GetID(lp)) == NULL || *id == 0) && LastParsedLabel == NULL) {
+    std::string Id;
+    if (((Id = GetID(lp)).empty()) && LastParsedLabel.empty()) {
         Error("[IFUSED] Syntax error"s, CATCHALL);
         return;
     }
-    if (id == NULL || *id == 0) {
-        id = LastParsedLabel;
+    if (Id.empty()) {
+        Id = LastParsedLabel;
     } else {
-        id = ValidateLabel(id);
-        if (id == NULL) {
+        Id = validateLabel(Id);
+        if (Id.empty()) {
             Error("[IFUSED] Invalid label name"s, CATCHALL);
             return;
         }
     }
 
-    if (!LabelTable.isUsed(id)) {
+    if (!LabelTable.isUsed(Id)) {
         Listing.listFile();
         switch (ReadFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
@@ -1444,7 +1444,7 @@ void dirEXPORT() {
     }
     IsLabelNotFound = 0;
 
-    GetLabelValue(n, val);
+    getLabelValue(n, val);
     if (IsLabelNotFound) {
         Error("[EXPORT] Label not found"s, p, SUPPRESS);
         return;

@@ -29,8 +29,6 @@ extern aint MaxLineNumber;
 
 extern int ErrorCount, IncludeLevel;
 
-extern char *vorlabp, *macrolabp, *LastParsedLabel;
-
 extern stack<RepeatInfo> RepeatStack;
 extern CStringsList *lijstp;
 extern CLabelTable LabelTable;

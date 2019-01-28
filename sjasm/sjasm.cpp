@@ -57,14 +57,7 @@ char *MemoryPointer = NULL; /* added for spectrum ram */
 aint destlen = 0, size = (aint) -1;
 
 void InitPass(int p) {
-    if (LastParsedLabel != NULL) {
-        free(LastParsedLabel);
-        LastParsedLabel = NULL;
-    }
-    LastParsedLabel = NULL;
-    vorlabp = (char *) malloc(2);
-    STRCPY(vorlabp, sizeof("_"), "_");
-    macrolabp = NULL;
+    initLabels();
     pass = p;
     Em.reset();
     enableSourceReader();
@@ -90,7 +83,6 @@ void InitPass(int p) {
 void FreeRAM() {
     delete Devices;
     delete lijstp;
-    free(vorlabp);
 }
 
 /* added */

@@ -81,11 +81,11 @@ bool ParseExpPrim(char *&p, aint &nval) {
                (*p == '$' && isalnum((unsigned char) *(p + 1))) || *p == '%') {
         res = GetConstant(p, nval);
     } else if (isalpha((unsigned char) *p) || *p == '_' || *p == '.' || *p == '@') {
-        res = GetLabelValue(p, nval);
+        res = getLabelValue(p, nval);
     } else if (*p == '?' &&
                (isalpha((unsigned char) *(p + 1)) || *(p + 1) == '_' || *(p + 1) == '.' || *(p + 1) == '@')) {
         ++p;
-        res = GetLabelValue(p, nval);
+        res = getLabelValue(p, nval);
     } else if (Em.isPagedMemory() && *p == '$' && *(p + 1) == '$') {
         ++p;
         ++p;
@@ -811,7 +811,6 @@ void ParseLabel() {
         }
     } else {
         bool IsDEFL = 0;
-        char *ttp;
         if (NeedEQU()) {
             if (!ParseExpression(lp, val)) {
                 Error("Expression error"s, lp);
@@ -845,27 +844,22 @@ void ParseLabel() {
             }
             val = Em.getCPUAddress();
         }
-        ttp = tp;
-        if (!(tp = ValidateLabel(tp))) {
+        std::string LUnparsed = tp;
+        std::string L;
+        if ((L = validateLabel(LUnparsed)).empty()) {
             return;
         }
         // Copy label name to last parsed label variable
         if (!IsDEFL) {
-            if (LastParsedLabel != NULL) {
-                free(LastParsedLabel);
-                LastParsedLabel = NULL;
-            }
-            LastParsedLabel = STRDUP(tp);
-            if (LastParsedLabel == NULL) {
-                Fatal("Out of memory!"s);
-            }
+            LastParsedLabel = L;
         }
         if (pass == LASTPASS) {
-            if (IsDEFL && !LabelTable.insert(tp, val, false, IsDEFL)) {
-                Error("Duplicate label"s, tp, PASS3);
+            if (IsDEFL && !LabelTable.insert(L, val, false, IsDEFL)) {
+                Error("Duplicate label"s, L, PASS3);
             }
             aint oval;
-            if (!GetLabelValue(ttp, oval)) {
+            char *t = (char *) LUnparsed.c_str();
+            if (!getLabelValue(t, oval)) {
                 Fatal("Internal error. ParseLabel()"s);
             }
             /*if (val!=oval) Error("Label has different value in pass 2",temp);*/
@@ -874,15 +868,14 @@ void ParseLabel() {
                         "previous value "s + std::to_string(oval) + " not equal "s + std::to_string(val));
                 //_COUT "" _CMDL filename _CMDL ":" _CMDL CurrentLocalLine _CMDL ":(DEBUG)  " _CMDL "Label has different value in pass 2: ";
                 //_COUT val _CMDL "!=" _CMDL oval _ENDL;
-                LabelTable.updateValue(tp, val);
+                LabelTable.updateValue(L, val);
             }
-        } else if (pass == 2 && !LabelTable.insert(tp, val, false, IsDEFL) && !LabelTable.updateValue(tp, val)) {
-            Error("Duplicate label"s, tp, PASS2);
-        } else if (!LabelTable.insert(tp, val, false, IsDEFL)) {
-            Error("Duplicate label"s, tp, PASS1);
+        } else if (pass == 2 && !LabelTable.insert(L, val, false, IsDEFL) && !LabelTable.updateValue(L, val)) {
+            Error("Duplicate label"s, L, PASS2);
+        } else if (!LabelTable.insert(L, val, false, IsDEFL)) {
+            Error("Duplicate label"s, L, PASS1);
         }
 
-        delete[] tp;
     }
 }
 

@@ -633,92 +633,89 @@ void CStructure::CopyMembers(CStructure *st, char *&lp) {
 }
 
 void CStructure::deflab() {
-    char ln[LINEMAX], sn[LINEMAX], *p, *op;
+    std::string ln, sn, p, op;
     aint oval;
     CStructureEntry1 *np = mnf;
-    STRCPY(sn, LINEMAX, "@");
-    STRCAT(sn, LINEMAX, id);
-    op = p = sn;
-    p = ValidateLabel(p);
+    sn = "@"s + id;
+    op = sn;
+    p = validateLabel(op);
     if (pass == LASTPASS) {
-        if (!GetLabelValue(op, oval)) {
+        char *t = (char *) op.c_str();
+        if (!getLabelValue(t, oval)) {
             Fatal("Internal error. ParseLabel()"s);
         }
         if (noffset != oval) {
-            Error("Label has different value in pass 2"s, tempLabel);
+            Error("Label has different value in pass 2"s, TempLabel);
         }
     } else {
         if (!LabelTable.insert(p, noffset)) {
             Error("Duplicate label"s, PASS1);
         }
     }
-    free(p);
-    STRCAT(sn, LINEMAX, ".");
+    sn += "."s;
     while (np) {
-        STRCPY(ln, LINEMAX, sn);
-        STRCAT(ln, LINEMAX, np->naam);
+        ln = sn + np->naam;
         op = ln;
-        if (!(p = ValidateLabel(ln))) {
+        if ((p = validateLabel(ln)).empty()) {
             Error("Illegal labelname"s, ln, PASS1);
         }
         if (pass == LASTPASS) {
-            if (!GetLabelValue(op, oval)) {
+            char *t = (char *) op.c_str();
+            if (!getLabelValue(t, oval)) {
                 Fatal("Internal error. ParseLabel()"s);
             }
             if (np->offset != oval) {
-                Error("Label has different value in pass 2"s, tempLabel);
+                Error("Label has different value in pass 2"s, TempLabel);
             }
         } else {
             if (!LabelTable.insert(p, np->offset)) {
                 Error("Duplicate label"s, PASS1);
             }
         }
-        free(p);
         np = np->next;
     }
 }
 
 void CStructure::emitlab(char *iid) {
-    char ln[LINEMAX], sn[LINEMAX], *p, *op;
+    std::string ln, sn, p, op;
     aint oval;
     CStructureEntry1 *np = mnf;
-    STRCPY(sn, LINEMAX, iid);
-    op = p = sn;
-    p = ValidateLabel(p);
+    sn = iid;
+    op = sn;
+    p = validateLabel(op);
     if (pass == LASTPASS) {
-        if (!GetLabelValue(op, oval)) {
+        char *t = (char *) op.c_str();
+        if (!getLabelValue(t, oval)) {
             Fatal("Internal error. ParseLabel()"s);
         }
         if (Em.getCPUAddress() != oval) {
-            Error("Label has different value in pass 2"s, tempLabel);
+            Error("Label has different value in pass 2"s, TempLabel);
         }
     } else {
         if (!LabelTable.insert(p, Em.getCPUAddress())) {
             Error("Duplicate label"s, PASS1);
         }
     }
-    delete[] p;
-    STRCAT(sn, LINEMAX, ".");
+    sn += "."s;
     while (np) {
-        STRCPY(ln, LINEMAX, sn);
-        STRCAT(ln, LINEMAX, np->naam);
+        ln = sn + np->naam;
         op = ln;
-        if (!(p = ValidateLabel(ln))) {
+        if ((p = validateLabel(ln)).empty()) {
             Error("Illegal labelname"s, ln, PASS1);
         }
         if (pass == LASTPASS) {
-            if (!GetLabelValue(op, oval)) {
+            char *t = (char *) op.c_str();
+            if (!getLabelValue(t, oval)) {
                 Fatal("Internal error. ParseLabel()"s);
             }
             if (np->offset + Em.getCPUAddress() != oval) {
-                Error("Label has different value in pass 2"s, tempLabel);
+                Error("Label has different value in pass 2"s, TempLabel);
             }
         } else {
             if (!LabelTable.insert(p, np->offset + Em.getCPUAddress())) {
                 Error("Duplicate label"s, PASS1);
             }
         }
-        delete[] p;
         np = np->next;
     }
 }

@@ -47,7 +47,13 @@ using ::boost::multi_index::member;
 
 #define LABMAX 64
 
-extern char tempLabel[LINEMAX];
+extern std::string TempLabel;
+
+extern std::string LastLabel;
+extern char *macrolabp;
+extern std::string LastParsedLabel;
+
+void initLabels();
 
 struct LabelData {
     std::string name;
@@ -97,11 +103,11 @@ private:
     LabelContainerByName &name_index = _LabelContainer.get<name_tag>();
 };
 
-char *ValidateLabel(char *);
+const std::string validateLabel(const std::string &Name);
 
 extern char *PreviousIsLabel;
 
-bool GetLabelValue(char *&p, aint &val);
+bool getLabelValue(char *&p, aint &val);
 
 bool GetLocalLabelValue(char *&op, aint &val);
 

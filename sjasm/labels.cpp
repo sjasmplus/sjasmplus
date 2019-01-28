@@ -236,77 +236,76 @@ void CLabelTable::dumpSymbols(const fs::path &FileName) const {
     }
 }
 
-char tempLabel[LINEMAX];
+std::string TempLabel;
 
 char *PreviousIsLabel;
 
-char *ValidateLabel(char *naam) {
-    char *np = naam, *lp, *label, *mlp = macrolabp;
-    int p = 0, l = 0;
-    label = new char[LINEMAX];
-    lp = label;
-    label[0] = 0;
-    if (mlp && *np == '@') {
-        ++np;
+
+std::string LastLabel;
+char *macrolabp = NULL;
+std::string LastParsedLabel;
+
+void initLabels() {
+    LastParsedLabel.clear();
+    LastLabel = "_"s;
+    macrolabp = NULL;
+}
+
+const std::string validateLabel(const std::string &Name) {
+    std::string LName = Name; // Label name without @ or . prefix
+    char *mlp = macrolabp;
+    bool AsIsLabel = false;
+    bool DotLabel = false;
+    if (mlp && LName[0] == '@') {
+        LName = LName.substr(1);
         mlp = 0;
     }
-    switch (*np) {
+    switch (LName[0]) {
         case '@':
-            p = 1;
-            ++np;
+            AsIsLabel = true;
+            LName = LName.substr(1);
             break;
         case '.':
-            l = 1;
-            ++np;
+            DotLabel = true;
+            LName = LName.substr(1);
             break;
         default:
             break;
     }
-    naam = np;
-    if (!isalpha((unsigned char) *np) && *np != '_') {
-        Error("Invalid labelname"s, naam);
-        return 0;
+    if (LName.empty() || (!isalpha(LName[0]) && LName[0] != '_')) {
+        Error("Invalid labelname"s, LName);
+        return ""s;
     }
-    while (*np) {
-        if (isalnum((unsigned char) *np) || *np == '_' || *np == '.' || *np == '?' || *np == '!' || *np == '#' ||
-            *np == '@') {
-            ++np;
-        } else {
-            Error("Invalid labelname"s, naam);
-            return 0;
+    for (auto c : LName) {
+        if (!(isalnum(c) || c == '_' || c == '.' || c == '?' ||
+                            c == '!' || c == '#' || c == '@')) {
+            Error("Invalid labelname"s, LName);
+            return ""s;
         }
     }
-    if (strlen(naam) > LABMAX) {
-        Error("Label too long"s, naam, PASS1);
-        naam[LABMAX] = 0;
-    }
-    if (mlp && l) {
-        STRCAT(lp, LINEMAX, macrolabp);
-        STRCAT(lp, LINEMAX, ">");
+    std::string RetValue;
+    if (mlp && DotLabel) {
+        RetValue = macrolabp + ">"s;
     } else {
-        if (!p && !Modules.IsEmpty()) {
-            STRCAT(lp, LINEMAX, Modules.GetPrefix().c_str());
+        if (!AsIsLabel && !Modules.IsEmpty()) {
+            RetValue = Modules.GetPrefix();
         }
-        if (l) {
-            STRCAT(lp, LINEMAX, vorlabp);
-            STRCAT(lp, LINEMAX, ".");
+        if (DotLabel) {
+            RetValue += LastLabel + "."s;
         } else {
-            free(vorlabp);
-            vorlabp = STRDUP(naam);
-            if (vorlabp == NULL) {
-                Fatal("Out of memory!"s);
-            }
+            LastLabel = LName;
         }
     }
-    STRCAT(lp, LINEMAX, naam);
-    return label;
+    RetValue += LName;
+    return RetValue;
 }
 
-bool GetLabelValue(char *&p, aint &val) {
+bool getLabelValue(char *&p, aint &val) {
     char *mlp = macrolabp, *op = p;
-    int g = 0, l = 0, oIsLabelNotFound = IsLabelNotFound;
-    unsigned int len;
-    char *np;
+    bool AsIsLabel = false;
+    bool DotLabel = false;
+    int oIsLabelNotFound = IsLabelNotFound;
+    size_t len;
     if (mlp && *p == '@') {
         ++op;
         mlp = nullptr;
@@ -314,105 +313,93 @@ bool GetLabelValue(char *&p, aint &val) {
     if (mlp) {
         switch (*p) {
             case '@':
-                g = 1;
+                AsIsLabel = 1;
                 ++p;
                 break;
             case '.':
-                l = 1;
+                DotLabel = 1;
                 ++p;
                 break;
             default:
                 break;
         }
-        tempLabel[0] = 0;
-        if (l) {
-            STRCAT(tempLabel, LINEMAX, macrolabp);
-            STRCAT(tempLabel, LINEMAX, ">");
-            len = strlen(tempLabel);
-            np = tempLabel + len;
+        TempLabel.clear();
+        if (DotLabel) {
+            TempLabel += macrolabp + ">"s;
+            len = TempLabel.size();
             if (!isalpha((unsigned char) *p) && *p != '_') {
-                Error("Invalid labelname"s, tempLabel);
+                Error("Invalid labelname"s, TempLabel);
                 return false;
             }
             while (isalnum((unsigned char) *p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' ||
                    *p == '@') {
-                *np = *p;
-                ++np;
+                TempLabel += *p;
                 ++p;
             }
-            *np = 0;
-            if (strlen(tempLabel) > LABMAX + len) {
-                Error("Label too long"s, tempLabel + len);
-                tempLabel[LABMAX + len] = 0;
-            }
-            np = tempLabel;
-            g = 1;
+            AsIsLabel = true;
+            int offset = 0;
             do {
-                if (LabelTable.getValue(np, val)) {
+                if (offset > 0) {
+                    TempLabel = TempLabel.substr(offset);
+                }
+                if (LabelTable.getValue(TempLabel, val)) {
                     return true;
                 }
                 IsLabelNotFound = oIsLabelNotFound;
-                while (true) {
-                    if (*np == '>') {
-                        g = 0;
+                for (auto c : TempLabel) {
+                    if (c == '>') {
+                        AsIsLabel = false;
                         break;
                     }
-                    if (*np == '.') {
-                        ++np;
+                    if (c == '.') {
+                        ++offset;
                         break;
                     }
-                    ++np;
+                    ++offset;
                 }
-            } while (g);
+                // FIXME: Make sure this does not loop infinitely
+            } while (AsIsLabel);
         }
     }
 
     p = op;
     switch (*p) {
         case '@':
-            g = 1;
+            AsIsLabel = true;
             ++p;
             break;
         case '.':
-            l = 1;
+            DotLabel = true;
             ++p;
             break;
         default:
             break;
     }
-    tempLabel[0] = 0;
-    if (!g && !Modules.IsEmpty()) {
-        STRCAT(tempLabel, LINEMAX, Modules.GetPrefix().c_str());
+    TempLabel.clear();
+    if (!AsIsLabel && !Modules.IsEmpty()) {
+        TempLabel = Modules.GetPrefix();
     }
-    if (l) {
-        STRCAT(tempLabel, LINEMAX, vorlabp);
-        STRCAT(tempLabel, LINEMAX, ".");
+    if (DotLabel) {
+        TempLabel += LastLabel + ".";
     }
-    len = strlen(tempLabel);
-    np = tempLabel + len;
+    len = TempLabel.size();
     if (!isalpha((unsigned char) *p) && *p != '_') {
-        Error("Invalid labelname"s, tempLabel);
+        Error("Invalid labelname"s, TempLabel);
         return false;
     }
     while (isalnum((unsigned char) *p) || *p == '_' || *p == '.' || *p == '?' || *p == '!' || *p == '#' || *p == '@') {
-        *np = *p;
-        ++np;
+        TempLabel += *p;
         ++p;
     }
-    *np = 0;
-    if (strlen(tempLabel) > LABMAX + len) {
-        Error("Label too long"s, tempLabel + len);
-        tempLabel[LABMAX + len] = 0;
-    }
-    if (LabelTable.getValue(tempLabel, val)) {
+    if (LabelTable.getValue(TempLabel, val)) {
         return true;
     }
     IsLabelNotFound = oIsLabelNotFound;
-    if (!l && !g && LabelTable.getValue(tempLabel + len, val)) {
+    if (!DotLabel && !AsIsLabel && LabelTable.getValue(TempLabel.substr(len), val)) {
         return true;
     }
     if (pass == LASTPASS) {
-        Error("Label not found"s, tempLabel);
+        Error("Label not found"s, TempLabel);
         return true;
     }
     val = 0;

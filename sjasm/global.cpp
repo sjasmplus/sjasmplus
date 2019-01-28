@@ -19,8 +19,6 @@ aint MaxLineNumber = 0;
 
 int ErrorCount = 0, IncludeLevel = -1;
 
-char *vorlabp = NULL, *macrolabp = NULL, *LastParsedLabel = NULL;
-
 stack<RepeatInfo> RepeatStack; /* added */
 CStringsList *lijstp = 0;
 CLabelTable LabelTable;
