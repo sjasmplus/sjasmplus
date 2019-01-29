@@ -68,61 +68,61 @@ public:
         Memory.fill(0);
     }
 
-    virtual ~PlainMemModel() override {}
+    ~PlainMemModel() override = default;
 
     bool isPagedMemory() override { return false; }
 
-    virtual int getNumMemPages() override { return 0; }
+    int getNumMemPages() override { return 0; }
 
-    virtual int getPageNumInSlot(int Slot) override { return 0; }
+    int getPageNumInSlot(int Slot) override { return 0; }
 
-    virtual boost::optional<std::string> setPage(int Slot, int Page) override {
+    boost::optional<std::string> setPage(int Slot, int Page) override {
         return "The PLAIN memory model does not support page switching"s;
     }
 
-    virtual boost::optional<std::string> setPage(uint16_t currentAddr, int Page) override {
+    boost::optional<std::string> setPage(uint16_t currentAddr, int Page) override {
         return setPage((int) 0, 0);
     }
 
-    virtual boost::optional<std::string> validateSlot(int Slot) override {
+    boost::optional<std::string> validateSlot(int Slot) override {
         return setPage((int) 0, (int) 0);
     }
 
-    virtual int getPageForAddress(uint16_t CurrentAddr) override {
+    int getPageForAddress(uint16_t CurrentAddr) override {
         return 0;
     }
 
-    virtual void getBytes(uint8_t *Dest, uint16_t Addr, uint16_t Size) override {
+    void getBytes(uint8_t *Dest, uint16_t Addr, uint16_t Size) override {
         for (int i = 0; i < Size; i++) {
             *(Dest + i) = Memory[Addr + i];
         }
     }
 
-    virtual void getBytes(uint8_t *Dest, int Slot, uint16_t AddrInPage, uint16_t Size) override {
+    void getBytes(uint8_t *Dest, int Slot, uint16_t AddrInPage, uint16_t Size) override {
         Fatal("GetBytes()"s, *(setPage(0, 0)));
     }
 
-    virtual uint8_t *getPtrToMem() override {
+    uint8_t *getPtrToMem() override {
         return Memory.data();
     }
 
-    virtual void clear() override {
+    void clear() override {
         Memory.fill(0);
     }
 
-    virtual uint8_t *getPtrToPage(int Page) override {
+    uint8_t *getPtrToPage(int Page) override {
         Fatal("GetPtrToPage()"s, *(setPage(0, 0)));
     }
 
-    virtual uint8_t *getPtrToPageInSlot(int Slot) override {
+    uint8_t *getPtrToPageInSlot(int Slot) override {
         Fatal("GetPtrToPageInSlot()"s, *(setPage(0, 0)));
     }
 
-    virtual void writeByte(uint16_t Addr, uint8_t Byte) override {
+    void writeByte(uint16_t Addr, uint8_t Byte) override {
         Memory[Addr] = Byte;
     }
 
-    virtual void initZXSysVars() override;
+    void initZXSysVars() override;
 };
 
 // ZX Spectrum 128, 256, 512, 1024 with 4 slots of 16K each
@@ -141,34 +141,34 @@ private:
 public:
     ZXMemModel(const std::string &Name, int NPages);
 
-    virtual ~ZXMemModel() override {}
+    ~ZXMemModel() override = default;
 
-    virtual void getBytes(uint8_t *Dest, uint16_t Addr, uint16_t Size) override {
+    void getBytes(uint8_t *Dest, uint16_t Addr, uint16_t Size) override {
         for (int i = 0; i < Size; i++) {
             *(Dest + i) = readByte(Addr + i);
         }
     }
 
-    virtual void getBytes(uint8_t *Dest, int Slot, uint16_t AddrInPage, uint16_t Size) override {
+    void getBytes(uint8_t *Dest, int Slot, uint16_t AddrInPage, uint16_t Size) override {
         uint16_t addr = AddrInPage + Slot * PageSize;
         for (int i = 0; i < Size; i++) {
             *(Dest + i) = readByte(addr + i);
         }
     }
 
-    virtual uint8_t *getPtrToMem() override {
+    uint8_t *getPtrToMem() override {
         return Memory.data();
     }
 
-    virtual void clear() override {
+    void clear() override {
         Memory.assign(Memory.size(), 0);
     }
 
-    virtual uint8_t *getPtrToPage(int Page) override {
+    uint8_t *getPtrToPage(int Page) override {
         return Memory.data() + Page * PageSize;
     }
 
-    virtual uint8_t *getPtrToPageInSlot(int Slot) override {
+    uint8_t *getPtrToPageInSlot(int Slot) override {
         return Memory.data() + SlotPages[Slot] * PageSize;
     }
 
@@ -178,19 +178,19 @@ public:
 
     bool isPagedMemory() override { return true; }
 
-    virtual int getNumMemPages() override { return NumPages; }
+    int getNumMemPages() override { return NumPages; }
 
-    virtual int getPageNumInSlot(int Slot) override { return SlotPages[Slot]; }
+    int getPageNumInSlot(int Slot) override { return SlotPages[Slot]; }
 
-    virtual boost::optional<std::string> setPage(int Slot, int Page) override;
+    boost::optional<std::string> setPage(int Slot, int Page) override;
 
-    virtual boost::optional<std::string> setPage(uint16_t CurrentAddr, int Page) override;
+    boost::optional<std::string> setPage(uint16_t CurrentAddr, int Page) override;
 
-    virtual boost::optional<std::string> validateSlot(int Slot) override;
+    boost::optional<std::string> validateSlot(int Slot) override;
 
-    virtual int getPageForAddress(uint16_t CurrentAddr) override;
+    int getPageForAddress(uint16_t CurrentAddr) override;
 
-    virtual void initZXSysVars() override;
+    void initZXSysVars() override;
 };
 
 // MemoryManager knows about memory models and manages them, and is used to collect assembler's output
