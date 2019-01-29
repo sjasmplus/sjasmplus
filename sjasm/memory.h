@@ -30,6 +30,8 @@ public:
 
     virtual int getNumMemPages() = 0;
 
+    virtual int getDefaultSlot() = 0;
+
     virtual int getPageNumInSlot(int Slot) = 0;
 
     virtual void writeByte(uint16_t Addr, uint8_t Byte) = 0;
@@ -73,6 +75,8 @@ public:
     bool isPagedMemory() override { return false; }
 
     int getNumMemPages() override { return 0; }
+
+    int getDefaultSlot() override { return 0; }
 
     int getPageNumInSlot(int Slot) override { return 0; }
 
@@ -180,6 +184,8 @@ public:
 
     int getNumMemPages() override { return NumPages; }
 
+    int getDefaultSlot() override { return 3; }
+
     int getPageNumInSlot(int Slot) override { return SlotPages[Slot]; }
 
     boost::optional<std::string> setPage(int Slot, int Page) override;
@@ -227,6 +233,10 @@ public:
 
     int numMemPages() {
         return CurrentMemModel->getNumMemPages();
+    }
+
+    int defaultSlot() {
+        return CurrentMemModel->getDefaultSlot();
     }
 
     int getPageNumInSlot(int Slot) {

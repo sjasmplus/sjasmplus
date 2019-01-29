@@ -55,9 +55,6 @@ public:
     // ORG directive
     void setAddress(uint16_t NewAddress) {
         CPUAddress = NewAddress;
-        // Reset effects of any SLOT directive so that the ORG page option (if any)
-        // would affect the page under the newly set address
-        Slot = -1;
     }
 
     // Increase address and return true on overflow
@@ -74,13 +71,14 @@ public:
     void reset() {
         CPUAddress = EmitAddress = 0;
         Disp = CPUAddrOverflow = EmitAddrOverflow = false;
-        Slot = -1;
+        Slot = isMemManagerActive() ? MemManager.defaultSlot() : -1;
     }
 
     bool isMemManagerActive() { return MemManager.isActive(); }
 
     void setMemModel(const std::string &Name) {
         MemManager.setMemModel(Name);
+        Slot = MemManager.defaultSlot();
     }
 
     const std::string &getMemModelName() {
@@ -100,14 +98,8 @@ public:
     }
 
     // Returns an error string in case of failure
-    // If Slot has been set by a SLOT directive, use it.
-    // Otherwise use the slot of the current address.
     boost::optional<std::string> setPage(int Page) {
-        if (Slot != -1) {
-            int S = Slot;
-            Slot = -1;
-            return MemManager.setPage(S, Page);
-        } else return MemManager.setPage(getEmitAddress(), Page);
+        return MemManager.setPage(Slot, Page);
     }
 
     // Save slot number set by the SLOT directive
