@@ -22,7 +22,7 @@ protected:
 public:
     explicit MemModel(const std::string &name) : Name(name) { }
 
-    virtual ~MemModel() = 0;
+    virtual ~MemModel() = default;
 
     const std::string &getName() { return Name; }
 
