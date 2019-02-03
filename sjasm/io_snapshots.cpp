@@ -110,7 +110,6 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
             else
                 stack = 0x0000;
         }
-        cout << "SP = "s << std::to_string(stack) << endl;
         snbuf[23] = (uint8_t) (stack & 0xff); //sp
         snbuf[24] = (uint8_t) (stack >> 8); //sp
 
