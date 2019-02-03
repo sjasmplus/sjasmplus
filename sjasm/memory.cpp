@@ -29,6 +29,7 @@ void ZXMemModel::initZXSysVars() {
 ZXMemModel::ZXMemModel(const std::string &Name, int NPages) : MemModel(Name) {
     NumPages = NPages;
     Memory.resize(PageSize * NPages, 0);
+    MemUsage.resize(PageSize * NPages, false);
 }
 
 boost::optional<std::string> ZXMemModel::setPage(int Slot, int Page) {

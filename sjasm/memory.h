@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 #include <array>
+#include <bitset>
 #include <cstdint>
 #include <boost/optional.hpp>
 #include "errors.h"
@@ -35,6 +36,8 @@ public:
     virtual int getPageNumInSlot(int Slot) = 0;
 
     virtual void writeByte(uint16_t Addr, uint8_t Byte) = 0;
+
+    virtual bool usedAddr(uint16_t Addr) = 0;
 
     void memcpyToMemory(off_t Offset, const uint8_t *Src, uint16_t Size) {
         // Wrap around the destination address while copying
@@ -79,9 +82,10 @@ public:
 class PlainMemModel : public MemModel {
 private:
     std::array<uint8_t, 0x10000> Memory;
+    std::bitset<0x10000> MemUsage;
 public:
     PlainMemModel() : MemModel{"PLAIN"s} {
-        Memory.fill(0);
+        clear();
     }
 
     ~PlainMemModel() override = default;
@@ -126,6 +130,7 @@ public:
 
     void clear() override {
         Memory.fill(0);
+        MemUsage.reset();
     }
 
     const uint8_t *getPtrToPage(int Page) override {
@@ -138,6 +143,11 @@ public:
 
     void writeByte(uint16_t Addr, uint8_t Byte) override {
         Memory[Addr] = Byte;
+        MemUsage[Addr] = true;
+    }
+
+    bool usedAddr(uint16_t Addr) override {
+        return MemUsage[Addr];
     }
 
     void initZXSysVars() override;
@@ -151,6 +161,7 @@ private:
     int NumSlots = 4;
     int SlotPages[4] = {0, 5, 2, 7};
     std::vector<uint8_t> Memory;
+    std::vector<bool> MemUsage;
 
     uint8_t readByte(uint16_t Addr) {
         return Memory[SlotPages[Addr / PageSize] * PageSize + (Addr % PageSize)];
@@ -180,6 +191,7 @@ public:
 
     void clear() override {
         Memory.assign(Memory.size(), 0);
+        MemUsage.assign(MemUsage.size(), false);
     }
 
     const uint8_t *getPtrToPage(int Page) override {
@@ -192,6 +204,11 @@ public:
 
     void writeByte(uint16_t Addr, uint8_t Byte) override {
         Memory[SlotPages[Addr / PageSize] * PageSize + (Addr % PageSize)] = Byte;
+        MemUsage[SlotPages[Addr / PageSize] * PageSize + (Addr % PageSize)] = true;
+    }
+
+    bool usedAddr(uint16_t Addr) override {
+        return MemUsage[SlotPages[Addr / PageSize] * PageSize + (Addr % PageSize)];
     }
 
     void writeByteToPage(int Page, uint16_t Offset, uint8_t Byte) {
@@ -199,6 +216,7 @@ public:
             Fatal("In-page offset "s + std::to_string(Offset)
                   + " does not fit in page of size "s + std::to_string(PageSize));
         Memory[PageSize * Page + Offset] = Byte;
+        MemUsage[PageSize * Page + Offset] = true;
     }
 
     void memcpyToPage(int Page, off_t Offset, const uint8_t *Src, uint16_t Size) {
