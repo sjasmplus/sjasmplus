@@ -84,13 +84,33 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
             M.writeByte(0x4001, (uint8_t) (start >> 8), true);      // pc
         }
     } else {
-        uint16_t stack = 0x6000;
-        stack--;
-        M.writeWord(0x5CB2, stack, true); // RAMTOP
-        M.writeWord(stack, 0x003e, true); // The top location (RAMTOP) is made to hold 0x3E (GO SUB stack end marker)
-        stack -= 2; // Step down two locations to find the correct value for ERR_SP
-        M.writeWord(0x5C3D, stack, true); // ERR_SP
-        M.writeWord(stack, 0x1303, true); // MAIN_4 entry point in ROM (main execution loop after a line has been interpreted)
+        uint16_t stack;
+        const size_t S = 8; // Minimum stack size to reserve
+        auto StackTop = M.findUnusedBlock(0x5e00 - S, S, 0xc000 - (0x5e00 - S));
+        if (StackTop) {
+            stack = *StackTop + S;
+            stack--;
+            M.writeWord(0x5CB2, stack, true); // RAMTOP
+            stack--;
+            M.writeWord(stack, 0x003e, true); // The top location (RAMTOP) is made to hold 0x3E (GO SUB stack end marker)
+            stack -= 2; // Step down two locations to find the correct value for ERR_SP
+            M.writeWord(0x5C3D, stack, true); // ERR_SP
+            M.writeWord(stack, 0x1303, true); // MAIN_4 entry point in ROM (main execution loop after a line has been interpreted)
+        } else {
+            Warning("No space available to initialize BASIC stack below 0xC000"s);
+            // At this point we do not care about BASIC/ROM viability,
+            // let's just try to find a couple of spare bytes anywhere to point SP to.
+            StackTop = M.findUnusedBlock(0x5dff, 2, 0x5e00 - 0x4000, true);
+            if (!StackTop) {
+                // As a last resort try to find spare space in the paged memory
+                StackTop = M.findUnusedBlock(0xffff, 2, 0x4000, true);
+            }
+            if (StackTop)
+                stack = *StackTop;
+            else
+                stack = 0x0000;
+        }
+        cout << "SP = "s << std::to_string(stack) << endl;
         snbuf[23] = (uint8_t) (stack & 0xff); //sp
         snbuf[24] = (uint8_t) (stack >> 8); //sp
 

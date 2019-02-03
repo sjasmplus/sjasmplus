@@ -46,6 +46,15 @@ public:
 
     virtual bool usedAddr(uint16_t Addr) = 0;
 
+    // Searches for an unused memory block and returns an address or boost::none
+    //
+    // Start = start address to search from
+    // Size  = size of the block
+    // SearchLimit = if > 0 then do not search beyond this distance from Start
+    // Backwards = whether to search backwards
+    boost::optional<uint16_t> findUnusedBlock(uint16_t Start, uint16_t Size,
+            uint16_t SearchLimit = 0, bool Backwards = false);
+
     virtual void clearEphemerals() = 0;
 
     void memcpyToMemory(off_t Offset, const uint8_t *Src, uint16_t Size) {

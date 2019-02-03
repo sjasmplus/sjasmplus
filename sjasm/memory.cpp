@@ -7,6 +7,31 @@
 
 using boost::algorithm::to_upper_copy;
 
+boost::optional<uint16_t>
+MemModel::findUnusedBlock(uint16_t Start, uint16_t Size,
+        uint16_t SearchLimit, bool Backwards) {
+    if ((!Backwards && ((unsigned int) Start + Size > 0x10000))
+        || (int) Start + 1 - Size < 0
+        || (SearchLimit != 0 && SearchLimit < Size))
+        return boost::none;
+    int Step = Backwards ? -1 : 1;
+    int End = Backwards
+            ? (SearchLimit == 0 ? Size - 1 : Start - SearchLimit)
+            : (SearchLimit == 0 ? 0x10000 - Size: Start + SearchLimit);
+    int SearchStart = Start;
+    while (Backwards ? SearchStart > End : SearchStart < End) {
+        uint16_t count = 0;
+        while (!usedAddr((uint16_t) (SearchStart + Step * count))) {
+            count++;
+            if (count == Size) {
+                return Backwards ? (SearchStart - (Size - 1)) : SearchStart;
+            }
+        }
+        SearchStart += Step * count + Step;
+    }
+    return boost::none;
+}
+
 // ZXSPECTRUM48
 void PlainMemModel::initZXSysVars() {
     if (!ZXSysVarsInitialized) {
