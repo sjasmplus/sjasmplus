@@ -37,26 +37,28 @@ public:
 
     virtual uint8_t readByte(uint16_t Addr) = 0;
 
-    virtual void writeByte(uint16_t Addr, uint8_t Byte) = 0;
+    virtual void writeByte(uint16_t Addr, uint8_t Byte, bool Ephemeral) = 0;
 
-    void writeWord(uint16_t Addr, uint16_t Word) {
-        writeByte(Addr, (uint8_t) (Word & 0xff));
-        writeByte((uint16_t) (Addr + 1), (uint8_t) (Word >> 8));
+    void writeWord(uint16_t Addr, uint16_t Word, bool Ephemeral) {
+        writeByte(Addr, (uint8_t) (Word & 0xff), Ephemeral);
+        writeByte((uint16_t) (Addr + 1), (uint8_t) (Word >> 8), Ephemeral);
     }
 
     virtual bool usedAddr(uint16_t Addr) = 0;
 
+    virtual void clearEphemerals() = 0;
+
     void memcpyToMemory(off_t Offset, const uint8_t *Src, uint16_t Size) {
         // Wrap around the destination address while copying
         for (uint16_t i = 0; i < Size; i++) {
-            writeByte((uint16_t) (Offset + i), *(Src + i));
+            writeByte((uint16_t) (Offset + i), *(Src + i), false);
         }
     }
 
     void memsetInMemory(off_t Offset, uint8_t Byte, uint16_t Size) {
         // Wrap around the destination address while setting
         for (uint16_t i = 0; i < Size; i++) {
-            writeByte((uint16_t) (Offset + i), Byte);
+            writeByte((uint16_t) (Offset + i), Byte, false);
         }
     }
 
@@ -152,13 +154,21 @@ public:
         Fatal("GetPtrToPageInSlot()"s, *(setPage(0, 0)));
     }
 
-    void writeByte(uint16_t Addr, uint8_t Byte) override {
+    void writeByte(uint16_t Addr, uint8_t Byte, bool Ephemeral) override {
         Memory[Addr] = Byte;
-        MemUsage[Addr] = true;
+        if (!Ephemeral)
+            MemUsage[Addr] = true;
     }
 
     bool usedAddr(uint16_t Addr) override {
         return MemUsage[Addr];
+    }
+
+    void clearEphemerals() override {
+        for (size_t i = 0; i < Memory.size(); i++) {
+            if (!MemUsage[i])
+                Memory[i] = 0;
+        }
     }
 
     void initZXSysVars() override;
@@ -173,7 +183,9 @@ private:
     int SlotPages[4] = {0, 5, 2, 7};
     std::vector<uint8_t> Memory;
     std::vector<bool> MemUsage;
-
+    off_t addrToOffset(uint16_t Addr) {
+        return SlotPages[Addr / PageSize] * PageSize + (Addr % PageSize);
+    }
 
 public:
     ZXMemModel(const std::string &Name, int NPages);
@@ -181,7 +193,7 @@ public:
     ~ZXMemModel() override = default;
 
     uint8_t readByte(uint16_t Addr) override {
-        return Memory[SlotPages[Addr / PageSize] * PageSize + (Addr % PageSize)];
+        return Memory[addrToOffset(Addr)];
     }
 
     void getBytes(uint8_t *Dest, uint16_t Addr, uint16_t Size) override {
@@ -214,13 +226,22 @@ public:
         return (const uint8_t *) Memory.data() + SlotPages[Slot] * PageSize;
     }
 
-    void writeByte(uint16_t Addr, uint8_t Byte) override {
-        Memory[SlotPages[Addr / PageSize] * PageSize + (Addr % PageSize)] = Byte;
-        MemUsage[SlotPages[Addr / PageSize] * PageSize + (Addr % PageSize)] = true;
+    void writeByte(uint16_t Addr, uint8_t Byte, bool Ephemeral) override {
+        auto i = addrToOffset(Addr);
+        Memory[i] = Byte;
+        if (!Ephemeral)
+            MemUsage[i] = true;
     }
 
     bool usedAddr(uint16_t Addr) override {
-        return MemUsage[SlotPages[Addr / PageSize] * PageSize + (Addr % PageSize)];
+        return MemUsage[addrToOffset(Addr)];
+    }
+
+    void clearEphemerals() override {
+        for (size_t i = 0; i < Memory.size(); i++) {
+            if (!MemUsage[i])
+                Memory[i] = 0;
+        }
     }
 
     void writeByteToPage(int Page, uint16_t Offset, uint8_t Byte) {
@@ -353,7 +374,7 @@ public:
     }
 
     void writeByte(uint16_t Addr, uint8_t Byte) {
-        CurrentMemModel->writeByte(Addr, Byte);
+        CurrentMemModel->writeByte(Addr, Byte, false);
     }
 
     void initZXSysVars() {

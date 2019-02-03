@@ -71,8 +71,8 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
             snbuf[23] = 0x2D;// + 16; //sp
             snbuf[24] = 0xFF; //sp
 
-            M.writeByte(0xFF2D + 16, (uint8_t) (start & 0x00FF));  // pc
-            M.writeByte(0xFF2E + 16, (uint8_t) (start >> 8));      // pc
+            M.writeByte(0xFF2D + 16, (uint8_t) (start & 0x00FF), true);  // pc
+            M.writeByte(0xFF2E + 16, (uint8_t) (start >> 8), true);      // pc
         } else {
             Warning("[SAVESNA] RAM <0x4000-0x4001> will be overridden due to 48k snapshot imperfect format."s,
                     LASTPASS);
@@ -80,17 +80,17 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
             snbuf[23] = 0x00; //sp
             snbuf[24] = 0x40; //sp
 
-            M.writeByte(0x4000, (uint8_t) (start & 0x00FF));  // pc
-            M.writeByte(0x4001, (uint8_t) (start >> 8));      // pc
+            M.writeByte(0x4000, (uint8_t) (start & 0x00FF), true);  // pc
+            M.writeByte(0x4001, (uint8_t) (start >> 8), true);      // pc
         }
     } else {
         uint16_t stack = 0x6000;
         stack--;
-        M.writeWord(0x5CB2, stack); // RAMTOP
-        M.writeWord(stack, 0x003e); // The top location (RAMTOP) is made to hold 0x3E (GO SUB stack end marker)
+        M.writeWord(0x5CB2, stack, true); // RAMTOP
+        M.writeWord(stack, 0x003e, true); // The top location (RAMTOP) is made to hold 0x3E (GO SUB stack end marker)
         stack -= 2; // Step down two locations to find the correct value for ERR_SP
-        M.writeWord(0x5C3D, stack); // ERR_SP
-        M.writeWord(stack, 0x1303); // MAIN_4 entry point in ROM (main execution loop after a line has been interpreted)
+        M.writeWord(0x5C3D, stack, true); // ERR_SP
+        M.writeWord(stack, 0x1303, true); // MAIN_4 entry point in ROM (main execution loop after a line has been interpreted)
         snbuf[23] = (uint8_t) (stack & 0xff); //sp
         snbuf[24] = (uint8_t) (stack >> 8); //sp
 
@@ -104,6 +104,7 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
     if (ofs.fail()) {
         Error("Error writing to "s + fname.string(), strerror(errno), CATCHALL);
         ofs.close();
+        M.clearEphemerals();
         return 0;
     }
 
@@ -144,6 +145,7 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
         }
     }
 
+    M.clearEphemerals();
     if (ofs.fail()) {
         Error("Error writing to "s + fname.string(), strerror(errno), CATCHALL);
         ofs.close();
