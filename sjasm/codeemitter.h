@@ -81,6 +81,10 @@ public:
         Slot = MemManager.defaultSlot();
     }
 
+    MemModel &getMemModel() {
+        return MemManager.getMemModel();
+    }
+
     const std::string &getMemModelName() {
         return MemManager.getMemModelName();
     }
@@ -124,11 +128,6 @@ public:
 
     void writeByte(uint16_t Addr, uint8_t Byte) {
         MemManager.writeByte(Addr, Byte);
-    }
-
-    void writeWord(uint16_t Addr, uint16_t Word) {
-        writeByte(Addr, (uint8_t) (Word & 0xff));
-        writeByte((uint16_t) (Addr + 1), (uint8_t) (Word >> 8));
     }
 
     void getBytes(uint8_t *Dest, uint16_t Addr, uint16_t Size) {

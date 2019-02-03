@@ -31,7 +31,8 @@
 
 #include <cstdint>
 #include "fs.h"
+#include "memory.h"
 
-int SaveSNA_ZX(const fs::path &fname, uint16_t start);
+int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start);
 
 #endif //SJASMPLUS_IO_SNAPSHOTS_H

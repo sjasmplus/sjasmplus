@@ -314,7 +314,7 @@ static int tolua_sjasm_zx_save_snapshot_sna12800(lua_State *tolua_S) {
         char *fname = ((char *) tolua_tostring(tolua_S, 1, 0));
         unsigned short start = ((unsigned short) tolua_tonumber(tolua_S, 2, 0));
         {
-            int tolua_ret = (int) SaveSNA_ZX(fname, start);
+            int tolua_ret = (int) SaveSNA_ZX(Em.getMemModel(), fname, start);
             tolua_pushnumber(tolua_S, (lua_Number) tolua_ret);
         }
     }

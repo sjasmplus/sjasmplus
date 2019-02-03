@@ -26,11 +26,10 @@
 
 #include "defines.h"
 #include "errors.h"
-#include "codeemitter.h"
 
 #include "io_snapshots.h"
 
-int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
+int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
     unsigned char snbuf[31];
 
     fs::ofstream ofs;
@@ -45,7 +44,7 @@ int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
     snbuf[2] = 0x27; //hl'
     snbuf[15] = 0x3a; //iy
     snbuf[16] = 0x5c; //iy
-    if (!Em.isPagedMemory()) {
+    if (!M.isPagedMemory()) {
         snbuf[0] = 0x3F; //i
         snbuf[3] = 0x9B; //de'
         snbuf[4] = 0x36; //de'
@@ -64,16 +63,16 @@ int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
         snbuf[21] = 0x54; //af
         snbuf[22] = 0x00; //af
 
-        if (Em.getByte(0xFF2D) == (uint8_t) 0xb1 &&
-                Em.getByte(0xFF2E) == (uint8_t) 0x33 &&
-                Em.getByte(0xFF2F) == (uint8_t) 0xe0 &&
-                Em.getByte(0xFF30) == (uint8_t) 0x5c) {
+        if (M.readByte(0xFF2D) == (uint8_t) 0xb1 &&
+                M.readByte(0xFF2E) == (uint8_t) 0x33 &&
+                M.readByte(0xFF2F) == (uint8_t) 0xe0 &&
+                M.readByte(0xFF30) == (uint8_t) 0x5c) {
 
             snbuf[23] = 0x2D;// + 16; //sp
             snbuf[24] = 0xFF; //sp
 
-            Em.writeByte(0xFF2D + 16, (uint8_t) (start & 0x00FF));  // pc
-            Em.writeByte(0xFF2E + 16, (uint8_t) (start >> 8));      // pc
+            M.writeByte(0xFF2D + 16, (uint8_t) (start & 0x00FF));  // pc
+            M.writeByte(0xFF2E + 16, (uint8_t) (start >> 8));      // pc
         } else {
             Warning("[SAVESNA] RAM <0x4000-0x4001> will be overridden due to 48k snapshot imperfect format."s,
                     LASTPASS);
@@ -81,17 +80,17 @@ int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
             snbuf[23] = 0x00; //sp
             snbuf[24] = 0x40; //sp
 
-            Em.writeByte(0x4000, (uint8_t) (start & 0x00FF));  // pc
-            Em.writeByte(0x4001, (uint8_t) (start >> 8));      // pc
+            M.writeByte(0x4000, (uint8_t) (start & 0x00FF));  // pc
+            M.writeByte(0x4001, (uint8_t) (start >> 8));      // pc
         }
     } else {
         uint16_t stack = 0x6000;
         stack--;
-        Em.writeWord(0x5CB2, stack); // RAMTOP
-        Em.writeWord(stack, 0x003e); // The top location (RAMTOP) is made to hold 0x3E (GO SUB stack end marker)
+        M.writeWord(0x5CB2, stack); // RAMTOP
+        M.writeWord(stack, 0x003e); // The top location (RAMTOP) is made to hold 0x3E (GO SUB stack end marker)
         stack -= 2; // Step down two locations to find the correct value for ERR_SP
-        Em.writeWord(0x5C3D, stack); // ERR_SP
-        Em.writeWord(stack, 0x1303); // MAIN_4 entry point in ROM (main execution loop after a line has been interpreted)
+        M.writeWord(0x5C3D, stack); // ERR_SP
+        M.writeWord(stack, 0x1303); // MAIN_4 entry point in ROM (main execution loop after a line has been interpreted)
         snbuf[23] = (uint8_t) (stack & 0xff); //sp
         snbuf[24] = (uint8_t) (stack >> 8); //sp
 
@@ -108,28 +107,28 @@ int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
         return 0;
     }
 
-    if (!Em.isPagedMemory()) {
+    if (!M.isPagedMemory()) {
         // 48K
-        ofs.write((const char *) Em.getPtrToMem() + 0x4000, 0xC000);
+        ofs.write((const char *) M.getPtrToMem() + 0x4000, 0xC000);
     } else {
         // 128K
-        ofs.write((const char *) Em.getPtrToPage(5), 0x4000);
-        ofs.write((const char *) Em.getPtrToPage(2), 0x4000);
-        ofs.write((const char *) Em.getPtrToPageInSlot(3), 0x4000);
+        ofs.write((const char *) M.getPtrToPage(5), 0x4000);
+        ofs.write((const char *) M.getPtrToPage(2), 0x4000);
+        ofs.write((const char *) M.getPtrToPageInSlot(3), 0x4000);
     }
 
-    if (!Em.isPagedMemory()) {
+    if (!M.isPagedMemory()) {
 
     } else { // 128K
         snbuf[27] = (uint8_t) (start & 0x00FF); //pc
         snbuf[28] = (uint8_t) (start >> 8); //pc
-        snbuf[29] = 0x10 + Em.getPageNumInSlot(3); //7ffd
+        snbuf[29] = 0x10 + M.getPageNumInSlot(3); //7ffd
         snbuf[30] = 0; //tr-dos
         ofs.write((const char *) snbuf + 27, 4);
     }
 
     //if (DeviceID) {
-    if (!Em.isPagedMemory()) {
+    if (!M.isPagedMemory()) {
         /*for (int i = 0; i < 5; i++) {
             if (fwrite(Device->GetPage(0)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
                 Error("Write error (disk full?)", fname, CATCHALL);
@@ -139,8 +138,8 @@ int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
         }*/
     } else { // 128K
         for (int i = 0; i < 8; i++) {
-            if (i != Em.getPageNumInSlot(3) && i != 2 && i != 5) {
-                ofs.write((const char *) Em.getPtrToPage(i), 0x4000);
+            if (i != M.getPageNumInSlot(3) && i != 2 && i != 5) {
+                ofs.write((const char *) M.getPtrToPage(i), 0x4000);
             }
         }
     }
@@ -165,8 +164,8 @@ int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
         }
     }*/
 
-    if (Em.isPagedMemory() &&
-            Em.getMemModelName() != "ZXSPECTRUM128"s) {
+    if (M.isPagedMemory() &&
+            M.getName() != "ZXSPECTRUM128"s) {
         Warning("Only 128kb will be written to snapshot"s, fname.string());
     }
 

@@ -722,7 +722,7 @@ void dirSAVESNA() {
         start = StartAddress;
     }
 
-    if (exec && !SaveSNA_ZX(FileName, start)) {
+    if (exec && !SaveSNA_ZX(Em.getMemModel(), FileName, start)) {
         Error("[SAVESNA] Error writing file (Disk full?)"s, bp, CATCHALL);
         return;
     }
