@@ -53,7 +53,7 @@ std::ostream &writenumber(std::ostream &stream, unsigned int);
 
 std::ostream &writeword(std::ostream &stream, unsigned int);
 
-std::ostream &writecode(std::ostream &stream, unsigned char *block, uint16_t length,
+std::ostream &writecode(std::ostream &stream, const unsigned char *block, uint16_t length,
                         unsigned short loadaddr, bool header);
 
 void remove_basic_sp(unsigned char *ram);
@@ -236,7 +236,7 @@ int SaveTAP_ZX(const fs::path &fname, uint16_t start) {
         loader[loader_defsize - 2] = uint8_t(Em.getPageNumInSlot(3));
 
         //
-        unsigned char *pages_ram[1024];
+        const unsigned char *pages_ram[1024];
         uint16_t pages_len[1024];
         uint16_t pages_start[1024];
 
@@ -321,7 +321,7 @@ std::ostream &writebyte(std::ostream &stream, unsigned char c) {
     return stream;
 }
 
-std::ostream &writecode(std::ostream &stream, unsigned char *block, uint16_t length,
+std::ostream &writecode(std::ostream &stream, const unsigned char *block, uint16_t length,
                         unsigned short loadaddr, bool header) {
     if (header) {
         /* Write out the code header file */
@@ -372,7 +372,7 @@ void remove_basic_sp(unsigned char *ram) {
 }
 
 void detect_vars_changes() {
-    unsigned char *psys = Em.getPtrToPageInSlot(1) + 0x1C00;
+    const unsigned char *psys = Em.getPtrToPageInSlot(1) + 0x1C00;
 
     bool nobas48 = false;
     for (size_t i = 0; i < sizeof(BASin48Vars); i++) {
@@ -394,7 +394,7 @@ void detect_vars_changes() {
 }
 
 bool has_screen_changes() {
-    unsigned char *pscr = Em.getPtrToPageInSlot(1);
+    const unsigned char *pscr = Em.getPtrToPageInSlot(1);
 
     for (int i = 0; i < 0x1800; i++) {
         if (0 != pscr[i]) {

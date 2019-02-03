@@ -2,7 +2,6 @@
 // Z80 Memory modelling and management
 //
 
-#include <cstring>
 #include <boost/algorithm/string/case_conv.hpp>
 #include "memory.h"
 
@@ -11,10 +10,9 @@ using boost::algorithm::to_upper_copy;
 // ZXSPECTRUM48
 void PlainMemModel::initZXSysVars() {
     if (!ZXSysVarsInitialized) {
-        auto memPtr = Memory.data();
-        memcpy(memPtr + 0x5C00, BASin48Vars, sizeof(BASin48Vars));
-        memset(memPtr + 0x4000 + 6144, 7 * 8, 768);
-        memcpy(memPtr + 0x10000 - sizeof(BASin48SP), BASin48SP, sizeof(BASin48SP));
+        memcpyToMemory(0x5C00, BASin48Vars, sizeof(BASin48Vars));
+        memsetInMemory(0x4000 + 6144, 7 * 8, 768);
+        memcpyToMemory(0x10000 - sizeof(BASin48SP), BASin48SP, sizeof(BASin48SP));
         ZXSysVarsInitialized = true;
     }
 }
@@ -22,8 +20,8 @@ void PlainMemModel::initZXSysVars() {
 // ZXSPECTRUM128 and up
 void ZXMemModel::initZXSysVars() {
     if (!ZXSysVarsInitialized) {
-        memcpy(getPtrToPage(5) + 0x1C00, BASin48Vars, sizeof(BASin48Vars));
-        memset(getPtrToPage(5) + 6144, 7 * 8, 768);
+        memcpyToPage(5, 0x1C00, BASin48Vars, sizeof(BASin48Vars));
+        memsetInPage(5, 6144, 7 * 8, 768);
         ZXSysVarsInitialized = true;
     }
 }

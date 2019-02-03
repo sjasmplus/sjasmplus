@@ -36,6 +36,20 @@ public:
 
     virtual void writeByte(uint16_t Addr, uint8_t Byte) = 0;
 
+    void memcpyToMemory(off_t Offset, const uint8_t *Src, uint16_t Size) {
+        // Wrap around the destination address while copying
+        for (uint16_t i = 0; i < Size; i++) {
+            writeByte((uint16_t) (Offset + i), *(Src + i));
+        }
+    }
+
+    void memsetInMemory(off_t Offset, uint8_t Byte, uint16_t Size) {
+        // Wrap around the destination address while setting
+        for (uint16_t i = 0; i < Size; i++) {
+            writeByte((uint16_t) (Offset + i), Byte);
+        }
+    }
+
     // Return error string on error
     virtual boost::optional<std::string> setPage(int Slot, int Page) = 0;
 
@@ -50,13 +64,13 @@ public:
 
     virtual void getBytes(uint8_t *Dest, int Slot, uint16_t AddrInPage, uint16_t Size) = 0;
 
-    virtual uint8_t *getPtrToMem() = 0;
+    virtual const uint8_t *getPtrToMem() = 0;
 
     virtual void clear() = 0;
 
-    virtual uint8_t *getPtrToPage(int Page) = 0;
+    virtual const uint8_t *getPtrToPage(int Page) = 0;
 
-    virtual uint8_t *getPtrToPageInSlot(int Slot) = 0;
+    virtual const uint8_t *getPtrToPageInSlot(int Slot) = 0;
 
     virtual void initZXSysVars() = 0;
 };
@@ -106,7 +120,7 @@ public:
         Fatal("GetBytes()"s, *(setPage(0, 0)));
     }
 
-    uint8_t *getPtrToMem() override {
+    const uint8_t *getPtrToMem() override {
         return Memory.data();
     }
 
@@ -114,11 +128,11 @@ public:
         Memory.fill(0);
     }
 
-    uint8_t *getPtrToPage(int Page) override {
+    const uint8_t *getPtrToPage(int Page) override {
         Fatal("GetPtrToPage()"s, *(setPage(0, 0)));
     }
 
-    uint8_t *getPtrToPageInSlot(int Slot) override {
+    const uint8_t *getPtrToPageInSlot(int Slot) override {
         Fatal("GetPtrToPageInSlot()"s, *(setPage(0, 0)));
     }
 
@@ -160,24 +174,45 @@ public:
         }
     }
 
-    uint8_t *getPtrToMem() override {
-        return Memory.data();
+    const uint8_t *getPtrToMem() override {
+        return (const uint8_t *) Memory.data();
     }
 
     void clear() override {
         Memory.assign(Memory.size(), 0);
     }
 
-    uint8_t *getPtrToPage(int Page) override {
-        return Memory.data() + Page * PageSize;
+    const uint8_t *getPtrToPage(int Page) override {
+        return (const uint8_t *) Memory.data() + Page * PageSize;
     }
 
-    uint8_t *getPtrToPageInSlot(int Slot) override {
-        return Memory.data() + SlotPages[Slot] * PageSize;
+    const uint8_t *getPtrToPageInSlot(int Slot) override {
+        return (const uint8_t *) Memory.data() + SlotPages[Slot] * PageSize;
     }
 
     void writeByte(uint16_t Addr, uint8_t Byte) override {
         Memory[SlotPages[Addr / PageSize] * PageSize + (Addr % PageSize)] = Byte;
+    }
+
+    void writeByteToPage(int Page, uint16_t Offset, uint8_t Byte) {
+        if (Offset >= PageSize)
+            Fatal("In-page offset "s + std::to_string(Offset)
+                  + " does not fit in page of size "s + std::to_string(PageSize));
+        Memory[PageSize * Page + Offset] = Byte;
+    }
+
+    void memcpyToPage(int Page, off_t Offset, const uint8_t *Src, uint16_t Size) {
+        // Wrap around the destination address while copying
+        for (uint16_t i = 0; i < Size; i++) {
+            writeByteToPage(Page, (uint16_t) (Offset + i), *(Src + i));
+        }
+    }
+
+    void memsetInPage(int Page, off_t Offset, uint8_t Byte, uint16_t Size) {
+        // Wrap around the destination address while setting
+        for (uint16_t i = 0; i < Size; i++) {
+            writeByteToPage(Page, (uint16_t) (Offset + i), Byte);
+        }
     }
 
     bool isPagedMemory() override { return true; }
@@ -267,7 +302,7 @@ public:
         CurrentMemModel->getBytes(Dest, Slot, AddrInPage, Size);
     }
 
-    uint8_t *getPtrToMem() {
+    const uint8_t *getPtrToMem() {
         return CurrentMemModel->getPtrToMem();
     }
 
@@ -275,11 +310,11 @@ public:
         return CurrentMemModel->clear();
     }
 
-    uint8_t *getPtrToPage(int Page) {
+    const uint8_t *getPtrToPage(int Page) {
         return CurrentMemModel->getPtrToPage(Page);
     }
 
-    uint8_t *getPtrToPageInSlot(int Slot) {
+    const uint8_t *getPtrToPageInSlot(int Slot) {
         return CurrentMemModel->getPtrToPageInSlot(Slot);
     }
 

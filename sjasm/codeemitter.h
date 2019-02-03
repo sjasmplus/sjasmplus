@@ -139,15 +139,15 @@ public:
         MemManager.getBytes(Dest, Slot, AddrInPage, Size);
     }
 
-    uint8_t *getPtrToMem() {
+    const uint8_t *getPtrToMem() {
         return MemManager.getPtrToMem();
     }
 
-    uint8_t *getPtrToPage(int Page) {
+    const uint8_t *getPtrToPage(int Page) {
         return MemManager.getPtrToPage(Page);
     }
 
-    uint8_t *getPtrToPageInSlot(int Slot) {
+    const uint8_t *getPtrToPageInSlot(int Slot) {
         return MemManager.getPtrToPageInSlot(Slot);
     }
 
