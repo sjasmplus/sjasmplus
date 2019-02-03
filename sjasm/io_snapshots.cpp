@@ -85,8 +85,18 @@ int SaveSNA_ZX(const fs::path &fname, uint16_t start) {
             Em.writeByte(0x4001, (uint8_t) (start >> 8));      // pc
         }
     } else {
-        snbuf[23] = 0X00; //sp
-        snbuf[24] = 0x60; //sp
+        uint16_t stack = 0x6000;
+        stack--;
+        Em.writeWord(0x5CB2, stack); // RAMTOP
+        Em.writeWord(stack, 0x003e); // The top location (RAMTOP) is made to hold 0x3E (GO SUB stack end marker)
+        stack -= 2; // Step down two locations to find the correct value for ERR_SP
+        Em.writeWord(0x5C3D, stack); // ERR_SP
+        Em.writeWord(stack, 0x1303); // MAIN_4 entry point in ROM (main execution loop after a line has been interpreted)
+        snbuf[23] = (uint8_t) (stack & 0xff); //sp
+        snbuf[24] = (uint8_t) (stack >> 8); //sp
+
+        // snbuf[23] = 0X00; //sp
+        // snbuf[24] = 0x60; //sp
     }
     snbuf[25] = 1; //im 1
     snbuf[26] = 7; //border 7

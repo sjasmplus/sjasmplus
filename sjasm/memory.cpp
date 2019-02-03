@@ -22,7 +22,7 @@ void PlainMemModel::initZXSysVars() {
 // ZXSPECTRUM128 and up
 void ZXMemModel::initZXSysVars() {
     if (!ZXSysVarsInitialized) {
-        memcpy(getPtrToPage(5) + 0x1C00, ZXSysVars, sizeof(ZXSysVars));
+        memcpy(getPtrToPage(5) + 0x1C00, BASin48Vars, sizeof(BASin48Vars));
         memset(getPtrToPage(5) + 6144, 7 * 8, 768);
         ZXSysVarsInitialized = true;
     }
