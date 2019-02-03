@@ -37,6 +37,7 @@ bool CodeEmitter::incAddress() {
 // DISP directive
 void CodeEmitter::doDisp(uint16_t DispAddress) {
     EmitAddress = CPUAddress;
+    EmitAddrOverflow = CPUAddrOverflow;
     CPUAddress = DispAddress;
     Disp = true;
 }
@@ -44,6 +45,7 @@ void CodeEmitter::doDisp(uint16_t DispAddress) {
 // ENT directive (undoes DISP)
 void CodeEmitter::doEnt() {
     CPUAddress = EmitAddress;
+    CPUAddrOverflow = EmitAddrOverflow;
     Disp = false;
 }
 

@@ -54,7 +54,13 @@ public:
 
     // ORG directive
     void setAddress(uint16_t NewAddress) {
-        CPUAddress = NewAddress;
+        if (!Disp) {
+            CPUAddress = NewAddress;
+            CPUAddrOverflow = false;
+        } else {
+            EmitAddress = NewAddress;
+            EmitAddrOverflow = false;
+        }
     }
 
     // Increase address and return true on overflow
