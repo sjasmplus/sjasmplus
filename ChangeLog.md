@@ -1,8 +1,17 @@
 # Change Log
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## 2018-xx-yy (WIP)
+## 2019-xx-yy (WIP)
+- Version 2019xxyy
+
+### Added
 - New option: --output-dir
+- Smart positioning of stack in 128K .sna snapshots
+
+### Fixed
+- RST 10h calls in 128K .sna snapshots
+- Writing to address 0xFFFF was broken
+- ORG was broken if DISP was active
 
 ## 2017-03-11
 - Version 20170311
