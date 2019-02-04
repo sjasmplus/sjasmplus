@@ -37,6 +37,7 @@ using namespace std::string_literals;
 #include "errors.h"
 #include "memory.h"
 #include "codeemitter.h"
+#include "zxspectrum.h"
 
 #include "io_tape.h"
 
@@ -163,7 +164,7 @@ int SaveTAP_ZX(const fs::path &fname, uint16_t start) {
         Em.getBytes(ram + 0x6200, 0xC000, 0x4000);
 
         // remove basic vars
-        remove_basic_sp(ram + ram_length - sizeof(BASin48SP));
+        remove_basic_sp(ram + ram_length - sizeof(zx::BASin48SP));
 
         detect_vars_changes();
 
@@ -359,13 +360,13 @@ std::ostream &writecode(std::ostream &stream, const unsigned char *block, uint16
 
 void remove_basic_sp(unsigned char *ram) {
     bool remove = true;
-    for (size_t i = 0; i < sizeof(BASin48SP); i++) {
-        if (BASin48SP[i] != ram[i]) {
+    for (size_t i = 0; i < sizeof(zx::BASin48SP); i++) {
+        if (zx::BASin48SP[i] != ram[i]) {
             remove = false;
         }
     }
     if (remove) {
-        for (size_t i = 0; i < sizeof(BASin48SP); i++) {
+        for (size_t i = 0; i < sizeof(zx::BASin48SP); i++) {
             ram[i] = 0;
         }
     }
@@ -375,15 +376,15 @@ void detect_vars_changes() {
     const unsigned char *psys = Em.getPtrToPageInSlot(1) + 0x1C00;
 
     bool nobas48 = false;
-    for (size_t i = 0; i < sizeof(BASin48Vars); i++) {
-        if (BASin48Vars[i] != psys[i]) {
+    for (size_t i = 0; i < sizeof(zx::BASin48Vars); i++) {
+        if (zx::BASin48Vars[i] != psys[i]) {
             nobas48 = true;
         }
     }
 
     bool nosys = false;
-    for (size_t i = 0; i < sizeof(ZXSysVars); i++) {
-        if (ZXSysVars[i] != psys[i]) {
+    for (size_t i = 0; i < sizeof(zx::ZXSysVars); i++) {
+        if (zx::ZXSysVars[i] != psys[i]) {
             nosys = true;
         }
     }

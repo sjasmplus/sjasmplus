@@ -121,6 +121,8 @@ set(SOURCE_FILES
         sjasm/util.h
         sjasm/z80.cpp
         sjasm/z80.h
+        sjasm/zxspectrum.cpp
+        sjasm/zxspectrum.h
 #        sjasmwin32/sjasmwin32.cpp
 #        sjasmwin32/sjasmwin32.h
         tolua++/tolua++.h

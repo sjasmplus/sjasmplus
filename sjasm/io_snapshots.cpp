@@ -26,6 +26,7 @@
 
 #include "defines.h"
 #include "errors.h"
+#include "zxspectrum.h"
 
 #include "io_snapshots.h"
 
@@ -37,6 +38,9 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
     if (ofs.fail()) {
         Fatal("Error opening file"s, fname.string());
     }
+
+    zx::initBasicVars(M);
+    zx::initScreenAttrs(M);
 
     memset(snbuf, 0, sizeof(snbuf));
 
@@ -63,7 +67,10 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
         snbuf[21] = 0x54; //af
         snbuf[22] = 0x00; //af
 
-        if (M.readByte(0xFF2D) == (uint8_t) 0xb1 &&
+        uint16_t stack;
+
+        if (zx::initDefaultBasicStack(M) &&
+                M.readByte(0xFF2D) == (uint8_t) 0xb1 &&
                 M.readByte(0xFF2E) == (uint8_t) 0x33 &&
                 M.readByte(0xFF2F) == (uint8_t) 0xe0 &&
                 M.readByte(0xFF30) == (uint8_t) 0x5c) {
@@ -71,8 +78,13 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
             snbuf[23] = 0x2D;// + 16; //sp
             snbuf[24] = 0xFF; //sp
 
-            M.writeByte(0xFF2D + 16, (uint8_t) (start & 0x00FF), true);  // pc
-            M.writeByte(0xFF2E + 16, (uint8_t) (start >> 8), true);      // pc
+            M.writeByte(0xFF2D + 16, (uint8_t) (start & 0x00FF), true, false);  // pc
+            M.writeByte(0xFF2E + 16, (uint8_t) (start >> 8), true, false);      // pc
+
+        } else if ((stack = zx::initMinimalBasicStack(M, 8, start)) != 0) {
+            snbuf[23] = (uint8_t) (stack & 0xff); //sp
+            snbuf[24] = (uint8_t) (stack >> 8); //sp
+
         } else {
             Warning("[SAVESNA] RAM <0x4000-0x4001> will be overridden due to 48k snapshot imperfect format."s,
                     LASTPASS);
@@ -80,36 +92,11 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
             snbuf[23] = 0x00; //sp
             snbuf[24] = 0x40; //sp
 
-            M.writeByte(0x4000, (uint8_t) (start & 0x00FF), true);  // pc
-            M.writeByte(0x4001, (uint8_t) (start >> 8), true);      // pc
+            M.writeByte(0x4000, (uint8_t) (start & 0x00FF), true, false);  // pc
+            M.writeByte(0x4001, (uint8_t) (start >> 8), true, false);      // pc
         }
     } else {
-        uint16_t stack;
-        const size_t S = 8; // Minimum stack size to reserve
-        auto StackTop = M.findUnusedBlock(0x5e00 - S, S, 0xc000 - (0x5e00 - S));
-        if (StackTop) {
-            stack = *StackTop + S;
-            stack--;
-            M.writeWord(0x5CB2, stack, true); // RAMTOP
-            stack--;
-            M.writeWord(stack, 0x003e, true); // The top location (RAMTOP) is made to hold 0x3E (GO SUB stack end marker)
-            stack -= 2; // Step down two locations to find the correct value for ERR_SP
-            M.writeWord(0x5C3D, stack, true); // ERR_SP
-            M.writeWord(stack, 0x1303, true); // MAIN_4 entry point in ROM (main execution loop after a line has been interpreted)
-        } else {
-            Warning("No space available to initialize BASIC stack below 0xC000"s);
-            // At this point we do not care about BASIC/ROM viability,
-            // let's just try to find a couple of spare bytes anywhere to point SP to.
-            StackTop = M.findUnusedBlock(0x5dff, 2, 0x5e00 - 0x4000, true);
-            if (!StackTop) {
-                // As a last resort try to find spare space in the paged memory
-                StackTop = M.findUnusedBlock(0xffff, 2, 0x4000, true);
-            }
-            if (StackTop)
-                stack = *StackTop;
-            else
-                stack = 0x0000;
-        }
+        uint16_t stack = zx::initMinimalBasicStack(M);
         snbuf[23] = (uint8_t) (stack & 0xff); //sp
         snbuf[24] = (uint8_t) (stack >> 8); //sp
 

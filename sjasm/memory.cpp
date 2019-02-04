@@ -3,6 +3,7 @@
 //
 
 #include <boost/algorithm/string/case_conv.hpp>
+#include "zxspectrum.h"
 #include "memory.h"
 
 using boost::algorithm::to_upper_copy;
@@ -30,25 +31,6 @@ MemModel::findUnusedBlock(uint16_t Start, uint16_t Size,
         SearchStart += Step * count + Step;
     }
     return boost::none;
-}
-
-// ZXSPECTRUM48
-void PlainMemModel::initZXSysVars() {
-    if (!ZXSysVarsInitialized) {
-        memcpyToMemory(0x5C00, BASin48Vars, sizeof(BASin48Vars));
-        memsetInMemory(0x4000 + 6144, 7 * 8, 768);
-        memcpyToMemory(0x10000 - sizeof(BASin48SP), BASin48SP, sizeof(BASin48SP));
-        ZXSysVarsInitialized = true;
-    }
-}
-
-// ZXSPECTRUM128 and up
-void ZXMemModel::initZXSysVars() {
-    if (!ZXSysVarsInitialized) {
-        memcpyToPage(5, 0x1C00, BASin48Vars, sizeof(BASin48Vars));
-        memsetInPage(5, 6144, 7 * 8, 768);
-        ZXSysVarsInitialized = true;
-    }
 }
 
 ZXMemModel::ZXMemModel(const std::string &Name, int NPages) : MemModel(Name) {
@@ -97,10 +79,6 @@ MemoryManager::~MemoryManager() {
 
 void MemoryManager::setMemModel(const std::string &name) {
     std::string uName = to_upper_copy(name);
-    bool initSysVars = false;
-    if (uName.substr(0, 2) == "ZX"s) {
-        initSysVars = true;
-    }
     if (uName == "ZXSPECTRUM48"s) {
         uName = "PLAIN"s;
     }
@@ -122,10 +100,6 @@ void MemoryManager::setMemModel(const std::string &name) {
                     CurrentMemModel = (MemModels[uName] = new PlainMemModel());
                 } else {
                     CurrentMemModel = (MemModels[uName] = new ZXMemModel(uName, nPages));
-                }
-                if (initSysVars) {
-                    // FIXME: Make this optional
-                    CurrentMemModel->initZXSysVars();
                 }
             } catch (std::out_of_range &e) {
                 Fatal("Unknown memory model"s, uName);

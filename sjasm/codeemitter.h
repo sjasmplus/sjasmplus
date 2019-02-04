@@ -132,10 +132,6 @@ public:
         return Byte;
     }
 
-    void writeByte(uint16_t Addr, uint8_t Byte) {
-        MemManager.writeByte(Addr, Byte);
-    }
-
     void getBytes(uint8_t *Dest, uint16_t Addr, uint16_t Size) {
         MemManager.getBytes(Dest, Addr, Size);
     }
