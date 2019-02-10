@@ -163,9 +163,6 @@ int SaveTAP_ZX(const fs::path &fname, uint16_t start) {
         Em.getBytes(ram + 0x2200, 0x8000, 0x4000);
         Em.getBytes(ram + 0x6200, 0xC000, 0x4000);
 
-        // remove basic vars
-        remove_basic_sp(ram + ram_length - sizeof(zx::BASin48SP));
-
         detect_vars_changes();
 
         ram_length = remove_unused_space(ram, ram_length);
@@ -358,38 +355,9 @@ std::ostream &writecode(std::ostream &stream, const unsigned char *block, uint16
     return stream;
 }
 
-void remove_basic_sp(unsigned char *ram) {
-    bool remove = true;
-    for (size_t i = 0; i < sizeof(zx::BASin48SP); i++) {
-        if (zx::BASin48SP[i] != ram[i]) {
-            remove = false;
-        }
-    }
-    if (remove) {
-        for (size_t i = 0; i < sizeof(zx::BASin48SP); i++) {
-            ram[i] = 0;
-        }
-    }
-}
-
 void detect_vars_changes() {
-    const unsigned char *psys = Em.getPtrToPageInSlot(1) + 0x1C00;
-
-    bool nobas48 = false;
-    for (size_t i = 0; i < sizeof(zx::BASin48Vars); i++) {
-        if (zx::BASin48Vars[i] != psys[i]) {
-            nobas48 = true;
-        }
-    }
-
-    bool nosys = false;
-    for (size_t i = 0; i < sizeof(zx::ZXSysVars); i++) {
-        if (zx::ZXSysVars[i] != psys[i]) {
-            nosys = true;
-        }
-    }
-
-    if (nosys && nobas48) {
+    if (zx::isBasicVarAreaOverwritten(Em.getMemModel())) {
+        // FIXME:
         Warning("[SAVETAP] Tape file will not contain data from 0x5B00 to 0x5E00"s, LASTPASS);
     }
 }
