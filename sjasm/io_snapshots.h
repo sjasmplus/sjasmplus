@@ -33,6 +33,10 @@
 #include "fs.h"
 #include "memory.h"
 
-int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start);
+namespace zx {
+
+bool saveSNA(MemModel &M, const fs::path &fname, uint16_t start);
+
+} // namespace zx
 
 #endif //SJASMPLUS_IO_SNAPSHOTS_H

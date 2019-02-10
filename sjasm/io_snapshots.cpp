@@ -30,7 +30,9 @@
 
 #include "io_snapshots.h"
 
-int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
+namespace zx {
+
+bool saveSNA(MemModel &M, const fs::path &fname, uint16_t start) {
     unsigned char snbuf[31];
 
     fs::ofstream ofs;
@@ -111,7 +113,7 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
         Error("Error writing to "s + fname.string(), strerror(errno), CATCHALL);
         ofs.close();
         M.clearEphemerals();
-        return 0;
+        return false;
     }
 
     if (!M.isPagedMemory()) {
@@ -155,7 +157,7 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
     if (ofs.fail()) {
         Error("Error writing to "s + fname.string(), strerror(errno), CATCHALL);
         ofs.close();
-        return 0;
+        return false;
     }
 
     //}
@@ -178,7 +180,9 @@ int SaveSNA_ZX(MemModel &M, const fs::path &fname, uint16_t start) {
     }
 
     ofs.close();
-    return 1;
+    return true;
 }
+
+} // namespace zx
 
 //eof io_snapshots.cpp
