@@ -428,14 +428,11 @@ bool ParseExpression(char *&p, aint &nval) {
     return false;
 }
 
-/* modified */
-char *ReplaceDefine(char *lp) {
+char *ReplaceDefine(char *lp, char *dest) {
     int definegereplaced = 0, dr;
-    /*char *nl=new char[LINEMAX2];*/
-    char *nl = sline; /* added. speed up! */
+    char *nl = dest;
     char *rp = nl, *nid, *kp, a;
     const char *ver = nullptr;
-//    int def = 0; /* added */
     if (++replacedefineteller > 20) {
         Fatal("Over 20 defines nested"s);
     }
@@ -561,9 +558,7 @@ char *ReplaceDefine(char *lp) {
                 Error("Cell of array not found"s, CATCHALL);
             }
         }
-        /* (end add) */
 
-        /* (begin add) */
         if (dr) {
             kp = lp - strlen(nid);
             while (*(kp--) && *kp <= ' ');
@@ -585,7 +580,6 @@ char *ReplaceDefine(char *lp) {
                 }
             }
         }
-        /* (end add) */
 
         if (dr) {
             definegereplaced = 1;
@@ -601,179 +595,11 @@ char *ReplaceDefine(char *lp) {
         Fatal("Line too long after macro expansion"s);
     }
     if (definegereplaced) {
-        return ReplaceDefineNext(nl);
+        return ReplaceDefine(nl, (dest == sline) ? sline2 : sline);
     }
     return nl;
 }
 
-/* added */
-char *ReplaceDefineNext(char *lp) {
-    int definegereplaced = 0, dr;
-    char *nl = sline2;
-    char *rp = nl, *nid, *kp, a;
-    const char *ver = nullptr;
-//    int def = 0;
-    if (++replacedefineteller > 20) {
-        Fatal("Over 20 defines nested"s);
-    }
-    while (true) {
-        if (comlin || comnxtlin) {
-            if (*lp == '*' && *(lp + 1) == '/') {
-                *rp = ' ';
-                ++rp;
-                lp += 2;
-                if (comnxtlin) {
-                    --comnxtlin;
-                } else {
-                    --comlin;
-                }
-                continue;
-            }
-        }
-
-        if (*lp == ';' && !comlin && !comnxtlin) {
-            *rp = 0;
-            return nl;
-        }
-        if (*lp == '/' && *(lp + 1) == '/' && !comlin && !comnxtlin) {
-            *rp = 0;
-            return nl;
-        }
-        if (*lp == '/' && *(lp + 1) == '*') {
-            lp += 2;
-            ++comnxtlin;
-            continue;
-        }
-
-        if (*lp == '"' || *lp == '\'') {
-            a = *lp;
-            if (!comlin && !comnxtlin) {
-                *rp = *lp;
-                ++rp;
-            }
-            ++lp;
-            if (a != '\'' || ((*(lp - 2) != 'f' || *(lp - 3) != 'a') && (*(lp - 2) != 'F' && *(lp - 3) != 'A'))) {
-                while (true) {
-                    if (!*lp) {
-                        *rp = 0;
-                        return nl;
-                    }
-                    if (!comlin && !comnxtlin) {
-                        *rp = *lp;
-                    }
-                    if (*lp == a) {
-                        if (!comlin && !comnxtlin) {
-                            ++rp;
-                        }
-                        ++lp;
-                        break;
-                    }
-                    if (*lp == '\\') {
-                        ++lp;
-                        if (!comlin && !comnxtlin) {
-                            ++rp;
-                            *rp = *lp;
-                        }
-                    }
-                    if (!comlin && !comnxtlin) {
-                        ++rp;
-                    }
-                    ++lp;
-                }
-            }
-            continue;
-        }
-
-        if (comlin || comnxtlin) {
-            if (!*lp) {
-                *rp = 0;
-                break;
-            }
-            ++lp;
-            continue;
-        }
-        if (!isalpha((unsigned char) *lp) && *lp != '_') {
-            if (!(*rp = *lp)) {
-                break;
-            }
-            ++rp;
-            ++lp;
-            continue;
-        }
-
-        nid = GetID(lp);
-        dr = 1;
-
-        auto it = DefineTable.find(nid);
-        if (it != DefineTable.end()) {
-            ver = it->second.c_str();
-        } else {
-            if (!macrolabp || !(ver = MacroDefineTable.getverv(nid))) {
-                dr = 0;
-                ver = nid;
-            }
-        }
-
-        if (DefArrayTable.find(nid) != DefArrayTable.end() && !DefArrayTable[nid].empty()) {
-            auto &Arr = (DefArrayTable.find(nid))->second;
-            aint val;
-            //_COUT lp _ENDL;
-            while (*(lp++) && (*lp <= ' ' || *lp == '['));
-            //_COUT lp _ENDL;
-            if (!ParseExpression(lp, val)) {
-                Error("Array error"s, CATCHALL);
-                break;
-            }
-            //_COUT lp _ENDL;
-            while (*lp == ']' && *(lp++));
-            //_COUT "A" _CMDL val _ENDL;
-
-            if (Arr.size() > (unsigned) val) {
-                ver = Arr[val].c_str();
-            } else {
-                Error("Cell of array not found"s, CATCHALL);
-            }
-        }
-
-        if (dr) {
-            kp = lp - strlen(nid);
-            while (*(kp--) && *kp <= ' ');
-            kp = kp - 4;
-            if (cmphstr(kp, "ifdef")) {
-                dr = 0;
-                ver = nid;
-            } else {
-                --kp;
-                if (cmphstr(kp, "ifndef")) {
-                    dr = 0;
-                    ver = nid;
-                } else if (cmphstr(kp, "define")) {
-                    dr = 0;
-                    ver = nid;
-                }
-            }
-        }
-
-        if (dr) {
-            definegereplaced = 1;
-        }
-        if (ver) {
-            while ((*rp = *ver)) {
-                ++rp;
-                ++ver;
-            }
-        }
-    }
-    if (strlen(nl) > LINEMAX - 1) {
-        Fatal("line too long after macro expansion"s);
-    }
-    if (definegereplaced) {
-        return ReplaceDefine(nl);
-    }
-    return nl;
-}
-
-/* modified */
 void ParseLabel() {
     char *tp, temp[LINEMAX];
     aint val;
@@ -785,7 +611,7 @@ void ParseLabel() {
             ++lp;
         }
         return;
-    } /* added */
+    }
     tp = temp;
     while (*lp && !White() && *lp != ':' && *lp != '=') {
         *tp = *lp;
@@ -819,7 +645,6 @@ void ParseLabel() {
             if (IsLabelNotFound) {
                 Error("Forward reference"s, PASS1);
             }
-            /* begin add */
         } else if (NeedDEFL()) {
             if (!ParseExpression(lp, val)) {
                 Error("Expression error"s, lp);
@@ -829,7 +654,6 @@ void ParseLabel() {
                 Error("Forward reference"s, PASS1);
             }
             IsDEFL = 1;
-            /* end add */
         } else {
             int gl = 0;
             char *p = lp, *n;
@@ -908,7 +732,6 @@ void ParseInstruction() {
     Z80::GetOpCode();
 }
 
-/* (begin add) */
 unsigned char win2dos[] = //taken from HorrorWord %)))
         {
                 0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF, 0xC0,
@@ -920,13 +743,10 @@ unsigned char win2dos[] = //taken from HorrorWord %)))
                 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF, 0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6,
                 0xE7, 0xE8, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF
         };
-/* (end add) */
 
-/* modified */
 void ParseLine(bool parselabels) {
     /*++CurrentGlobalLine;*/
     replacedefineteller = comnxtlin = 0;
-    /* (begin add) */
     if (!RepeatStack.empty()) {
         RepeatInfo &dup = RepeatStack.top();
         if (!dup.Complete) {
@@ -949,7 +769,6 @@ void ParseLine(bool parselabels) {
             }
         }
     }
-    /* (end add) */
     if (comlin) {
         comlin += comnxtlin;
         Listing.listFileSkip(line);
@@ -983,7 +802,6 @@ void ParseLine(bool parselabels) {
     Listing.listFile();
 }
 
-/* added */
 void ParseLineSafe(bool parselabels) {
     char *tmp = NULL, *tmp2 = NULL;
     char *rp = lp;
@@ -1118,12 +936,10 @@ void ParseStructMember(CStructure *st) {
                 gl = 1;
             }
             if ((n = GetID(pp)) && (s = StructureTable.zoek(n, gl))) {
-                /* begin add */
                 if (cmphstr(st->naam, n)) {
                     Error("[STRUCT] Use structure itself"s, CATCHALL);
                     break;
                 }
-                /* end add */
                 lp = pp;
                 st->CopyLabels(s);
                 st->CopyMembers(s, lp);

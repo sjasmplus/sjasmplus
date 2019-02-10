@@ -30,6 +30,7 @@
 #define SJASMPLUS_PARSER_H
 
 #include "tables.h"
+#include "global.h"
 
 void initParser();
 
@@ -40,8 +41,7 @@ bool ParseDirective(bool bol = false);
 bool ParseDirective_REPT();
 
 void ParseInstruction(); /* added */
-char *ReplaceDefine(char *lp); /* added */
-char *ReplaceDefineNext(char *lp); /* added */
+char *ReplaceDefine(char *lp, char *dest = sline);
 void ParseLine(bool = true);
 
 void ParseLineSafe(bool = true);
