@@ -13,7 +13,6 @@ namespace global {
 }
 
 extern char *lp, line[LINEMAX], *bp;
-extern char sline[LINEMAX2], sline2[LINEMAX2];
 
 enum EEncoding {
     ENCDOS, ENCWIN

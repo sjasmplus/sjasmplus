@@ -7,7 +7,6 @@ namespace global {
 }
 
 char *lp, line[LINEMAX], *bp;
-char sline[LINEMAX2], sline2[LINEMAX2];
 
 int ConvertEncoding = ENCWIN;
 

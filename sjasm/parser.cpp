@@ -38,6 +38,8 @@
 
 #include "parser.h"
 
+char sline[LINEMAX2], sline2[LINEMAX2];
+
 aint comlin = 0;
 int replacedefineteller = 0, comnxtlin;
 char dirDEFl[] = "def", dirDEFu[] = "DEF"; /* added for ReplaceDefine */

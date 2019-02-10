@@ -30,7 +30,8 @@
 #define SJASMPLUS_PARSER_H
 
 #include "tables.h"
-#include "global.h"
+
+extern char sline[LINEMAX2], sline2[LINEMAX2];
 
 void initParser();
 
