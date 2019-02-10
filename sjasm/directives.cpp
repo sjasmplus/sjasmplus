@@ -766,7 +766,7 @@ void dirSAVETAP() {
         start = StartAddress;
     }
 
-    if (exec && !SaveTAP_ZX(FileName, start)) {
+    if (exec && !zx::saveTAP(Em.getMemModel(), FileName, start)) {
         Error("[SAVETAP] Error writing file (Disk full?)"s, bp, CATCHALL);
         return;
     }

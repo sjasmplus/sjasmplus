@@ -114,4 +114,8 @@ bool isBasicVarAreaOverwritten(MemModel &M) {
     return !M.isUnusedBlock(0x5c00, sizeof(BASin48Vars));
 }
 
+bool isScreenOverwritten(MemModel &M) {
+    return !M.isUnusedBlock(0x4000, 0x1B00);
+}
+
 } // end namespace zx

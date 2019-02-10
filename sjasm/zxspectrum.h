@@ -18,6 +18,8 @@ extern uint16_t initMinimalBasicStack(MemModel &M, uint16_t Size = 8, uint16_t P
 
 extern bool isBasicVarAreaOverwritten(MemModel &M);
 
+extern bool isScreenOverwritten(MemModel &M);
+
 } // end namespace zx
 
 #endif //SJASMPLUS_ZXSPECTRUM_H

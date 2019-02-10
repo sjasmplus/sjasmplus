@@ -32,6 +32,10 @@ misrepresented as being the original software.
 #include <cstdint>
 #include "fs.h"
 
-int SaveTAP_ZX(const fs::path &fname, uint16_t start);
+namespace zx {
+
+bool saveTAP(MemModel &M, const fs::path &FileName, uint16_t Start);
+
+} // namespace zx
 
 #endif // SJASMPLUS_IO_TAPE_H
