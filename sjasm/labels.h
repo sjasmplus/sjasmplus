@@ -36,6 +36,7 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/tag.hpp>
 #include <boost/multi_index/member.hpp>
+#include <boost/optional.hpp>
 #include "fs.h"
 
 using ::boost::multi_index_container;
@@ -44,6 +45,7 @@ using ::boost::multi_index::random_access;
 using ::boost::multi_index::hashed_unique;
 using ::boost::multi_index::tag;
 using ::boost::multi_index::member;
+using ::boost::optional;
 
 #define LABMAX 64
 
@@ -103,7 +105,7 @@ private:
     LabelContainerByName &name_index = _LabelContainer.get<name_tag>();
 };
 
-const std::string validateLabel(const std::string &Name);
+optional<std::string> validateLabel(const std::string &Name);
 
 extern char *PreviousIsLabel;
 

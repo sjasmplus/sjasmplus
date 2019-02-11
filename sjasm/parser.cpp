@@ -433,8 +433,9 @@ bool ParseExpression(char *&p, aint &nval) {
 char *ReplaceDefine(char *lp, char *dest) {
     int definegereplaced = 0, dr;
     char *nl = dest;
-    char *rp = nl, *nid, *kp, a;
-    const char *ver = nullptr;
+    char *rp = nl, *kp, a;
+    optional<std::string> Id;
+    std::string Repl;
     if (++replacedefineteller > 20) {
         Fatal("Over 20 defines nested"s);
     }
@@ -524,21 +525,23 @@ char *ReplaceDefine(char *lp, char *dest) {
             continue;
         }
 
-        nid = GetID(lp);
+        Id = getID(lp);
         dr = 1;
 
-        auto it = DefineTable.find(nid);
+        auto it = DefineTable.find(*Id);
         if (it != DefineTable.end()) {
-            ver = it->second.c_str();
+            Repl = it->second;
         } else {
-            if (!macrolabp || !(ver = MacroDefineTable.getverv(nid))) {
+            const char *tmp = MacroDefineTable.getverv((*Id).c_str());
+            Repl = tmp ? tmp : ""s;
+            if (!macrolabp || !tmp) {
                 dr = 0;
-                ver = nid;
+                Repl = (*Id);
             }
         }
 
-        if (DefArrayTable.find(nid) != DefArrayTable.end() && !DefArrayTable[nid].empty()) {
-            auto &Arr = (DefArrayTable.find(nid))->second;
+        if (DefArrayTable.find(*Id) != DefArrayTable.end() && !DefArrayTable[*Id].empty()) {
+            auto &Arr = (DefArrayTable.find(*Id))->second;
             aint val;
             //_COUT lp _ENDL;
             while (*(lp++) && (*lp <= ' ' || *lp == '['));
@@ -555,30 +558,30 @@ char *ReplaceDefine(char *lp, char *dest) {
                 break;
             }
             if (Arr.size() > (unsigned) val) {
-                ver = Arr[val].c_str();
+                Repl = Arr[val];
             } else {
                 Error("Cell of array not found"s, CATCHALL);
             }
         }
 
         if (dr) {
-            kp = lp - strlen(nid);
+            kp = lp - (*Id).size();
             while (*(kp--) && *kp <= ' ');
             kp = kp - 4;
             if (cmphstr(kp, "ifdef")) {
                 dr = 0;
-                ver = nid;
+                Repl = *Id;
             } else {
                 --kp;
                 if (cmphstr(kp, "ifndef")) {
                     dr = 0;
-                    ver = nid;
+                    Repl = *Id;
                 } else if (cmphstr(kp, "define")) {
                     dr = 0;
-                    ver = nid;
+                    Repl = *Id;
                 } else if (cmphstr(kp, "defarray")) {
                     dr = 0;
-                    ver = nid;
+                    Repl = *Id;
                 }
             }
         }
@@ -586,11 +589,12 @@ char *ReplaceDefine(char *lp, char *dest) {
         if (dr) {
             definegereplaced = 1;
         }
-        if (ver) {
-            while ((*rp = *ver)) {
+        if (!Repl.empty()) {
+            for (auto c : Repl) {
+                *rp = c;
                 ++rp;
-                ++ver;
             }
+            *rp = '\0';
         }
     }
     if (strlen(nl) > LINEMAX - 1) {
@@ -658,30 +662,31 @@ void ParseLabel() {
             IsDEFL = 1;
         } else {
             int gl = 0;
-            char *p = lp, *n;
+            char *p = lp;
+            optional<std::string> Name;
             SkipBlanks(p);
             if (*p == '@') {
                 ++p;
                 gl = 1;
             }
-            if ((n = GetID(p)) && StructureTable.Emit(n, tp, p, gl)) {
+            if ((Name = getID(p)) && StructureTable.Emit((*Name).c_str(), tp, p, gl)) {
                 lp = p;
                 return;
             }
             val = Em.getCPUAddress();
         }
         std::string LUnparsed = tp;
-        std::string L;
-        if ((L = validateLabel(LUnparsed)).empty()) {
+        optional<std::string> L;
+        if (!(L = validateLabel(LUnparsed))) {
             return;
         }
         // Copy label name to last parsed label variable
         if (!IsDEFL) {
-            LastParsedLabel = L;
+            LastParsedLabel = *L;
         }
         if (pass == LASTPASS) {
-            if (IsDEFL && !LabelTable.insert(L, val, false, IsDEFL)) {
-                Error("Duplicate label"s, L, PASS3);
+            if (IsDEFL && !LabelTable.insert(*L, val, false, IsDEFL)) {
+                Error("Duplicate label"s, *L, PASS3);
             }
             aint oval;
             char *t = (char *) LUnparsed.c_str();
@@ -694,12 +699,12 @@ void ParseLabel() {
                         "previous value "s + std::to_string(oval) + " not equal "s + std::to_string(val));
                 //_COUT "" _CMDL filename _CMDL ":" _CMDL CurrentLocalLine _CMDL ":(DEBUG)  " _CMDL "Label has different value in pass 2: ";
                 //_COUT val _CMDL "!=" _CMDL oval _ENDL;
-                LabelTable.updateValue(L, val);
+                LabelTable.updateValue(*L, val);
             }
-        } else if (pass == 2 && !LabelTable.insert(L, val, false, IsDEFL) && !LabelTable.updateValue(L, val)) {
-            Error("Duplicate label"s, L, PASS2);
-        } else if (!LabelTable.insert(L, val, false, IsDEFL)) {
-            Error("Duplicate label"s, L, PASS1);
+        } else if (pass == 2 && !LabelTable.insert(*L, val, false, IsDEFL) && !LabelTable.updateValue(*L, val)) {
+            Error("Duplicate label"s, *L, PASS2);
+        } else if (!LabelTable.insert(*L, val, false, IsDEFL)) {
+            Error("Duplicate label"s, *L, PASS1);
         }
 
     }
@@ -707,17 +712,18 @@ void ParseLabel() {
 
 bool ParseMacro() {
     int gl = 0, r;
-    char *p = lp, *n;
+    char *p = lp;
+    optional<std::string> Name;
     SkipBlanks(p);
     if (*p == '@') {
         gl = 1;
         ++p;
     }
-    if (!(n = GetID(p))) {
+    if (!(Name = getID(p))) {
         return false;
     }
-    if (!(r = MacroTable.Emit(n, p))) {
-        if (StructureTable.Emit(n, 0, p, gl)) {
+    if (!(r = MacroTable.Emit((*Name).c_str(), p))) {
+        if (StructureTable.Emit((*Name).c_str(), 0, p, gl)) {
             lp = p;
             return true;
         }
@@ -929,7 +935,8 @@ void ParseStructMember(CStructure *st) {
             st->noffset += ((~st->noffset + 1) & (val - 1));
             break;
         default:
-            char *pp = lp, *n;
+            char *pp = lp;
+            optional<std::string> Name;
             int gl = 0;
             CStructure *s;
             SkipBlanks(pp);
@@ -937,8 +944,8 @@ void ParseStructMember(CStructure *st) {
                 ++pp;
                 gl = 1;
             }
-            if ((n = GetID(pp)) && (s = StructureTable.zoek(n, gl))) {
-                if (cmphstr(st->naam, n)) {
+            if ((Name = getID(pp)) && (s = StructureTable.zoek((*Name).c_str(), gl))) {
+                if (cmphstr(st->naam, (*Name).c_str())) {
                     Error("[STRUCT] Use structure itself"s, CATCHALL);
                     break;
                 }

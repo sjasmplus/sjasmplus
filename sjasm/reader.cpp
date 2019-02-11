@@ -204,28 +204,23 @@ char *getparen(char *p) {
     return nullptr;
 }
 
-char nidtemp[LINEMAX]; /* added */
-/* modified */
-char *GetID(char *&p) {
-    /*char nid[LINEMAX],*/ char *np;
-    np = nidtemp;
+optional<std::string> getID(char *&p) {
+    std::string S;
     SkipBlanks(p);
     //if (!isalpha(*p) && *p!='_') return 0;
     if (*p && !isalpha((unsigned char) *p) && *p != '_') {
-        return nullptr;
+        return boost::none;
     }
     while (*p) {
         if (!isalnum((unsigned char) *p) && *p != '_' && *p != '.' && *p != '?' && *p != '!' && *p != '#' &&
             *p != '@') {
             break;
         }
-        *np = *p;
+        S.push_back(*p);
         ++p;
-        ++np;
     }
-    *np = 0;
-    /*return STRDUP(nid);*/
-    return nidtemp;
+    if (!S.empty()) return S;
+    else return boost::none;
 }
 
 char instrtemp[LINEMAX]; /* added */

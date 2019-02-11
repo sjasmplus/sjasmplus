@@ -251,7 +251,7 @@ void initLabels() {
     macrolabp = NULL;
 }
 
-const std::string validateLabel(const std::string &Name) {
+optional<std::string> validateLabel(const std::string &Name) {
     std::string LName = Name; // Label name without @ or . prefix
     char *mlp = macrolabp;
     bool AsIsLabel = false;
@@ -274,13 +274,13 @@ const std::string validateLabel(const std::string &Name) {
     }
     if (LName.empty() || (!isalpha(LName[0]) && LName[0] != '_')) {
         Error("Invalid labelname"s, LName);
-        return ""s;
+        return boost::none;
     }
     for (auto c : LName) {
         if (!(isalnum(c) || c == '_' || c == '.' || c == '?' ||
                             c == '!' || c == '#' || c == '@')) {
             Error("Invalid labelname"s, LName);
-            return ""s;
+            return boost::none;
         }
     }
     std::string RetValue;
@@ -297,7 +297,8 @@ const std::string validateLabel(const std::string &Name) {
         }
     }
     RetValue += LName;
-    return RetValue;
+    if (!RetValue.empty()) return RetValue;
+    else return boost::none;
 }
 
 bool getLabelValue(char *&p, aint &val) {

@@ -29,6 +29,10 @@
 #ifndef SJASMPLUS_READER_H
 #define SJASMPLUS_READER_H
 
+#include <boost/optional.hpp>
+
+using boost::optional;
+
 #include "io_trd.h"
 #include "tables.h"
 
@@ -42,7 +46,7 @@ void SkipBlanks(char *&p);
 bool NeedEQU();
 
 bool NeedDEFL(); /* added */
-char *GetID(char *&p);
+optional<std::string> getID(char *&p);
 
 char *getinstr(char *&p);
 

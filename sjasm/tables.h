@@ -77,7 +77,7 @@ public:
         if (next) delete next;
     }
 
-    CStringsList(char *, CStringsList *);
+    CStringsList(const char *, CStringsList *);
 };
 
 class CDefineTableEntry {
@@ -99,7 +99,7 @@ public:
 
     void setdefs(CDefineTableEntry *);
 
-    char *getverv(char *);
+    char *getverv(const char *);
 
     int FindDuplicate(char *);
 
@@ -140,11 +140,11 @@ public:
 
 class CMacroTable {
 public:
-    void Add(char *, char *&);
+    void Add(const char *Name, char *&p);
 
-    int Emit(char *, char *&);
+    int Emit(const char *, char *&);
 
-    int FindDuplicate(char *);
+    int FindDuplicate(const char *Name);
 
     void Init();
 
@@ -203,7 +203,7 @@ public:
 
     CStructure *next;
 
-    CStructure(char *, char *, int, int, int, CStructure *);
+    CStructure(const char *, const char *, int, int, int, CStructure *);
 
 private:
     CStructureEntry1 *mnf, *mnl;
@@ -212,7 +212,7 @@ private:
 
 class CStructureTable {
 public:
-    CStructure *Add(char *, int, int, int);
+    CStructure *Add(const char *, int, int, int);
 
     void Init();
 
@@ -224,7 +224,7 @@ public:
 
     int FindDuplicate(char *);
 
-    int Emit(char *, char *, char *&, int);
+    int Emit(const char *, char *, char *&, int);
 
 private:
     CStructure *strs[128];

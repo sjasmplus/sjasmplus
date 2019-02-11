@@ -135,13 +135,13 @@ void CMacroDefineTable::setdefs(CDefineTableEntry *ndefs) {
     defs = ndefs;
 }
 
-char *CMacroDefineTable::getverv(char *name) {
+char *CMacroDefineTable::getverv(const char *Name) {
     CDefineTableEntry *p = defs;
-    if (!used[*name] && *name != KDelimiter) {
+    if (!used[*Name] && *Name != KDelimiter) {
         return NULL;
     }// std check
     while (p) {
-        if (!strcmp(name, p->name)) {
+        if (!strcmp(Name, p->name)) {
             return p->value;// full match
         }
         p = p->next;
@@ -151,7 +151,7 @@ char *CMacroDefineTable::getverv(char *name) {
     char **array = NULL;
     int count = 0;
     int positions[KTotalJoinedParams + 1];
-    SplitToArray(name, array, count, positions);
+    SplitToArray(Name, array, count, positions);
 
     int tempBufPos = 0;
     bool replaced = false;
@@ -262,7 +262,7 @@ int CMacroDefineTable::FindDuplicate(char *name) {
     return 0;
 }
 
-CStringsList::CStringsList(char *nstring, CStringsList *nnext) {
+CStringsList::CStringsList(const char *nstring, CStringsList *nnext) {
     string = STRDUP(nstring);
     //if (string == NULL) {
     //	Error("No enough memory!", 0, FATAL);
@@ -282,13 +282,13 @@ void CMacroTable::Init() {
     }
 }
 
-int CMacroTable::FindDuplicate(char *naam) {
+int CMacroTable::FindDuplicate(const char *Name) {
     CMacroTableEntry *p = macs;
-    if (!used[*naam]) {
+    if (!used[*Name]) {
         return 0;
     }
     while (p) {
-        if (!strcmp(naam, p->naam)) {
+        if (!strcmp(Name, p->naam)) {
             return 1;
         }
         p = p->next;
@@ -297,16 +297,16 @@ int CMacroTable::FindDuplicate(char *naam) {
 }
 
 /* modified */
-void CMacroTable::Add(char *nnaam, char *&p) {
-    char *n;
+void CMacroTable::Add(const char *Name, char *&p) {
+    optional<std::string> N;
     CStringsList *s, *l = NULL, *f = NULL;
     /*if (FindDuplicate(nnaam)) Error("Duplicate macroname",0,PASS1);*/
-    if (FindDuplicate(nnaam)) {
+    if (FindDuplicate(Name)) {
         Error("Duplicate macroname"s, PASS1);
         return;
     }
     char *macroname;
-    macroname = STRDUP(nnaam); /* added */
+    macroname = STRDUP(Name); /* added */
     if (macroname == NULL) {
         Fatal("Out of memory!"s);
     }
@@ -314,11 +314,11 @@ void CMacroTable::Add(char *nnaam, char *&p) {
     used[*macroname/*nnaam*/] = 1;
     SkipBlanks(p);
     while (*p) {
-        if (!(n = GetID(p))) {
+        if (!(N = getID(p))) {
             Error("Illegal macro argument"s, p, PASS1);
             break;
         }
-        s = new CStringsList(n, NULL);
+        s = new CStringsList((*N).c_str(), NULL);
         if (!f) {
             f = s;
         }
@@ -343,18 +343,18 @@ void CMacroTable::Add(char *nnaam, char *&p) {
     }
 }
 
-int CMacroTable::Emit(char *naam, char *&p) {
+int CMacroTable::Emit(const char *Name, char *&p) {
     CStringsList *a, *olijstp;
     char *n, labnr[LINEMAX], ml[LINEMAX], *omacrolabp;
     CMacroTableEntry *m = macs;
     CDefineTableEntry *odefs;
     bool olistmacro;
     int olijst;
-    if (!used[*naam]) {
+    if (!used[*Name]) {
         return 0;
     }
     while (m) {
-        if (!strcmp(naam, m->naam)) {
+        if (!strcmp(Name, m->naam)) {
             break;
         }
         m = m->next;
@@ -401,7 +401,7 @@ int CMacroTable::Emit(char *naam, char *&p) {
         n = ml;
         SkipBlanks(p);
         if (!*p) {
-            Error("Not enough arguments for macro"s, naam);
+            Error("Not enough arguments for macro"s, Name);
             macrolabp = 0;
             return 1;
         }
@@ -409,14 +409,14 @@ int CMacroTable::Emit(char *naam, char *&p) {
             ++p;
             while (*p != '>') {
                 if (!*p) {
-                    Error("Not enough arguments for macro"s, naam);
+                    Error("Not enough arguments for macro"s, Name);
                     macrolabp = 0;
                     return 1;
                 }
                 if (*p == '!') {
                     ++p;
                     if (!*p) {
-                        Error("Not enough arguments for macro"s, naam);
+                        Error("Not enough arguments for macro"s, Name);
                         macrolabp = 0;
                         return 1;
                     }
@@ -438,7 +438,7 @@ int CMacroTable::Emit(char *naam, char *&p) {
         SkipBlanks(p);
         a = a->next;
         if (a && *p != ',') {
-            Error("Not enough arguments for macro"s, naam);
+            Error("Not enough arguments for macro"s, Name);
             macrolabp = 0;
             return 1;
         }
@@ -449,7 +449,7 @@ int CMacroTable::Emit(char *naam, char *&p) {
     SkipBlanks(p);
     lp = p;
     if (*p) {
-        Error("Too many arguments for macro"s, naam);
+        Error("Too many arguments for macro"s, Name);
     }
     /* (end new) */
     Listing.listFile();
@@ -495,7 +495,7 @@ CStructureEntry2::CStructureEntry2(aint noffset, aint nlen, aint ndef, EStructur
     type = ntype;
 }
 
-CStructure::CStructure(char *nnaam, char *nid, int idx, int no, int ngl, CStructure *p) {
+CStructure::CStructure(const char *nnaam, const char *nid, int idx, int no, int ngl, CStructure *p) {
     mnf = mnl = 0;
     mbf = mbl = 0;
     naam = STRDUP(nnaam);
@@ -633,7 +633,8 @@ void CStructure::CopyMembers(CStructure *st, char *&lp) {
 }
 
 void CStructure::deflab() {
-    std::string ln, sn, p, op;
+    std::string ln, sn, op;
+    optional<std::string> p;
     aint oval;
     CStructureEntry1 *np = mnf;
     sn = "@"s + id;
@@ -648,7 +649,7 @@ void CStructure::deflab() {
             Error("Label has different value in pass 2"s, TempLabel);
         }
     } else {
-        if (!LabelTable.insert(p, noffset)) {
+        if (!LabelTable.insert(*p, noffset)) {
             Error("Duplicate label"s, PASS1);
         }
     }
@@ -656,7 +657,7 @@ void CStructure::deflab() {
     while (np) {
         ln = sn + np->naam;
         op = ln;
-        if ((p = validateLabel(ln)).empty()) {
+        if (!(p = validateLabel(ln))) {
             Error("Illegal labelname"s, ln, PASS1);
         }
         if (pass == LASTPASS) {
@@ -668,7 +669,7 @@ void CStructure::deflab() {
                 Error("Label has different value in pass 2"s, TempLabel);
             }
         } else {
-            if (!LabelTable.insert(p, np->offset)) {
+            if (!LabelTable.insert(*p, np->offset)) {
                 Error("Duplicate label"s, PASS1);
             }
         }
@@ -677,7 +678,8 @@ void CStructure::deflab() {
 }
 
 void CStructure::emitlab(char *iid) {
-    std::string ln, sn, p, op;
+    std::string ln, sn, op;
+    optional<std::string> p;
     aint oval;
     CStructureEntry1 *np = mnf;
     sn = iid;
@@ -692,7 +694,7 @@ void CStructure::emitlab(char *iid) {
             Error("Label has different value in pass 2"s, TempLabel);
         }
     } else {
-        if (!LabelTable.insert(p, Em.getCPUAddress())) {
+        if (!LabelTable.insert(*p, Em.getCPUAddress())) {
             Error("Duplicate label"s, PASS1);
         }
     }
@@ -700,7 +702,7 @@ void CStructure::emitlab(char *iid) {
     while (np) {
         ln = sn + np->naam;
         op = ln;
-        if ((p = validateLabel(ln)).empty()) {
+        if (!(p = validateLabel(ln))) {
             Error("Illegal labelname"s, ln, PASS1);
         }
         if (pass == LASTPASS) {
@@ -712,7 +714,7 @@ void CStructure::emitlab(char *iid) {
                 Error("Label has different value in pass 2"s, TempLabel);
             }
         } else {
-            if (!LabelTable.insert(p, np->offset + Em.getCPUAddress())) {
+            if (!LabelTable.insert(*p, np->offset + Em.getCPUAddress())) {
                 Error("Duplicate label"s, PASS1);
             }
         }
@@ -824,19 +826,19 @@ void CStructureTable::Init() {
     }
 }
 
-CStructure *CStructureTable::Add(char *naam, int no, int idx, int gl) {
+CStructure *CStructureTable::Add(const char *Name, int no, int idx, int gl) {
     char sn[LINEMAX], *sp;
     sn[0] = 0;
     if (!gl && !Modules.IsEmpty()) {
         STRCPY(sn, LINEMAX, Modules.GetPrefix().c_str());
     }
     //sp = STRCAT(sn, LINEMAX, naam); //mmmm
-    STRCAT(sn, LINEMAX, naam);
+    STRCAT(sn, LINEMAX, Name);
     sp = sn;
     if (FindDuplicate(sp)) {
-        Error("Duplicate structure name"s, naam, PASS1);
+        Error("Duplicate structure name"s, Name, PASS1);
     }
-    strs[*sp] = new CStructure(naam, sp, idx, 0, gl, strs[*sp]);
+    strs[*sp] = new CStructure(Name, sp, idx, 0, gl, strs[*sp]);
     if (no) {
         strs[*sp]->AddMember(new CStructureEntry2(0, no, 0, SMEMBBLOCK));
     }
@@ -876,9 +878,9 @@ int CStructureTable::FindDuplicate(char *naam) {
     return 0;
 }
 
-int CStructureTable::Emit(char *naam, char *l, char *&p, int gl) {
+int CStructureTable::Emit(const char *Name, char *l, char *&p, int gl) {
     //_COUT naam _ENDL; ExitASM(1);
-    CStructure *st = zoek(naam, gl);
+    CStructure *st = zoek(Name, gl);
     if (!st) {
         return 0;
     }

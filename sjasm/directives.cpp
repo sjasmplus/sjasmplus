@@ -28,6 +28,7 @@
 
 #include <string>
 #include <boost/optional.hpp>
+#include <boost/algorithm/string/predicate.hpp> // for iequals()
 
 #include "global.h"
 #include "options.h"
@@ -47,6 +48,8 @@
 #include "fsutil.h"
 
 #include "directives.h"
+
+using boost::iequals;
 
 using namespace std::string_literals;
 
@@ -464,8 +467,9 @@ void dirALIGN() {
 
 
 void dirMODULE() {
-    if (const char *name = GetID(lp)) {
-        Modules.Begin(name);
+    optional <std::string> Name;
+    if (Name = getID(lp)) {
+        Modules.Begin(*Name);
     } else {
         Error("[MODULE] Syntax error"s, CATCHALL);
     }
@@ -1110,22 +1114,22 @@ void dirIFN() {
 }
 
 void dirIFUSED() {
-    std::string Id;
-    if (((Id = GetID(lp)).empty()) && LastParsedLabel.empty()) {
+    optional<std::string> Id;
+    if (!((Id = getID(lp))) && LastParsedLabel.empty()) {
         Error("[IFUSED] Syntax error"s, CATCHALL);
         return;
     }
-    if (Id.empty()) {
+    if (!Id) {
         Id = LastParsedLabel;
     } else {
-        Id = validateLabel(Id);
-        if (Id.empty()) {
+        Id = validateLabel(*Id);
+        if (!Id) {
             Error("[IFUSED] Invalid label name"s, CATCHALL);
             return;
         }
     }
 
-    if (LabelTable.isUsed(Id)) {
+    if (LabelTable.isUsed(*Id)) {
         Listing.listFile();
         switch (ReadFile(lp, "[IFUSED] No endif")) {
             case ELSE:
@@ -1157,22 +1161,22 @@ void dirIFUSED() {
 }
 
 void dirIFNUSED() {
-    std::string Id;
-    if (((Id = GetID(lp)).empty()) && LastParsedLabel.empty()) {
+    optional<std::string> Id;
+    if (((Id = getID(lp))) && LastParsedLabel.empty()) {
         Error("[IFUSED] Syntax error"s, CATCHALL);
         return;
     }
-    if (Id.empty()) {
+    if (!Id) {
         Id = LastParsedLabel;
     } else {
-        Id = validateLabel(Id);
-        if (Id.empty()) {
+        Id = validateLabel(*Id);
+        if (!Id) {
             Error("[IFUSED] Invalid label name"s, CATCHALL);
             return;
         }
     }
 
-    if (!LabelTable.isUsed(Id)) {
+    if (!LabelTable.isUsed(*Id)) {
         Listing.listFile();
         switch (ReadFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
@@ -1245,26 +1249,26 @@ void dirOUTPUT() {
 }
 
 void dirDEFINE() {
-    char *id;
+    optional<std::string> Id;
 
-    if (!(id = GetID(lp))) {
+    if (!(Id = getID(lp))) {
         Error("[DEFINE] Illegal syntax"s);
         return;
     }
 
     SkipBlanks(lp); // FIXME: This is not enough: need to account for comments
-    if (DefineTable.find(id) != DefineTable.end()) {
-        Error("Duplicate define"s, id);
+    if (DefineTable.find(*Id) != DefineTable.end()) {
+        Error("Duplicate define"s, *Id);
     }
-    DefineTable[id] = lp;
+    DefineTable[*Id] = lp;
 
     *(lp) = 0;
 }
 
 void dirUNDEFINE() {
-    char *id;
+    optional<std::string> Id;
 
-    if (!(id = GetID(lp)) && *lp != '*') {
+    if (!(Id = getID(lp)) && *lp != '*') {
         Error("[UNDEFINE] Illegal syntax"s);
         return;
     }
@@ -1279,27 +1283,27 @@ void dirUNDEFINE() {
     } else {
         bool FoundID = false;
 
-        auto it = DefineTable.find(id);
+        auto it = DefineTable.find(*Id);
         if (it != DefineTable.end()) {
             DefineTable.erase(it);
             FoundID = true;
         }
 
-        auto it2 = DefArrayTable.find(id);
+        auto it2 = DefArrayTable.find(*Id);
         if (it2 != DefArrayTable.end()) {
             DefArrayTable.erase(it2);
             FoundID = true;
         }
 
-        if (LabelTable.find(id)) {
+        if (LabelTable.find(*Id)) {
             if (pass == PASS1) {
-                LabelTable.remove(id);
+                LabelTable.remove(*Id);
             }
             FoundID = true;
         }
 
         if (!FoundID) {
-            Warning("[UNDEFINE] Identifier not found"s, id);
+            Warning("[UNDEFINE] Identifier not found"s, *Id);
         }
     }
 }
@@ -1315,7 +1319,7 @@ bool ifDefName(const std::string &Name) {
 
 void dirIFDEF() {
     /*char *p=line,*id;*/
-    char *id;
+    optional<std::string> Id;
     /* (this was cutted)
     while ('o') {
       if (!*p) Error("ifdef error",0,FATAL);
@@ -1326,12 +1330,12 @@ void dirIFDEF() {
     if (!cmphstr(p,"ifdef")) Error("ifdef error",0,FATAL);
     */
     EReturn res;
-    if (!(id = GetID(lp))) {
+    if (!(Id = getID(lp))) {
         Error("[IFDEF] Illegal identifier"s, PASS1);
         return;
     }
 
-    if (ifDefName(id)) {
+    if (ifDefName(*Id)) {
         Listing.listFile();
         /*switch (res=ReadFile()) {*/
         switch (res = ReadFile(lp, "[IFDEF] No endif")) {
@@ -1371,7 +1375,7 @@ void dirIFDEF() {
 
 void dirIFNDEF() {
     /*char *p=line,*id;*/
-    char *id;
+    optional<std::string> Id;
     /* (this was cutted)
     while ('o') {
       if (!*p) Error("ifndef error",0,FATAL);
@@ -1382,12 +1386,12 @@ void dirIFNDEF() {
     if (!cmphstr(p,"ifndef")) Error("ifndef error",0,FATAL);
     */
     EReturn res;
-    if (!(id = GetID(lp))) {
+    if (!(Id = getID(lp))) {
         Error("[IFNDEF] Illegal identifier"s, PASS1);
         return;
     }
 
-    if (!ifDefName(id)) {
+    if (!ifDefName(*Id)) {
         Listing.listFile();
         /*switch (res=ReadFile()) {*/
         switch (res = ReadFile(lp, "[IFNDEF] No endif")) {
@@ -1427,7 +1431,7 @@ void dirIFNDEF() {
 
 void dirEXPORT() {
     aint val;
-    char *n, *p;
+    optional<std::string> Label;
 
     if (Options::ExportFName.empty()) {
         Options::ExportFName = getSourceFileName();
@@ -1435,7 +1439,7 @@ void dirEXPORT() {
         Warning("[EXPORT] Filename for exportfile was not indicated. Output will be in"s,
                 Options::ExportFName.string());
     }
-    if (!(n = p = GetID(lp))) {
+    if (!(Label = getID(lp))) {
         Error("[EXPORT] Syntax error"s, lp, CATCHALL);
         return;
     }
@@ -1443,13 +1447,13 @@ void dirEXPORT() {
         return;
     }
     IsLabelNotFound = 0;
-
+    char *n = (char *)(*Label).c_str();
     getLabelValue(n, val);
     if (IsLabelNotFound) {
-        Error("[EXPORT] Label not found"s, p, SUPPRESS);
+        Error("[EXPORT] Label not found"s, *Label, SUPPRESS);
         return;
     }
-    writeExport(p, val);
+    writeExport(*Label, val);
 }
 
 void dirDISPLAY() {
@@ -1573,13 +1577,13 @@ void dirMACRO() {
     if (lijst) {
         Fatal("[MACRO] No macro definitions allowed here"s);
     }
-    char *n;
-    //if (!(n=GetID(lp))) { Error("Illegal macroname",0,PASS1); return; }
-    if (!(n = GetID(lp))) {
+    optional<std::string> Name;
+    //if (!(n=getID(lp))) { Error("Illegal macroname",0,PASS1); return; }
+    if (!(Name = getID(lp))) {
         Error("[MACRO] Illegal macroname"s, PASS1);
         return;
     }
-    MacroTable.Add(n, lp);
+    MacroTable.Add((*Name).c_str(), lp);
 }
 
 void dirENDS() {
@@ -1666,14 +1670,14 @@ void dirSTRUCT() {
     CStructure *st;
     int global = 0;
     aint offset = 0, bind = 0;
-    char *naam;
+    optional<std::string> Name;
     SkipBlanks();
     if (*lp == '@') {
         ++lp;
         global = 1;
     }
 
-    if (!(naam = GetID(lp)) || !strlen(naam)) {
+    if (!(Name = getID(lp))) {
         Error("[STRUCT] Illegal structure name"s, PASS1);
         return;
     }
@@ -1687,7 +1691,7 @@ void dirSTRUCT() {
             Error("[STRUCT] Forward reference"s, ALL);
         }
     }
-    st = StructureTable.Add(naam, offset, bind, global);
+    st = StructureTable.Add((*Name).c_str(), offset, bind, global);
     Listing.listFile();
     while ('o') {
         if (!ReadLine()) {
@@ -1837,10 +1841,10 @@ void dirENDM() {
 
 void dirDEFARRAY() {
     char *n;
-    char *id;
+    optional<std::string> Id;
     char ml[LINEMAX];
 
-    if (!(id = GetID(lp))) {
+    if (!(Id = getID(lp))) {
         Error("[DEFARRAY] Syntax error"s);
         return;
     }
@@ -1889,7 +1893,7 @@ void dirDEFARRAY() {
             break;
         }
     }
-    DefArrayTable[id] = Arr;
+    DefArrayTable[*Id] = Arr;
 }
 
 void _lua_showerror() {
@@ -1941,7 +1945,8 @@ const char *readMemFile(lua_State *, void *ud, size_t *size) {
 
 void dirLUA() {
     int error;
-    char *rp, *id;
+    char *rp;
+    optional<std::string> Id;
     auto *buff = new char[32768];
     char *bp = buff;
 //    char size = 0;
@@ -1952,24 +1957,24 @@ void dirLUA() {
 
     SkipBlanks();
 
-    if ((id = GetID(lp)) && strlen(id) > 0) {
-        if (cmphstr(id, "pass1")) {
+    if ((Id = getID(lp))) {
+        if (iequals(*Id, "pass1"s)) {
             if (pass == 1) {
                 execute = true;
             }
-        } else if (cmphstr(id, "pass2")) {
+        } else if (iequals(*Id, "pass2"s)) {
             if (pass == 2) {
                 execute = true;
             }
-        } else if (cmphstr(id, "pass3")) {
+        } else if (iequals(*Id, "pass3"s)) {
             if (pass == 3) {
                 execute = true;
             }
-        } else if (cmphstr(id, "allpass")) {
+        } else if (iequals(*Id, "allpass"s)) {
             execute = true;
         } else {
             //_COUT id _CMDL "A" _ENDL;
-            Error("[LUA] Syntax error"s, id);
+            Error("[LUA] Syntax error"s, *Id);
         }
     } else if (pass == LASTPASS) {
         execute = true;
@@ -2056,10 +2061,10 @@ void dirINCLUDELUA() {
 }
 
 void dirDEVICE() {
-    char *id;
+    optional<std::string> Id;
 
-    if ((id = GetID(lp))) {
-        Em.setMemModel(id);
+    if ((Id = getID(lp))) {
+        Em.setMemModel(*Id);
     } else {
         Error("[DEVICE] Syntax error"s, CATCHALL);
     }
