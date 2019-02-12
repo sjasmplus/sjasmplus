@@ -40,7 +40,7 @@ using boost::algorithm::to_upper_copy;
 
 #include "tables.h"
 
-int macronummer = 0;
+int MacroNumber = 0;
 bool InMemSrcMode = false;
 bool synerr;
 
@@ -85,39 +85,11 @@ bool FunctionTable::find(const std::string &Name) {
     }
 }
 
-CDefineTableEntry::CDefineTableEntry(const char *nname, const char *nvalue, CStringsList *nnss/*added*/,
-                                     CDefineTableEntry *nnext) {
-    char *s1;
-    char *sbegin, *s2;
-    name = STRDUP(nname);
-    if (name == NULL) {
-        Fatal("Out of memory!"s);
-    }
-    value = new char[strlen(nvalue) + 1];
-    if (value == NULL) {
-        Fatal("Out of memory!"s);
-    }
-    s1 = value;
-    sbegin = s2 = strdup(nvalue);
-    SkipBlanks(s2);
-    while (*s2 && *s2 != '\n' && *s2 != '\r') {
-        *s1 = *s2;
-        ++s1;
-        ++s2;
-    }
-    *s1 = 0;
-    free(sbegin);
-
-    next = nnext;
-    nss = nnss;
-}
-
 void CMacroDefineTable::addRepl(const std::string &Name, const std::string &Replacement) {
     Replacements[Name] = Replacement;
 }
 
 std::string CMacroDefineTable::getRepl(const std::string &Name) {
-//    CDefineTableEntry *p = defs;
     auto it = Replacements.find(Name);
     if (it == Replacements.end() && Name[0] != KDelimiter) {
         return ""s;
@@ -272,7 +244,7 @@ int CMacroTable::emit(const std::string &Name, char *&p) {
     CMacroTableEntry &M = it->second;
 
     std::string OMacroLab = MacroLab;
-    std::string LabNr = std::to_string(macronummer++);
+    std::string LabNr = std::to_string(MacroNumber++);
     MacroLab = LabNr;
     if (!OMacroLab.empty()) {
         MacroLab += "."s + OMacroLab;
@@ -776,116 +748,6 @@ int CStructureTable::Emit(const char *Name, char *l, char *&p, int gl) {
     }
     st->emitmembs(p);
     return 1;
-}
-
-
-CDevice::CDevice(const char *name, CDevice *n) {
-    ID = STRDUP(name);
-    Next = NULL;
-    if (n) {
-        n->Next = this;
-    }
-    CurrentSlot = 0;
-    CurrentPage = 0;
-    SlotsCount = 0;
-    PagesCount = 0;
-
-    for (int i = 0; i < 256; i++) {
-        Slots[i] = 0;
-        Pages[i] = 0;
-    }
-}
-
-CDevice::~CDevice() {
-    //CDefineSlot *Slot;
-
-    //Slot = Slots;
-    //while (Slot != NULL) {
-    //	Slot = Slots->Next;
-    for (int i = 0; i < 256; i++) {
-        if (Slots[i]) delete Slots[i];
-    }
-    //}
-
-    //Page = Pages;
-    //while (Page != NULL) {
-    //	Page = Pages->Next;
-    for (int i = 0; i < 256; i++) {
-        if (Pages[i]) delete Pages[i];
-    }
-    //}
-
-    if (Next) {
-        delete Next;
-    }
-}
-
-void CDevice::AddSlot(aint adr, aint size) {
-    Slots[SlotsCount] = new CDeviceSlot(adr, size, SlotsCount);
-    SlotsCount++;
-}
-
-void CDevice::AddPage(aint size) {
-    Pages[PagesCount] = new CDevicePage(size, PagesCount);
-    PagesCount++;
-}
-
-CDeviceSlot *CDevice::GetSlot(aint num) {
-    if (Slots[num]) {
-        return Slots[num];
-    }
-
-    Error("Wrong slot number"s, lp);
-    return Slots[0];
-}
-
-CDevicePage *CDevice::GetPage(aint num) {
-    if (Pages[num]) {
-        return Pages[num];
-    }
-
-    Error("Wrong page number"s, lp);
-    return Pages[0];
-}
-
-CDeviceSlot::CDeviceSlot(aint adr, aint size, aint number /*, CDeviceSlot *n*/) {
-    Address = adr;
-    Size = size;
-    Number = number;
-    /*Next = NULL;
-    if (n) {
-           n->Next = this;
-    }*/
-}
-
-CDevicePage::CDevicePage(aint size, aint number /*, CDevicePage *n*/) {
-    Size = size;
-    Number = number;
-    RAM = (char *) calloc(size, sizeof(char));
-    if (RAM == NULL) {
-        Fatal("Out of memory"s);
-    }
-    /*Next = NULL;
-    if (n) {
-           n->Next = this;
-    }*/
-}
-
-CDeviceSlot::~CDeviceSlot() {
-    /*if (Next) {
-        delete Next;
-    }*/
-}
-
-CDevicePage::~CDevicePage() {
-    /*try {
-        free(RAM);
-    } catch(...) {
-
-    }*/
-    /*if (Next) {
-        delete Next;
-    }*/
 }
 
 //eof tables.cpp

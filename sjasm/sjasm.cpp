@@ -42,12 +42,6 @@
 #include <sjasmplus_conf.h>
 #include <sstream>
 
-CDevice *Devices = 0;
-CDevice *Device = 0;
-CDeviceSlot *Slot = 0;
-CDevicePage *Page = 0;
-char *DeviceID = 0;
-
 std::vector<fs::path> SourceFNames;
 int CurrentSourceFName = 0;
 int SourceFNamesCount = 0;
@@ -63,7 +57,7 @@ void InitPass(int p) {
     enableSourceReader();
     CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
     Listing.initPass();
-    macronummer = 0;
+    MacroNumber = 0;
     InMemSrcMode = false;
     initParser();
     StructureTable.Init();
@@ -81,7 +75,6 @@ void InitPass(int p) {
 }
 
 void FreeRAM() {
-    delete Devices;
     delete InMemSrc;
 }
 
@@ -209,8 +202,6 @@ int main(int argc, const char *argv[]) {
 
     cout << flush;
 
-    // free RAM
-    delete Devices;
     // Shutdown Lua
     shutdownLUA();
 

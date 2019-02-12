@@ -44,7 +44,7 @@ using std::endl;
 #include "labels.h"
 #include "errors.h"
 
-extern int macronummer;
+extern int MacroNumber;
 extern bool InMemSrcMode;
 extern bool synerr;
 
@@ -82,15 +82,6 @@ public:
     CStringsList(const char *, CStringsList *);
 };
 
-class CDefineTableEntry {
-public:
-    char *name, *value;
-    CStringsList *nss; /* added */
-    CDefineTableEntry *next;
-
-    CDefineTableEntry(const char *, const char *, CStringsList * /*added*/, CDefineTableEntry *);
-};
-
 class CMacroDefineTable {
 public:
     void init() {
@@ -117,9 +108,6 @@ private:
     int Copy(char *aDest, int aDestPos, const char *aSource, int aSourcePos, int aBytes) const;
 
     void FreeArray(char **aArray, int aCount);
-
-    char tempBuf[LABMAX];    // for 'arg_someLabel_arg_anotherLabel' expansion
-    // --
 
     std::map<std::string, std::string> Replacements;
 };
@@ -227,69 +215,6 @@ struct RepeatInfo {
     bool Complete;
     int Level;
     char *lp;
-};
-
-struct SConditionalStack {
-    long CurrentGlobalLine;
-    long CurrentLocalLine;
-    long CurrentLine;
-    CStringsList *Lines;
-    CStringsList *Pointer;
-    bool IsInWork;
-    int Level;
-    char *lp;
-};
-
-class CDevicePage {
-public:
-    CDevicePage(aint, aint /*, CDevicePage **/);
-
-    ~CDevicePage();
-
-    aint Size;
-    aint Number;
-    char *RAM;
-    //CDevicePage* Next;
-private:
-};
-
-class CDeviceSlot {
-public:
-    CDeviceSlot(aint, aint, aint /*, CDeviceSlot **/);
-
-    ~CDeviceSlot();
-
-    aint Address;
-    aint Size;
-    CDevicePage *Page;
-    aint Number;
-    //CDeviceSlot* Next;
-private:
-};
-
-class CDevice {
-public:
-    CDevice(const char *, CDevice *);
-
-    ~CDevice();
-
-    void AddSlot(aint adr, aint size);
-
-    void AddPage(aint size);
-
-    CDevicePage *GetPage(aint);
-
-    CDeviceSlot *GetSlot(aint);
-
-    char *ID;
-    CDevice *Next;
-    aint CurrentSlot;
-    aint CurrentPage;
-    aint SlotsCount;
-    aint PagesCount;
-private:
-    CDeviceSlot *Slots[256];
-    CDevicePage *Pages[256];
 };
 
 #endif //SJASMPLUS_TABLES_H
