@@ -60,7 +60,7 @@ void InitPass(int p) {
     MacroNumber = 0;
     InMemSrcMode = false;
     initParser();
-    StructureTable.Init();
+    StructureTable.init();
     DefineTable.clear();
     DefArrayTable.clear();
     MacroTable.init();

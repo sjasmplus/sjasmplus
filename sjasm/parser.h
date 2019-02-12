@@ -47,7 +47,7 @@ void ParseLine(bool = true);
 
 void ParseLineSafe(bool = true);
 
-void ParseStructLine(CStructure *st);
+void ParseStructLine(CStructure &St);
 
 unsigned long LuaCalculate(char *str);
 

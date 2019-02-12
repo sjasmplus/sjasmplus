@@ -238,7 +238,7 @@ void CLabelTable::dumpSymbols(const fs::path &FileName) const {
 
 std::string TempLabel;
 
-char *PreviousIsLabel;
+std::string PreviousIsLabel;
 
 
 std::string LastLabel;

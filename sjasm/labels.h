@@ -107,7 +107,7 @@ private:
 
 optional<std::string> validateLabel(const std::string &Name);
 
-extern char *PreviousIsLabel;
+extern std::string PreviousIsLabel;
 
 bool getLabelValue(char *&p, aint &val);
 

@@ -1667,7 +1667,6 @@ void dirSHELLEXEC() {
 }
 
 void dirSTRUCT() {
-    CStructure *st;
     int global = 0;
     aint offset = 0, bind = 0;
     optional<std::string> Name;
@@ -1691,9 +1690,9 @@ void dirSTRUCT() {
             Error("[STRUCT] Forward reference"s, ALL);
         }
     }
-    st = StructureTable.Add((*Name).c_str(), offset, bind, global);
+    CStructure &St = StructureTable.add(*Name, offset, bind, global);
     Listing.listFile();
-    while ('o') {
+    while (true) {
         if (!ReadLine()) {
             Error("[STRUCT] Unexpected end of structure"s, PASS1);
             break;
@@ -1706,10 +1705,10 @@ void dirSTRUCT() {
         if (cmphstr(lp, "ends")) {
             break;
         }
-        ParseStructLine(st);
+        ParseStructLine(St);
         Listing.listFileSkip(line);
     }
-    st->deflab();
+    St.deflab();
 }
 
 void dirFPOS() {

@@ -121,7 +121,7 @@ class CMacroTable {
 public:
     void add(const std::string &Name, char *&p);
 
-    int emit(const std::string &, char *&);
+    int emit(const std::string &Name, char *&p);
 
     void init() { Entries.clear(); }
 
@@ -135,74 +135,83 @@ private:
 
 class CStructureEntry1 {
 public:
-    char *naam;
+    std::string naam;
     aint offset;
-    CStructureEntry1 *next;
 
-    CStructureEntry1(char *, aint);
+    CStructureEntry1(const std::string &Name, aint noffset) : naam(Name), offset(noffset) {}
+
 };
 
 class CStructureEntry2 {
 public:
     aint offset, len, def;
     EStructureMembers type;
-    CStructureEntry2 *next;
 
-    CStructureEntry2(aint, aint, aint, EStructureMembers);
+    CStructureEntry2(aint noffset, aint nlen, aint ndef, EStructureMembers ntype) :
+            offset(noffset), len(nlen), def(ndef), type(ntype) {}
+
 };
 
 class CStructure {
 public:
-    char *naam, *id;
+    std::string naam, id;
     int binding;
-    int global;
     aint noffset;
+    int global;
 
-    void AddLabel(char *);
+    void addLabel(const std::string &Name) {
+        Labels.emplace_back(Name, noffset);
+    }
 
-    void AddMember(CStructureEntry2 *);
+    void addMember(CStructureEntry2 &E) {
+        Members.emplace_back(E);
+        noffset += E.len;
+    }
 
-    void CopyLabel(char *, aint);
+    void copyLabels(CStructure &St);
 
-    void CopyLabels(CStructure *);
+    void copyMember(CStructureEntry2 &Src, aint ndef);
 
-    void CopyMember(CStructureEntry2 *, aint);
-
-    void CopyMembers(CStructure *, char *&);
+    void copyMembers(CStructure &St, char *&lp);
 
     void deflab();
 
-    void emitlab(char *);
+    void emitlab(char *iid);
 
-    void emitmembs(char *&);
+    void emitmembs(char *&p);
 
-    CStructure *next;
+    CStructure() : naam(""s), id(""s) {
+        binding = noffset = global = 0;
+    }
 
-    CStructure(const char *, const char *, int, int, int, CStructure *);
+    CStructure(const std::string &Name, const std::string &FullName, int idx, int no, int ngl) :
+            naam(Name), id(FullName), binding(idx), noffset(no), global(ngl) {}
 
 private:
-    CStructureEntry1 *mnf, *mnl;
-    CStructureEntry2 *mbf, *mbl;
+    std::list<CStructureEntry1> Labels;
+    std::list<CStructureEntry2> Members;
 };
 
 class CStructureTable {
 public:
-    CStructure *Add(const char *, int, int, int);
+    CStructure & add(const std::string &Name, int Offset, int idx, int Global);
 
-    void Init();
-
-    CStructureTable() {
-        Init();
+    void init() {
+        // ?
     }
 
-    CStructure *zoek(const char *, int);
+    CStructureTable() {
+        init();
+    }
 
-    int FindDuplicate(char *);
+    std::map<std::string, CStructure>::iterator find(const std::string &Name, int Global);
 
-    int Emit(const char *, char *, char *&, int);
+    bool emit(const std::string &Name, char *l, char *&p, int Global);
+
+    std::map<std::string, CStructure>::iterator NotFound() { return Entries.end(); }
 
 private:
-    CStructure *strs[128];
+    std::map<std::string, CStructure> Entries;
 };
 
 struct RepeatInfo {

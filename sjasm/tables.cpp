@@ -137,7 +137,7 @@ void CMacroDefineTable::SplitToArray(const char *aName, char **&aArray, int &aCo
     int currentItemsize = 0;
     bool newLex = false;
     int prevLexPos = 0;
-    for (int i = 0; i < nameLen; i++, currentItemsize++) {
+    for (size_t i = 0; i < nameLen; i++, currentItemsize++) {
         if (aName[i] == KDelimiter || aName[prevLexPos] == KDelimiter) {
             newLex = true;
         }
@@ -337,118 +337,33 @@ int CMacroTable::emit(const std::string &Name, char *&p) {
     return 2;
 }
 
-CStructureEntry1::CStructureEntry1(char *nnaam, aint noffset) {
-    next = 0;
-    naam = STRDUP(nnaam);
-    if (naam == NULL) {
-        Fatal("Out of memory!"s);
-    }
-    offset = noffset;
-}
-
-CStructureEntry2::CStructureEntry2(aint noffset, aint nlen, aint ndef, EStructureMembers ntype) {
-    next = 0;
-    offset = noffset;
-    len = nlen;
-    def = ndef;
-    type = ntype;
-}
-
-CStructure::CStructure(const char *nnaam, const char *nid, int idx, int no, int ngl, CStructure *p) {
-    mnf = mnl = 0;
-    mbf = mbl = 0;
-    naam = STRDUP(nnaam);
-    if (naam == NULL) {
-        Fatal("Out of memory!"s);
-    }
-    id = STRDUP(nid);
-    if (id == NULL) {
-        Fatal("Out of memory!"s);
-    }
-    binding = idx;
-    next = p;
-    noffset = no;
-    global = ngl;
-}
-
-void CStructure::AddLabel(char *nnaam) {
-    CStructureEntry1 *n = new CStructureEntry1(nnaam, noffset);
-    if (!mnf) {
-        mnf = n;
-    }
-    if (mnl) {
-        mnl->next = n;
-    }
-    mnl = n;
-}
-
-void CStructure::AddMember(CStructureEntry2 *n) {
-    if (!mbf) {
-        mbf = n;
-    }
-    if (mbl) {
-        mbl->next = n;
-    }
-    mbl = n;
-    noffset += n->len;
-}
-
-void CStructure::CopyLabel(char *nnaam, aint offset) {
-    CStructureEntry1 *n = new CStructureEntry1(nnaam, noffset + offset);
-    if (!mnf) {
-        mnf = n;
-    }
-    if (mnl) {
-        mnl->next = n;
-    }
-    mnl = n;
-}
-
-void CStructure::CopyLabels(CStructure *st) {
-    char str[LINEMAX], str2[LINEMAX];
-    CStructureEntry1 *np = st->mnf;
-    if (!np || !PreviousIsLabel) {
+void CStructure::copyLabels(CStructure &St) {
+    if (St.Labels.empty() || PreviousIsLabel.empty())
         return;
-    }
-    str[0] = 0;
-    STRCAT(str, LINEMAX, PreviousIsLabel);
-    STRCAT(str, LINEMAX, ".");
-    while (np) {
-        STRCPY(str2, LINEMAX, str);
-        STRCAT(str2, LINEMAX, np->naam);
-        CopyLabel(str2, np->offset);
-        np = np->next;
-    }
+    Labels.insert(Labels.end(), St.Labels.begin(), St.Labels.end());
 }
 
-void CStructure::CopyMember(CStructureEntry2 *ni, aint ndef) {
-    CStructureEntry2 *n = new CStructureEntry2(noffset, ni->len, ndef, ni->type);
-    if (!mbf) {
-        mbf = n;
-    }
-    if (mbl) {
-        mbl->next = n;
-    }
-    mbl = n;
-    noffset += n->len;
+void CStructure::copyMember(CStructureEntry2 &Src, aint ndef) {
+    CStructureEntry2 M = {noffset, Src.len, ndef, Src.type};
+    addMember(M);
 }
 
-void CStructure::CopyMembers(CStructure *st, char *&lp) {
-    CStructureEntry2 *ip;
+void CStructure::copyMembers(CStructure &St, char *&lp) {
+//    CStructureEntry2 *ip;
     aint val;
-    int haakjes = 0;
-    ip = new CStructureEntry2(noffset, 0, 0, SMEMBPARENOPEN);
-    AddMember(ip);
+    int parentheses = 0;
+    CStructureEntry2 M1 = {noffset, 0, 0, SMEMBPARENOPEN};
+    addMember(M1);
     SkipBlanks(lp);
     if (*lp == '{') {
-        ++haakjes;
+        ++parentheses;
         ++lp;
     }
-    ip = st->mbf;
-    while (ip) {
-        switch (ip->type) {
+//    ip = St->mbf;
+    for (auto M : Members) {
+        switch (M.type) {
             case SMEMBBLOCK:
-                CopyMember(ip, ip->def);
+                copyMember(M, M.def);
                 break;
             case SMEMBBYTE:
             case SMEMBWORD:
@@ -456,23 +371,23 @@ void CStructure::CopyMembers(CStructure *st, char *&lp) {
             case SMEMBDWORD:
                 synerr = false;
                 if (!ParseExpression(lp, val)) {
-                    val = ip->def;
+                    val = M.def;
                 }
                 synerr = true;
-                CopyMember(ip, val);
+                copyMember(M, val);
                 comma(lp);
                 break;
             case SMEMBPARENOPEN:
                 SkipBlanks(lp);
                 if (*lp == '{') {
-                    ++haakjes;
+                    ++parentheses;
                     ++lp;
                 }
                 break;
             case SMEMBPARENCLOSE:
                 SkipBlanks(lp);
-                if (haakjes && *lp == '}') {
-                    --haakjes;
+                if (parentheses && *lp == '}') {
+                    --parentheses;
                     ++lp;
                     comma(lp);
                 }
@@ -480,22 +395,20 @@ void CStructure::CopyMembers(CStructure *st, char *&lp) {
             default:
                 Fatal("internalerror CStructure::CopyMembers"s);
         }
-        ip = ip->next;
     }
-    while (haakjes--) {
+    while (parentheses--) {
         if (!need(lp, '}')) {
             Error("closing } missing"s);
         }
     }
-    ip = new CStructureEntry2(noffset, 0, 0, SMEMBPARENCLOSE);
-    AddMember(ip);
+    CStructureEntry2 M2 = {noffset, 0, 0, SMEMBPARENCLOSE};
+    addMember(M2);
 }
 
 void CStructure::deflab() {
     std::string ln, sn, op;
     optional<std::string> p;
     aint oval;
-    CStructureEntry1 *np = mnf;
     sn = "@"s + id;
     op = sn;
     p = validateLabel(op);
@@ -513,8 +426,8 @@ void CStructure::deflab() {
         }
     }
     sn += "."s;
-    while (np) {
-        ln = sn + np->naam;
+    for (auto &L : Labels) {
+        ln = sn + L.naam;
         op = ln;
         if (!(p = validateLabel(ln))) {
             Error("Illegal labelname"s, ln, PASS1);
@@ -524,15 +437,14 @@ void CStructure::deflab() {
             if (!getLabelValue(t, oval)) {
                 Fatal("Internal error. ParseLabel()"s);
             }
-            if (np->offset != oval) {
+            if (L.offset != oval) {
                 Error("Label has different value in pass 2"s, TempLabel);
             }
         } else {
-            if (!LabelTable.insert(*p, np->offset)) {
+            if (!LabelTable.insert(*p, L.offset)) {
                 Error("Duplicate label"s, PASS1);
             }
         }
-        np = np->next;
     }
 }
 
@@ -540,7 +452,6 @@ void CStructure::emitlab(char *iid) {
     std::string ln, sn, op;
     optional<std::string> p;
     aint oval;
-    CStructureEntry1 *np = mnf;
     sn = iid;
     op = sn;
     p = validateLabel(op);
@@ -558,8 +469,8 @@ void CStructure::emitlab(char *iid) {
         }
     }
     sn += "."s;
-    while (np) {
-        ln = sn + np->naam;
+    for (auto &L : Labels) {
+        ln = sn + L.naam;
         op = ln;
         if (!(p = validateLabel(ln))) {
             Error("Illegal labelname"s, ln, PASS1);
@@ -569,22 +480,20 @@ void CStructure::emitlab(char *iid) {
             if (!getLabelValue(t, oval)) {
                 Fatal("Internal error. ParseLabel()"s);
             }
-            if (np->offset + Em.getCPUAddress() != oval) {
+            if (L.offset + Em.getCPUAddress() != oval) {
                 Error("Label has different value in pass 2"s, TempLabel);
             }
         } else {
-            if (!LabelTable.insert(*p, np->offset + Em.getCPUAddress())) {
+            if (!LabelTable.insert(*p, L.offset + Em.getCPUAddress())) {
                 Error("Duplicate label"s, PASS1);
             }
         }
-        np = np->next;
     }
 }
 
 void CStructure::emitmembs(char *&p) {
     int *e, et = 0, t;
     e = new int[noffset + 1];
-    CStructureEntry2 *ip = mbf;
     aint val;
     int haakjes = 0;
     SkipBlanks(p);
@@ -592,19 +501,19 @@ void CStructure::emitmembs(char *&p) {
         ++haakjes;
         ++p;
     }
-    while (ip) {
-        switch (ip->type) {
+    for (auto M : Members) {
+        switch (M.type) {
             case SMEMBBLOCK:
-                t = ip->len;
+                t = M.len;
                 while (t--) {
-                    e[et++] = ip->def;
+                    e[et++] = M.def;
                 }
                 break;
 
             case SMEMBBYTE:
                 synerr = false;
                 if (!ParseExpression(p, val)) {
-                    val = ip->def;
+                    val = M.def;
                 }
                 synerr = true;
                 e[et++] = val % 256;
@@ -614,7 +523,7 @@ void CStructure::emitmembs(char *&p) {
             case SMEMBWORD:
                 synerr = false;
                 if (!ParseExpression(p, val)) {
-                    val = ip->def;
+                    val = M.def;
                 }
                 synerr = true;
                 e[et++] = val % 256;
@@ -625,7 +534,7 @@ void CStructure::emitmembs(char *&p) {
             case SMEMBD24:
                 synerr = false;
                 if (!ParseExpression(p, val)) {
-                    val = ip->def;
+                    val = M.def;
                 }
                 synerr = true;
                 e[et++] = val % 256;
@@ -637,7 +546,7 @@ void CStructure::emitmembs(char *&p) {
             case SMEMBDWORD:
                 synerr = false;
                 if (!ParseExpression(p, val)) {
-                    val = ip->def;
+                    val = M.def;
                 }
                 synerr = true;
                 e[et++] = val % 256;
@@ -664,7 +573,6 @@ void CStructure::emitmembs(char *&p) {
             default:
                 Fatal("Internal Error CStructure::emitmembs"s);
         }
-        ip = ip->next;
     }
     while (haakjes--) {
         if (!need(p, '}')) {
@@ -680,74 +588,47 @@ void CStructure::emitmembs(char *&p) {
     delete[] e;
 }
 
-void CStructureTable::Init() {
-    for (int i = 0; i < 128; strs[i++] = 0) { ;
-    }
-}
+CStructure &CStructureTable::add(const std::string &Name, int Offset, int idx, int Global) {
+    std::string FullName;
 
-CStructure *CStructureTable::Add(const char *Name, int no, int idx, int gl) {
-    char sn[LINEMAX], *sp;
-    sn[0] = 0;
-    if (!gl && !Modules.IsEmpty()) {
-        STRCPY(sn, LINEMAX, Modules.GetPrefix().c_str());
+    if (!Global && !Modules.IsEmpty()) {
+        FullName = Modules.GetPrefix();
     }
-    //sp = STRCAT(sn, LINEMAX, naam); //mmmm
-    STRCAT(sn, LINEMAX, Name);
-    sp = sn;
-    if (FindDuplicate(sp)) {
+    FullName += Name;
+    if (Entries.find(FullName) != Entries.end()) {
         Error("Duplicate structure name"s, Name, PASS1);
     }
-    strs[*sp] = new CStructure(Name, sp, idx, 0, gl, strs[*sp]);
-    if (no) {
-        strs[*sp]->AddMember(new CStructureEntry2(0, no, 0, SMEMBBLOCK));
+    CStructure S = {Name, FullName, idx, 0, Global};
+    if (Offset) {
+        CStructureEntry2 M = {0, Offset, 0, SMEMBBLOCK};
+        S.addMember(M);
     }
-    return strs[*sp];
+    return Entries[FullName] = S;
 }
 
-CStructure *CStructureTable::zoek(const char *naam, int gl) {
-    const std::string &name = naam;
-    const std::string &fullName = gl ? name : name + Modules.GetPrefix();
-    CStructure *p = strs[fullName[0]];
-    while (p) {
-        if (fullName == p->id) {
-            return p;
-        }
-        p = p->next;
+std::map<std::string, CStructure>::iterator CStructureTable::find(const std::string &Name, int Global) {
+    const std::string &FullName = Global ? Name : Name + Modules.GetPrefix();
+    auto it = Entries.find(FullName);
+    if (it != Entries.end())
+        return it;
+    if (!Global && Name != FullName) {
+        it = Entries.find(Name);
     }
-    if (!gl && name != fullName) {
-        p = strs[name[0]];
-        while (p) {
-            if (name == p->id) {
-                return p;
-            }
-            p = p->next;
-        }
-    }
-    return 0;
+    return it;
 }
 
-int CStructureTable::FindDuplicate(char *naam) {
-    CStructure *p = strs[*naam];
-    while (p) {
-        if (!strcmp(naam, p->naam)) {
-            return 1;
-        }
-        p = p->next;
-    }
-    return 0;
-}
-
-int CStructureTable::Emit(const char *Name, char *l, char *&p, int gl) {
+bool CStructureTable::emit(const std::string &Name, char *l, char *&p, int Global) {
     //_COUT naam _ENDL; ExitASM(1);
-    CStructure *st = zoek(Name, gl);
-    if (!st) {
-        return 0;
+    auto it = find(Name, Global);
+    if (it == Entries.end()) {
+        return false;
     }
+    auto S = it->second;
     if (l) {
-        st->emitlab(l);
+        S.emitlab(l);
     }
-    st->emitmembs(p);
-    return 1;
+    S.emitmembs(p);
+    return true;
 }
 
 //eof tables.cpp

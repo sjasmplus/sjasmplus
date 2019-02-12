@@ -668,7 +668,7 @@ void ParseLabel() {
                 ++p;
                 gl = 1;
             }
-            if ((Name = getID(p)) && StructureTable.Emit((*Name).c_str(), tp, p, gl)) {
+            if ((Name = getID(p)) && StructureTable.emit((*Name).c_str(), tp, p, gl)) {
                 lp = p;
                 return;
             }
@@ -722,7 +722,7 @@ bool ParseMacro() {
         return false;
     }
     if (!(r = MacroTable.emit((*Name).c_str(), p))) {
-        if (StructureTable.Emit((*Name).c_str(), 0, p, gl)) {
+        if (StructureTable.emit((*Name).c_str(), 0, p, gl)) {
             lp = p;
             return true;
         }
@@ -842,40 +842,32 @@ void ParseLineSafe(bool parselabels) {
     lp = rp;
 }
 
-void ParseStructLabel(CStructure *st) {
-    char *tp, temp[LINEMAX];
-    PreviousIsLabel = 0;
+void ParseStructLabel(CStructure &St) {
+    std::string L;
+    PreviousIsLabel.clear();
     if (White()) {
         return;
     }
-    tp = temp;
     if (*lp == '.') {
         ++lp;
     }
     while (*lp && islabchar(*lp)) {
-        *tp = *lp;
-        ++tp;
+        L += *lp;
         ++lp;
     }
-    *tp = 0;
     if (*lp == ':') {
         ++lp;
     }
-    tp = temp;
     SkipBlanks();
-    if (isdigit((unsigned char) *tp)) {
+    if (isdigit(L[0])) {
         Error("[STRUCT] Number labels not allowed within structs"s);
         return;
     }
-    PreviousIsLabel = STRDUP(tp);
-    if (PreviousIsLabel == NULL) {
-        Fatal("Out of memory!"s);
-    }
-    st->AddLabel(tp);
+    PreviousIsLabel = L;
+    St.addLabel(L);
 }
 
-void ParseStructMember(CStructure *st) {
-    CStructureEntry2 *smp;
+void parseStructMember(CStructure &St) {
     aint val, len;
     bp = lp;
     switch (GetStructMemberId(lp)) {
@@ -893,70 +885,74 @@ void ParseStructMember(CStructure *st) {
                 val = 0;
             }
             check8(val);
-            smp = new CStructureEntry2(st->noffset, len, val & 255, SMEMBBLOCK);
-            st->AddMember(smp);
+            { CStructureEntry2 SMM = {St.noffset, len, val & 255, SMEMBBLOCK};
+            St.addMember(SMM); }
             break;
         case SMEMBBYTE:
             if (!ParseExpression(lp, val)) {
                 val = 0;
             }
             check8(val);
-            smp = new CStructureEntry2(st->noffset, 1, val, SMEMBBYTE);
-            st->AddMember(smp);
+            { CStructureEntry2 SMB = {St.noffset, 1, val, SMEMBBYTE};
+            St.addMember(SMB); }
             break;
         case SMEMBWORD:
             if (!ParseExpression(lp, val)) {
                 val = 0;
             }
             check16(val);
-            smp = new CStructureEntry2(st->noffset, 2, val, SMEMBWORD);
-            st->AddMember(smp);
+            { CStructureEntry2 SMW = {St.noffset, 2, val, SMEMBWORD};
+            St.addMember(SMW); }
             break;
         case SMEMBD24:
             if (!ParseExpression(lp, val)) {
                 val = 0;
             }
             check24(val);
-            smp = new CStructureEntry2(st->noffset, 3, val, SMEMBD24);
-            st->AddMember(smp);
+            { CStructureEntry2 SM24 = {St.noffset, 3, val, SMEMBD24};
+            St.addMember(SM24); }
             break;
         case SMEMBDWORD:
             if (!ParseExpression(lp, val)) {
                 val = 0;
             }
-            smp = new CStructureEntry2(st->noffset, 4, val, SMEMBDWORD);
-            st->AddMember(smp);
+            { CStructureEntry2 SMDW = {St.noffset, 4, val, SMEMBDWORD};
+            St.addMember(SMDW); }
             break;
         case SMEMBALIGN:
             if (!ParseExpression(lp, val)) {
                 val = 4;
             }
-            st->noffset += ((~st->noffset + 1) & (val - 1));
+            St.noffset += ((~St.noffset + 1) & (val - 1));
             break;
         default:
             char *pp = lp;
             optional<std::string> Name;
             int gl = 0;
-            CStructure *s;
             SkipBlanks(pp);
             if (*pp == '@') {
                 ++pp;
                 gl = 1;
             }
-            if ((Name = getID(pp)) && (s = StructureTable.zoek((*Name).c_str(), gl))) {
-                if (cmphstr(st->naam, (*Name).c_str())) {
-                    Error("[STRUCT] Use structure itself"s, CATCHALL);
-                    break;
+            if ((Name = getID(pp))) {
+                auto it = StructureTable.find(*Name, gl);
+                if (it != StructureTable.NotFound()) {
+                    CStructure &S = it->second;
+                    char *tmp = (char *) St.naam.c_str();
+                    if (cmphstr(tmp, (*Name).c_str())) {
+                        Error("[STRUCT] Use structure itself"s, CATCHALL);
+                        break;
+                    }
+                    lp = pp;
+                    St.copyLabels(S);
+                    St.copyMembers(S, lp);
                 }
-                lp = pp;
-                st->CopyLabels(s);
-                st->CopyMembers(s, lp);
             }
             break;
     }
 }
 
-void ParseStructLine(CStructure *st) {
+void ParseStructLine(CStructure &St) {
     replacedefineteller = comnxtlin = 0;
     lp = ReplaceDefine(line);
     if (comlin) {
@@ -967,11 +963,11 @@ void ParseStructLine(CStructure *st) {
     if (!*lp) {
         return;
     }
-    ParseStructLabel(st);
+    ParseStructLabel(St);
     if (SkipBlanks()) {
         return;
     }
-    ParseStructMember(st);
+    parseStructMember(St);
     if (SkipBlanks()) {
         return;
     }
