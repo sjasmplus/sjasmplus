@@ -1574,7 +1574,7 @@ void dirDISPLAY() {
 
 void dirMACRO() {
     //if (lijst) Error("No macro definitions allowed here",0,FATAL);
-    if (lijst) {
+    if (InMemSrcMode) {
         Fatal("[MACRO] No macro definitions allowed here"s);
     }
     optional<std::string> Name;
@@ -1583,7 +1583,7 @@ void dirMACRO() {
         Error("[MACRO] Illegal macroname"s, PASS1);
         return;
     }
-    MacroTable.Add((*Name).c_str(), lp);
+    MacroTable.add(*Name, lp);
 }
 
 void dirENDS() {

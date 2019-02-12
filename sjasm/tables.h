@@ -32,6 +32,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <list>
 
 using namespace std::string_literals;
 
@@ -44,7 +45,8 @@ using std::endl;
 #include "errors.h"
 
 extern int macronummer;
-extern int lijst, synerr;
+extern bool InMemSrcMode;
+extern bool synerr;
 
 enum EStructureMembers {
     SMEMBUNKNOWN, SMEMBALIGN, SMEMBBYTE, SMEMBWORD, SMEMBBLOCK, SMEMBDWORD, SMEMBD24, SMEMBPARENOPEN, SMEMBPARENCLOSE
@@ -91,20 +93,16 @@ public:
 
 class CMacroDefineTable {
 public:
-    void Init();
+    void init() {
+        Replacements.clear();
+    }
 
-    void AddMacro(char *, char *);
+    void addRepl(const std::string &, const std::string &);
 
-    CDefineTableEntry *getdefs();
-
-    void setdefs(CDefineTableEntry *);
-
-    char *getverv(const char *);
-
-    int FindDuplicate(char *);
+    std::string getRepl(const std::string &);
 
     CMacroDefineTable() {
-        Init();
+        init();
     }
 
 private:
@@ -123,39 +121,28 @@ private:
     char tempBuf[LABMAX];    // for 'arg_someLabel_arg_anotherLabel' expansion
     // --
 
-    int used[128];
-    CDefineTableEntry *defs;
+    std::map<std::string, std::string> Replacements;
 };
 
-class CMacroTableEntry {
-public:
-    char *naam;
-    CStringsList *args, *body;
-    CMacroTableEntry *next;
-
-    CMacroTableEntry(char *, CMacroTableEntry *);
-
-    ~CMacroTableEntry() { if (next)delete next; };
+struct CMacroTableEntry {
+    std::list<std::string> Args;
+    std::list<std::string> Body;
 };
 
 class CMacroTable {
 public:
-    void Add(const char *Name, char *&p);
+    void add(const std::string &Name, char *&p);
 
-    int Emit(const char *, char *&);
+    int emit(const std::string &, char *&);
 
-    int FindDuplicate(const char *Name);
-
-    void Init();
+    void init() { Entries.clear(); }
 
     CMacroTable() {
-        Init();
+        init();
     }
 
-    ~CMacroTable() { if (macs) delete macs; };
 private:
-    int used[128];
-    CMacroTableEntry *macs;
+    std::map<std::string, CMacroTableEntry> Entries;
 };
 
 class CStructureEntry1 {

@@ -29,7 +29,11 @@ extern aint MaxLineNumber;
 extern int ErrorCount, IncludeLevel;
 
 extern stack<RepeatInfo> RepeatStack;
-extern CStringsList *lijstp;
+
+extern std::list<std::string> *InMemSrc;
+extern std::list<std::string>::iterator InMemSrcIt;
+extern void setInMemSrc(std::list<std::string> *NewInMemSrc);
+
 extern CLabelTable LabelTable;
 extern CLocalLabelTable LocalLabelTable;
 extern std::map<std::string, std::string> DefineTable;

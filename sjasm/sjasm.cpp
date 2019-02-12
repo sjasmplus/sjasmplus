@@ -64,13 +64,13 @@ void InitPass(int p) {
     CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
     Listing.initPass();
     macronummer = 0;
-    lijst = 0;
+    InMemSrcMode = false;
     initParser();
     StructureTable.Init();
     DefineTable.clear();
     DefArrayTable.clear();
-    MacroTable.Init();
-    MacroDefineTable.Init();
+    MacroTable.init();
+    MacroDefineTable.init();
 
     // predefined
     DefineTable["_SJASMPLUS"s] = "1"s;
@@ -82,7 +82,7 @@ void InitPass(int p) {
 
 void FreeRAM() {
     delete Devices;
-    delete lijstp;
+    delete InMemSrc;
 }
 
 /* added */

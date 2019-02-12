@@ -532,9 +532,8 @@ char *ReplaceDefine(char *lp, char *dest) {
         if (it != DefineTable.end()) {
             Repl = it->second;
         } else {
-            const char *tmp = MacroDefineTable.getverv((*Id).c_str());
-            Repl = tmp ? tmp : ""s;
-            if (!macrolabp || !tmp) {
+            Repl = MacroDefineTable.getRepl(*Id);
+            if (MacroLab.empty() || Repl.empty()) {
                 dr = 0;
                 Repl = (*Id);
             }
@@ -722,7 +721,7 @@ bool ParseMacro() {
     if (!(Name = getID(p))) {
         return false;
     }
-    if (!(r = MacroTable.Emit((*Name).c_str(), p))) {
+    if (!(r = MacroTable.emit((*Name).c_str(), p))) {
         if (StructureTable.Emit((*Name).c_str(), 0, p, gl)) {
             lp = p;
             return true;

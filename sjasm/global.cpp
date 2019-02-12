@@ -19,7 +19,16 @@ aint MaxLineNumber = 0;
 int ErrorCount = 0, IncludeLevel = -1;
 
 stack<RepeatInfo> RepeatStack; /* added */
-CStringsList *lijstp = 0;
+
+std::list<std::string> *InMemSrc = 0;
+std::list<std::string>::iterator InMemSrcIt;
+
+void setInMemSrc(std::list<std::string> *NewInMemSrc) {
+    InMemSrc = NewInMemSrc;
+    InMemSrcIt = InMemSrc->begin();
+    InMemSrcMode = true;
+}
+
 CLabelTable LabelTable;
 CLocalLabelTable LocalLabelTable;
 std::map<std::string, std::string> DefineTable;

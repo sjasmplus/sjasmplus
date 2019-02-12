@@ -242,23 +242,23 @@ char *PreviousIsLabel;
 
 
 std::string LastLabel;
-char *macrolabp = NULL;
+std::string MacroLab;
 std::string LastParsedLabel;
 
 void initLabels() {
     LastParsedLabel.clear();
     LastLabel = "_"s;
-    macrolabp = NULL;
+    MacroLab.clear();
 }
 
 optional<std::string> validateLabel(const std::string &Name) {
     std::string LName = Name; // Label name without @ or . prefix
-    char *mlp = macrolabp;
+    std::string ML = MacroLab;
     bool AsIsLabel = false;
     bool DotLabel = false;
-    if (mlp && LName[0] == '@') {
+    if (!ML.empty() && LName[0] == '@') {
         LName = LName.substr(1);
-        mlp = 0;
+        ML.clear();
     }
     switch (LName[0]) {
         case '@':
@@ -284,8 +284,8 @@ optional<std::string> validateLabel(const std::string &Name) {
         }
     }
     std::string RetValue;
-    if (mlp && DotLabel) {
-        RetValue = macrolabp + ">"s;
+    if (!ML.empty() && DotLabel) {
+        RetValue = MacroLab + ">"s;
     } else {
         if (!AsIsLabel && !Modules.IsEmpty()) {
             RetValue = Modules.GetPrefix();
@@ -302,16 +302,16 @@ optional<std::string> validateLabel(const std::string &Name) {
 }
 
 bool getLabelValue(char *&p, aint &val) {
-    char *mlp = macrolabp, *op = p;
+    std::string ML = MacroLab;
+    char *op = p;
     bool AsIsLabel = false;
     bool DotLabel = false;
     int oIsLabelNotFound = IsLabelNotFound;
-    size_t len;
-    if (mlp && *p == '@') {
+    if (!ML.empty() && *p == '@') {
         ++op;
-        mlp = nullptr;
+        ML.clear();
     }
-    if (mlp) {
+    if (!ML.empty()) {
         switch (*p) {
             case '@':
                 AsIsLabel = 1;
@@ -326,8 +326,7 @@ bool getLabelValue(char *&p, aint &val) {
         }
         TempLabel.clear();
         if (DotLabel) {
-            TempLabel += macrolabp + ">"s;
-            len = TempLabel.size();
+            TempLabel += MacroLab + ">"s;
             if (!isalpha((unsigned char) *p) && *p != '_') {
                 Error("Invalid labelname"s, TempLabel);
                 return false;
@@ -383,7 +382,7 @@ bool getLabelValue(char *&p, aint &val) {
     if (DotLabel) {
         TempLabel += LastLabel + ".";
     }
-    len = TempLabel.size();
+    size_t len = TempLabel.size();
     if (!isalpha((unsigned char) *p) && *p != '_') {
         Error("Invalid labelname"s, TempLabel);
         return false;

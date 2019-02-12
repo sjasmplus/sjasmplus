@@ -638,14 +638,14 @@ EReturn ReadFile(const char *pp, const char *err) {
         if (!SourceReaderEnabled) {
             return END;
         }
-        if (lijst) {
-            if (!lijstp) {
+        if (InMemSrcMode) {
+            if (InMemSrcIt == InMemSrc->end()) {
                 return END;
             }
             //p = STRCPY(line, LINEMAX, lijstp->string); //mmm
-            STRCPY(line, LINEMAX, lijstp->string);
+            STRCPY(line, LINEMAX, (*InMemSrcIt).c_str());
             p = line;
-            lijstp = lijstp->next;
+            ++InMemSrcIt;
         } else {
             readBufLine(false);
             p = line;
@@ -690,14 +690,14 @@ EReturn SkipFile(const char *pp, const char *err) {
         if (!SourceReaderEnabled) {
             return END;
         }
-        if (lijst) {
-            if (!lijstp) {
+        if (InMemSrcMode) {
+            if (InMemSrcIt == InMemSrc->end()) {
                 return END;
             }
             //p = STRCPY(line, LINEMAX, lijstp->string); //mmm
-            STRCPY(line, LINEMAX, lijstp->string);
+            STRCPY(line, LINEMAX, (*InMemSrcIt).c_str());
             p = line;
-            lijstp = lijstp->next;
+            ++InMemSrcIt;
         } else {
             readBufLine(false);
             p = line;
@@ -757,13 +757,13 @@ int ReadLine(bool SplitByColon) {
     return res;
 }
 
-int ReadFileToCStringsList(CStringsList *&f, const char *end) {
-    CStringsList *s, *l = NULL;
+bool readFileToListOfStrings(std::list<std::string> &List, const std::string &EndMarker) {
+//    CStringsList *s, *l = NULL;
     char *p;
-    f = NULL;
+    List.clear();
     while (ReadLineBuf.left() > 0 || !pIFS->eof()) {
         if (!SourceReaderEnabled) {
-            return 0;
+            return false;
         }
         readBufLine(false);
         p = line;
@@ -773,19 +773,12 @@ int ReadFileToCStringsList(CStringsList *&f, const char *end) {
             if (*p == '.') {
                 ++p;
             }
-            if (cmphstr(p, end)) {
+            if (cmphstr(p, EndMarker.c_str())) {
                 lp = ReplaceDefine(p);
-                return 1;
+                return true;
             }
         }
-        s = new CStringsList(line, NULL);
-        if (!f) {
-            f = s;
-        }
-        if (l) {
-            l->next = s;
-        }
-        l = s;
+        List.emplace_back(line);
         Listing.listFileSkip(line);
     }
     Fatal("Unexpected end of file"s);

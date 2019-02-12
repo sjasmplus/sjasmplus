@@ -41,7 +41,8 @@ using boost::algorithm::to_upper_copy;
 #include "tables.h"
 
 int macronummer = 0;
-int lijst = 0, synerr = 1;
+bool InMemSrcMode = false;
+bool synerr;
 
 bool FunctionTable::insert(const std::string &Name, void(*FuncPtr)()) {
     std::string uName = to_upper_copy(Name);
@@ -111,75 +112,49 @@ CDefineTableEntry::CDefineTableEntry(const char *nname, const char *nvalue, CStr
     nss = nnss;
 }
 
-void CMacroDefineTable::Init() {
-    defs = NULL;
-    for (int i = 0; i < 128; used[i++] = 0) { ;
-    }
+void CMacroDefineTable::addRepl(const std::string &Name, const std::string &Replacement) {
+    Replacements[Name] = Replacement;
 }
 
-void CMacroDefineTable::AddMacro(char *naam, char *vervanger) {
-    defs = new CDefineTableEntry(naam, vervanger, 0, defs);
-    // By Antipod: http://zx.pk.ru/showpost.php?p=159487&postcount=264
-    if (!strcmp(naam, "_aFunc")) {
-        defs = defs;
-    }
-    // --
-    used[*naam] = 1;
-}
-
-CDefineTableEntry *CMacroDefineTable::getdefs() {
-    return defs;
-}
-
-void CMacroDefineTable::setdefs(CDefineTableEntry *ndefs) {
-    defs = ndefs;
-}
-
-char *CMacroDefineTable::getverv(const char *Name) {
-    CDefineTableEntry *p = defs;
-    if (!used[*Name] && *Name != KDelimiter) {
-        return NULL;
+std::string CMacroDefineTable::getRepl(const std::string &Name) {
+//    CDefineTableEntry *p = defs;
+    auto it = Replacements.find(Name);
+    if (it == Replacements.end() && Name[0] != KDelimiter) {
+        return ""s;
     }// std check
-    while (p) {
-        if (!strcmp(Name, p->name)) {
-            return p->value;// full match
-        }
-        p = p->next;
-    }
+    if (it != Replacements.end()) // full match
+        return it->second;
     // extended check for '_'
     // By Antipod: http://zx.pk.ru/showpost.php?p=159487&postcount=264
     char **array = NULL;
     int count = 0;
     int positions[KTotalJoinedParams + 1];
-    SplitToArray(Name, array, count, positions);
+    SplitToArray(Name.c_str(), array, count, positions);
 
-    int tempBufPos = 0;
+    std::string RetVal;
     bool replaced = false;
     for (int i = 0; i < count; i++) {
-        p = defs;
 
         if (*array[i] != KDelimiter) {
             bool found = false;
-            while (p) {
-                if (!strcmp(array[i], p->name)) {
+            for (auto &item : Replacements) {
+                if (!strcmp(array[i], item.first.c_str())) {
                     replaced = found = true;
-                    tempBufPos = Copy(tempBuf, tempBufPos, p->value, 0, strlen(p->value));
+                    RetVal += item.second;
                     break;
                 }
-                p = p->next;
             }
             if (!found) {
-                tempBufPos = Copy(tempBuf, tempBufPos, array[i], 0, strlen(array[i]));
+                RetVal += array[i];
             }
         } else {
-            tempBuf[tempBufPos++] = KDelimiter;
-            tempBuf[tempBufPos] = 0;
+            RetVal += (char) KDelimiter;
         }
     }
 
     FreeArray(array, count);
 
-    return replaced ? tempBuf : NULL;
+    return replaced ? RetVal : ""s;
     // --
 }
 
@@ -246,21 +221,7 @@ void CMacroDefineTable::FreeArray(char **aArray, int aCount) {
     }
     delete[] aArray;
 }
-// --
 
-int CMacroDefineTable::FindDuplicate(char *name) {
-    CDefineTableEntry *p = defs;
-    if (!used[*name]) {
-        return 0;
-    }
-    while (p) {
-        if (!strcmp(name, p->name)) {
-            return 1;
-        }
-        p = p->next;
-    }
-    return 0;
-}
 
 CStringsList::CStringsList(const char *nstring, CStringsList *nnext) {
     string = STRDUP(nstring);
@@ -270,62 +231,20 @@ CStringsList::CStringsList(const char *nstring, CStringsList *nnext) {
     next = nnext;
 }
 
-CMacroTableEntry::CMacroTableEntry(char *nnaam, CMacroTableEntry *nnext) {
-    naam = nnaam;
-    next = nnext;
-    args = body = NULL;
-}
-
-void CMacroTable::Init() {
-    macs = NULL;
-    for (int i = 0; i < 128; used[i++] = 0) { ;
-    }
-}
-
-int CMacroTable::FindDuplicate(const char *Name) {
-    CMacroTableEntry *p = macs;
-    if (!used[*Name]) {
-        return 0;
-    }
-    while (p) {
-        if (!strcmp(Name, p->naam)) {
-            return 1;
-        }
-        p = p->next;
-    }
-    return 0;
-}
-
-/* modified */
-void CMacroTable::Add(const char *Name, char *&p) {
-    optional<std::string> N;
-    CStringsList *s, *l = NULL, *f = NULL;
-    /*if (FindDuplicate(nnaam)) Error("Duplicate macroname",0,PASS1);*/
-    if (FindDuplicate(Name)) {
+void CMacroTable::add(const std::string &Name, char *&p) {
+    optional<std::string> ArgName;
+    if (Entries.find(Name) != Entries.end()) {
         Error("Duplicate macroname"s, PASS1);
         return;
     }
-    char *macroname;
-    macroname = STRDUP(Name); /* added */
-    if (macroname == NULL) {
-        Fatal("Out of memory!"s);
-    }
-    macs = new CMacroTableEntry(macroname/*nnaam*/, macs);
-    used[*macroname/*nnaam*/] = 1;
+    CMacroTableEntry M;
     SkipBlanks(p);
     while (*p) {
-        if (!(N = getID(p))) {
+        if (!(ArgName = getID(p))) {
             Error("Illegal macro argument"s, p, PASS1);
             break;
         }
-        s = new CStringsList((*N).c_str(), NULL);
-        if (!f) {
-            f = s;
-        }
-        if (l) {
-            l->next = s;
-        }
-        l = s;
+        M.Args.emplace_back(*ArgName);
         SkipBlanks(p);
         if (*p == ',') {
             ++p;
@@ -333,76 +252,43 @@ void CMacroTable::Add(const char *Name, char *&p) {
             break;
         }
     }
-    macs->args = f;
     if (*p/* && *p!=':'*/) {
         Error("Unexpected"s, p, PASS1);
     }
     Listing.listFile();
-    if (!ReadFileToCStringsList(macs->body, "endm")) {
+    if (!readFileToListOfStrings(M.Body, "endm"s)) {
         Error("Unexpected end of macro"s, PASS1);
     }
+    Entries[Name] = M;
 }
 
-int CMacroTable::Emit(const char *Name, char *&p) {
-    CStringsList *a, *olijstp;
-    char *n, labnr[LINEMAX], ml[LINEMAX], *omacrolabp;
-    CMacroTableEntry *m = macs;
-    CDefineTableEntry *odefs;
+int CMacroTable::emit(const std::string &Name, char *&p) {
     bool olistmacro;
-    int olijst;
-    if (!used[*Name]) {
+
+    auto it = Entries.find(Name);
+    if (it == Entries.end()) {
         return 0;
     }
-    while (m) {
-        if (!strcmp(Name, m->naam)) {
-            break;
-        }
-        m = m->next;
-    }
-    if (!m) {
-        return 0;
-    }
-    omacrolabp = macrolabp;
-    SPRINTF1(labnr, LINEMAX, "%d", macronummer++);
-    macrolabp = labnr;
-    if (omacrolabp) {
-        STRCAT(macrolabp, LINEMAX, ".");
-        STRCAT(macrolabp, LINEMAX, omacrolabp);
+    CMacroTableEntry &M = it->second;
+
+    std::string OMacroLab = MacroLab;
+    std::string LabNr = std::to_string(macronummer++);
+    MacroLab = LabNr;
+    if (!OMacroLab.empty()) {
+        MacroLab += "."s + OMacroLab;
     } else {
-        MacroDefineTable.Init();
+        MacroDefineTable.init();
     }
-    odefs = MacroDefineTable.getdefs();
-    //*lp=0; /* added */
-    a = m->args;
-    /* old:
-    while (a) {
-      n=ml;
-      SkipBlanks(p);
-      if (!*p) { Error("Not enough arguments",0); return 1; }
-      if (*p=='<') {
-        ++p;
-        while (*p!='>') {
-          if (!*p) { Error("Not enough arguments",0); return 1; }
-          if (*p=='!') {
-            ++p; if (!*p) { Error("Not enough arguments",0); return 1; }
-          }
-          *n=*p; ++n; ++p;
-        }
-        ++p;
-      } else while (*p!=',' && *p) { *n=*p; ++n; ++p; }
-      *n=0; MacroDefineTable.AddMacro(a->string,ml);
-      SkipBlanks(p); a=a->next; if (a && *p!=',') { Error("Not enough arguments",0); return 1; }
-      if (*p==',') ++p;
-    }
-    SkipBlanks(p); if (*p) Error("Too many arguments",0);
-    */
-    /* (begin new) */
-    while (a) {
-        n = ml;
+    auto ODefs = MacroDefineTable;
+    std::string Repl;
+    size_t ArgsLeft = M.Args.size();
+    for (auto &Arg : M.Args) {
+        ArgsLeft--;
+        Repl.clear();
         SkipBlanks(p);
         if (!*p) {
             Error("Not enough arguments for macro"s, Name);
-            macrolabp = 0;
+            MacroLab.clear();
             return 1;
         }
         if (*p == '<') {
@@ -410,36 +296,32 @@ int CMacroTable::Emit(const char *Name, char *&p) {
             while (*p != '>') {
                 if (!*p) {
                     Error("Not enough arguments for macro"s, Name);
-                    macrolabp = 0;
+                    MacroLab.clear();
                     return 1;
                 }
                 if (*p == '!') {
                     ++p;
                     if (!*p) {
                         Error("Not enough arguments for macro"s, Name);
-                        macrolabp = 0;
+                        MacroLab.clear();
                         return 1;
                     }
                 }
-                *n = *p;
-                ++n;
+                Repl += *p;
                 ++p;
             }
             ++p;
         } else {
             while (*p && *p != ',') {
-                *n = *p;
-                ++n;
+                Repl += *p;
                 ++p;
             }
         }
-        *n = 0;
-        MacroDefineTable.AddMacro(a->string, ml);
+        MacroDefineTable.addRepl(Arg, Repl);
         SkipBlanks(p);
-        a = a->next;
-        if (a && *p != ',') {
+        if (ArgsLeft > 0 && *p != ',') {
             Error("Not enough arguments for macro"s, Name);
-            macrolabp = 0;
+            MacroLab.clear();
             return 1;
         }
         if (*p == ',') {
@@ -455,23 +337,28 @@ int CMacroTable::Emit(const char *Name, char *&p) {
     Listing.listFile();
     olistmacro = listmacro;
     listmacro = true;
-    olijstp = lijstp;
-    olijst = lijst;
-    lijstp = m->body;
-    lijst = 1;
-    STRCPY(ml, LINEMAX, line);
-    while (lijstp) {
-        STRCPY(line, LINEMAX, lijstp->string);
+
+    auto OInMemSrc = InMemSrc;
+    auto OInMemSrcIt = InMemSrcIt;
+    auto OInMemSrcMode = InMemSrcMode;
+
+    setInMemSrc(&M.Body);
+    std::string tmp = line;
+    while (InMemSrcIt != InMemSrc->end()) {
+        STRCPY(line, LINEMAX, (*InMemSrcIt).c_str());
         //_COUT ">>" _CMDL line _ENDL;
-        lijstp = lijstp->next;
+        ++InMemSrcIt;
         /* ParseLine(); */
         ParseLineSafe();
     }
-    STRCPY(line, LINEMAX, ml);
-    lijst = olijst;
-    lijstp = olijstp;
-    MacroDefineTable.setdefs(odefs);
-    macrolabp = omacrolabp;
+    STRCPY(line, LINEMAX, tmp.c_str());
+
+    InMemSrc = OInMemSrc;
+    InMemSrcIt = OInMemSrcIt;
+    InMemSrcMode = OInMemSrcMode;
+
+    MacroDefineTable = ODefs;
+    MacroLab = OMacroLab;
     /*listmacro=olistmacro; donotlist=1; return 0;*/
     listmacro = olistmacro;
     donotlist = true;
@@ -595,11 +482,11 @@ void CStructure::CopyMembers(CStructure *st, char *&lp) {
             case SMEMBWORD:
             case SMEMBD24:
             case SMEMBDWORD:
-                synerr = 0;
+                synerr = false;
                 if (!ParseExpression(lp, val)) {
                     val = ip->def;
                 }
-                synerr = 1;
+                synerr = true;
                 CopyMember(ip, val);
                 comma(lp);
                 break;
@@ -743,32 +630,32 @@ void CStructure::emitmembs(char *&p) {
                 break;
 
             case SMEMBBYTE:
-                synerr = 0;
+                synerr = false;
                 if (!ParseExpression(p, val)) {
                     val = ip->def;
                 }
-                synerr = 1;
+                synerr = true;
                 e[et++] = val % 256;
                 check8(val);
                 comma(p);
                 break;
             case SMEMBWORD:
-                synerr = 0;
+                synerr = false;
                 if (!ParseExpression(p, val)) {
                     val = ip->def;
                 }
-                synerr = 1;
+                synerr = true;
                 e[et++] = val % 256;
                 e[et++] = (val >> 8) % 256;
                 check16(val);
                 comma(p);
                 break;
             case SMEMBD24:
-                synerr = 0;
+                synerr = false;
                 if (!ParseExpression(p, val)) {
                     val = ip->def;
                 }
-                synerr = 1;
+                synerr = true;
                 e[et++] = val % 256;
                 e[et++] = (val >> 8) % 256;
                 e[et++] = (val >> 16) % 256;
@@ -776,11 +663,11 @@ void CStructure::emitmembs(char *&p) {
                 comma(p);
                 break;
             case SMEMBDWORD:
-                synerr = 0;
+                synerr = false;
                 if (!ParseExpression(p, val)) {
                     val = ip->def;
                 }
-                synerr = 1;
+                synerr = true;
                 e[et++] = val % 256;
                 e[et++] = (val >> 8) % 256;
                 e[et++] = (val >> 16) % 256;

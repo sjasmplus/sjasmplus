@@ -75,7 +75,7 @@ EReturn SkipFile();
 
 EReturn SkipFile(const char *pp, const char *err); /* added */
 
-int ReadFileToCStringsList(CStringsList *&f, const char *end);
+bool readFileToListOfStrings(std::list<std::string> &List, const std::string &EndMarker);
 
 void writeExport(const std::string &Name, aint Value);
 
