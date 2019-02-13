@@ -409,7 +409,7 @@ void CStructure::deflab() {
     std::string ln, sn, op;
     optional<std::string> p;
     aint oval;
-    sn = "@"s + id;
+    sn = "@"s + FullName;
     op = sn;
     p = validateLabel(op);
     if (pass == LASTPASS) {
@@ -427,7 +427,7 @@ void CStructure::deflab() {
     }
     sn += "."s;
     for (auto &L : Labels) {
-        ln = sn + L.naam;
+        ln = sn + L.Name;
         op = ln;
         if (!(p = validateLabel(ln))) {
             Error("Illegal labelname"s, ln, PASS1);
@@ -470,7 +470,7 @@ void CStructure::emitlab(char *iid) {
     }
     sn += "."s;
     for (auto &L : Labels) {
-        ln = sn + L.naam;
+        ln = sn + L.Name;
         op = ln;
         if (!(p = validateLabel(ln))) {
             Error("Illegal labelname"s, ln, PASS1);

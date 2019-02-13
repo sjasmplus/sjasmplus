@@ -938,7 +938,7 @@ void parseStructMember(CStructure &St) {
                 auto it = StructureTable.find(*Name, gl);
                 if (it != StructureTable.NotFound()) {
                     CStructure &S = it->second;
-                    char *tmp = (char *) St.naam.c_str();
+                    char *tmp = (char *) St.Name.c_str();
                     if (cmphstr(tmp, (*Name).c_str())) {
                         Error("[STRUCT] Use structure itself"s, CATCHALL);
                         break;

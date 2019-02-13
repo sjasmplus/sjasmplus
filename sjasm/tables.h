@@ -135,10 +135,10 @@ private:
 
 class CStructureEntry1 {
 public:
-    std::string naam;
+    std::string Name;
     aint offset;
 
-    CStructureEntry1(const std::string &Name, aint noffset) : naam(Name), offset(noffset) {}
+    CStructureEntry1(const std::string &Name, aint noffset) : Name(Name), offset(noffset) {}
 
 };
 
@@ -154,7 +154,7 @@ public:
 
 class CStructure {
 public:
-    std::string naam, id;
+    std::string Name, FullName;
     int binding;
     aint noffset;
     int global;
@@ -180,12 +180,12 @@ public:
 
     void emitmembs(char *&p);
 
-    CStructure() : naam(""s), id(""s) {
+    CStructure() : Name(""s), FullName(""s) {
         binding = noffset = global = 0;
     }
 
     CStructure(const std::string &Name, const std::string &FullName, int idx, int no, int ngl) :
-            naam(Name), id(FullName), binding(idx), noffset(no), global(ngl) {}
+            Name(Name), FullName(FullName), binding(idx), noffset(no), global(ngl) {}
 
 private:
     std::list<CStructureEntry1> Labels;
