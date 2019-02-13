@@ -758,11 +758,7 @@ void ParseLine(bool parselabels) {
         RepeatInfo &dup = RepeatStack.top();
         if (!dup.Complete) {
             lp = line;
-            CStringsList *f;
-            f = new CStringsList(lp, nullptr);
-            dup.Pointer->next = f;
-            dup.Pointer = f;
-            dup.lp = lp;
+            dup.Lines.emplace_back(lp);
             ParseDirective_REPT();
             return;
         }

@@ -1759,9 +1759,7 @@ void dirDUP() {
     dup.RepeatCount = val;
     dup.Level = 0;
 
-    dup.Lines = new CStringsList(lp, nullptr);
-    dup.Pointer = dup.Lines;
-    dup.lp = lp; //чтобы брать код перед EDUP
+    dup.Lines = {lp};
     dup.CurrentGlobalLine = CurrentGlobalLine;
     dup.CurrentLocalLine = CurrentLocalLine;
     dup.Complete = false;
@@ -1784,13 +1782,8 @@ void dirEDUP() {
     char *ml;
     RepeatInfo &dup = RepeatStack.top();
     dup.Complete = true;
-    dup.Pointer->string = new char[LINEMAX];
-    if (dup.Pointer->string == NULL) {
-        Fatal("[EDUP/ENDR] Out of memory!"s);
-    }
-    *dup.Pointer->string = 0;
-    STRNCAT(dup.Pointer->string, LINEMAX, dup.lp, lp - dup.lp - 4); //чтобы взять код перед EDUP/ENDR/ENDM
-    CStringsList *s;
+    const std::string &S = dup.Lines.back();
+    dup.Lines.back() = S.substr(0, S.size() - 4); // Cut out EDUP/ENDR/ENDM at the end
     olistmacro = listmacro;
     listmacro = true;
     ml = STRDUP(line);
@@ -1802,10 +1795,8 @@ void dirEDUP() {
     while (dup.RepeatCount--) {
         CurrentGlobalLine = dup.CurrentGlobalLine;
         CurrentLocalLine = dup.CurrentLocalLine;
-        s = dup.Lines;
-        while (s) {
-            STRCPY(line, LINEMAX, s->string);
-            s = s->next;
+        for (auto &L : dup.Lines) {
+            STRCPY(line, LINEMAX, L.c_str());
             ParseLineSafe();
             CurrentLocalLine++;
             CurrentGlobalLine++;

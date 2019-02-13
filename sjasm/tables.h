@@ -66,22 +66,6 @@ private:
     std::map<std::string, void (*)(void)> Map;
 };
 
-class CStringsList {
-public:
-    char *string;
-    CStringsList *next;
-
-    CStringsList() {
-        next = 0;
-    }
-
-    ~CStringsList() {
-        if (next) delete next;
-    }
-
-    CStringsList(const char *, CStringsList *);
-};
-
 class CMacroDefineTable {
 public:
     void init() {
@@ -218,12 +202,9 @@ struct RepeatInfo {
     int RepeatCount;
     long CurrentGlobalLine;
     long CurrentLocalLine;
-    long CurrentLine;
-    CStringsList *Lines;
-    CStringsList *Pointer;
+    std::list<std::string> Lines;
     bool Complete;
     int Level;
-    char *lp;
 };
 
 #endif //SJASMPLUS_TABLES_H

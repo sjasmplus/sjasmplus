@@ -758,7 +758,6 @@ int ReadLine(bool SplitByColon) {
 }
 
 bool readFileToListOfStrings(std::list<std::string> &List, const std::string &EndMarker) {
-//    CStringsList *s, *l = NULL;
     char *p;
     List.clear();
     while (ReadLineBuf.left() > 0 || !pIFS->eof()) {

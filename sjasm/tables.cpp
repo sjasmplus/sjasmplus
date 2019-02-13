@@ -195,14 +195,6 @@ void CMacroDefineTable::FreeArray(char **aArray, int aCount) {
 }
 
 
-CStringsList::CStringsList(const char *nstring, CStringsList *nnext) {
-    string = STRDUP(nstring);
-    //if (string == NULL) {
-    //	Error("No enough memory!", 0, FATAL);
-    //}
-    next = nnext;
-}
-
 void CMacroTable::add(const std::string &Name, char *&p) {
     optional<std::string> ArgName;
     if (Entries.find(Name) != Entries.end()) {
