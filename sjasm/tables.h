@@ -74,7 +74,7 @@ public:
 
     void addRepl(const std::string &, const std::string &);
 
-    std::string getRepl(const std::string &);
+    std::string getReplacement(const std::string &Name);
 
     CMacroDefineTable() {
         init();
@@ -120,19 +120,19 @@ private:
 class CStructureEntry1 {
 public:
     std::string Name;
-    aint offset;
+    aint Offset;
 
-    CStructureEntry1(const std::string &Name, aint noffset) : Name(Name), offset(noffset) {}
+    CStructureEntry1(std::string _Name, aint _Offset) : Name(std::move(_Name)), Offset(_Offset) {}
 
 };
 
 class CStructureEntry2 {
 public:
-    aint offset, len, def;
-    EStructureMembers type;
+    aint Offset, Len, Def;
+    EStructureMembers Type;
 
-    CStructureEntry2(aint noffset, aint nlen, aint ndef, EStructureMembers ntype) :
-            offset(noffset), len(nlen), def(ndef), type(ntype) {}
+    CStructureEntry2(aint _Offset, aint _Len, aint _Def, EStructureMembers _Type) :
+            Offset(_Offset), Len(_Len), Def(_Def), Type(_Type) {}
 
 };
 
@@ -149,7 +149,7 @@ public:
 
     void addMember(CStructureEntry2 &E) {
         Members.emplace_back(E);
-        noffset += E.len;
+        noffset += E.Len;
     }
 
     void copyLabels(CStructure &St);

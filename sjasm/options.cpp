@@ -72,7 +72,7 @@ namespace Options {
             const std::string option(argv[i][1] == '-' ? argv[i++] + 2 : argv[i++] + 1);
             const std::string::size_type eqPos = option.find("=");
             const std::string &optName = option.substr(0, eqPos);
-            const std::string &optValue = eqPos != std::string::npos ? option.substr(eqPos + 1) : std::string();
+            const std::string &optValue = eqPos != std::string::npos ? option.substr(eqPos + 1) : ""s;
 
             if (optName == HELP) {
                 //TODO: fix behaviour

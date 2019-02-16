@@ -1607,7 +1607,7 @@ void dirASSERT() {
 
 void dirSHELLEXEC() {
     const std::string &command = GetString(lp);
-    const std::string &parameters = comma(lp) ? GetString(lp) : std::string();
+    const std::string &parameters = comma(lp) ? GetString(lp) : ""s;
     if (pass == LASTPASS) {
         const std::string log = command + ' ' + parameters;
         _COUT "Executing " _CMDL log _ENDL;
@@ -1875,7 +1875,7 @@ void dirDEFARRAY() {
             }
         }
         *n = 0;
-        Arr.emplace_back(std::string(ml));
+        Arr.emplace_back(std::string{ml});
         SkipBlanks(lp);
         if (*lp == ',') {
             ++lp;
@@ -1889,7 +1889,7 @@ void dirDEFARRAY() {
 void _lua_showerror() {
     int ln;
 
-    std::string LuaErr = std::string(lua_tostring(LUA, -1));
+    std::string LuaErr = std::string{lua_tostring(LUA, -1)};
     LuaErr = LuaErr.substr(18);
     ln = std::stoi(LuaErr.substr(0, LuaErr.find(":"s))) + LuaLine;
 

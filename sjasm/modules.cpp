@@ -43,6 +43,6 @@ bool ModulesList::IsEmpty() const {
 
 std::string ModulesList::GetPrefix() const {
     return Names.empty()
-           ? std::string()
+           ? std::string{}
            : Names.top() + '.';
 }

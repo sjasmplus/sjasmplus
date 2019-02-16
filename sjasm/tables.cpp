@@ -89,7 +89,7 @@ void CMacroDefineTable::addRepl(const std::string &Name, const std::string &Repl
     Replacements[Name] = Replacement;
 }
 
-std::string CMacroDefineTable::getRepl(const std::string &Name) {
+std::string CMacroDefineTable::getReplacement(const std::string &Name) {
     auto it = Replacements.find(Name);
     if (it == Replacements.end() && Name[0] != KDelimiter) {
         return ""s;
@@ -336,7 +336,7 @@ void CStructure::copyLabels(CStructure &St) {
 }
 
 void CStructure::copyMember(CStructureEntry2 &Src, aint ndef) {
-    CStructureEntry2 M = {noffset, Src.len, ndef, Src.type};
+    CStructureEntry2 M = {noffset, Src.Len, ndef, Src.Type};
     addMember(M);
 }
 
@@ -353,9 +353,9 @@ void CStructure::copyMembers(CStructure &St, char *&lp) {
     }
 //    ip = St->mbf;
     for (auto M : Members) {
-        switch (M.type) {
+        switch (M.Type) {
             case SMEMBBLOCK:
-                copyMember(M, M.def);
+                copyMember(M, M.Def);
                 break;
             case SMEMBBYTE:
             case SMEMBWORD:
@@ -363,7 +363,7 @@ void CStructure::copyMembers(CStructure &St, char *&lp) {
             case SMEMBDWORD:
                 synerr = false;
                 if (!ParseExpression(lp, val)) {
-                    val = M.def;
+                    val = M.Def;
                 }
                 synerr = true;
                 copyMember(M, val);
@@ -429,11 +429,11 @@ void CStructure::deflab() {
             if (!getLabelValue(t, oval)) {
                 Fatal("Internal error. ParseLabel()"s);
             }
-            if (L.offset != oval) {
+            if (L.Offset != oval) {
                 Error("Label has different value in pass 2"s, TempLabel);
             }
         } else {
-            if (!LabelTable.insert(*p, L.offset)) {
+            if (!LabelTable.insert(*p, L.Offset)) {
                 Error("Duplicate label"s, PASS1);
             }
         }
@@ -472,11 +472,11 @@ void CStructure::emitlab(char *iid) {
             if (!getLabelValue(t, oval)) {
                 Fatal("Internal error. ParseLabel()"s);
             }
-            if (L.offset + Em.getCPUAddress() != oval) {
+            if (L.Offset + Em.getCPUAddress() != oval) {
                 Error("Label has different value in pass 2"s, TempLabel);
             }
         } else {
-            if (!LabelTable.insert(*p, L.offset + Em.getCPUAddress())) {
+            if (!LabelTable.insert(*p, L.Offset + Em.getCPUAddress())) {
                 Error("Duplicate label"s, PASS1);
             }
         }
@@ -494,18 +494,18 @@ void CStructure::emitmembs(char *&p) {
         ++p;
     }
     for (auto M : Members) {
-        switch (M.type) {
+        switch (M.Type) {
             case SMEMBBLOCK:
-                t = M.len;
+                t = M.Len;
                 while (t--) {
-                    e[et++] = M.def;
+                    e[et++] = M.Def;
                 }
                 break;
 
             case SMEMBBYTE:
                 synerr = false;
                 if (!ParseExpression(p, val)) {
-                    val = M.def;
+                    val = M.Def;
                 }
                 synerr = true;
                 e[et++] = val % 256;
@@ -515,7 +515,7 @@ void CStructure::emitmembs(char *&p) {
             case SMEMBWORD:
                 synerr = false;
                 if (!ParseExpression(p, val)) {
-                    val = M.def;
+                    val = M.Def;
                 }
                 synerr = true;
                 e[et++] = val % 256;
@@ -526,7 +526,7 @@ void CStructure::emitmembs(char *&p) {
             case SMEMBD24:
                 synerr = false;
                 if (!ParseExpression(p, val)) {
-                    val = M.def;
+                    val = M.Def;
                 }
                 synerr = true;
                 e[et++] = val % 256;
@@ -538,7 +538,7 @@ void CStructure::emitmembs(char *&p) {
             case SMEMBDWORD:
                 synerr = false;
                 if (!ParseExpression(p, val)) {
-                    val = M.def;
+                    val = M.Def;
                 }
                 synerr = true;
                 e[et++] = val % 256;

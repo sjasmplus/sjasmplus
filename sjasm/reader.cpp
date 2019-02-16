@@ -679,7 +679,7 @@ int GetBytes(char *&p, int e[], int add, int dc) {
 std::string GetString(char *&p) {
     SkipBlanks(p);
     if (!*p) {
-        return std::string();
+        return std::string{};
     }
     char limiter = '\0';
 
@@ -696,7 +696,7 @@ std::string GetString(char *&p) {
         result += *p++;
     }
     if (*p != limiter) {
-        Error((std::string("No closing '") + limiter + "'").c_str(), 0);
+        Error("No closing '"s + std::string{limiter} + "'"s, 0);
     }
     if (*p) {
         ++p;
