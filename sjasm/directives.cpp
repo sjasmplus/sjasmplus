@@ -1830,9 +1830,7 @@ void dirENDM() {
 }
 
 void dirDEFARRAY() {
-    char *n;
     optional<std::string> Id;
-    char ml[LINEMAX];
 
     if (!(Id = getID(lp))) {
         Error("[DEFARRAY] Syntax error"s);
@@ -1845,8 +1843,9 @@ void dirDEFARRAY() {
     }
 
     std::vector<std::string> Arr;
+    std::string Val;
     while (*lp) {
-        n = ml;
+        Val.clear();
         SkipBlanks(lp);
         if (*lp == '<') {
             ++lp;
@@ -1862,20 +1861,17 @@ void dirDEFARRAY() {
                         return;
                     }
                 }
-                *n = *lp;
-                ++n;
+                Val += *lp;
                 ++lp;
             }
             ++lp;
         } else {
             while (*lp && *lp != ',') {
-                *n = *lp;
-                ++n;
+                Val += *lp;
                 ++lp;
             }
         }
-        *n = 0;
-        Arr.emplace_back(std::string{ml});
+        Arr.emplace_back(Val);
         SkipBlanks(lp);
         if (*lp == ',') {
             ++lp;

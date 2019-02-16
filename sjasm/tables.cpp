@@ -440,7 +440,7 @@ void CStructure::deflab() {
     }
 }
 
-void CStructure::emitlab(char *iid) {
+void CStructure::emitlab(const std::string &iid) {
     std::string ln, sn, op;
     optional<std::string> p;
     aint oval;
@@ -609,15 +609,15 @@ std::map<std::string, CStructure>::iterator CStructureTable::find(const std::str
     return it;
 }
 
-bool CStructureTable::emit(const std::string &Name, char *l, char *&p, int Global) {
+bool CStructureTable::emit(const std::string &Name, const std::string &FullName, char *&p, int Global) {
     //_COUT naam _ENDL; ExitASM(1);
     auto it = find(Name, Global);
     if (it == Entries.end()) {
         return false;
     }
     auto S = it->second;
-    if (l) {
-        S.emitlab(l);
+    if (!FullName.empty()) {
+        S.emitlab(FullName);
     }
     S.emitmembs(p);
     return true;

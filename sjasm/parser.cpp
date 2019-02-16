@@ -606,7 +606,7 @@ char *ReplaceDefine(char *lp, char *dest) {
 }
 
 void ParseLabel() {
-    char *tp, temp[LINEMAX];
+    std::string LUnparsed;
     aint val;
     if (White()) {
         return;
@@ -617,25 +617,21 @@ void ParseLabel() {
         }
         return;
     }
-    tp = temp;
     while (*lp && !White() && *lp != ':' && *lp != '=') {
-        *tp = *lp;
-        ++tp;
+        LUnparsed += *lp;
         ++lp;
     }
-    *tp = 0;
     if (*lp == ':') {
         ++lp;
     }
-    tp = temp;
     SkipBlanks();
     IsLabelNotFound = 0;
-    if (isdigit((unsigned char) *tp)) {
+    if (isdigit((unsigned char) LUnparsed[0])) {
         if (NeedEQU() || NeedDEFL()) {
             Error("Number labels only allowed as address labels"s);
             return;
         }
-        val = atoi(tp);
+        val = atoi(LUnparsed.c_str());
         //_COUT CurrentLine _CMDL " " _CMDL val _CMDL " " _CMDL CurAddress _ENDL;
         if (pass == 1) {
             LocalLabelTable.Insert(val, Em.getCPUAddress());
@@ -668,13 +664,12 @@ void ParseLabel() {
                 ++p;
                 gl = 1;
             }
-            if ((Name = getID(p)) && StructureTable.emit((*Name).c_str(), tp, p, gl)) {
+            if ((Name = getID(p)) && StructureTable.emit(*Name, LUnparsed, p, gl)) {
                 lp = p;
                 return;
             }
             val = Em.getCPUAddress();
         }
-        std::string LUnparsed = tp;
         optional<std::string> L;
         if (!(L = validateLabel(LUnparsed))) {
             return;
@@ -722,7 +717,7 @@ bool ParseMacro() {
         return false;
     }
     if (!(r = MacroTable.emit(*Name, p))) {
-        if (StructureTable.emit(*Name, nullptr, p, gl)) {
+        if (StructureTable.emit(*Name, ""s, p, gl)) {
             lp = p;
             return true;
         }

@@ -160,7 +160,7 @@ public:
 
     void deflab();
 
-    void emitlab(char *iid);
+    void emitlab(const std::string &iid);
 
     void emitmembs(char *&p);
 
@@ -190,7 +190,7 @@ public:
 
     std::map<std::string, CStructure>::iterator find(const std::string &Name, int Global);
 
-    bool emit(const std::string &Name, char *l, char *&p, int Global);
+    bool emit(const std::string &Name, std::string const &FullName, char *&p, int Global);
 
     std::map<std::string, CStructure>::iterator NotFound() { return Entries.end(); }
 

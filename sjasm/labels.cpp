@@ -409,9 +409,9 @@ bool getLabelValue(char *&p, aint &val) {
 bool GetLocalLabelValue(char *&op, aint &val) {
     aint nval = 0;
     int nummer = 0;
-    char *p = op, naam[LINEMAX], *np, ch;
+    char *p = op, ch;
+    std::string Name;
     SkipBlanks(p);
-    np = naam;
     if (!isdigit((unsigned char) *p)) {
         return false;
     }
@@ -419,12 +419,10 @@ bool GetLocalLabelValue(char *&op, aint &val) {
         if (!isdigit((unsigned char) *p)) {
             break;
         }
-        *np = *p;
+        Name += *p;
         ++p;
-        ++np;
     }
-    *np = 0;
-    nummer = atoi(naam);
+    nummer = atoi(Name.c_str());
     ch = *p++;
     if (isalnum((unsigned char) *p)) {
         return false;
@@ -443,7 +441,7 @@ bool GetLocalLabelValue(char *&op, aint &val) {
     }
     if (nval == (aint) -1) {
         if (pass == LASTPASS) {
-            Error("Local label not found"s, naam, SUPPRESS);
+            Error("Local label not found"s, Name, SUPPRESS);
             return true;
         } else {
             nval = 0;
