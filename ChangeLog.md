@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - RST 10h calls in 128K .sna snapshots
 - Writing to address 0xFFFF was broken
 - ORG was broken if DISP was active
+- No more "Forward reference" error messages
 
 ## 2017-03-11
 - Version 20170311
