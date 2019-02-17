@@ -12,7 +12,8 @@ namespace global {
     extern fs::path OutputDirectory;
 }
 
-extern char *lp, line[LINEMAX], *bp;
+extern const char *lp, *bp;
+extern char line[LINEMAX];
 
 enum EEncoding {
     ENCDOS, ENCWIN

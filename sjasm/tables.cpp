@@ -195,7 +195,7 @@ void CMacroDefineTable::FreeArray(char **aArray, int aCount) {
 }
 
 
-void CMacroTable::add(const std::string &Name, char *&p) {
+void CMacroTable::add(const std::string &Name, const char *&p) {
     optional<std::string> ArgName;
     if (Entries.find(Name) != Entries.end()) {
         Error("Duplicate macroname"s, PASS1);
@@ -226,7 +226,7 @@ void CMacroTable::add(const std::string &Name, char *&p) {
     Entries[Name] = M;
 }
 
-int CMacroTable::emit(const std::string &Name, char *&p) {
+int CMacroTable::emit(const std::string &Name, const char *&p) {
     bool olistmacro;
 
     auto it = Entries.find(Name);
@@ -340,7 +340,7 @@ void CStructure::copyMember(CStructureEntry2 &Src, aint ndef) {
     addMember(M);
 }
 
-void CStructure::copyMembers(CStructure &St, char *&lp) {
+void CStructure::copyMembers(CStructure &St, const char *&lp) {
 //    CStructureEntry2 *ip;
     aint val;
     int parentheses = 0;
@@ -405,7 +405,7 @@ void CStructure::deflab() {
     op = sn;
     p = validateLabel(op);
     if (pass == LASTPASS) {
-        char *t = (char *) op.c_str();
+        const char *t = op.c_str();
         if (!getLabelValue(t, oval)) {
             Fatal("Internal error. ParseLabel()"s);
         }
@@ -425,7 +425,7 @@ void CStructure::deflab() {
             Error("Illegal labelname"s, ln, PASS1);
         }
         if (pass == LASTPASS) {
-            char *t = (char *) op.c_str();
+            const char *t = op.c_str();
             if (!getLabelValue(t, oval)) {
                 Fatal("Internal error. ParseLabel()"s);
             }
@@ -448,7 +448,7 @@ void CStructure::emitlab(const std::string &iid) {
     op = sn;
     p = validateLabel(op);
     if (pass == LASTPASS) {
-        char *t = (char *) op.c_str();
+        const char *t = op.c_str();
         if (!getLabelValue(t, oval)) {
             Fatal("Internal error. ParseLabel()"s);
         }
@@ -468,7 +468,7 @@ void CStructure::emitlab(const std::string &iid) {
             Error("Illegal labelname"s, ln, PASS1);
         }
         if (pass == LASTPASS) {
-            char *t = (char *) op.c_str();
+            const char *t = op.c_str();
             if (!getLabelValue(t, oval)) {
                 Fatal("Internal error. ParseLabel()"s);
             }
@@ -483,7 +483,7 @@ void CStructure::emitlab(const std::string &iid) {
     }
 }
 
-void CStructure::emitmembs(char *&p) {
+void CStructure::emitmembs(const char *&p) {
     int *e, et = 0, t;
     e = new int[noffset + 1];
     aint val;
@@ -609,7 +609,7 @@ std::map<std::string, CStructure>::iterator CStructureTable::find(const std::str
     return it;
 }
 
-bool CStructureTable::emit(const std::string &Name, const std::string &FullName, char *&p, int Global) {
+bool CStructureTable::emit(const std::string &Name, const std::string &FullName, const char *&p, int Global) {
     //_COUT naam _ENDL; ExitASM(1);
     auto it = find(Name, Global);
     if (it == Entries.end()) {

@@ -48,7 +48,7 @@ void initParser() {
     comlin = 0;
 }
 
-bool ParseExpPrim(char *&p, aint &nval) {
+bool ParseExpPrim(const char *&p, aint &nval) {
     bool res = false;
     SkipBlanks(p);
     if (!*p) {
@@ -109,7 +109,7 @@ bool ParseExpPrim(char *&p, aint &nval) {
     return res;
 }
 
-bool ParseExpUnair(char *&p, aint &nval) {
+bool ParseExpUnair(const char *&p, aint &nval) {
     int oper;
     if ((oper = need(p, "! ~ + - ")) || (oper = needa(p, "not", '!', "low", 'l', "high", 'h'))) {
         aint right;
@@ -160,7 +160,7 @@ bool ParseExpUnair(char *&p, aint &nval) {
     }
 }
 
-bool ParseExpMul(char *&p, aint &nval) {
+bool ParseExpMul(const char *&p, aint &nval) {
     aint left, right;
     int oper;
     if (!ParseExpUnair(p, left)) {
@@ -199,7 +199,7 @@ bool ParseExpMul(char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpAdd(char *&p, aint &nval) {
+bool ParseExpAdd(const char *&p, aint &nval) {
     aint left, right;
     int oper;
     if (!ParseExpMul(p, left)) {
@@ -225,7 +225,7 @@ bool ParseExpAdd(char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpShift(char *&p, aint &nval) {
+bool ParseExpShift(const char *&p, aint &nval) {
     aint left, right;
     unsigned long l;
     int oper;
@@ -262,7 +262,7 @@ bool ParseExpShift(char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpMinMax(char *&p, aint &nval) {
+bool ParseExpMinMax(const char *&p, aint &nval) {
     aint left, right;
     int oper;
     if (!ParseExpShift(p, left)) {
@@ -288,7 +288,7 @@ bool ParseExpMinMax(char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpCmp(char *&p, aint &nval) {
+bool ParseExpCmp(const char *&p, aint &nval) {
     aint left, right;
     int oper;
     if (!ParseExpMinMax(p, left)) {
@@ -320,7 +320,7 @@ bool ParseExpCmp(char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpEqu(char *&p, aint &nval) {
+bool ParseExpEqu(const char *&p, aint &nval) {
     aint left, right;
     int oper;
     if (!ParseExpCmp(p, left)) {
@@ -347,7 +347,7 @@ bool ParseExpEqu(char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpBitAnd(char *&p, aint &nval) {
+bool ParseExpBitAnd(const char *&p, aint &nval) {
     aint left, right;
     if (!ParseExpEqu(p, left)) {
         return false;
@@ -362,7 +362,7 @@ bool ParseExpBitAnd(char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpBitXor(char *&p, aint &nval) {
+bool ParseExpBitXor(const char *&p, aint &nval) {
     aint left, right;
     if (!ParseExpBitAnd(p, left)) {
         return false;
@@ -377,7 +377,7 @@ bool ParseExpBitXor(char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpBitOr(char *&p, aint &nval) {
+bool ParseExpBitOr(const char *&p, aint &nval) {
     aint left, right;
     if (!ParseExpBitXor(p, left)) {
         return false;
@@ -392,7 +392,7 @@ bool ParseExpBitOr(char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpLogAnd(char *&p, aint &nval) {
+bool ParseExpLogAnd(const char *&p, aint &nval) {
     aint left, right;
     if (!ParseExpBitOr(p, left)) {
         return false;
@@ -407,7 +407,7 @@ bool ParseExpLogAnd(char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpLogOr(char *&p, aint &nval) {
+bool ParseExpLogOr(const char *&p, aint &nval) {
     aint left, right;
     if (!ParseExpLogAnd(p, left)) {
         return false;
@@ -422,7 +422,7 @@ bool ParseExpLogOr(char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpression(char *&p, aint &nval) {
+bool ParseExpression(const char *&p, aint &nval) {
     if (ParseExpLogOr(p, nval)) {
         return true;
     }
@@ -430,10 +430,11 @@ bool ParseExpression(char *&p, aint &nval) {
     return false;
 }
 
-char *ReplaceDefine(char *lp, char *dest) {
+char *ReplaceDefine(const char *lp, char *dest) {
     int definegereplaced = 0, dr;
     char *nl = dest;
-    char *rp = nl, *kp, a;
+    char *rp = nl, a;
+    const char *kp;
     optional<std::string> Id;
     std::string Repl;
     if (++replacedefineteller > 20) {
@@ -657,7 +658,7 @@ void ParseLabel() {
             IsDEFL = 1;
         } else {
             int gl = 0;
-            char *p = lp;
+            const char *p = lp;
             optional<std::string> Name;
             SkipBlanks(p);
             if (*p == '@') {
@@ -665,7 +666,7 @@ void ParseLabel() {
                 gl = 1;
             }
             if ((Name = getID(p)) && StructureTable.emit(*Name, LUnparsed, p, gl)) {
-                lp = p;
+                lp = (char *) p;
                 return;
             }
             val = Em.getCPUAddress();
@@ -683,7 +684,7 @@ void ParseLabel() {
                 Error("Duplicate label"s, *L, PASS3);
             }
             aint oval;
-            char *t = (char *) LUnparsed.c_str();
+            const char *t = LUnparsed.c_str();
             if (!getLabelValue(t, oval)) {
                 Fatal("Internal error. ParseLabel()"s);
             }
@@ -706,7 +707,7 @@ void ParseLabel() {
 
 bool ParseMacro() {
     int gl = 0, r;
-    char *p = lp;
+    const char *p = lp;
     optional<std::string> Name;
     SkipBlanks(p);
     if (*p == '@') {
@@ -718,7 +719,7 @@ bool ParseMacro() {
     }
     if (!(r = MacroTable.emit(*Name, p))) {
         if (StructureTable.emit(*Name, ""s, p, gl)) {
-            lp = p;
+            lp = (char *) p;
             return true;
         }
     } else if (r == 2) { // Success
@@ -802,7 +803,7 @@ void ParseLine(bool parselabels) {
 
 void ParseLineSafe(bool parselabels) {
     char *tmp = NULL, *tmp2 = NULL;
-    char *rp = lp;
+    const char *rp = lp;
     if (sline[0] > 0) {
         tmp = STRDUP(sline);
         if (tmp == NULL) {
@@ -917,7 +918,7 @@ void parseStructMember(CStructure &St) {
             St.noffset += ((~St.noffset + 1) & (val - 1));
             break;
         default:
-            char *pp = lp;
+            const char *pp = lp;
             optional<std::string> Name;
             int gl = 0;
             SkipBlanks(pp);
@@ -929,12 +930,12 @@ void parseStructMember(CStructure &St) {
                 auto it = StructureTable.find(*Name, gl);
                 if (it != StructureTable.NotFound()) {
                     CStructure &S = it->second;
-                    char *tmp = (char *) St.Name.c_str();
+                    const char *tmp = St.Name.c_str();
                     if (cmphstr(tmp, (*Name).c_str())) {
                         Error("[STRUCT] Use structure itself"s, CATCHALL);
                         break;
                     }
-                    lp = pp;
+                    lp = (char *) pp;
                     St.copyLabels(S);
                     St.copyMembers(S, lp);
                 }
@@ -967,7 +968,7 @@ void ParseStructLine(CStructure &St) {
     }
 }
 
-unsigned long LuaCalculate(char *str) {
+unsigned long LuaCalculate(const char *str) {
     aint val;
     if (!ParseExpression(str, val)) {
         return 0;

@@ -301,9 +301,9 @@ optional<std::string> validateLabel(const std::string &Name) {
     else return boost::none;
 }
 
-bool getLabelValue(char *&p, aint &val) {
+bool getLabelValue(const char *&p, aint &val) {
     std::string ML = MacroLab;
-    char *op = p;
+    const char *op = p;
     bool AsIsLabel = false;
     bool DotLabel = false;
     int oIsLabelNotFound = IsLabelNotFound;
@@ -406,10 +406,11 @@ bool getLabelValue(char *&p, aint &val) {
     return true;
 }
 
-bool GetLocalLabelValue(char *&op, aint &val) {
+bool GetLocalLabelValue(const char *&op, aint &val) {
     aint nval = 0;
     int nummer = 0;
-    char *p = op, ch;
+    const char *p = op;
+    char ch;
     std::string Name;
     SkipBlanks(p);
     if (!isdigit((unsigned char) *p)) {

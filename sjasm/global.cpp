@@ -6,7 +6,8 @@ namespace global {
     fs::path OutputDirectory;
 }
 
-char *lp, line[LINEMAX], *bp;
+const char *lp, *bp;
+char line[LINEMAX];
 
 int ConvertEncoding = ENCWIN;
 

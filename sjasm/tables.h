@@ -103,9 +103,9 @@ struct CMacroTableEntry {
 
 class CMacroTable {
 public:
-    void add(const std::string &Name, char *&p);
+    void add(const std::string &Name, const char *&p);
 
-    int emit(const std::string &Name, char *&p);
+    int emit(const std::string &Name, const char *&p);
 
     void init() { Entries.clear(); }
 
@@ -156,13 +156,13 @@ public:
 
     void copyMember(CStructureEntry2 &Src, aint ndef);
 
-    void copyMembers(CStructure &St, char *&lp);
+    void copyMembers(CStructure &St, const char *&lp);
 
     void deflab();
 
     void emitlab(const std::string &iid);
 
-    void emitmembs(char *&p);
+    void emitmembs(const char *&p);
 
     CStructure() : Name(""s), FullName(""s) {
         binding = noffset = global = 0;
@@ -190,7 +190,7 @@ public:
 
     std::map<std::string, CStructure>::iterator find(const std::string &Name, int Global);
 
-    bool emit(const std::string &Name, std::string const &FullName, char *&p, int Global);
+    bool emit(const std::string &Name, std::string const &FullName, const char *&p, int Global);
 
     std::map<std::string, CStructure>::iterator NotFound() { return Entries.end(); }
 

@@ -35,21 +35,21 @@ extern char sline[LINEMAX2], sline2[LINEMAX2];
 
 void initParser();
 
-bool ParseExpression(char *&lp, aint &val);
+bool ParseExpression(const char *&p, aint &nval);
 
 bool ParseDirective(bool bol = false);
 
 bool ParseDirective_REPT();
 
 void ParseInstruction(); /* added */
-char *ReplaceDefine(char *lp, char *dest = sline);
+char *ReplaceDefine(const char *lp, char *dest = sline);
 void ParseLine(bool = true);
 
 void ParseLineSafe(bool = true);
 
 void ParseStructLine(CStructure &St);
 
-unsigned long LuaCalculate(char *str);
+unsigned long LuaCalculate(const char *str);
 
 void LuaParseLine(char *str);
 

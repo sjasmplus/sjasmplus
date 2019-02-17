@@ -30,7 +30,7 @@
 #include "parser.h"
 #include "reader.h"
 
-bool cmphstr(char *&p1, const char *p2) {
+bool cmphstr(const char *&p1, const char *p2) {
     /* old:
     if (isupper(*p1))
       while (p2[i]) {
@@ -91,7 +91,7 @@ bool White() {
     return White(*lp);
 }
 
-void SkipBlanks(char *&p) {
+void SkipBlanks(const char *&p) {
     while ((*p > 0) && (*p <= ' ')) {
         ++p;
     }
@@ -103,7 +103,7 @@ bool SkipBlanks() {
 }
 
 /* added */
-void SkipParam(char *&p) {
+void SkipParam(const char *&p) {
     SkipBlanks(p);
     if (!(*p)) {
         return;
@@ -114,7 +114,7 @@ void SkipParam(char *&p) {
 }
 
 bool NeedEQU() {
-    char *olp = lp;
+    const char *olp = lp;
     SkipBlanks();
     /*if (*lp=='=') { ++lp; return 1; }*/
     /* cut: if (*lp=='=') { ++lp; return 1; } */
@@ -130,7 +130,7 @@ bool NeedEQU() {
 
 /* added */
 bool NeedDEFL() {
-    char *olp = lp;
+    const char *olp = lp;
     SkipBlanks();
     if (*lp == '=') {
         ++lp;
@@ -146,7 +146,7 @@ bool NeedDEFL() {
     return false;
 }
 
-bool comma(char *&p) {
+bool comma(const char *&p) {
     SkipBlanks(p);
     if (*p != ',') {
         return false;
@@ -158,7 +158,7 @@ bool comma(char *&p) {
 int cpc = '4';
 
 /* not modified */
-bool oparen(char *&p, char c) {
+bool oparen(const char *&p, char c) {
     SkipBlanks(p);
     if (*p != c) {
         return false;
@@ -176,7 +176,7 @@ bool oparen(char *&p, char c) {
     return true;
 }
 
-bool cparen(char *&p) {
+bool cparen(const char *&p) {
     SkipBlanks(p);
     if (*p != cpc) {
         return false;
@@ -185,7 +185,7 @@ bool cparen(char *&p) {
     return true;
 }
 
-char *getparen(char *p) {
+const char * getparen(const char *p) {
     int teller = 0;
     SkipBlanks(p);
     while (*p) {
@@ -204,7 +204,7 @@ char *getparen(char *p) {
     return nullptr;
 }
 
-optional<std::string> getID(char *&p) {
+optional<std::string> getID(const char *&p) {
     std::string S;
     SkipBlanks(p);
     //if (!isalpha(*p) && *p!='_') return 0;
@@ -225,7 +225,7 @@ optional<std::string> getID(char *&p) {
 
 char instrtemp[LINEMAX]; /* added */
 /* modified */
-char *getinstr(char *&p) {
+char *getinstr(const char *&p) {
     /*char nid[LINEMAX],*/ char *np;
     np = instrtemp;
     SkipBlanks(p);
@@ -285,7 +285,7 @@ bool check24(aint val, bool error) {
     return true;
 }
 
-bool need(char *&p, char c) {
+bool need(const char *&p, char c) {
     SkipBlanks(p);
     if (*p != c) {
         return false;
@@ -294,7 +294,7 @@ bool need(char *&p, char c) {
     return true;
 }
 
-int needa(char *&p, const char *c1, int r1, const char *c2, int r2, const char *c3, int r3) {
+int needa(const char *&p, const char *c1, int r1, const char *c2, int r2, const char *c3, int r3) {
     //  SkipBlanks(p);
     if (!isalpha((unsigned char) *p)) {
         return 0;
@@ -311,7 +311,7 @@ int needa(char *&p, const char *c1, int r1, const char *c2, int r2, const char *
     return 0;
 }
 
-int need(char *&p, const char *c) {
+int need(const char *&p, const char *c) {
     SkipBlanks(p);
     while (*c) {
         if (*p != *c) {
@@ -360,9 +360,9 @@ int getval(int p) {
     }
 }
 
-bool GetConstant(char *&op, aint &val) {
+bool GetConstant(const char *&op, aint &val) {
     aint base, pb = 1, v, oval;
-    char *p = op, *p2, *p3;
+    const char *p = op, *p2, *p3;
 
     SkipBlanks(p);
 
@@ -500,7 +500,7 @@ bool GetConstant(char *&op, aint &val) {
     }
 }
 
-bool GetCharConstChar(char *&op, aint &val) {
+bool GetCharConstChar(const char *&op, aint &val) {
     if ((val = *op++) != '\\') {
         return true;
     }
@@ -558,7 +558,7 @@ bool GetCharConstChar(char *&op, aint &val) {
 }
 
 /* added */
-bool GetCharConstCharSingle(char *&op, aint &val) {
+bool GetCharConstCharSingle(const char *&op, aint &val) {
     if ((val = *op++) != '\\') {
         return true;
     }
@@ -571,10 +571,11 @@ bool GetCharConstCharSingle(char *&op, aint &val) {
     return true;
 }
 
-bool GetCharConst(char *&p, aint &val) {
+bool GetCharConst(const char *&p, aint &val) {
     aint s = 24, r, t = 0;
     val = 0;
-    char *op = p, q;
+    const char *op = p;
+    char q;
     if (*p != '\'' && *p != '"') {
         return false;
     }
@@ -598,7 +599,7 @@ bool GetCharConst(char *&p, aint &val) {
 }
 
 /* modified */
-int GetBytes(char *&p, int e[], int add, int dc) {
+int GetBytes(const char *&p, int *e, int add, int dc) {
     aint val;
     int t = 0;
     while (true) {
@@ -676,7 +677,7 @@ int GetBytes(char *&p, int e[], int add, int dc) {
     return t;
 }
 
-std::string GetString(char *&p) {
+std::string GetString(const char *&p) {
     SkipBlanks(p);
     if (!*p) {
         return std::string{};
@@ -704,17 +705,17 @@ std::string GetString(char *&p) {
     return result;
 }
 
-fs::path GetFileName(char *&p) {
+fs::path GetFileName(const char *&p) {
     const std::string &result = GetString(p);
     return fs::path(result);
 }
 
-HobetaFilename GetHobetaFileName(char *&p) {
+HobetaFilename GetHobetaFileName(const char *&p) {
     const std::string &result = GetString(p);
     return HobetaFilename(result);
 }
 
-bool needcomma(char *&p) {
+bool needcomma(const char *&p) {
     SkipBlanks(p);
     if (*p != ',') {
         Error("Comma expected"s);
@@ -722,7 +723,7 @@ bool needcomma(char *&p) {
     return (*(p++) == ',');
 }
 
-bool needbparen(char *&p) {
+bool needbparen(const char *&p) {
     SkipBlanks(p);
     if (*p != ']') {
         Error("']' expected"s);
@@ -737,7 +738,7 @@ bool islabchar(char p) {
     return false;
 }
 
-EStructureMembers GetStructMemberId(char *&p) {
+EStructureMembers GetStructMemberId(const char *&p) {
     if (*p == '#') {
         ++p;
         if (*p == '#') {
@@ -827,7 +828,7 @@ EStructureMembers GetStructMemberId(char *&p) {
 }
 
 /* added */
-int GetArray(char *&p, int e[], int add, int dc) {
+int GetArray(const char *&p, int *e, int add, int dc) {
     aint val;
     int t = 0;
     while (true) {
@@ -901,6 +902,14 @@ int GetArray(char *&p, int e[], int add, int dc) {
     }
     e[t] = -1;
     return t;
+}
+
+const std::string getAll(const char *&p) {
+    const char *r = p;
+    while ((*p > 0)) {
+        ++p;
+    }
+    return r;
 }
 
 //eof reader.cpp

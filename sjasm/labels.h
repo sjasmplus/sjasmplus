@@ -109,9 +109,9 @@ optional<std::string> validateLabel(const std::string &Name);
 
 extern std::string PreviousIsLabel;
 
-bool getLabelValue(char *&p, aint &val);
+bool getLabelValue(const char *&p, aint &val);
 
-bool GetLocalLabelValue(char *&op, aint &val);
+bool GetLocalLabelValue(const char *&op, aint &val);
 
 class CLocalLabelTableEntry {
 public:

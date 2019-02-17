@@ -59,8 +59,8 @@ FunctionTable DirectivesTable;
 FunctionTable DirectivesTable_dup;
 
 bool ParseDirective(bool bol) {
-    char *olp = lp;
-    char *n;
+    const char *olp = lp;
+    const char *n;
     bp = lp;
     if (!(n = getinstr(lp))) {
         lp = olp;
@@ -129,7 +129,7 @@ bool ParseDirective(bool bol) {
 }
 
 bool ParseDirective_REPT() {
-    char *olp = lp;
+    const char *olp = lp;
     char *n;
     bp = lp;
     if (!(n = getinstr(lp))) {
@@ -486,7 +486,7 @@ void dirENDMODULE() {
 
 // Do not process beyond the END directive
 void dirEND() {
-    char *p = lp;
+    const char *p = lp;
     aint val;
     if (ParseExpression(lp, val)) {
         if (val > 65535 || val < 0) {
@@ -1227,7 +1227,7 @@ void dirOUTPUT() {
 
     auto Mode = OutputMode::Truncate;
     if (comma(lp)) {
-        char ModeChar = (*lp) | 0x20;
+        char ModeChar = (*lp) | (char) 0x20;
         lp++;
         if (ModeChar == 't') {
             Mode = OutputMode::Truncate;
@@ -1260,9 +1260,7 @@ void dirDEFINE() {
     if (DefineTable.find(*Id) != DefineTable.end()) {
         Error("Duplicate define"s, *Id);
     }
-    DefineTable[*Id] = lp;
-
-    *(lp) = 0;
+    DefineTable[*Id] = getAll(lp);
 }
 
 void dirUNDEFINE() {
@@ -1447,7 +1445,7 @@ void dirEXPORT() {
         return;
     }
     IsLabelNotFound = 0;
-    char *n = (char *)(*Label).c_str();
+    const char *n = (*Label).c_str();
     getLabelValue(n, val);
     if (IsLabelNotFound) {
         Error("[EXPORT] Label not found"s, *Label, SUPPRESS);
@@ -1591,7 +1589,7 @@ void dirENDS() {
 }
 
 void dirASSERT() {
-    char *p = lp;
+    const char *p = lp;
     aint val;
     /*if (!ParseExpression(lp,val)) { Error("Syntax error",0,CATCHALL); return; }
     if (pass==2 && !val) Error("Assertion failed",p);*/
@@ -1931,7 +1929,7 @@ const char *readMemFile(lua_State *, void *ud, size_t *size) {
 
 void dirLUA() {
     int error;
-    char *rp;
+    const char *rp;
     optional<std::string> Id;
     auto *buff = new char[32768];
     char *bp = buff;
@@ -1988,7 +1986,7 @@ void dirLUA() {
                     Fatal("[LUA] Maximum size of Lua script is 32768 bytes"s);
                 }
             }
-            lp = rp;
+            lp = (char *) rp;
             break;
         }
         if (execute) {

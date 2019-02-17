@@ -163,7 +163,7 @@ void EmitBytes(int *bytes) {
     Listing.setPreviousAddress(Em.getCPUAddress());
     if (*bytes == -1) {
         Error("Illegal instruction"s, line, CATCHALL);
-        *lp = 0;
+        getAll(lp);
     }
     while (*bytes != -1) {
         Emit(*bytes++);
@@ -409,7 +409,8 @@ void readBufLine(bool Parse, bool SplitByColon) {
                 lp = line;
                 *rlppos = 0;
                 char *n;
-                if ((!rlnewline || Options::IsPseudoOpBOF) && (n = getinstr(lp)) && DirectivesTable.find(n)) {
+                if ((!rlnewline || Options::IsPseudoOpBOF) && (n = getinstr(lp)) &&
+                    DirectivesTable.find(n)) {
                     // it's a directive
                     while (B.nextIf(':'));
                     if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
@@ -633,7 +634,7 @@ bool saveBinaryFile(const fs::path &FileName, int Start, int Length) {
 }
 
 EReturn ReadFile(const char *pp, const char *err) {
-    char *p;
+    const char *p;
     while (ReadLineBuf.left() > 0 || !pIFS->eof()) {
         if (!SourceReaderEnabled) {
             return END;
@@ -684,7 +685,7 @@ EReturn ReadFile(const char *pp, const char *err) {
 
 
 EReturn SkipFile(const char *pp, const char *err) {
-    char *p;
+    const char *p;
     int iflevel = 0;
     while (ReadLineBuf.left() > 0 || !pIFS->eof()) {
         if (!SourceReaderEnabled) {
@@ -758,7 +759,7 @@ int ReadLine(bool SplitByColon) {
 }
 
 bool readFileToListOfStrings(std::list<std::string> &List, const std::string &EndMarker) {
-    char *p;
+    const char *p;
     List.clear();
     while (ReadLineBuf.left() > 0 || !pIFS->eof()) {
         if (!SourceReaderEnabled) {

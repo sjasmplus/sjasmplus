@@ -38,59 +38,62 @@ using boost::optional;
 
 bool White();
 
-void SkipParam(char *&); /* added */
+void SkipParam(const char *&p); /* added */
 bool SkipBlanks();
 
-void SkipBlanks(char *&p);
+void SkipBlanks(const char *&p);
 
 bool NeedEQU();
 
 bool NeedDEFL(); /* added */
-optional<std::string> getID(char *&p);
+optional<std::string> getID(const char *&p);
 
-char *getinstr(char *&p);
+char *getinstr(const char *&p);
 
-bool comma(char *&p);
+bool comma(const char *&p);
 
-bool oparen(char *&p, char c);
+bool oparen(const char *&p, char c);
 
-bool cparen(char *&p);
+bool cparen(const char *&p);
 
-char *getparen(char *p);
+const char * getparen(const char *p);
 
 bool check8(aint val, bool error = true); /* changes applied from SjASM 0.39g */
 bool check8o(long val); /* changes applied from SjASM 0.39g */
 bool check16(aint val, bool error = true); /* changes applied from SjASM 0.39g */
 bool check24(aint val, bool error = true); /* changes applied from SjASM 0.39g */
-bool need(char *&p, char c);
+bool need(const char *&p, char c);
 
-int need(char *&p, const char *c);
+int need(const char *&p, const char *c);
 
-int needa(char *&p, const char *c1, int r1, const char *c2 = nullptr, int r2 = 0, const char *c3 = nullptr, int r3 = 0);
+int needa(const char *&p, const char *c1, int r1, const char *c2 = nullptr, int r2 = 0, const char *c3 = nullptr,
+          int r3 = 0);
 
-bool GetConstant(char *&op, aint &val);
+bool GetConstant(const char *&op, aint &val);
 
-bool GetCharConst(char *&p, aint &val);
+bool GetCharConst(const char *&p, aint &val);
 
-bool GetCharConstChar(char *&op, aint &val);
+bool GetCharConstChar(const char *&op, aint &val);
 
-bool GetCharConstCharSingle(char *&op, aint &val); /* added */
-int GetBytes(char *&p, int e[], int add, int dc);
+bool GetCharConstCharSingle(const char *&op, aint &val); /* added */
+int GetBytes(const char *&p, int *e, int add, int dc);
 
-bool cmphstr(char *&p1, const char *p2);
+bool cmphstr(const char *&p1, const char *p2);
 
-std::string GetString(char *&p);
+std::string GetString(const char *&p);
 
-fs::path GetFileName(char *&p);
+fs::path GetFileName(const char *&p);
 
-HobetaFilename GetHobetaFileName(char *&p);
+HobetaFilename GetHobetaFileName(const char *&p);
 
-bool needcomma(char *&p);
+bool needcomma(const char *&p);
 
-bool needbparen(char *&p);
+bool needbparen(const char *&p);
 
 bool islabchar(char p);
 
-EStructureMembers GetStructMemberId(char *&p);
+EStructureMembers GetStructMemberId(const char *&p);
+
+const std::string getAll(const char *&p);
 
 #endif // SJASMPLUS_READER_H

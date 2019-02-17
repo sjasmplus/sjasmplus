@@ -91,11 +91,11 @@ namespace Z80 {
         }
         if (!OpCodeTable.callIfExists(n)) {
             Error("Unrecognized instruction"s, bp, LASTPASS);
-            *lp = 0;
+            getAll(lp);
         }
     }
 
-    int GetByte(char *&p) {
+    int GetByte(const char *&p) {
         aint val;
         if (!ParseExpression(p, val)) {
             Error("Operand expected"s, LASTPASS);
@@ -105,7 +105,7 @@ namespace Z80 {
         return val & 255;
     }
 
-    int GetWord(char *&p) {
+    int GetWord(const char *&p) {
         aint val;
         if (!ParseExpression(p, val)) {
             Error("Operand expected"s, LASTPASS);
@@ -115,9 +115,9 @@ namespace Z80 {
         return val & 65535;
     }
 
-    int z80GetIDxoffset(char *&p) {
+    int z80GetIDxoffset(const char *&p) {
         aint val;
-        char *pp = p;
+        const char *pp = p;
         SkipBlanks(pp);
         if (*pp == ')') {
             return 0;
@@ -133,7 +133,7 @@ namespace Z80 {
         return val & 255;
     }
 
-    int GetAddress(char *&p, aint &ad) {
+    int GetAddress(const char *&p, aint &ad) {
         if (GetLocalLabelValue(p, ad)) {
             return 1;
         }
@@ -144,8 +144,8 @@ namespace Z80 {
         return 0;
     }
 
-    Z80Cond getz80cond(char *&p) {
-        char *pp = p;
+    Z80Cond getz80cond(const char *&p) {
+        const char *pp = p;
         SkipBlanks(p);
         switch (toupper(*(p++))) {
             case 'N':
@@ -212,8 +212,8 @@ namespace Z80 {
     }
 
     /* modified */
-    Z80Reg GetRegister(char *&p) {
-        char *pp = p;
+    Z80Reg GetRegister(const char *&p) {
+        const char *pp = p;
         SkipBlanks(p);
         switch (toupper(*(p++))) {
             case 'A':
@@ -1687,7 +1687,7 @@ namespace Z80 {
         Z80Reg reg;
         int e[7], beginhaakje;
         aint b;
-        char *olp;
+        const char *olp;
 
         do {
             /* added */
@@ -4527,7 +4527,7 @@ namespace Z80 {
                     break;
                 default:
                     Error("[RST] Illegal operand"s, line);
-                    *lp = 0;
+                    getAll(lp);
                     return;
             }
             EmitByte(e);
