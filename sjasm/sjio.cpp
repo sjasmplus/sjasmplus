@@ -408,9 +408,9 @@ void readBufLine(bool Parse, bool SplitByColon) {
             } else if (B.cur() == ':' && !rlspace && !rlcolon && !rldquotes && !rlsquotes && !rlcomment) {
                 lp = line;
                 *rlppos = 0;
-                char *n;
-                if ((!rlnewline || Options::IsPseudoOpBOF) && (n = getinstr(lp)) &&
-                    DirectivesTable.find(n)) {
+                std::string Instr;
+                if ((!rlnewline || Options::IsPseudoOpBOF) &&
+                    !((Instr = getInstr(lp)).empty()) && DirectivesTable.find(Instr)) {
                     // it's a directive
                     while (B.nextIf(':'));
                     if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);

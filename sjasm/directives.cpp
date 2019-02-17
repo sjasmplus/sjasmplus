@@ -60,20 +60,21 @@ FunctionTable DirectivesTable_dup;
 
 bool ParseDirective(bool bol) {
     const char *olp = lp;
-    const char *n;
+    std::string Instr;
     bp = lp;
-    if (!(n = getinstr(lp))) {
+    if ((Instr = getInstr(lp)).empty()) {
         lp = olp;
         return false;
     }
 
-    if (DirectivesTable.callIfExists(n, bol)) {
+    if (DirectivesTable.callIfExists(Instr, bol)) {
         return true;
-    } else if ((!bol || Options::IsPseudoOpBOF) && *n == '.' && (isdigit((unsigned char) *(n + 1)) || *lp == '(')) {
+    } else if ((!bol || Options::IsPseudoOpBOF) && Instr[0] == '.' && Instr.size() >= 2 &&
+               (isdigit(Instr[1]) || *lp == '(')) {
         aint val;
-        if (isdigit((unsigned char) *(n + 1))) {
-            ++n;
-            if (!ParseExpression(n, val)) {
+        if (isdigit(Instr[1])) {
+            const char *RepVal = Instr.c_str() + 1;
+            if (!ParseExpression(RepVal, val)) {
                 Error("Syntax error"s, CATCHALL);
                 lp = olp;
                 return false;
@@ -130,14 +131,14 @@ bool ParseDirective(bool bol) {
 
 bool ParseDirective_REPT() {
     const char *olp = lp;
-    char *n;
+    std::string Instr;
     bp = lp;
-    if (!(n = getinstr(lp))) {
+    if ((Instr = getInstr(lp)).empty()) {
         lp = olp;
         return false;
     }
 
-    if (DirectivesTable_dup.callIfExists(n)) {
+    if (DirectivesTable_dup.callIfExists(Instr)) {
         return true;
     }
     lp = olp;

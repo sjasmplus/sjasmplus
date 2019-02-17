@@ -48,7 +48,7 @@ bool NeedEQU();
 bool NeedDEFL(); /* added */
 optional<std::string> getID(const char *&p);
 
-char *getinstr(const char *&p);
+std::string getInstr(const char *&p);
 
 bool comma(const char *&p);
 

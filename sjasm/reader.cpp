@@ -223,30 +223,23 @@ optional<std::string> getID(const char *&p) {
     else return boost::none;
 }
 
-char instrtemp[LINEMAX]; /* added */
-/* modified */
-char *getinstr(const char *&p) {
-    /*char nid[LINEMAX],*/ char *np;
-    np = instrtemp;
+std::string getInstr(const char *&p) {
+    std::string I;
     SkipBlanks(p);
     if (!isalpha((unsigned char) *p) && *p != '.') {
-        return nullptr;
+        return ""s;
     } else {
-        *np = *p;
+        I += *p;
         ++p;
-        ++np;
     }
     while (*p) {
         if (!isalnum((unsigned char) *p) && *p != '_') {
             break;
-        } /////////////////////////////////////
-        *np = *p;
+        }
+        I += *p;
         ++p;
-        ++np;
     }
-    *np = 0;
-    /*return STRDUP(nid);*/
-    return instrtemp;
+    return I;
 }
 
 /* changes applied from SjASM 0.39g */

@@ -83,13 +83,13 @@ namespace Z80 {
 	}*/
 
     void GetOpCode() {
-        char *n;
+        std::string Instr;
         bp = lp;
-        if (!(n = getinstr(lp))) {
+        if ((Instr = getInstr(lp)).empty()) {
             Error("Unrecognized instruction"s, lp, LASTPASS);
             return;
         }
-        if (!OpCodeTable.callIfExists(n)) {
+        if (!OpCodeTable.callIfExists(Instr)) {
             Error("Unrecognized instruction"s, bp, LASTPASS);
             getAll(lp);
         }
