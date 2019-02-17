@@ -638,24 +638,18 @@ void ParseLabel() {
             LocalLabelTable.Insert(val, Em.getCPUAddress());
         }
     } else {
-        bool IsDEFL = 0;
+        bool IsDEFL = false;
         if (NeedEQU()) {
             if (!ParseExpression(lp, val)) {
                 Error("Expression error"s, lp);
                 val = 0;
-            }
-            if (IsLabelNotFound) {
-                Error("Forward reference"s, PASS1);
             }
         } else if (NeedDEFL()) {
             if (!ParseExpression(lp, val)) {
                 Error("Expression error"s, lp);
                 val = 0;
             }
-            if (IsLabelNotFound) {
-                Error("Forward reference"s, PASS1);
-            }
-            IsDEFL = 1;
+            IsDEFL = true;
         } else {
             int gl = 0;
             const char *p = lp;
