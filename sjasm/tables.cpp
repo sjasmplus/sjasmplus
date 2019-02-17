@@ -45,7 +45,7 @@ bool InMemSrcMode = false;
 bool synerr;
 
 bool FunctionTable::insert(const std::string &Name, void(*FuncPtr)()) {
-    std::string uName = to_upper_copy(Name);
+    std::string uName{to_upper_copy(Name)};
     if (Map.find(uName) != Map.end()) {
         return false;
     }
@@ -61,7 +61,7 @@ bool FunctionTable::insertDirective(const std::string &Name, void(*FuncPtr)()) {
 }
 
 bool FunctionTable::callIfExists(const std::string &Name, bool BOL) {
-    std::string uName = to_upper_copy(Name);
+    std::string uName{to_upper_copy(Name)};
     auto search = Map.find(uName);
     if (search != Map.end()) {
         if (BOL && (uName == "END"s || uName == ".END"s)) { // FIXME?
@@ -76,7 +76,7 @@ bool FunctionTable::callIfExists(const std::string &Name, bool BOL) {
 }
 
 bool FunctionTable::find(const std::string &Name) {
-    std::string uName = to_upper_copy(Name);
+    std::string uName{to_upper_copy(Name)};
     auto search = Map.find(uName);
     if (search != Map.end()) {
         return true;
@@ -235,8 +235,8 @@ int CMacroTable::emit(const std::string &Name, const char *&p) {
     }
     CMacroTableEntry &M = it->second;
 
-    std::string OMacroLab = MacroLab;
-    std::string LabNr = std::to_string(MacroNumber++);
+    std::string OMacroLab{MacroLab};
+    std::string LabNr{std::to_string(MacroNumber++)};
     MacroLab = LabNr;
     if (!OMacroLab.empty()) {
         MacroLab += "."s + OMacroLab;
@@ -307,7 +307,7 @@ int CMacroTable::emit(const std::string &Name, const char *&p) {
     auto OInMemSrcMode = InMemSrcMode;
 
     setInMemSrc(&M.Body);
-    std::string tmp = line;
+    std::string tmp{line};
     while (InMemSrcIt != InMemSrc->end()) {
         STRCPY(line, LINEMAX, (*InMemSrcIt).c_str());
         //_COUT ">>" _CMDL line _ENDL;

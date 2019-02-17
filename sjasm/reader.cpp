@@ -905,11 +905,11 @@ int GetArray(const char *&p, int *e, int add, int dc) {
 }
 
 const std::string getAll(const char *&p) {
-    const char *r = p;
+    std::string R{p};
     while ((*p > 0)) {
         ++p;
     }
-    return r;
+    return R;
 }
 
 //eof reader.cpp

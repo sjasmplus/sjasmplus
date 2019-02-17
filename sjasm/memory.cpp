@@ -78,7 +78,7 @@ MemoryManager::~MemoryManager() {
 }
 
 void MemoryManager::setMemModel(const std::string &name) {
-    std::string uName = to_upper_copy(name);
+    std::string uName{to_upper_copy(name)};
     if (uName == "ZXSPECTRUM48"s) {
         uName = "PLAIN"s;
     }

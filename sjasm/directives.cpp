@@ -1607,7 +1607,7 @@ void dirSHELLEXEC() {
     const std::string &command = GetString(lp);
     const std::string &parameters = comma(lp) ? GetString(lp) : ""s;
     if (pass == LASTPASS) {
-        const std::string log = command + ' ' + parameters;
+        const std::string log{command + ' ' + parameters};
         _COUT "Executing " _CMDL log _ENDL;
 #if defined(WIN32)
         STARTUPINFO si;
@@ -1883,7 +1883,7 @@ void dirDEFARRAY() {
 void _lua_showerror() {
     int ln;
 
-    std::string LuaErr = std::string{lua_tostring(LUA, -1)};
+    std::string LuaErr{lua_tostring(LUA, -1)};
     LuaErr = LuaErr.substr(18);
     ln = std::stoi(LuaErr.substr(0, LuaErr.find(":"s))) + LuaLine;
 

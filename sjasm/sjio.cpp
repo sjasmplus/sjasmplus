@@ -791,7 +791,7 @@ void writeExport(const std::string &Name, aint Value) {
             Fatal("Error opening file "s + Options::ExportFName.string());
         }
     }
-    std::string Str = Name;
+    std::string Str{Name};
     Str += ": EQU 0x"s + toHex32(Value) + "\n"s;
     OFSExport << Str;
 }

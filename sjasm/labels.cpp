@@ -252,8 +252,8 @@ void initLabels() {
 }
 
 optional<std::string> validateLabel(const std::string &Name) {
-    std::string LName = Name; // Label name without @ or . prefix
-    std::string ML = MacroLab;
+    std::string LName{Name}; // Label name without @ or . prefix
+    std::string ML{MacroLab};
     bool AsIsLabel = false;
     bool DotLabel = false;
     if (!ML.empty() && LName[0] == '@') {
@@ -302,7 +302,7 @@ optional<std::string> validateLabel(const std::string &Name) {
 }
 
 bool getLabelValue(const char *&p, aint &val) {
-    std::string ML = MacroLab;
+    std::string ML{MacroLab};
     const char *op = p;
     bool AsIsLabel = false;
     bool DotLabel = false;
