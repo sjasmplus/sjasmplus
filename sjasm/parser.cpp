@@ -635,7 +635,7 @@ void ParseLabel() {
         val = atoi(LUnparsed.c_str());
         //_COUT CurrentLine _CMDL " " _CMDL val _CMDL " " _CMDL CurAddress _ENDL;
         if (pass == 1) {
-            LocalLabelTable.Insert(val, Em.getCPUAddress());
+            LocalLabelTable.insert(CompiledCurrentLine, val, Em.getCPUAddress());
         }
     } else {
         bool IsDEFL = false;

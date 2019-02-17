@@ -26,8 +26,8 @@
 
 */
 
-#ifndef __LABELS
-#define __LABELS
+#ifndef SJASMPLUS_LABELS_H
+#define SJASMPLUS_LABELS_H
 
 #include <cstdint>
 #include <string>
@@ -113,29 +113,27 @@ bool getLabelValue(const char *&p, aint &val);
 
 bool GetLocalLabelValue(const char *&op, aint &val);
 
-class CLocalLabelTableEntry {
-public:
-    aint regel, nummer, value;
-    CLocalLabelTableEntry *next, *prev;
+struct CLocalLabelTableEntry {
+    aint Line, Number, Value;
 
-    CLocalLabelTableEntry(aint, aint, CLocalLabelTableEntry *);
+    CLocalLabelTableEntry(aint _Line, aint _Number, aint _Value) :
+            Line(_Line), Number(_Number), Value(_Value) {}
 };
 
 class CLocalLabelTable {
 public:
-    CLocalLabelTable();
+    aint searchForward(aint LabelNum);
 
-    aint zoekf(aint);
+    aint searchBack(aint LabelNum);
 
-    aint zoekb(aint);
-
-    void Insert(aint, aint);
+    void insert(aint Line, aint Number, aint Value) {
+        Labels.emplace_back(Line, Number, Value);
+    }
 
 private:
-    CLocalLabelTableEntry *first, *last;
+    std::list<CLocalLabelTableEntry> Labels;
 };
 
 int LuaGetLabel(char *name);
 
-#endif
-//eof labels.h
+#endif // SJASMPLUS_LABELS_H

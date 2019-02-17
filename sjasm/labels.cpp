@@ -431,11 +431,11 @@ bool GetLocalLabelValue(const char *&op, aint &val) {
     switch (ch) {
         case 'b':
         case 'B':
-            nval = LocalLabelTable.zoekb(nummer);
+            nval = LocalLabelTable.searchBack(nummer);
             break;
         case 'f':
         case 'F':
-            nval = LocalLabelTable.zoekf(nummer);
+            nval = LocalLabelTable.searchForward(nummer);
             break;
         default:
             return false;
@@ -453,64 +453,39 @@ bool GetLocalLabelValue(const char *&op, aint &val) {
     return true;
 }
 
-CLocalLabelTableEntry::CLocalLabelTableEntry(aint nnummer, aint nvalue, CLocalLabelTableEntry *n) {
-    regel = CompiledCurrentLine;
-    nummer = nnummer;
-    value = nvalue;
-    //regel=CurrentLocalLine; nummer=nnummer; value=nvalue;
-    prev = n;
-    next = NULL;
-    if (n) {
-        n->next = this;
-    }
-}
-
-CLocalLabelTable::CLocalLabelTable() {
-    first = last = NULL;
-}
-
-void CLocalLabelTable::Insert(aint nnummer, aint nvalue) {
-    last = new CLocalLabelTableEntry(nnummer, nvalue, last);
-    if (!first) {
-        first = last;
-    }
-}
-
-aint CLocalLabelTable::zoekf(aint nnum) {
-    CLocalLabelTableEntry *l = first;
-    while (l) {
-        if (l->regel <= CompiledCurrentLine) {
-            l = l->next;
+aint CLocalLabelTable::searchForward(aint LabelNum) {
+    auto it = Labels.begin();
+    while (it != Labels.end()) {
+        if (it->Line <= CompiledCurrentLine) {
+            ++it;
         } else {
             break;
         }
     }
-    //while (l) if (l->regel<=CurrentLocalLine) l=l->next; else break;
-    while (l) {
-        if (l->nummer == nnum) {
-            return l->value;
+    while (it != Labels.end()) {
+        if (it->Number == LabelNum) {
+            return it->Value;
         } else {
-            l = l->next;
+            ++it;
         }
     }
     return (aint) -1;
 }
 
-aint CLocalLabelTable::zoekb(aint nnum) {
-    CLocalLabelTableEntry *l = last;
-    while (l) {
-        if (l->regel > CompiledCurrentLine) {
-            l = l->prev;
+aint CLocalLabelTable::searchBack(aint LabelNum) {
+    auto it = Labels.rbegin();
+    while (it != Labels.rend()) {
+        if (it->Line > CompiledCurrentLine) {
+            ++it;
         } else {
             break;
         }
     }
-    //while (l) if (l->regel>CurrentLocalLine) l=l->prev; else break;
-    while (l) {
-        if (l->nummer == nnum) {
-            return l->value;
+    while (it != Labels.rend()) {
+        if (it->Number == LabelNum) {
+            return it->Value;
         } else {
-            l = l->prev;
+            ++it;
         }
     }
     return (aint) -1;
