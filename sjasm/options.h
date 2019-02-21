@@ -48,7 +48,7 @@ namespace Options {
     extern bool NoDestinationFile;
     extern bool FakeInstructions;
     extern bool OverrideRawOutput;
-    extern std::list<std::string> IncludeDirsList;
+    extern std::list<fs::path> IncludeDirsList;
 
     void GetOptions(const char *argv[], int &argc);
 

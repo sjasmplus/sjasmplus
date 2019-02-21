@@ -268,31 +268,29 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
     IFS.close();
 }
 
-void OpenFile(const fs::path &nfilename) {
+void OpenFile(const fs::path &FileName) {
     fs::path ofilename;
     fs::path oCurrentDirectory;
-    fs::path fullpath;
 
     if (++IncludeLevel > 20) Fatal("Over 20 files nested");
 
-    fullpath = getAbsPath(nfilename);
-
-    pIFS->open(fullpath, std::ios::binary);
-    if (pIFS->fail())
-        Fatal("Error opening file "s + nfilename.string(), strerror(errno));
+    pIFS->open(FileName, std::ios::binary);
+    if (pIFS->fail()) {
+        Fatal("Error opening file "s + FileName.string(), strerror(errno));
+    }
 
     aint oCurrentLocalLine = CurrentLocalLine;
     CurrentLocalLine = 0;
     ofilename = global::CurrentFilename;
 
     if (Options::IsShowFullPath) {
-        global::CurrentFilename = fullpath;
+        global::CurrentFilename = FileName;
     } else {
-        global::CurrentFilename = nfilename;
+        global::CurrentFilename = fs::relative(FileName, global::TopLevelDirectory);
     }
 
     oCurrentDirectory = global::CurrentDirectory;
-    global::CurrentDirectory = fullpath.parent_path();
+    global::CurrentDirectory = FileName.parent_path();
 
     ReadLineBuf.clear();
     readBufLine(true);
@@ -310,7 +308,7 @@ void OpenFile(const fs::path &nfilename) {
 }
 
 /* added */
-void IncludeFile(const fs::path &nfilename) {
+void IncludeFile(const fs::path &IncFileName) {
     fs::ifstream *saveIFS = pIFS;
     fs::ifstream incIFS;
     pIFS = &incIFS;
@@ -327,7 +325,18 @@ void IncludeFile(const fs::path &nfilename) {
 
     ReadLineBuf.fill(0);
 
-    OpenFile(nfilename);
+    auto FullFilePath = getAbsPath(IncFileName);
+    if (!fs::exists(FullFilePath)) {
+        for (auto &P : Options::IncludeDirsList) {
+            auto F = P / IncFileName;
+            if (fs::exists(F)) {
+                FullFilePath = fs::absolute(F, P);
+                break;
+            }
+        }
+    }
+
+    OpenFile(FullFilePath);
 
     rlsquotes = squotes, rldquotes = dquotes, rlspace = space, rlcomment = comment, rlcolon = colon, rlnewline = newline;
     ReadLineBuf = SaveReadLineBuf;

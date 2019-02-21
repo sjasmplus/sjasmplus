@@ -7,6 +7,7 @@
 #include "modules.h"
 
 namespace global {
+    extern fs::path TopLevelDirectory;
     extern fs::path CurrentDirectory;
     extern fs::path CurrentFilename;
     extern fs::path OutputDirectory;

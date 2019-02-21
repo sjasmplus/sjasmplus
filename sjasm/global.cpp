@@ -1,6 +1,7 @@
 #include "global.h"
 
 namespace global {
+    fs::path TopLevelDirectory;
     fs::path CurrentDirectory;
     fs::path CurrentFilename;
     fs::path OutputDirectory;

@@ -38,6 +38,7 @@
 #include "options.h"
 #include "parser.h"
 #include "codeemitter.h"
+#include "fsutil.h"
 
 #include <sjasmplus_conf.h>
 #include <sstream>
@@ -111,11 +112,7 @@ int main(int argc, const char *argv[]) {
     // init vars
     Options::NoDestinationFile = true; // no *.out files by default
 
-    // get current directory
-    global::CurrentDirectory = fs::current_path();
-
     // get arguments
-    Options::IncludeDirsList.push_front(".");
     while (argv[i]) {
         Options::GetOptions(argv, i);
         if (argv[i]) {
@@ -123,6 +120,14 @@ int main(int argc, const char *argv[]) {
             SourceFNamesCount++;
         }
     }
+
+    // get current directory
+    global::CurrentDirectory = fs::current_path();
+    global::TopLevelDirectory = SourceFNames.empty() ?
+                                global::CurrentDirectory :
+                                fs::absolute(SourceFNames[0]).parent_path();
+    Options::IncludeDirsList.push_front(global::TopLevelDirectory);
+    Options::IncludeDirsList.push_back(global::CurrentDirectory);
 
     if (!Options::HideLogo) {
         _COUT logo _ENDL;
@@ -156,7 +161,7 @@ int main(int argc, const char *argv[]) {
 
     // open source files
     for (i = 0; i < SourceFNamesCount; i++) {
-        OpenFile(SourceFNames[i]);
+        OpenFile(getAbsPath(SourceFNames[i]));
     }
 
     _COUT "Pass 1 complete (" _CMDL ErrorCount _CMDL " errors)" _ENDL;
@@ -172,7 +177,7 @@ int main(int argc, const char *argv[]) {
 //            OpenDest();
         }
         for (i = 0; i < SourceFNamesCount; i++) {
-            OpenFile(SourceFNames[i]);
+            OpenFile(getAbsPath(SourceFNames[i]));
         }
 
         Em.reset();

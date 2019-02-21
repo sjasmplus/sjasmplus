@@ -64,7 +64,7 @@ namespace Options {
     bool FakeInstructions = true;
     bool OverrideRawOutput = false;
 
-    std::list<std::string> IncludeDirsList;
+    std::list<fs::path> IncludeDirsList;
 
     void GetOptions(const char *argv[], int &i) {
         while (argv[i] && *argv[i] == '-') {

@@ -49,9 +49,9 @@ void EmitWords(int *words);
 
 void EmitBlock(uint8_t byte, aint len, bool nulled = false);
 
-void OpenFile(const fs::path &nfilename);
+void OpenFile(const fs::path &FileName);
 
-void IncludeFile(const fs::path &nfilename);
+void IncludeFile(const fs::path &IncFileName);
 
 void readBufLine(bool Parse = true, bool SplitByColon = true); /* added */
 
