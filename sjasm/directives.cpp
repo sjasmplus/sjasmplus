@@ -58,7 +58,7 @@ int StartAddress = -1;
 FunctionTable DirectivesTable;
 FunctionTable DirectivesTable_dup;
 
-bool ParseDirective(bool bol) {
+bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
     const char *olp = lp;
     std::string Instr;
     bp = lp;
@@ -67,20 +67,23 @@ bool ParseDirective(bool bol) {
         return false;
     }
 
-    if (DirectivesTable.callIfExists(Instr, bol)) {
+    if (DirectivesTable.callIfExists(Instr, AtBOL)) {
         return true;
-    } else if ((!bol || Options::IsPseudoOpBOF) && Instr[0] == '.' && Instr.size() >= 2 &&
-               (isdigit(Instr[1]) || *lp == '(')) {
+    } else if ((!AtBOL || Options::IsPseudoOpBOF) && Instr[0] == '.' &&
+               ((Instr.size() >= 2 && isdigit(Instr[1])) || *lp == '(')) {
+        // .number or .(expression) prefix which acts as DUP/REPT for a single line
         aint val;
+        size_t DirPos = olp - BOL;
+        Listing.listFile();
         if (isdigit(Instr[1])) {
             const char *RepVal = Instr.c_str() + 1;
-            if (!ParseExpression(RepVal, val)) {
+            if (!parseExpression(RepVal, val)) {
                 Error("Syntax error"s, CATCHALL);
                 lp = olp;
                 return false;
             }
         } else if (*lp == '(') {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpPrim(lp, val)) {
                 Error("Syntax error"s, CATCHALL);
                 lp = olp;
                 return false;
@@ -95,16 +98,16 @@ bool ParseDirective(bool bol) {
             return false;
         }
 
-        char mline[LINEMAX2];
+//        char mline[LINEMAX2];
         bool olistmacro;
         char *ml;
-        char *pp = mline;
-        *pp = 0;
-        STRCPY(pp, LINEMAX2, " ");
-
+//        char *pp = mline;
+//        *pp = 0;
+//        STRCPY(pp, LINEMAX2, " ");
+        std::string S(DirPos, ' ');
         SkipBlanks(lp);
         if (*lp) {
-            STRCAT(pp, LINEMAX2, lp);
+            S += lp;
             lp += strlen(lp);
         }
         //_COUT pp _ENDL;
@@ -115,8 +118,8 @@ bool ParseDirective(bool bol) {
             Fatal("Out of memory!"s);
         }
         do {
-            STRCPY(line, LINEMAX, pp);
-            ParseLineSafe();
+            STRCPY(line, LINEMAX, S.c_str());
+            parseLineSafe();
         } while (--val);
         STRCPY(line, LINEMAX, ml);
         listmacro = olistmacro;
@@ -129,7 +132,7 @@ bool ParseDirective(bool bol) {
     return false;
 }
 
-bool ParseDirective_REPT() {
+bool parseDirective_REPT() {
     const char *olp = lp;
     std::string Instr;
     bp = lp;
@@ -180,7 +183,7 @@ void dirDZ() {
 void dirABYTE() {
     aint add;
     int teller = 0, e[129];
-    if (ParseExpression(lp, add)) {
+    if (parseExpression(lp, add)) {
         check8(add);
         add &= 255;
         teller = GetBytes(lp, e, add, 0);
@@ -197,7 +200,7 @@ void dirABYTE() {
 void dirABYTEC() {
     aint add;
     int teller = 0, e[129];
-    if (ParseExpression(lp, add)) {
+    if (parseExpression(lp, add)) {
         check8(add);
         add &= 255;
         teller = GetBytes(lp, e, add, 1);
@@ -214,7 +217,7 @@ void dirABYTEC() {
 void dirABYTEZ() {
     aint add;
     int teller = 0, e[129];
-    if (ParseExpression(lp, add)) {
+    if (parseExpression(lp, add)) {
         check8(add);
         add &= 255;
         teller = GetBytes(lp, e, add, 0);
@@ -235,7 +238,7 @@ void dirWORD() {
     int teller = 0, e[129];
     SkipBlanks();
     while (*lp) {
-        if (ParseExpression(lp, val)) {
+        if (parseExpression(lp, val)) {
             check16(val);
             if (teller > 127) {
                 Fatal("Over 128 values in DW/DEFW/WORD"s);
@@ -265,7 +268,7 @@ void dirDWORD() {
     int teller = 0, e[129 * 2];
     SkipBlanks();
     while (*lp) {
-        if (ParseExpression(lp, val)) {
+        if (parseExpression(lp, val)) {
             if (teller > 127) {
                 Fatal("[DWORD] Over 128 values"s);
             }
@@ -296,7 +299,7 @@ void dirD24() {
     int teller = 0, e[129 * 3];
     SkipBlanks();
     while (*lp) {
-        if (ParseExpression(lp, val)) {
+        if (parseExpression(lp, val)) {
             check24(val);
             if (teller > 127) {
                 Fatal("[D24] Over 128 values"s);
@@ -326,12 +329,12 @@ void dirD24() {
 
 void dirBLOCK() {
     aint teller, val = 0;
-    if (ParseExpression(lp, teller)) {
+    if (parseExpression(lp, teller)) {
         if ((signed) teller < 0) {
             Fatal("Negative BLOCK?"s);
         }
         if (comma(lp)) {
-            ParseExpression(lp, val);
+            parseExpression(lp, val);
         }
         EmitBlock(val, teller);
     } else {
@@ -342,14 +345,14 @@ void dirBLOCK() {
 void dirORG() {
     aint val;
     if (Em.isPagedMemory()) {
-        if (ParseExpression(lp, val)) {
+        if (parseExpression(lp, val)) {
             Em.setAddress(val);
         } else {
             Error("[ORG] Syntax error"s, lp, CATCHALL);
             return;
         }
         if (comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[ORG] Syntax error"s, lp, CATCHALL);
                 return;
             }
@@ -360,7 +363,7 @@ void dirORG() {
             }
         }
     } else {
-        if (ParseExpression(lp, val)) {
+        if (parseExpression(lp, val)) {
             Em.setAddress(val);
         } else {
             Error("[ORG] Syntax error"s, CATCHALL);
@@ -370,7 +373,7 @@ void dirORG() {
 
 void dirDISP() {
     aint val;
-    if (ParseExpression(lp, val)) {
+    if (parseExpression(lp, val)) {
         Em.doDisp(val);
     } else {
         Error("[DISP] Syntax error"s, CATCHALL);
@@ -392,7 +395,7 @@ void dirPAGE() {
         return;
     }
     aint val;
-    if (!ParseExpression(lp, val)) {
+    if (!parseExpression(lp, val)) {
         Error("Syntax error"s, CATCHALL);
         return;
     }
@@ -409,7 +412,7 @@ void dirSLOT() {
         return;
     }
     aint val;
-    if (!ParseExpression(lp, val)) {
+    if (!parseExpression(lp, val)) {
         Error("Syntax error"s, CATCHALL);
         return;
     }
@@ -424,7 +427,7 @@ void dirALIGN() {
     aint val;
     aint byte;
     bool noexp = false;
-    if (!ParseExpression(lp, val)) {
+    if (!parseExpression(lp, val)) {
         noexp = true;
         val = 4;
     }
@@ -448,7 +451,7 @@ void dirALIGN() {
         case 32768:
             val = (~(Em.getCPUAddress()) + 1) & (val - 1);
             if (!noexp && comma(lp)) {
-                if (!ParseExpression(lp, byte)) {
+                if (!parseExpression(lp, byte)) {
                     EmitBlock(0, val, true);
                 } else if (byte > 255 || byte < 0) {
                     Error("[ALIGN] Illegal align byte"s);
@@ -489,7 +492,7 @@ void dirENDMODULE() {
 void dirEND() {
     const char *p = lp;
     aint val;
-    if (ParseExpression(lp, val)) {
+    if (parseExpression(lp, val)) {
         if (val > 65535 || val < 0) {
             Error("[END] Invalid address: "s + std::to_string(val), CATCHALL);
             return;
@@ -505,7 +508,7 @@ void dirEND() {
 
 void dirSIZE() {
     aint val;
-    if (!ParseExpression(lp, val)) {
+    if (!parseExpression(lp, val)) {
         Error("[SIZE] Syntax error"s, bp, CATCHALL);
         return;
     }
@@ -526,7 +529,7 @@ void dirINCBIN() {
     const fs::path &FileName = GetFileName(lp);
     if (comma(lp)) {
         if (!comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[INCBIN] Syntax error"s, bp, CATCHALL);
                 return;
             }
@@ -537,7 +540,7 @@ void dirINCBIN() {
             offset = val;
         }
         if (comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[INCBIN] Syntax error"s, bp, CATCHALL);
                 return;
             }
@@ -562,7 +565,7 @@ void dirINCHOB() {
     fs::path FileName = fs::path(GetString(lp)); // FIXME
     if (comma(lp)) {
         if (!comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[INCHOB] Syntax error"s, bp, CATCHALL);
                 return;
             }
@@ -573,7 +576,7 @@ void dirINCHOB() {
             offset += val;
         }
         if (comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[INCHOB] Syntax error"s, bp, CATCHALL);
                 return;
             }
@@ -624,7 +627,7 @@ void dirINCTRD() {
     }
     if (comma(lp)) {
         if (!comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[INCTRD] Syntax error"s, bp, CATCHALL);
                 return;
             }
@@ -635,7 +638,7 @@ void dirINCTRD() {
             offset += val;
         }
         if (comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[INCTRD] Syntax error"s, bp, CATCHALL);
                 return;
             }
@@ -707,7 +710,7 @@ void dirSAVESNA() {
     const fs::path &FileName = resolveOutputPath(GetFileName(lp));
     if (comma(lp)) {
         if (!comma(lp) && StartAddress < 0) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[SAVESNA] Syntax error"s, bp, PASS3);
                 return;
             }
@@ -751,7 +754,7 @@ void dirSAVETAP() {
     const fs::path &FileName = resolveOutputPath(GetFileName(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[SAVETAP] Syntax error"s, bp, PASS3);
                 return;
             }
@@ -794,7 +797,7 @@ void dirSAVEBIN() {
     const fs::path &FileName = resolveOutputPath(GetFileName(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[SAVEBIN] Syntax error"s, bp, PASS3);
                 return;
             }
@@ -811,7 +814,7 @@ void dirSAVEBIN() {
             return;
         }
         if (comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[SAVEBIN] Syntax error"s, bp, PASS3);
                 return;
             }
@@ -861,7 +864,7 @@ void dirSAVEHOB() {
     }
     if (comma(lp)) {
         if (!comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[SAVEHOB] Syntax error"s, bp, PASS3);
                 return;
             }
@@ -878,7 +881,7 @@ void dirSAVEHOB() {
             return;
         }
         if (comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[SAVEHOB] Syntax error"s, bp, PASS3);
                 return;
             }
@@ -945,7 +948,7 @@ void dirSAVETRD() {
     }
     if (comma(lp)) {
         if (!comma(lp)) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[SAVETRD] Syntax error"s, bp, PASS3);
                 return;
             }
@@ -960,7 +963,7 @@ void dirSAVETRD() {
         }
         if (comma(lp)) {
             if (!comma(lp)) {
-                if (!ParseExpression(lp, val)) {
+                if (!parseExpression(lp, val)) {
                     Error("[SAVETRD] Syntax error"s, bp, PASS3);
                     return;
                 }
@@ -975,7 +978,7 @@ void dirSAVETRD() {
             }
         }
         if (comma(lp)) { //added by boo_boo 19_0ct_2008
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[SAVETRD] Syntax error"s, bp, PASS3);
                 return;
             }
@@ -1032,7 +1035,7 @@ void dirIF() {
     aint val;
     IsLabelNotFound = 0;
     /*if (!ParseExpression(p,val)) { Error("Syntax error",0,CATCHALL); return; }*/
-    if (!ParseExpression(lp, val)) {
+    if (!parseExpression(lp, val)) {
         Error("[IF] Syntax error"s, CATCHALL);
         return;
     }
@@ -1075,7 +1078,7 @@ void dirIF() {
 void dirIFN() {
     aint val;
     IsLabelNotFound = 0;
-    if (!ParseExpression(lp, val)) {
+    if (!parseExpression(lp, val)) {
         Error("[IFN] Syntax error"s, CATCHALL);
         return;
     }
@@ -1538,7 +1541,7 @@ void dirDISPLAY() {
             } while (*lp != 0x27);
             ++lp;
         } else {
-            if (ParseExpression(lp, val)) {
+            if (parseExpression(lp, val)) {
                 if (decprint == 0 || decprint == 2) {
                     Message += "0x";
                     if (val < 0x1000) {
@@ -1594,7 +1597,7 @@ void dirASSERT() {
     aint val;
     /*if (!ParseExpression(lp,val)) { Error("Syntax error",0,CATCHALL); return; }
     if (pass==2 && !val) Error("Assertion failed",p);*/
-    if (!ParseExpression(lp, val)) {
+    if (!parseExpression(lp, val)) {
         Error("[ASSERT] Syntax error"s, CATCHALL);
         return;
     }
@@ -1681,7 +1684,7 @@ void dirSTRUCT() {
     }
     if (comma(lp)) {
         IsLabelNotFound = 0;
-        if (!ParseExpression(lp, offset)) {
+        if (!parseExpression(lp, offset)) {
             Error("[STRUCT] Syntax error"s, CATCHALL);
             return;
         }
@@ -1704,7 +1707,7 @@ void dirSTRUCT() {
         if (cmphstr(lp, "ends")) {
             break;
         }
-        ParseStructLine(St);
+        parseStructLine(St);
         Listing.listFileSkip(line);
     }
     St.deflab();
@@ -1717,7 +1720,7 @@ void dirFPOS() {
     if ((*lp == '+') || (*lp == '-')) {
         Method = std::ios_base::cur;
     }
-    if (!ParseExpression(lp, Offset)) {
+    if (!parseExpression(lp, Offset)) {
         Error("[FPOS] Syntax error"s, CATCHALL);
     }
     if (pass == LASTPASS) {
@@ -1733,7 +1736,7 @@ void dirDUP() {
     if (!RepeatStack.empty()) {
         RepeatInfo &dup = RepeatStack.top();
         if (!dup.Complete) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[DUP/REPT] Syntax error"s, CATCHALL);
                 return;
             }
@@ -1742,7 +1745,7 @@ void dirDUP() {
         }
     }
 
-    if (!ParseExpression(lp, val)) {
+    if (!parseExpression(lp, val)) {
         Error("[DUP/REPT] Syntax error"s, CATCHALL);
         return;
     }
@@ -1796,7 +1799,7 @@ void dirEDUP() {
         CurrentLocalLine = dup.CurrentLocalLine;
         for (auto &L : dup.Lines) {
             STRCPY(line, LINEMAX, L.c_str());
-            ParseLineSafe();
+            parseLineSafe();
             CurrentLocalLine++;
             CurrentGlobalLine++;
             CompiledCurrentLine++;

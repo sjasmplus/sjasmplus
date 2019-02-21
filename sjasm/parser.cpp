@@ -48,7 +48,7 @@ void initParser() {
     comlin = 0;
 }
 
-bool ParseExpPrim(const char *&p, aint &nval) {
+bool parseExpPrim(const char *&p, aint &nval) {
     bool res = false;
     SkipBlanks(p);
     if (!*p) {
@@ -56,14 +56,14 @@ bool ParseExpPrim(const char *&p, aint &nval) {
     }
     if (*p == '(') {
         ++p;
-        res = ParseExpression(p, nval);
+        res = parseExpression(p, nval);
         if (!need(p, ')')) {
             Error("')' expected"s);
             return false;
         }
     } else if (*p == '{') {
         ++p;
-        res = ParseExpression(p, nval);
+        res = parseExpression(p, nval);
         /*if (nval < 0x4000) {
             Error("Address in {..} must be more than 4000h", 0); return 0;
         } */
@@ -156,7 +156,7 @@ bool ParseExpUnair(const char *&p, aint &nval) {
         }
         return true;
     } else {
-        return ParseExpPrim(p, nval);
+        return parseExpPrim(p, nval);
     }
 }
 
@@ -422,7 +422,7 @@ bool ParseExpLogOr(const char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpression(const char *&p, aint &nval) {
+bool parseExpression(const char *&p, aint &nval) {
     if (ParseExpLogOr(p, nval)) {
         return true;
     }
@@ -430,7 +430,7 @@ bool ParseExpression(const char *&p, aint &nval) {
     return false;
 }
 
-char *ReplaceDefine(const char *lp, char *dest) {
+char *replaceDefine(const char *lp, char *dest) {
     int definegereplaced = 0, dr;
     char *nl = dest;
     char *rp = nl, a;
@@ -546,7 +546,7 @@ char *ReplaceDefine(const char *lp, char *dest) {
             //_COUT lp _ENDL;
             while (*(lp++) && (*lp <= ' ' || *lp == '['));
             //_COUT lp _ENDL;
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("[ARRAY] Expression error"s, CATCHALL);
                 break;
             }
@@ -601,7 +601,7 @@ char *ReplaceDefine(const char *lp, char *dest) {
         Fatal("Line too long after macro expansion"s);
     }
     if (definegereplaced) {
-        return ReplaceDefine(nl, (dest == sline) ? sline2 : sline);
+        return replaceDefine(nl, (dest == sline) ? sline2 : sline);
     }
     return nl;
 }
@@ -612,7 +612,7 @@ void ParseLabel() {
     if (White()) {
         return;
     }
-    if (Options::IsPseudoOpBOF && ParseDirective(true)) {
+    if (Options::IsPseudoOpBOF && parseDirective(lp, true)) {
         while (*lp == ':') {
             ++lp;
         }
@@ -640,12 +640,12 @@ void ParseLabel() {
     } else {
         bool IsDEFL = false;
         if (NeedEQU()) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("Expression error"s, lp);
                 val = 0;
             }
         } else if (NeedDEFL()) {
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 Error("Expression error"s, lp);
                 val = 0;
             }
@@ -722,8 +722,8 @@ bool ParseMacro() {
     return false;
 }
 
-void ParseInstruction() {
-    if (ParseDirective()) {
+void parseInstruction(const char *BOL) {
+    if (parseDirective(BOL, false)) {
         return;
     }
     Z80::GetOpCode();
@@ -741,7 +741,7 @@ unsigned char win2dos[] = //taken from HorrorWord %)))
                 0xE7, 0xE8, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF
         };
 
-void ParseLine(bool parselabels) {
+void parseLine(bool ParseLabels) {
     /*++CurrentGlobalLine;*/
     replacedefineteller = comnxtlin = 0;
     if (!RepeatStack.empty()) {
@@ -749,11 +749,12 @@ void ParseLine(bool parselabels) {
         if (!dup.Complete) {
             lp = line;
             dup.Lines.emplace_back(lp);
-            ParseDirective_REPT();
+            parseDirective_REPT();
             return;
         }
     }
-    lp = ReplaceDefine(line);
+    lp = replaceDefine(line);
+    const char *BOL = lp;
     if (!ConvertEncoding) {
         auto *lp2 = (unsigned char *) lp;
         while (*(lp2++)) {
@@ -772,7 +773,7 @@ void ParseLine(bool parselabels) {
         Listing.listFile();
         return;
     }
-    if (parselabels) {
+    if (ParseLabels) {
         ParseLabel();
     }
     if (SkipBlanks()) {
@@ -784,7 +785,7 @@ void ParseLine(bool parselabels) {
         Listing.listFile();
         return;
     }
-    ParseInstruction();
+    parseInstruction(BOL);
     if (SkipBlanks()) {
         Listing.listFile();
         return;
@@ -795,7 +796,7 @@ void ParseLine(bool parselabels) {
     Listing.listFile();
 }
 
-void ParseLineSafe(bool parselabels) {
+void parseLineSafe(bool ParseLabels) {
     char *tmp = NULL, *tmp2 = NULL;
     const char *rp = lp;
     if (sline[0] > 0) {
@@ -812,7 +813,7 @@ void ParseLineSafe(bool parselabels) {
     }
 
     CompiledCurrentLine++;
-    ParseLine(parselabels);
+    parseLine(ParseLabels);
 
     *sline = 0;
     *sline2 = 0;
@@ -858,12 +859,12 @@ void parseStructMember(CStructure &St) {
     bp = lp;
     switch (GetStructMemberId(lp)) {
         case SMEMBBLOCK:
-            if (!ParseExpression(lp, len)) {
+            if (!parseExpression(lp, len)) {
                 len = 1;
                 Error("[STRUCT] Expression expected"s, PASS1);
             }
             if (comma(lp)) {
-                if (!ParseExpression(lp, val)) {
+                if (!parseExpression(lp, val)) {
                     val = 0;
                     Error("[STRUCT] Expression expected"s, PASS1);
                 }
@@ -875,7 +876,7 @@ void parseStructMember(CStructure &St) {
             St.addMember(SMM); }
             break;
         case SMEMBBYTE:
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 val = 0;
             }
             check8(val);
@@ -883,7 +884,7 @@ void parseStructMember(CStructure &St) {
             St.addMember(SMB); }
             break;
         case SMEMBWORD:
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 val = 0;
             }
             check16(val);
@@ -891,7 +892,7 @@ void parseStructMember(CStructure &St) {
             St.addMember(SMW); }
             break;
         case SMEMBD24:
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 val = 0;
             }
             check24(val);
@@ -899,14 +900,14 @@ void parseStructMember(CStructure &St) {
             St.addMember(SM24); }
             break;
         case SMEMBDWORD:
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 val = 0;
             }
             { CStructureEntry2 SMDW = {St.noffset, 4, val, SMEMBDWORD};
             St.addMember(SMDW); }
             break;
         case SMEMBALIGN:
-            if (!ParseExpression(lp, val)) {
+            if (!parseExpression(lp, val)) {
                 val = 4;
             }
             St.noffset += ((~St.noffset + 1) & (val - 1));
@@ -938,9 +939,9 @@ void parseStructMember(CStructure &St) {
     }
 }
 
-void ParseStructLine(CStructure &St) {
+void parseStructLine(CStructure &St) {
     replacedefineteller = comnxtlin = 0;
-    lp = ReplaceDefine(line);
+    lp = replaceDefine(line);
     if (comlin) {
         comlin += comnxtlin;
         return;
@@ -962,16 +963,16 @@ void ParseStructLine(CStructure &St) {
     }
 }
 
-unsigned long LuaCalculate(const char *str) {
+unsigned long luaCalculate(const char *str) {
     aint val;
-    if (!ParseExpression(str, val)) {
+    if (!parseExpression(str, val)) {
         return 0;
     } else {
         return val;
     }
 }
 
-void LuaParseLine(char *str) {
+void luaParseLine(char *str) {
     char *ml;
 
     ml = STRDUP(line);
@@ -981,13 +982,13 @@ void LuaParseLine(char *str) {
     }
 
     STRCPY(line, LINEMAX, str);
-    ParseLineSafe();
+    parseLineSafe();
 
     STRCPY(line, LINEMAX, ml);
     free(ml);
 }
 
-void LuaParseCode(char *str) {
+void luaParseCode(char *str) {
     char *ml;
 
     ml = STRDUP(line);
@@ -997,7 +998,7 @@ void LuaParseCode(char *str) {
     }
 
     STRCPY(line, LINEMAX, str);
-    ParseLineSafe(false);
+    parseLineSafe(false);
 
     STRCPY(line, LINEMAX, ml);
     free(ml);

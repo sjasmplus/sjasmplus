@@ -379,7 +379,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                 rlsquotes = rldquotes = rlcomment = rlspace = rlcolon = false;
                 //_COUT line _ENDL;
                 if (Parse) {
-                    ParseLine();
+                    parseLine();
                 } else {
                     return;
                 }
@@ -397,7 +397,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                 }*/
                 rlcolon = true;
                 if (Parse) {
-                    ParseLine();
+                    parseLine();
                 } else {
                     return;
                 }
@@ -422,7 +422,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     }
                     rlcolon = true;
                     if (Parse) {
-                        ParseLine();
+                        parseLine();
                     } else {
                         return;
                     }
@@ -476,7 +476,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
         rlnewline = true;
         *rlppos = 0;
         if (Parse) {
-            ParseLine();
+            parseLine();
         } else {
             return;
         }
@@ -658,27 +658,27 @@ EReturn ReadFile(const char *pp, const char *err) {
             ++p;
         }
         if (cmphstr(p, "endif")) {
-            lp = ReplaceDefine(p);
+            lp = replaceDefine(p);
             return ENDIF;
         }
         if (cmphstr(p, "else")) {
             Listing.listFile();
-            lp = ReplaceDefine(p);
+            lp = replaceDefine(p);
             return ELSE;
         }
         if (cmphstr(p, "endt")) {
-            lp = ReplaceDefine(p);
+            lp = replaceDefine(p);
             return ENDTEXTAREA;
         }
         if (cmphstr(p, "dephase")) {
-            lp = ReplaceDefine(p);
+            lp = replaceDefine(p);
             return ENDTEXTAREA;
         } // hmm??
         if (cmphstr(p, "unphase")) {
-            lp = ReplaceDefine(p);
+            lp = replaceDefine(p);
             return ENDTEXTAREA;
         } // hmm??
-        ParseLineSafe();
+        parseLineSafe();
     }
     Fatal("Unexpected end of file"s);
 }
@@ -732,14 +732,14 @@ EReturn SkipFile(const char *pp, const char *err) {
             if (iflevel) {
                 --iflevel;
             } else {
-                lp = ReplaceDefine(p);
+                lp = replaceDefine(p);
                 return ENDIF;
             }
         }
         if (cmphstr(p, "else")) {
             if (!iflevel) {
                 Listing.listFile();
-                lp = ReplaceDefine(p);
+                lp = replaceDefine(p);
                 return ELSE;
             }
         }
@@ -774,7 +774,7 @@ bool readFileToListOfStrings(std::list<std::string> &List, const std::string &En
                 ++p;
             }
             if (cmphstr(p, EndMarker.c_str())) {
-                lp = ReplaceDefine(p);
+                lp = replaceDefine(p);
                 return true;
             }
         }

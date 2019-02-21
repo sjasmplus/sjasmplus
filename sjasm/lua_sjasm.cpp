@@ -750,7 +750,7 @@ static int tolua_sjasm_sj_calc00(lua_State *tolua_S) {
     {
         char *str = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
-            unsigned long tolua_ret = (unsigned long) LuaCalculate(str);
+            unsigned long tolua_ret = (unsigned long) luaCalculate(str);
             tolua_pushnumber(tolua_S, (lua_Number) tolua_ret);
         }
     }
@@ -780,7 +780,7 @@ static int tolua_sjasm_sj_parse_line00(lua_State *tolua_S) {
     {
         char *str = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
-            LuaParseLine(str);
+            luaParseLine(str);
         }
     }
     return 0;
@@ -809,7 +809,7 @@ static int tolua_sjasm_sj_parse_code00(lua_State *tolua_S) {
     {
         char *str = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
-            LuaParseCode(str);
+            luaParseCode(str);
         }
     }
     return 0;
@@ -838,7 +838,7 @@ static int tolua_sjasm__c00(lua_State *tolua_S) {
     {
         char *str = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
-            unsigned long tolua_ret = (unsigned long) LuaCalculate(str);
+            unsigned long tolua_ret = (unsigned long) luaCalculate(str);
             tolua_pushnumber(tolua_S, (lua_Number) tolua_ret);
         }
     }
@@ -868,7 +868,7 @@ static int tolua_sjasm__pl00(lua_State *tolua_S) {
     {
         char *str = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
-            LuaParseLine(str);
+            luaParseLine(str);
         }
     }
     return 0;
@@ -897,7 +897,7 @@ static int tolua_sjasm__pc00(lua_State *tolua_S) {
     {
         char *str = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
-            LuaParseCode(str);
+            luaParseCode(str);
         }
     }
     return 0;

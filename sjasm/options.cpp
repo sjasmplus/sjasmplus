@@ -90,7 +90,7 @@ namespace Options {
             } else if (optName == DOS866) {
                 ConvertEncoding = ENCDOS;
             } else if (optName == DIRBOL) {
-                IsPseudoOpBOF = 1;
+                IsPseudoOpBOF = true;
             } else if (option.size() > 1 && (option[0] == 'i' || option[0] == 'I')) {
                 IncludeDirsList.push_front(option.substr(1));
             } else if (optName == SYM) {

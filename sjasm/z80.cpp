@@ -97,7 +97,7 @@ namespace Z80 {
 
     int GetByte(const char *&p) {
         aint val;
-        if (!ParseExpression(p, val)) {
+        if (!parseExpression(p, val)) {
             Error("Operand expected"s, LASTPASS);
             return 0;
         }
@@ -107,7 +107,7 @@ namespace Z80 {
 
     int GetWord(const char *&p) {
         aint val;
-        if (!ParseExpression(p, val)) {
+        if (!parseExpression(p, val)) {
             Error("Operand expected"s, LASTPASS);
             return 0;
         }
@@ -125,7 +125,7 @@ namespace Z80 {
         if (*pp == ']') {
             return 0;
         }
-        if (!ParseExpression(p, val)) {
+        if (!parseExpression(p, val)) {
             Error("Operand expected"s, LASTPASS);
             return 0;
         }
@@ -137,7 +137,7 @@ namespace Z80 {
         if (GetLocalLabelValue(p, ad)) {
             return 1;
         }
-        if (ParseExpression(p, ad)) {
+        if (parseExpression(p, ad)) {
             return 1;
         }
         Error("Operand expected"s, CATCHALL);
@@ -1759,7 +1759,7 @@ namespace Z80 {
                                 if (oparen(lp, '(')) {
                                     if ((reg = GetRegister(lp)) == Z80_UNK) {
                                         olp = --lp;
-                                        if (!ParseExpression(lp, b)) {
+                                        if (!parseExpression(lp, b)) {
                                             break;
                                         }
                                         if (getparen(olp) == lp) {

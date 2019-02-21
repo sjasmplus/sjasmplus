@@ -313,7 +313,7 @@ int CMacroTable::emit(const std::string &Name, const char *&p) {
         //_COUT ">>" _CMDL line _ENDL;
         ++InMemSrcIt;
         /* ParseLine(); */
-        ParseLineSafe();
+        parseLineSafe();
     }
     STRCPY(line, LINEMAX, tmp.c_str());
 
@@ -362,7 +362,7 @@ void CStructure::copyMembers(CStructure &St, const char *&lp) {
             case SMEMBD24:
             case SMEMBDWORD:
                 synerr = false;
-                if (!ParseExpression(lp, val)) {
+                if (!parseExpression(lp, val)) {
                     val = M.Def;
                 }
                 synerr = true;
@@ -504,7 +504,7 @@ void CStructure::emitmembs(const char *&p) {
 
             case SMEMBBYTE:
                 synerr = false;
-                if (!ParseExpression(p, val)) {
+                if (!parseExpression(p, val)) {
                     val = M.Def;
                 }
                 synerr = true;
@@ -514,7 +514,7 @@ void CStructure::emitmembs(const char *&p) {
                 break;
             case SMEMBWORD:
                 synerr = false;
-                if (!ParseExpression(p, val)) {
+                if (!parseExpression(p, val)) {
                     val = M.Def;
                 }
                 synerr = true;
@@ -525,7 +525,7 @@ void CStructure::emitmembs(const char *&p) {
                 break;
             case SMEMBD24:
                 synerr = false;
-                if (!ParseExpression(p, val)) {
+                if (!parseExpression(p, val)) {
                     val = M.Def;
                 }
                 synerr = true;
@@ -537,7 +537,7 @@ void CStructure::emitmembs(const char *&p) {
                 break;
             case SMEMBDWORD:
                 synerr = false;
-                if (!ParseExpression(p, val)) {
+                if (!parseExpression(p, val)) {
                     val = M.Def;
                 }
                 synerr = true;

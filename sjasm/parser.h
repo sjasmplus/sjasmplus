@@ -35,24 +35,25 @@ extern char sline[LINEMAX2], sline2[LINEMAX2];
 
 void initParser();
 
-bool ParseExpression(const char *&p, aint &nval);
+bool parseExpression(const char *&p, aint &nval);
+bool parseExpPrim(const char *&p, aint &nval);
 
-bool ParseDirective(bool bol = false);
+bool parseDirective(const char *BOL, bool AtBOL);
 
-bool ParseDirective_REPT();
+bool parseDirective_REPT();
 
-void ParseInstruction(); /* added */
-char *ReplaceDefine(const char *lp, char *dest = sline);
-void ParseLine(bool = true);
+void parseInstruction(const char *BOL); /* added */
+char *replaceDefine(const char *lp, char *dest = sline);
+void parseLine(bool ParseLabels = true);
 
-void ParseLineSafe(bool = true);
+void parseLineSafe(bool ParseLabels = true);
 
-void ParseStructLine(CStructure &St);
+void parseStructLine(CStructure &St);
 
-unsigned long LuaCalculate(const char *str);
+unsigned long luaCalculate(const char *str);
 
-void LuaParseLine(char *str);
+void luaParseLine(char *str);
 
-void LuaParseCode(char *str);
+void luaParseCode(char *str);
 
 #endif // SJASMPLUS_READER_H

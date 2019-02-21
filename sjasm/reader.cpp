@@ -652,7 +652,7 @@ int GetBytes(const char *&p, int *e, int add, int dc) {
             }
             /* (end add) */
         } else {
-            if (ParseExpression(p, val)) {
+            if (parseExpression(p, val)) {
                 check8(val);
                 e[t++] = (val + add) & 255;
             } else {
@@ -879,7 +879,7 @@ int GetArray(const char *&p, int *e, int add, int dc) {
             }
             /* (end add) */
         } else {
-            if (ParseExpression(p, val)) {
+            if (parseExpression(p, val)) {
                 check8(val);
                 e[t++] = (val + add) & 255;
             } else {
