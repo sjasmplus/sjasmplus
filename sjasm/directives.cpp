@@ -98,12 +98,7 @@ bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
             return false;
         }
 
-//        char mline[LINEMAX2];
         bool olistmacro;
-        char *ml;
-//        char *pp = mline;
-//        *pp = 0;
-//        STRCPY(pp, LINEMAX2, " ");
         std::string S(DirPos, ' ');
         SkipBlanks(lp);
         if (*lp) {
@@ -113,19 +108,15 @@ bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
         //_COUT pp _ENDL;
         olistmacro = listmacro;
         listmacro = true;
-        ml = STRDUP(line);
-        if (ml == nullptr) {
-            Fatal("Out of memory!"s);
-        }
+        std::string OLine{line};
         do {
             STRCPY(line, LINEMAX, S.c_str());
             parseLineSafe();
         } while (--val);
-        STRCPY(line, LINEMAX, ml);
+        STRCPY(line, LINEMAX, OLine.c_str());
         listmacro = olistmacro;
         donotlist = true;
 
-        free(ml);
         return true;
     }
     lp = olp;
