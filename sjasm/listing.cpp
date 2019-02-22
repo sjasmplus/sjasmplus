@@ -175,8 +175,8 @@ void ListingWriter::addByte(uint8_t Byte) {
 }
 
 void ListingWriter::init() {
-    if (!Options::ListingFName.empty()) {
-        open(Options::ListingFName);
+    if (!options::ListingFName.empty()) {
+        open(options::ListingFName);
         isActive = true;
     } else {
         isActive = false;

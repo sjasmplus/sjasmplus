@@ -47,7 +47,7 @@ namespace {
     const char OUTPUT_DIR[] = "output-dir";
 }
 
-namespace Options {
+namespace options {
     fs::path SymbolListFName;
     fs::path ListingFName;
 

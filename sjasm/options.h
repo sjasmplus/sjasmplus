@@ -33,7 +33,7 @@
 
 #include "fs.h"
 
-namespace Options {
+namespace options {
     extern fs::path SymbolListFName;
     extern fs::path ListingFName;
     extern fs::path ExportFName;

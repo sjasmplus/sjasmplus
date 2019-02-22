@@ -66,7 +66,7 @@ namespace Z80 {
         Z80C_C, Z80C_M, Z80C_NC, Z80C_NZ, Z80C_P, Z80C_PE, Z80C_PO, Z80C_Z, Z80C_UNK
     };
 
-#define ASSERT_FAKE_INSTRUCTIONS(operation) if (!Options::FakeInstructions) { \
+#define ASSERT_FAKE_INSTRUCTIONS(operation) if (!options::FakeInstructions) { \
         operation; \
     }
     //char* my_p = lp;
@@ -3182,7 +3182,7 @@ namespace Z80 {
         Z80Reg reg, reg2;
         int e[7], b;
 
-        if (!Options::FakeInstructions) {
+        if (!options::FakeInstructions) {
             e[0] = 0xed;
             e[1] = 0xa8;
             e[2] = -1;
@@ -3367,7 +3367,7 @@ namespace Z80 {
         Z80Reg reg, reg2;
         int e[11], b;
 
-        if (!Options::FakeInstructions) {
+        if (!options::FakeInstructions) {
             e[0] = 0xed;
             e[1] = 0xa0;
             e[2] = -1;
@@ -5347,7 +5347,7 @@ namespace Z80 {
         OpCodeTable.insert("out"s, OpCode_OUT);
         OpCodeTable.insert("outd"s, OpCode_OUTD);
         OpCodeTable.insert("outi"s, OpCode_OUTI);
-        if (Options::IsReversePOP) {
+        if (options::IsReversePOP) {
             OpCodeTable.insert("pop"s, OpCode_POPreverse);
         } else {
             OpCodeTable.insert("pop"s, OpCode_POP);

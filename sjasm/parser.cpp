@@ -612,7 +612,7 @@ void ParseLabel() {
     if (White()) {
         return;
     }
-    if (Options::IsPseudoOpBOF && parseDirective(lp, true)) {
+    if (options::IsPseudoOpBOF && parseDirective(lp, true)) {
         while (*lp == ':') {
             ++lp;
         }

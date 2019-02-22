@@ -102,7 +102,7 @@ int main(int argc, const char *argv[]) {
         _COUT "based on code of SjASM by Sjoerd Mastijn / http://www.xl2s.tk /" _ENDL;
         _COUT "Copyright 2004-2008 by Aprisobal / http://sjasmplus.sf.net / my@aprisobal.by /" _ENDL;
         _COUT "\nUsage:\nsjasmplus [options] sourcefile(s)" _ENDL;
-        Options::showHelp();
+        options::showHelp();
         return 1;
     }
 
@@ -110,11 +110,11 @@ int main(int argc, const char *argv[]) {
     initLUA();
 
     // init vars
-    Options::NoDestinationFile = true; // no *.out files by default
+    options::NoDestinationFile = true; // no *.out files by default
 
     // get arguments
     while (argv[i]) {
-        Options::getOptions(argv, i);
+        options::getOptions(argv, i);
         if (argv[i]) {
             SourceFNames.emplace_back(fs::path(argv[i++]));
             SourceFNamesCount++;
@@ -126,10 +126,10 @@ int main(int argc, const char *argv[]) {
     global::MainSrcFileDir = SourceFNames.empty() ?
                                 global::CurrentDirectory :
                                 fs::absolute(SourceFNames[0]).parent_path();
-    Options::IncludeDirsList.push_front(global::MainSrcFileDir);
-    Options::IncludeDirsList.push_back(global::CurrentDirectory);
+    options::IncludeDirsList.push_front(global::MainSrcFileDir);
+    options::IncludeDirsList.push_back(global::CurrentDirectory);
 
-    if (!Options::HideLogo) {
+    if (!options::HideLogo) {
         _COUT logo _ENDL;
     }
 
@@ -138,14 +138,14 @@ int main(int argc, const char *argv[]) {
         return 1;
     }
 
-    if (Options::RawOutputFileName.empty()) {
-        Options::RawOutputFileName = SourceFNames[0];
-        Options::RawOutputFileName.replace_extension(".out");
+    if (options::RawOutputFileName.empty()) {
+        options::RawOutputFileName = SourceFNames[0];
+        options::RawOutputFileName.replace_extension(".out");
         if (!global::OutputDirectory.empty()) {
-            Options::RawOutputFileName = Options::RawOutputFileName.filename();
+            options::RawOutputFileName = options::RawOutputFileName.filename();
         }
     }
-    Em.setRawOutputOptions(Options::OverrideRawOutput, Options::RawOutputFileName);
+    Em.setRawOutputOptions(options::OverrideRawOutput, options::RawOutputFileName);
 
     // init some vars
     InitCPU();
@@ -189,18 +189,18 @@ int main(int argc, const char *argv[]) {
     } while (pass < 3);//MAXPASSES);
 
     pass = 9999; /* added for detect end of compiling */
-    if (Options::AddLabelListing) {
+    if (options::AddLabelListing) {
         Listing.write(LabelTable.dump());
     }
 
     // closeListingFile();
 
-    if (!Options::UnrealLabelListFName.empty()) {
-        LabelTable.dumpForUnreal(Options::UnrealLabelListFName);
+    if (!options::UnrealLabelListFName.empty()) {
+        LabelTable.dumpForUnreal(options::UnrealLabelListFName);
     }
 
-    if (!Options::SymbolListFName.empty()) {
-        LabelTable.dumpSymbols(Options::SymbolListFName);
+    if (!options::SymbolListFName.empty()) {
+        LabelTable.dumpSymbols(options::SymbolListFName);
     }
 
     _COUT "Errors: " _CMDL ErrorCount _CMDL ", warnings: " _CMDL WarningCount _CMDL ", compiled: " _CMDL CompiledCurrentLine _CMDL " lines" _ENDL;

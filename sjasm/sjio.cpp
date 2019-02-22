@@ -283,7 +283,7 @@ void OpenFile(const fs::path &FileName) {
     CurrentLocalLine = 0;
     ofilename = global::CurrentFilename;
 
-    if (Options::IsShowFullPath) {
+    if (options::IsShowFullPath) {
         global::CurrentFilename = FileName;
     } else {
         global::CurrentFilename = fs::relative(FileName, global::MainSrcFileDir);
@@ -330,9 +330,9 @@ void includeFile(const fs::path &IncFileName) {
                 !IncFileName.empty() && IncFileName.string()[0] == '<' &&
                 IncFileName.string()[IncFileName.size() - 1] == '>';
         std::list<fs::path> &List1 = CmdLineIncludesFirst ?
-                Options::CmdLineIncludeDirsList : Options::IncludeDirsList;
+                options::CmdLineIncludeDirsList : options::IncludeDirsList;
         std::list<fs::path> &List2 = CmdLineIncludesFirst ?
-                Options::IncludeDirsList : Options::CmdLineIncludeDirsList;
+                options::IncludeDirsList : options::CmdLineIncludeDirsList;
         fs::path FileName = CmdLineIncludesFirst ?
                 IncFileName.string().substr(1, IncFileName.string().size() - 2) :
                 IncFileName;
@@ -439,7 +439,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                 lp = line;
                 *rlppos = 0;
                 std::string Instr;
-                if ((!rlnewline || Options::IsPseudoOpBOF) &&
+                if ((!rlnewline || options::IsPseudoOpBOF) &&
                     !((Instr = getInstr(lp)).empty()) && DirectivesTable.find(Instr)) {
                     // it's a directive
                     while (B.nextIf(':'));
@@ -816,9 +816,9 @@ bool readFileToListOfStrings(std::list<std::string> &List, const std::string &En
 
 void writeExport(const std::string &Name, aint Value) {
     if (!OFSExport.is_open()) {
-        OFSExport.open(Options::ExportFName);
+        OFSExport.open(options::ExportFName);
         if (OFSExport.fail()) {
-            Fatal("Error opening file "s + Options::ExportFName.string());
+            Fatal("Error opening file "s + options::ExportFName.string());
         }
     }
     std::string Str{Name};

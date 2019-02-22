@@ -69,7 +69,7 @@ bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
 
     if (DirectivesTable.callIfExists(Instr, AtBOL)) {
         return true;
-    } else if ((!AtBOL || Options::IsPseudoOpBOF) && Instr[0] == '.' &&
+    } else if ((!AtBOL || options::IsPseudoOpBOF) && Instr[0] == '.' &&
                ((Instr.size() >= 2 && isdigit(Instr[1])) || *lp == '(')) {
         // .number or .(expression) prefix which acts as DUP/REPT for a single line
         aint val;
@@ -1019,7 +1019,7 @@ void dirLABELSLIST() {
         Error("[LABELSLIST] Syntax error. File name not specified"s, bp, CATCHALL);
         return;
     }
-    Options::UnrealLabelListFName = FileName;
+    options::UnrealLabelListFName = FileName;
 }
 
 void dirIF() {
@@ -1426,11 +1426,11 @@ void dirEXPORT() {
     aint val;
     optional<std::string> Label;
 
-    if (Options::ExportFName.empty()) {
-        Options::ExportFName = getSourceFileName();
-        Options::ExportFName.replace_extension(".exp");
+    if (options::ExportFName.empty()) {
+        options::ExportFName = getSourceFileName();
+        options::ExportFName.replace_extension(".exp");
         Warning("[EXPORT] Filename for exportfile was not indicated. Output will be in"s,
-                Options::ExportFName.string());
+                options::ExportFName.string());
     }
     if (!(Label = getID(lp))) {
         Error("[EXPORT] Syntax error"s, lp, CATCHALL);

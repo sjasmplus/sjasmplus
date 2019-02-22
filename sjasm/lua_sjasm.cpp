@@ -26,7 +26,7 @@ TOLUA_API int tolua_sjasm_open(lua_State *tolua_S);
 #include "sjasm.h"
 #include "codeemitter.h"
 
-using namespace Options;
+using namespace options;
 
 /* function to register type */
 static void tolua_reg_types(lua_State *tolua_S) {
