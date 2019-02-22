@@ -145,6 +145,8 @@ list(TRANSFORM TOLUAPP_FILES PREPEND ${TOLUAPP_DIR} OUTPUT_VARIABLE TOLUAPP_FILE
 
 list(APPEND SOURCE_FILES ${LUA_FILES} ${TOLUAPP_FILES})
 
+set(PEGTL_DIR "3rdparty/PEGTL/")
+
 if (WIN32)
   if (CMAKE_COMPILER_IS_GNUCC)
     set (CMAKE_RC_COMPILER_INIT windres)
@@ -155,7 +157,7 @@ if (WIN32)
   set (SOURCE_FILES ${SOURCE_FILES} "${PROJECT_SOURCE_DIR}/win32/sjasmplus.rc")
 endif ()
 
-include_directories(BEFORE sjasm ${LUA_DIR} ${TOLUAPP_DIR})
+include_directories(BEFORE sjasm ${LUA_DIR} ${TOLUAPP_DIR} "${PEGTL_DIR}include")
 
 add_executable(sjasmplus ${SOURCE_FILES})
 
