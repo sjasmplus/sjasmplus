@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Writing to address 0xFFFF was broken
 - ORG was broken if DISP was active
 - No more "Forward reference" error messages in EQU/DEFL
+- Fixed .(expression) prefix (acts like DUP/REPT for a single line)
+- Fixed include search order, including angle bracket includes as [documented](https://github.com/sjasmplus/sjasmplus/wiki#include-filename)
 
 ## 2017-03-11
 - Version 20170311
