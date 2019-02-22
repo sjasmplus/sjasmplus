@@ -34,26 +34,28 @@
 #include "fs.h"
 
 namespace options {
-    extern fs::path SymbolListFName;
-    extern fs::path ListingFName;
-    extern fs::path ExportFName;
-    extern fs::path RawOutputFileName;
-    extern fs::path UnrealLabelListFName;
 
-    extern bool IsPseudoOpBOF;
-    extern bool IsReversePOP;
-    extern bool IsShowFullPath;
-    extern bool AddLabelListing;
-    extern bool HideLogo;
-    extern bool NoDestinationFile;
-    extern bool FakeInstructions;
-    extern bool OverrideRawOutput;
-    extern std::list<fs::path> IncludeDirsList;
-    extern std::list<fs::path> CmdLineIncludeDirsList;
+extern fs::path SymbolListFName;
+extern fs::path ListingFName;
+extern fs::path ExportFName;
+extern fs::path RawOutputFileName;
+extern fs::path UnrealLabelListFName;
 
-    void getOptions(const char **argv, int &argc);
+extern bool IsPseudoOpBOF;
+extern bool IsReversePOP;
+extern bool IsShowFullPath;
+extern bool AddLabelListing;
+extern bool HideLogo;
+extern bool NoDestinationFile;
+extern bool FakeInstructions;
+extern bool OverrideRawOutput;
+extern std::list<fs::path> IncludeDirsList;
+extern std::list<fs::path> CmdLineIncludeDirsList;
 
-    void showHelp();
-} // eof namespace Options
+void getOptions(const char **argv, int &argc);
+
+void showHelp();
+
+} // namespace options
 
 #endif // SJASMPLUS_OPTIONS_H
