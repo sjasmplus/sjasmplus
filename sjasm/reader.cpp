@@ -670,7 +670,8 @@ int GetBytes(const char *&p, int *e, int add, int dc) {
     return t;
 }
 
-std::string GetString(const char *&p) {
+std::string getString(const char *&p, bool KeepBrackets) {
+    std::string Res;
     SkipBlanks(p);
     if (!*p) {
         return std::string{};
@@ -682,29 +683,32 @@ std::string GetString(const char *&p) {
         ++p;
     } else if (*p == '<') {
         limiter = '>';
+        if (KeepBrackets)
+            Res += *p;
         ++p;
     }
     //TODO: research strange ':' logic
-    std::string result;
     while (*p && *p != limiter) {
-        result += *p++;
+        Res += *p++;
     }
     if (*p != limiter) {
-        Error("No closing '"s + std::string{limiter} + "'"s, 0);
+        Error("No closing '"s + std::string{limiter} + "'"s);
     }
     if (*p) {
+        if (*p == '>' && KeepBrackets)
+            Res += *p;
         ++p;
     }
-    return result;
+    return Res;
 }
 
-fs::path GetFileName(const char *&p) {
-    const std::string &result = GetString(p);
+fs::path getFileName(const char *&p) {
+    const std::string &result = getString(p, true);
     return fs::path(result);
 }
 
 HobetaFilename GetHobetaFileName(const char *&p) {
-    const std::string &result = GetString(p);
+    const std::string &result = getString(p);
     return HobetaFilename(result);
 }
 

@@ -517,7 +517,7 @@ void dirINCBIN() {
     aint val;
     int offset = -1, length = -1;
 
-    const fs::path &FileName = GetFileName(lp);
+    const fs::path &FileName = getFileName(lp);
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!parseExpression(lp, val)) {
@@ -553,7 +553,7 @@ void dirINCHOB() {
     unsigned char len[2];
     int offset = 17, length = -1;
 
-    fs::path FileName = fs::path(GetString(lp)); // FIXME
+    fs::path FileName = fs::path(getString(lp)); // FIXME
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!parseExpression(lp, val)) {
@@ -602,7 +602,7 @@ void dirINCTRD() {
     char hdr[16];
     int offset = -1, length = -1, i;
 
-    fs::path FileName = fs::path(GetString(lp));
+    fs::path FileName = fs::path(getString(lp));
     HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
@@ -698,7 +698,7 @@ void dirSAVESNA() {
     aint val;
     int start = -1;
 
-    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
+    const fs::path &FileName = resolveOutputPath(getFileName(lp));
     if (comma(lp)) {
         if (!comma(lp) && StartAddress < 0) {
             if (!parseExpression(lp, val)) {
@@ -742,7 +742,7 @@ void dirSAVETAP() {
     aint val;
     int start = -1;
 
-    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
+    const fs::path &FileName = resolveOutputPath(getFileName(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!parseExpression(lp, val)) {
@@ -785,7 +785,7 @@ void dirSAVEBIN() {
     aint val;
     int start = -1, length = -1;
 
-    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
+    const fs::path &FileName = resolveOutputPath(getFileName(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!parseExpression(lp, val)) {
@@ -839,7 +839,7 @@ void dirSAVEHOB() {
         exec = false;
     }
 
-    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
+    const fs::path &FileName = resolveOutputPath(getFileName(lp));
     HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
@@ -901,7 +901,7 @@ void dirEMPTYTRD() {
         SkipParam(lp);
         return;
     }
-    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
+    const fs::path &FileName = resolveOutputPath(getFileName(lp));
     if (FileName.empty()) {
         Error("[EMPTYTRD] Syntax error"s, bp, CATCHALL);
         return;
@@ -923,7 +923,7 @@ void dirSAVETRD() {
     aint val;
     int start = -1, length = -1, autostart = -1; //autostart added by boo_boo 19_0ct_2008
 
-    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
+    const fs::path &FileName = resolveOutputPath(getFileName(lp));
     HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
@@ -990,7 +990,7 @@ void dirSAVETRD() {
 }
 
 void dirENCODING() {
-    const std::string &enc = GetString(lp);
+    const std::string &enc = getString(lp);
     if (enc.empty()) {
         Error("[ENCODING] Syntax error. No parameters"s, bp, CATCHALL);
         return;
@@ -1014,7 +1014,7 @@ void dirLABELSLIST() {
         SkipParam(lp);
         return;
     }
-    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
+    const fs::path &FileName = resolveOutputPath(getFileName(lp));
     if (FileName.empty()) {
         Error("[LABELSLIST] Syntax error. File name not specified"s, bp, CATCHALL);
         return;
@@ -1211,14 +1211,14 @@ void dirENDIF() {
 }
 
 void dirINCLUDE() {
-    const fs::path &FileName = GetFileName(lp);
+    const fs::path &FileName = getFileName(lp);
     Listing.listFile();
-    IncludeFile(FileName);
+    includeFile(FileName);
     donotlist = true;
 }
 
 void dirOUTPUT() {
-    const fs::path &FileName = resolveOutputPath(GetFileName(lp));
+    const fs::path &FileName = resolveOutputPath(getFileName(lp));
 
     auto Mode = OutputMode::Truncate;
     if (comma(lp)) {
@@ -1599,8 +1599,8 @@ void dirASSERT() {
 }
 
 void dirSHELLEXEC() {
-    const std::string &command = GetString(lp);
-    const std::string &parameters = comma(lp) ? GetString(lp) : ""s;
+    const std::string &command = getString(lp);
+    const std::string &parameters = comma(lp) ? getString(lp) : ""s;
     if (pass == LASTPASS) {
         const std::string log{command + ' ' + parameters};
         _COUT "Executing " _CMDL log _ENDL;
@@ -2019,7 +2019,7 @@ void dirENDLUA() {
 }
 
 void dirINCLUDELUA() {
-    const fs::path &FileName = getAbsPath(GetString(lp));
+    const fs::path &FileName = getAbsPath(getString(lp));
     int error;
 
     if (pass != 1) {

@@ -80,9 +80,9 @@ int GetBytes(const char *&p, int *e, int add, int dc);
 
 bool cmphstr(const char *&p1, const char *p2);
 
-std::string GetString(const char *&p);
+std::string getString(const char *&p, bool KeepBrackets = false);
 
-fs::path GetFileName(const char *&p);
+fs::path getFileName(const char *&p);
 
 HobetaFilename GetHobetaFileName(const char *&p);
 

@@ -286,7 +286,7 @@ void OpenFile(const fs::path &FileName) {
     if (Options::IsShowFullPath) {
         global::CurrentFilename = FileName;
     } else {
-        global::CurrentFilename = fs::relative(FileName, global::TopLevelDirectory);
+        global::CurrentFilename = fs::relative(FileName, global::MainSrcFileDir);
     }
 
     oCurrentDirectory = global::CurrentDirectory;
@@ -307,8 +307,7 @@ void OpenFile(const fs::path &FileName) {
     CurrentLocalLine = oCurrentLocalLine;
 }
 
-/* added */
-void IncludeFile(const fs::path &IncFileName) {
+void includeFile(const fs::path &IncFileName) {
     fs::ifstream *saveIFS = pIFS;
     fs::ifstream incIFS;
     pIFS = &incIFS;
@@ -323,15 +322,37 @@ void IncludeFile(const fs::path &IncFileName) {
     rlcolon = false;
     rlnewline = true;
 
-    ReadLineBuf.fill(0);
+    ReadLineBuf.clear();
 
     auto FullFilePath = getAbsPath(IncFileName);
     if (!fs::exists(FullFilePath)) {
-        for (auto &P : Options::IncludeDirsList) {
-            auto F = P / IncFileName;
+        bool CmdLineIncludesFirst =
+                !IncFileName.empty() && IncFileName.string()[0] == '<' &&
+                IncFileName.string()[IncFileName.size() - 1] == '>';
+        std::list<fs::path> &List1 = CmdLineIncludesFirst ?
+                Options::CmdLineIncludeDirsList : Options::IncludeDirsList;
+        std::list<fs::path> &List2 = CmdLineIncludesFirst ?
+                Options::IncludeDirsList : Options::CmdLineIncludeDirsList;
+        fs::path FileName = CmdLineIncludesFirst ?
+                IncFileName.string().substr(1, IncFileName.string().size() - 2) :
+                IncFileName;
+        bool Done = false;
+        for (auto &P : List1) {
+            auto F = P / FileName;
             if (fs::exists(F)) {
                 FullFilePath = fs::absolute(F, P);
+                Done = true;
                 break;
+            }
+        }
+        if (!Done) {
+            for (auto &P : List2) {
+                auto F = P / FileName;
+                if (fs::exists(F)) {
+                    FullFilePath = fs::absolute(F, P);
+                    Done = true;
+                    break;
+                }
             }
         }
     }

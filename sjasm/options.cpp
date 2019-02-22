@@ -65,12 +65,13 @@ namespace Options {
     bool OverrideRawOutput = false;
 
     std::list<fs::path> IncludeDirsList;
+    std::list<fs::path> CmdLineIncludeDirsList;
 
-    void GetOptions(const char *argv[], int &i) {
+    void getOptions(const char **argv, int &i) {
         while (argv[i] && *argv[i] == '-') {
-            //TODO: do not support single-dashed options
+            bool DoubleDash = argv[i][1] == '-';
             const std::string option(argv[i][1] == '-' ? argv[i++] + 2 : argv[i++] + 1);
-            const std::string::size_type eqPos = option.find("=");
+            const std::string::size_type eqPos = option.find('=');
             const std::string &optName = option.substr(0, eqPos);
             const std::string &optValue = eqPos != std::string::npos ? option.substr(eqPos + 1) : ""s;
 
@@ -78,21 +79,22 @@ namespace Options {
                 //TODO: fix behaviour
                 //nothing
             } else if (optName == LSTLAB) {
-                AddLabelListing = 1;
+                AddLabelListing = true;
             } else if (optName == FULLPATH) {
-                IsShowFullPath = 1;
+                IsShowFullPath = true;
             } else if (optName == REVERSEPOP) {
-                IsReversePOP = 1;
+                IsReversePOP = true;
             } else if (optName == NOLOGO) {
-                HideLogo = 1;
+                HideLogo = true;
             } else if (optName == NOFAKES) {
-                FakeInstructions = 0;
+                FakeInstructions = false;
             } else if (optName == DOS866) {
                 ConvertEncoding = ENCDOS;
             } else if (optName == DIRBOL) {
                 IsPseudoOpBOF = true;
-            } else if (option.size() > 1 && (option[0] == 'i' || option[0] == 'I')) {
-                IncludeDirsList.push_front(option.substr(1));
+            } else if (!DoubleDash && option.size() > 1 && (option[0] == 'i' || option[0] == 'I')) {
+                fs::path P{fs::absolute(option.substr(1))};
+                CmdLineIncludeDirsList.emplace_back(P);
             } else if (optName == SYM) {
                 if (!optValue.empty()) {
                     SymbolListFName = fs::path(optValue);
@@ -124,7 +126,8 @@ namespace Options {
                 }
             } else if (optName == INC) {
                 if (!optValue.empty()) {
-                    IncludeDirsList.push_front(optValue);
+                    fs::path P{fs::absolute(optValue)};
+                    CmdLineIncludeDirsList.emplace_back(P);
                 } else {
                     //TODO: fail
                     _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;
@@ -142,7 +145,7 @@ namespace Options {
         }
     }
 
-    void ShowHelp() {
+    void showHelp() {
         _COUT "\nOption flags as follows:" _ENDL;
         _COUT "  --" _CMDL HELP _CMDL "                   Help information (you see it)" _ENDL;
         _COUT "  -i<path> or -I<path> or --" _CMDL INC _CMDL "=<path>" _ENDL;

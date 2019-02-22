@@ -49,10 +49,11 @@ namespace Options {
     extern bool FakeInstructions;
     extern bool OverrideRawOutput;
     extern std::list<fs::path> IncludeDirsList;
+    extern std::list<fs::path> CmdLineIncludeDirsList;
 
-    void GetOptions(const char *argv[], int &argc);
+    void getOptions(const char **argv, int &argc);
 
-    void ShowHelp();
+    void showHelp();
 } // eof namespace Options
 
 #endif // SJASMPLUS_OPTIONS_H

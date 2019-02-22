@@ -102,7 +102,7 @@ int main(int argc, const char *argv[]) {
         _COUT "based on code of SjASM by Sjoerd Mastijn / http://www.xl2s.tk /" _ENDL;
         _COUT "Copyright 2004-2008 by Aprisobal / http://sjasmplus.sf.net / my@aprisobal.by /" _ENDL;
         _COUT "\nUsage:\nsjasmplus [options] sourcefile(s)" _ENDL;
-        Options::ShowHelp();
+        Options::showHelp();
         return 1;
     }
 
@@ -114,7 +114,7 @@ int main(int argc, const char *argv[]) {
 
     // get arguments
     while (argv[i]) {
-        Options::GetOptions(argv, i);
+        Options::getOptions(argv, i);
         if (argv[i]) {
             SourceFNames.emplace_back(fs::path(argv[i++]));
             SourceFNamesCount++;
@@ -123,10 +123,10 @@ int main(int argc, const char *argv[]) {
 
     // get current directory
     global::CurrentDirectory = fs::current_path();
-    global::TopLevelDirectory = SourceFNames.empty() ?
+    global::MainSrcFileDir = SourceFNames.empty() ?
                                 global::CurrentDirectory :
                                 fs::absolute(SourceFNames[0]).parent_path();
-    Options::IncludeDirsList.push_front(global::TopLevelDirectory);
+    Options::IncludeDirsList.push_front(global::MainSrcFileDir);
     Options::IncludeDirsList.push_back(global::CurrentDirectory);
 
     if (!Options::HideLogo) {
