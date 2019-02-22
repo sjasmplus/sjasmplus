@@ -29,6 +29,7 @@
 #include <string>
 #include <iostream>
 #include <array>
+#include <boost/version.hpp>
 
 using namespace std::string_literals;
 
@@ -283,12 +284,14 @@ void OpenFile(const fs::path &FileName) {
     CurrentLocalLine = 0;
     ofilename = global::CurrentFilename;
 
-    if (options::IsShowFullPath) {
+    if (options::IsShowFullPath || BOOST_VERSION < 106000) {
         global::CurrentFilename = FileName;
-    } else {
+    }
+#if (BOOST_VERSION >= 106000)
+    else {
         global::CurrentFilename = fs::relative(FileName, global::MainSrcFileDir);
     }
-
+#endif
     oCurrentDirectory = global::CurrentDirectory;
     global::CurrentDirectory = FileName.parent_path();
 
@@ -328,7 +331,7 @@ void includeFile(const fs::path &IncFileName) {
     if (!fs::exists(FullFilePath)) {
         bool CmdLineIncludesFirst =
                 !IncFileName.empty() && IncFileName.string()[0] == '<' &&
-                IncFileName.string()[IncFileName.size() - 1] == '>';
+                IncFileName.string()[IncFileName.string().size() - 1] == '>';
         std::list<fs::path> &List1 = CmdLineIncludesFirst ?
                 options::CmdLineIncludeDirsList : options::IncludeDirsList;
         std::list<fs::path> &List2 = CmdLineIncludesFirst ?
@@ -336,6 +339,8 @@ void includeFile(const fs::path &IncFileName) {
         fs::path FileName = CmdLineIncludesFirst ?
                 IncFileName.string().substr(1, IncFileName.string().size() - 2) :
                 IncFileName;
+        if (CmdLineIncludesFirst)
+            FullFilePath = getAbsPath(FileName);
         bool Done = false;
         for (auto &P : List1) {
             auto F = P / FileName;
