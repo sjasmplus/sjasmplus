@@ -45,14 +45,14 @@ extern bool IsPseudoOpBOF;
 extern bool IsReversePOP;
 extern bool IsShowFullPath;
 extern bool AddLabelListing;
-extern bool HideLogo;
+extern bool HideBanner;
 extern bool NoDestinationFile;
 extern bool FakeInstructions;
 extern bool OverrideRawOutput;
 extern std::list<fs::path> IncludeDirsList;
 extern std::list<fs::path> CmdLineIncludeDirsList;
 
-void getOptions(const char **argv, int &argc);
+void getOptions(int argc, char *argv[]);
 
 void showHelp();
 

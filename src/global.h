@@ -13,6 +13,9 @@ namespace global {
     extern fs::path OutputDirectory;
 }
 
+extern std::vector<fs::path> SourceFNames;
+extern int SourceFNamesCount;
+
 extern const char *lp, *bp;
 extern char line[LINEMAX];
 

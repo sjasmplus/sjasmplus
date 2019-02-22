@@ -38,9 +38,6 @@
 //extern CDevicePage *Page;
 //extern char *DeviceID;
 
-extern std::vector<fs::path> SourceFNames;
-extern int CurrentSourceFName;
-
 //physical address, disp != org mode flag
 extern int adrdisp, PseudoORG; /* added for spectrum mode */
 extern char *MemoryPointer; /* added for spectrum ram */

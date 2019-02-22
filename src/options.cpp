@@ -26,11 +26,17 @@
 
 */
 
+#include <string>
+#include <tao/pegtl.hpp>
+
 #include "errors.h"
 #include "global.h"
 #include "options.h"
 
-namespace {
+using namespace tao::pegtl;
+
+namespace options {
+
 const char HELP[] = "help";
 const char LSTLAB[] = "lstlab";
 const char SYM[] = "sym";
@@ -39,15 +45,54 @@ const char EXP[] = "exp";
 const char RAW[] = "raw";
 const char FULLPATH[] = "fullpath";
 const char REVERSEPOP[] = "reversepop";
+const char NOBANNER[] = "nobanner";
 const char NOLOGO[] = "nologo";
 const char NOFAKES[] = "nofakes";
 const char DOS866[] = "dos866";
 const char DIRBOL[] = "dirbol";
 const char INC[] = "inc";
+const char I[] = "I";
+const char I2[] = "i";
 const char OUTPUT_DIR[] = "output-dir";
-}
 
-namespace options {
+enum class OPT {
+    HELP,
+    LSTLAB,
+    SYM,
+    LST,
+    EXP,
+    RAW,
+    FULLPATH,
+    REVERSEPOP,
+    NOBANNER,
+    NOFAKES,
+    DOS866,
+    DIRBOL,
+    INC,
+    OUTPUT_DIR
+};
+
+std::map<std::string, OPT> OptMap{
+        {HELP,       OPT::HELP},
+        {LSTLAB,     OPT::LSTLAB},
+        {SYM,        OPT::SYM},
+        {LST,        OPT::LST},
+        {EXP,        OPT::LST},
+        {RAW,        OPT::RAW},
+        {FULLPATH,   OPT::FULLPATH},
+        {REVERSEPOP, OPT::REVERSEPOP},
+        {NOBANNER,   OPT::NOBANNER},
+        {NOLOGO,     OPT::NOBANNER},
+        {NOFAKES,    OPT::NOFAKES},
+        {DOS866,     OPT::DOS866},
+        {DIRBOL,     OPT::DIRBOL},
+        {INC,        OPT::INC},
+        {I,          OPT::INC},
+        {I2,         OPT::INC},
+        {OUTPUT_DIR, OPT::OUTPUT_DIR}
+};
+
+
 fs::path SymbolListFName;
 fs::path ListingFName;
 
@@ -59,7 +104,7 @@ bool IsPseudoOpBOF = false;
 bool IsReversePOP = false;
 bool IsShowFullPath = false;
 bool AddLabelListing = false;
-bool HideLogo = false;
+bool HideBanner = false;
 bool NoDestinationFile = false;
 bool FakeInstructions = true;
 bool OverrideRawOutput = false;
@@ -67,79 +112,138 @@ bool OverrideRawOutput = false;
 std::list<fs::path> IncludeDirsList;
 std::list<fs::path> CmdLineIncludeDirsList;
 
-void getOptions(const char **argv, int &i) {
-    while (argv[i] && *argv[i] == '-') {
-        bool DoubleDash = argv[i][1] == '-';
-        const std::string option(argv[i][1] == '-' ? argv[i++] + 2 : argv[i++] + 1);
-        const std::string::size_type eqPos = option.find('=');
-        const std::string &optName = option.substr(0, eqPos);
-        const std::string &optValue = eqPos != std::string::npos ? option.substr(eqPos + 1) : ""s;
+struct State {
+    std::string Name;
+    std::string Value;
+};
 
-        if (optName == HELP) {
-            //TODO: fix behaviour
-            //nothing
-        } else if (optName == LSTLAB) {
-            AddLabelListing = true;
-        } else if (optName == FULLPATH) {
-            IsShowFullPath = true;
-        } else if (optName == REVERSEPOP) {
-            IsReversePOP = true;
-        } else if (optName == NOLOGO) {
-            HideLogo = true;
-        } else if (optName == NOFAKES) {
-            FakeInstructions = false;
-        } else if (optName == DOS866) {
-            ConvertEncoding = ENCDOS;
-        } else if (optName == DIRBOL) {
-            IsPseudoOpBOF = true;
-        } else if (!DoubleDash && option.size() > 1 && (option[0] == 'i' || option[0] == 'I')) {
-            fs::path P{fs::absolute(option.substr(1))};
-            CmdLineIncludeDirsList.emplace_back(P);
-        } else if (optName == SYM) {
-            if (!optValue.empty()) {
-                SymbolListFName = fs::path(optValue);
+struct OptValue : until<eof> {};
+
+struct ShortOptName : alpha {};
+
+struct ShortOpt : seq<one<'-'>, ShortOptName, opt<OptValue> > {};
+
+//struct LongOptName : seq<lower, star<sor<lower, one<'-'> > >, lower> {};
+struct LongOptName : plus<lower> {};
+
+struct LongOpt
+   : seq<two<'-'>, LongOptName, opt<one<'='>, OptValue> > {};
+
+struct Grammar : must<sor<ShortOpt, LongOpt> > {};
+
+template< typename Rule>
+struct OptActions : nothing<Rule> {};
+
+template<>
+struct OptActions<ShortOptName> {
+    template<typename Input>
+    static void apply(const Input &In, State &S) {
+        S.Name = In.string();
+    }
+};
+
+template<>
+struct OptActions<OptValue> {
+    template<typename Input>
+    static void apply(const Input &In, State &S) {
+        S.Value = In.string();
+    }
+};
+
+template<>
+struct OptActions<LongOptName> {
+    template<typename Input>
+    static void apply(const Input &In, State &S) {
+        S.Name = In.string();
+    }
+};
+
+void getOptions(int argc, char *argv[]) {
+    for (size_t i = 1; i < (size_t) argc; i++) {
+        State S{};
+        argv_input<> In(argv, i);
+        try {
+            parse<Grammar, OptActions>(In, S);
+            auto O = OptMap.find(S.Name);
+            if (O != OptMap.end()) {
+                switch (O->second) {
+                    case OPT::HELP:
+                        showHelp();
+                        break;
+                    case OPT::LSTLAB:
+                        AddLabelListing = true;
+                        break;
+                    case OPT::SYM:
+                        if (!S.Value.empty()) {
+                            SymbolListFName = fs::path(S.Value);
+                        } else {
+                            Fatal("No filename specified for --"s + S.Name);
+                        }
+                        break;
+                    case OPT::LST:
+                        if (!S.Value.empty()) {
+                            ListingFName = fs::path(S.Value);
+                        } else {
+                            Fatal("No filename specified for --"s + S.Name);
+                        }
+                        break;
+                    case OPT::EXP:
+                        if (!S.Value.empty()) {
+                            ExportFName = fs::path(S.Value);
+                        } else {
+                            Fatal("No filename specified for --"s + S.Name);
+                        }
+                        break;
+                    case OPT::RAW:
+                        if (!S.Value.empty()) {
+                            RawOutputFileName = fs::path(S.Value);
+                            OverrideRawOutput = true;
+                        } else {
+                            Fatal("No filename specified for --"s + S.Name);
+                        }
+                        break;
+                    case OPT::FULLPATH:
+                        IsShowFullPath = true;
+                        break;
+                    case OPT::REVERSEPOP:
+                        IsReversePOP = true;
+                        break;
+                    case OPT::NOBANNER:
+                        HideBanner = true;
+                        break;
+                    case OPT::NOFAKES:
+                        FakeInstructions = false;
+                        break;
+                    case OPT::DOS866:
+                        ConvertEncoding = ENCDOS;
+                        break;
+                    case OPT::DIRBOL:
+                        IsPseudoOpBOF = true;
+                        break;
+                    case OPT::INC:
+                        if (!S.Value.empty()) {
+                            fs::path P{fs::absolute(S.Value)};
+                            CmdLineIncludeDirsList.emplace_back(P);
+                        } else {
+                            Fatal("No directory specified for -"s + (S.Name.size() == 1 ? ""s : "-"s) + S.Name);
+                        }
+                        break;
+                    case OPT::OUTPUT_DIR:
+                        if (!S.Value.empty()) {
+                            global::OutputDirectory = fs::absolute(S.Value);
+                        } else {
+                            Fatal("No directory specified for --"s + S.Name);
+                        }
+                        break;
+
+                }
             } else {
-                //TODO: fail
-                _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;
+                Error("Unrecognized option: "s, S.Name);
             }
-        } else if (optName == LST) {
-            if (!optValue.empty()) {
-                ListingFName = fs::path(optValue);
-            } else {
-                //TODO: fail
-                _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;
-            }
-        } else if (optName == EXP) {
-            if (!optValue.empty()) {
-                ExportFName = fs::path(optValue);
-            } else {
-                //TODO: fail
-                _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;
-            }
-        } else if (optName == RAW) {
-            if (!optValue.empty()) {
-                RawOutputFileName = fs::path(optValue);
-                OverrideRawOutput = true;
-            } else {
-                //TODO: fail
-                _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;
-            }
-        } else if (optName == INC) {
-            if (!optValue.empty()) {
-                fs::path P{fs::absolute(optValue)};
-                CmdLineIncludeDirsList.emplace_back(P);
-            } else {
-                //TODO: fail
-                _COUT "No parameters found in " _CMDL argv[i - 1] _ENDL;
-            }
-        } else if (optName == OUTPUT_DIR) {
-            if (!optValue.empty()) {
-                global::OutputDirectory = fs::absolute(optValue);
-            } else {
-                Fatal("No parameter specified for --output-dir");
-            }
-        } else {
-            _COUT "Unrecognized option: " _CMDL option _ENDL;
+        } catch (parse_error &E) {
+            // Must be a filename
+            SourceFNames.emplace_back(fs::path(argv[i++]));
+            SourceFNamesCount++;
         }
     }
 }
@@ -157,7 +261,7 @@ void showHelp() {
     _COUT "  --" _CMDL OUTPUT_DIR _CMDL "=<directory> Write all output files to the specified directory" _ENDL;
     _COUT "  Note: use OUTPUT, LUA/ENDLUA and other pseudo-ops to control output" _ENDL;
     _COUT " Logging:" _ENDL;
-    _COUT "  --" _CMDL NOLOGO _CMDL "                 Do not show startup message" _ENDL;
+    _COUT "  --" _CMDL NOBANNER _CMDL "               Do not show startup message" _ENDL;
     _COUT "  --" _CMDL FULLPATH _CMDL "               Show full path to error file" _ENDL;
     _COUT " Other:" _ENDL;
     _COUT "  --" _CMDL REVERSEPOP _CMDL "             Enable reverse POP order (as in base SjASM version)" _ENDL;
@@ -165,4 +269,5 @@ void showHelp() {
     _COUT "  --" _CMDL NOFAKES _CMDL "                Disable fake instructions" _ENDL;
     _COUT "  --" _CMDL DOS866 _CMDL "                 Encode from Windows codepage to DOS 866 (Cyrillic)" _ENDL;
 }
+
 } // namespace options
