@@ -6,7 +6,6 @@ extern "C" {
 #include "global.h"
 #include "lua_support.h"
 #include "fs.h"
-#include "sjasm.h"
 
 #include "errors.h"
 
@@ -75,7 +74,7 @@ void Error(const std::string &fout, const std::string &bd, int type) {
 
     /*if (type==FATAL) exit(1);*/
     if (type == FATAL) {
-        ExitASM(1);
+        exit(1);
     }
 }
 

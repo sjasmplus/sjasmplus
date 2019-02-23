@@ -157,7 +157,7 @@ struct OptActions<LongOptName> {
     }
 };
 
-void getOptions(int argc, char *argv[]) {
+void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
     for (size_t i = 1; i < (size_t) argc; i++) {
         State S{};
         argv_input<> In(argv, i);
@@ -241,8 +241,7 @@ void getOptions(int argc, char *argv[]) {
             }
         } catch (parse_error &E) {
             // Must be a filename
-            SourceFNames.emplace_back(fs::path(argv[i++]));
-            SourceFNamesCount++;
+            SrcFileNames.emplace_back(fs::path(argv[i++]));
         }
     }
 }

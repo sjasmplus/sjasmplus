@@ -52,7 +52,7 @@ extern bool OverrideRawOutput;
 extern std::list<fs::path> IncludeDirsList;
 extern std::list<fs::path> CmdLineIncludeDirsList;
 
-void getOptions(int argc, char *argv[]);
+void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames);
 
 void showHelp();
 

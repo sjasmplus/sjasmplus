@@ -49,7 +49,7 @@ void EmitWords(int *words);
 
 void EmitBlock(uint8_t byte, aint len, bool nulled = false);
 
-void OpenFile(const fs::path &FileName);
+void openFile(const fs::path &FileName);
 
 void includeFile(const fs::path &IncFileName);
 
@@ -78,5 +78,8 @@ EReturn SkipFile(const char *pp, const char *err); /* added */
 bool readFileToListOfStrings(std::list<std::string> &List, const std::string &EndMarker);
 
 void writeExport(const std::string &Name, aint Value);
+
+const fs::path getCurrentSrcFileName();
+
 
 #endif //SJASMPLUS_SJIO_H

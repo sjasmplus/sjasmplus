@@ -26,10 +26,7 @@
 
 */
 
-// sjasm.cpp
-
 #include "global.h"
-#include "sjasm.h"
 #include "listing.h"
 #include "z80.h"
 #include "sjio.h"
@@ -38,18 +35,12 @@
 #include "options.h"
 #include "parser.h"
 #include "codeemitter.h"
+#include "fs.h"
 #include "fsutil.h"
 
 #include <sjasmplus_conf.h>
 #include <sstream>
-
-//std::vector<fs::path> SourceFNames;
-int CurrentSourceFName = 0;
-//int SourceFNamesCount = 0;
-
-/* int adrdisp = 0, PseudoORG = 0; */ /* added for spectrum ram */
-char *MemoryPointer = NULL; /* added for spectrum ram */
-aint destlen = 0, size = (aint) -1;
+#include <vector>
 
 void InitPass(int p) {
     initLabels();
@@ -75,27 +66,10 @@ void InitPass(int p) {
     DefineTable["_WARNINGS"s] = "0"s;
 }
 
-void FreeRAM() {
-    delete InMemSrc;
-}
-
-/* added */
-void ExitASM(int p) {
-    FreeRAM();
-    if (pass == LASTPASS) {
-        // closeListingFile();
-    }
-    exit(p);
-}
-
-const fs::path getSourceFileName() {
-    return SourceFNames[CurrentSourceFName];
-}
-
 int main(int argc, char *argv[]) {
+    std::vector<fs::path> SrcFileNames;
     int base_encoding; /* added */
     const char *Banner = "SjASMPlus Z80 Cross-Assembler v." SJASMPLUS_VERSION;
-    int i = 1;
 
     if (argc == 1) {
         _COUT Banner _ENDL;
@@ -113,13 +87,13 @@ int main(int argc, char *argv[]) {
     options::NoDestinationFile = true; // no *.out files by default
 
     // get arguments
-    options::getOptions(argc, argv);
+    options::getOptions(argc, argv, SrcFileNames);
 
     // get current directory
     global::CurrentDirectory = fs::current_path();
-    global::MainSrcFileDir = SourceFNames.empty() ?
+    global::MainSrcFileDir = SrcFileNames.empty() ?
                                 global::CurrentDirectory :
-                                fs::absolute(SourceFNames[0]).parent_path();
+                                fs::absolute(SrcFileNames[0]).parent_path();
     options::IncludeDirsList.push_front(global::MainSrcFileDir);
     options::IncludeDirsList.push_back(global::CurrentDirectory);
 
@@ -127,13 +101,12 @@ int main(int argc, char *argv[]) {
         _COUT Banner _ENDL;
     }
 
-    if (SourceFNames.empty()) {
-        _COUT "No inputfile(s)" _ENDL;
-        return 1;
+    if (SrcFileNames.empty()) {
+        Fatal("No inputfile(s)"s);
     }
 
     if (options::RawOutputFileName.empty()) {
-        options::RawOutputFileName = SourceFNames[0];
+        options::RawOutputFileName = SrcFileNames[0];
         options::RawOutputFileName.replace_extension(".out");
         if (!global::OutputDirectory.empty()) {
             options::RawOutputFileName = options::RawOutputFileName.filename();
@@ -154,8 +127,8 @@ int main(int argc, char *argv[]) {
     Listing.init();
 
     // open source files
-    for (i = 0; i < SourceFNamesCount; i++) {
-        OpenFile(getAbsPath(SourceFNames[i]));
+    for (auto &F : SrcFileNames) {
+        openFile(getAbsPath(F));
     }
 
     _COUT "Pass 1 complete (" _CMDL ErrorCount _CMDL " errors)" _ENDL;
@@ -170,8 +143,8 @@ int main(int argc, char *argv[]) {
         if (pass == LASTPASS) {
 //            OpenDest();
         }
-        for (i = 0; i < SourceFNamesCount; i++) {
-            OpenFile(getAbsPath(SourceFNames[i]));
+        for (auto &F : SrcFileNames) {
+            openFile(getAbsPath(F));
         }
 
         Em.reset();

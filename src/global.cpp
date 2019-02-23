@@ -7,10 +7,6 @@ namespace global {
     fs::path OutputDirectory;
 }
 
-std::vector<fs::path> SourceFNames;
-int SourceFNamesCount = 0;
-
-
 const char *lp, *bp;
 char line[LINEMAX];
 

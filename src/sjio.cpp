@@ -46,6 +46,8 @@ using namespace std::string_literals;
 
 #include "sjio.h"
 
+fs::path CurrentSrcFileName;
+
 bool SourceReaderEnabled = false; // Reset by the END directive
 
 void enableSourceReader() {
@@ -269,9 +271,12 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
     IFS.close();
 }
 
-void OpenFile(const fs::path &FileName) {
+// FileName should be an absolute path
+void openFile(const fs::path &FileName) {
     fs::path ofilename;
     fs::path oCurrentDirectory;
+
+    CurrentSrcFileName = FileName;
 
     if (++IncludeLevel > 20) Fatal("Over 20 files nested");
 
@@ -362,7 +367,7 @@ void includeFile(const fs::path &IncFileName) {
         }
     }
 
-    OpenFile(FullFilePath);
+    openFile(FullFilePath);
 
     rlsquotes = squotes, rldquotes = dquotes, rlspace = space, rlcomment = comment, rlcolon = colon, rlnewline = newline;
     ReadLineBuf = SaveReadLineBuf;
@@ -830,5 +835,10 @@ void writeExport(const std::string &Name, aint Value) {
     Str += ": EQU 0x"s + toHex32(Value) + "\n"s;
     OFSExport << Str;
 }
+
+const fs::path getCurrentSrcFileName() {
+    return CurrentSrcFileName;
+}
+
 
 //eof sjio.cpp

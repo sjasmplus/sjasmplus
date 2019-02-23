@@ -23,7 +23,6 @@ TOLUA_API int tolua_sjasm_open(lua_State *tolua_S);
 #include "global.h"
 #include "io_snapshots.h"
 #include "fsutil.h"
-#include "sjasm.h"
 #include "codeemitter.h"
 
 using namespace options;
@@ -354,7 +353,7 @@ static int tolua_sjasm_sj_exit00(lua_State *tolua_S) {
     {
         int p = ((int) tolua_tonumber(tolua_S, 1, 1));
         {
-            ExitASM(p);
+            exit(p);
         }
     }
     return 0;

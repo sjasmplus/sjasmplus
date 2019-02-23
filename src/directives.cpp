@@ -43,7 +43,6 @@
 #include "io_snapshots.h"
 #include "io_tape.h"
 #include "lua_support.h"
-#include "sjasm.h"
 #include "codeemitter.h"
 #include "fsutil.h"
 
@@ -1427,7 +1426,7 @@ void dirEXPORT() {
     optional<std::string> Label;
 
     if (options::ExportFName.empty()) {
-        options::ExportFName = getSourceFileName();
+        options::ExportFName = getCurrentSrcFileName();
         options::ExportFName.replace_extension(".exp");
         Warning("[EXPORT] Filename for exportfile was not indicated. Output will be in"s,
                 options::ExportFName.string());
