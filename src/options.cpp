@@ -123,8 +123,7 @@ struct ShortOptName : alpha {};
 
 struct ShortOpt : seq<one<'-'>, ShortOptName, opt<OptValue> > {};
 
-//struct LongOptName : seq<lower, star<sor<lower, one<'-'> > >, lower> {};
-struct LongOptName : plus<lower> {};
+struct LongOptName : seq<lower, plus<sor<lower, seq<one<'-'>, lower > > > > {};
 
 struct LongOpt
    : seq<two<'-'>, LongOptName, opt<one<'='>, OptValue> > {};
