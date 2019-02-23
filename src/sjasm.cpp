@@ -115,14 +115,6 @@ int main(int argc, char *argv[]) {
     // get arguments
     options::getOptions(argc, argv);
 
-/*    while (argv[i]) {
-        options::getOptions(argv, i);
-        if (argv[i]) {
-            SourceFNames.emplace_back(fs::path(argv[i++]));
-            SourceFNamesCount++;
-        }
-    } */
-
     // get current directory
     global::CurrentDirectory = fs::current_path();
     global::MainSrcFileDir = SourceFNames.empty() ?
