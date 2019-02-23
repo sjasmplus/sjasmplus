@@ -3,7 +3,6 @@
 namespace global {
     fs::path MainSrcFileDir;
     fs::path CurrentDirectory;
-    fs::path CurrentFilename;
     fs::path OutputDirectory;
 }
 

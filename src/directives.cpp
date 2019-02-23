@@ -1881,7 +1881,7 @@ void _lua_showerror() {
     LuaErr = LuaErr.substr(18);
     ln = std::stoi(LuaErr.substr(0, LuaErr.find(":"s))) + LuaLine;
 
-    ErrorStr = global::CurrentFilename.string() + "("s + std::to_string(ln) + "): error: [LUA]:"s + LuaErr;
+    ErrorStr = getCurrentSrcFileNameForMsg().string() + "("s + std::to_string(ln) + "): error: [LUA]:"s + LuaErr;
 
     if (ErrorStr.find('\n') == std::string::npos) {
         ErrorStr += "\n"s;

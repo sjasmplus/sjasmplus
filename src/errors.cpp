@@ -15,6 +15,16 @@ int PreviousErrorLine = -1;
 
 int WarningCount = 0;
 
+fs::path CurrentSrcFileNameForMsg;
+
+void setCurrentSrcFileNameForMsg(const fs::path &F) {
+    CurrentSrcFileNameForMsg = F;
+}
+
+fs::path &getCurrentSrcFileNameForMsg() {
+    return CurrentSrcFileNameForMsg;
+}
+
 void Error(const std::string &fout, const std::string &bd, int type) {
     lua_Debug ar;
 
@@ -58,7 +68,7 @@ void Error(const std::string &fout, const std::string &bd, int type) {
         } else {
             ln = CurrentLocalLine;
         }
-        ErrorStr = global::CurrentFilename.string() + "("s + std::to_string(ln) + "): error: "s + fout;
+        ErrorStr = getCurrentSrcFileNameForMsg().string() + "("s + std::to_string(ln) + "): error: "s + fout;
     }
 
     if (!bd.empty()) {
@@ -116,7 +126,7 @@ void Warning(const std::string &fout, const std::string &bd, int type) {
         } else {
             ln = CurrentLocalLine;
         }
-        ErrorStr = global::CurrentFilename.string() + "("s + std::to_string(ln) + "): warning: "s + fout;
+        ErrorStr = getCurrentSrcFileNameForMsg().string() + "("s + std::to_string(ln) + "): warning: "s + fout;
     }
 
     if (!bd.empty()) {

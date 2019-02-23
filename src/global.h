@@ -9,7 +9,6 @@
 namespace global {
     extern fs::path MainSrcFileDir;
     extern fs::path CurrentDirectory;
-    extern fs::path CurrentFilename;
     extern fs::path OutputDirectory;
 }
 

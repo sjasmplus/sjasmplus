@@ -9,6 +9,8 @@
 #include <iostream>
 #include <stack>
 
+#include "fs.h"
+
 using namespace std::string_literals;
 
 using std::cout;
@@ -28,6 +30,10 @@ enum EStatus {
 enum EReturn {
     END, ELSE, ENDIF, ENDTEXTAREA, ENDM
 };
+
+void setCurrentSrcFileNameForMsg(const fs::path &F);
+
+fs::path &getCurrentSrcFileNameForMsg();
 
 void Error(const std::string &fout, const std::string &bd, int type = PASS2);
 

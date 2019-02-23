@@ -273,8 +273,8 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
 
 // FileName should be an absolute path
 void openFile(const fs::path &FileName) {
-    fs::path ofilename;
-    fs::path oCurrentDirectory;
+    fs::path SaveCurrentSrcFileNameForMsg;
+    fs::path SaveCurrentDirectory;
 
     CurrentSrcFileName = FileName;
 
@@ -287,17 +287,17 @@ void openFile(const fs::path &FileName) {
 
     aint oCurrentLocalLine = CurrentLocalLine;
     CurrentLocalLine = 0;
-    ofilename = global::CurrentFilename;
+    SaveCurrentSrcFileNameForMsg = getCurrentSrcFileNameForMsg();
 
     if (options::IsShowFullPath || BOOST_VERSION < 106000) {
-        global::CurrentFilename = FileName;
+        setCurrentSrcFileNameForMsg(FileName);
     }
 #if (BOOST_VERSION >= 106000)
     else {
-        global::CurrentFilename = fs::relative(FileName, global::MainSrcFileDir);
+        setCurrentSrcFileNameForMsg(fs::relative(FileName, global::MainSrcFileDir));
     }
 #endif
-    oCurrentDirectory = global::CurrentDirectory;
+    SaveCurrentDirectory = global::CurrentDirectory;
     global::CurrentDirectory = FileName.parent_path();
 
     ReadLineBuf.clear();
@@ -307,8 +307,8 @@ void openFile(const fs::path &FileName) {
 
     pIFS->close();
     --IncludeLevel;
-    global::CurrentDirectory = oCurrentDirectory;
-    global::CurrentFilename = ofilename;
+    global::CurrentDirectory = SaveCurrentDirectory;
+    setCurrentSrcFileNameForMsg(SaveCurrentSrcFileNameForMsg);
     if (CurrentLocalLine > MaxLineNumber) {
         MaxLineNumber = CurrentLocalLine;
     }
