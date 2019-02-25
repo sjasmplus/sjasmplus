@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Added
 - New option: `--output-dir`
 - Smart positioning of stack in 128K `.sna` snapshots
-- --raw option without a parameter enables generation of default `*.out` files
+- `--raw` option without a parameter enables generation of default `*.out` files
 
 ### Fixed
 - `RST 10h` calls in 128K .sna snapshots
