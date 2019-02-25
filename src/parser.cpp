@@ -722,11 +722,11 @@ bool ParseMacro() {
     return false;
 }
 
-void parseInstruction(const char *BOL) {
+void parseInstruction(const char *BOL, const char *BOI) {
     if (parseDirective(BOL, false)) {
         return;
     }
-    Z80::GetOpCode();
+    Z80::getOpCode(BOI);
 }
 
 unsigned char win2dos[] = //taken from HorrorWord %)))
@@ -785,7 +785,7 @@ void parseLine(bool ParseLabels) {
         Listing.listFile();
         return;
     }
-    parseInstruction(BOL);
+    parseInstruction(BOL, lp);
     if (SkipBlanks()) {
         Listing.listFile();
         return;

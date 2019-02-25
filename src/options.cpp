@@ -54,6 +54,7 @@ const char INC[] = "inc";
 const char I[] = "I";
 const char I2[] = "i";
 const char OUTPUT_DIR[] = "output-dir";
+const char TARGET[] = "target";
 
 enum class OPT {
     HELP,
@@ -69,7 +70,8 @@ enum class OPT {
     DOS866,
     DIRBOL,
     INC,
-    OUTPUT_DIR
+    OUTPUT_DIR,
+    TARGET
 };
 
 std::map<std::string, OPT> OptMap{
@@ -89,9 +91,9 @@ std::map<std::string, OPT> OptMap{
         {INC,        OPT::INC},
         {I,          OPT::INC},
         {I2,         OPT::INC},
-        {OUTPUT_DIR, OPT::OUTPUT_DIR}
+        {OUTPUT_DIR, OPT::OUTPUT_DIR},
+        {TARGET,     OPT::TARGET}
 };
-
 
 fs::path SymbolListFName;
 fs::path ListingFName;
@@ -112,18 +114,35 @@ bool EnableOrOverrideRawOutput = false;
 std::list<fs::path> IncludeDirsList;
 std::list<fs::path> CmdLineIncludeDirsList;
 
+target Target = target::Z80;
+
 struct State {
     std::string Name;
     std::string Value;
+    target Target = target::_NOTSPECIFIED;
 };
 
-struct OptValue : until<eof> {};
+struct TargetZ80 : istring<'z', '8', '0'> {};
+
+struct TargetI8080 : istring<'i', '8', '0', '8', '0'> {};
+
+struct TargetUnknown : seq<any, until<eof> > {};
+
+struct TargetValue
+        : seq<sor<TargetZ80, TargetI8080, TargetUnknown>, eof> {};
+
+struct OptValue : sor<TargetValue, until<eof> > {};
 
 struct ShortOptName : alpha {};
 
 struct ShortOpt : seq<one<'-'>, ShortOptName, opt<OptValue> > {};
 
 struct LongOptName : seq<lower, plus<sor<lower, seq<one<'-'>, lower > > > > {};
+
+//struct TargetOptName : string<'t','a','r','g','e','t'> {};
+
+//struct TargetOpt
+//   : seq<TargetOptName, opt<one<'='>, TargetValue > > {};
 
 struct LongOpt
    : seq<two<'-'>, LongOptName, opt<one<'='>, OptValue> > {};
@@ -154,6 +173,40 @@ struct OptActions<LongOptName> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
         S.Name = In.string();
+    }
+};
+
+/*
+template<>
+struct OptActions<TargetOptName> {
+    template<typename Input>
+    static void apply(const Input &In, State &S) {
+        S.Name = In.string();
+    }
+};
+ */
+
+template<>
+struct OptActions<TargetZ80> {
+    template<typename Input>
+    static void apply(const Input &In, State &S) {
+        S.Target = target::Z80;
+    }
+};
+
+template<>
+struct OptActions<TargetI8080> {
+    template<typename Input>
+    static void apply(const Input &In, State &S) {
+        S.Target = target::i8080;
+    }
+};
+
+template<>
+struct OptActions<TargetUnknown> {
+    template<typename Input>
+    static void apply(const Input &In, State &S) {
+        S.Target = target::_UNKNOWN;
     }
 };
 
@@ -232,7 +285,28 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
                             Fatal("No directory specified for --"s + S.Name);
                         }
                         break;
+                    case OPT::TARGET:
+                        switch (S.Target) {
+                            case target::Z80:
+                            case target::i8080:
+                                Target = S.Target;
+                                break;
+                            case target::_NOTSPECIFIED:
+                                Fatal("No target specified for --"s + S.Name);
+                            case target::_UNKNOWN:
+                                Fatal("Unknown target CPU", S.Value);
+                        }
 
+                        if (S.Value == "Z80" || S.Value == "z80") {
+                            Target = target::Z80;
+                        } else if (S.Value == "i8080") {
+                            Target = target::i8080;
+                        } else if (S.Value.empty()) {
+                            Fatal("No target specified for --"s + S.Name);
+                        } else {
+                            Fatal("Unknown target CPU", S.Value);
+                        }
+                        break;
                 }
             } else {
                 Error("Unrecognized option: "s, S.Name);

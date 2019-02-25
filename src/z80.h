@@ -31,7 +31,7 @@
 
 namespace Z80 {
 
-void GetOpCode();
+void getOpCode(const char *_BOI);
 
 void Init();
 

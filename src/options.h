@@ -52,6 +52,15 @@ extern bool EnableOrOverrideRawOutput;
 extern std::list<fs::path> IncludeDirsList;
 extern std::list<fs::path> CmdLineIncludeDirsList;
 
+enum class target {
+    Z80,
+    i8080,
+    _UNKNOWN,
+    _NOTSPECIFIED
+};
+
+extern target Target;
+
 void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames);
 
 void showHelp();

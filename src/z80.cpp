@@ -62,6 +62,36 @@ enum Z80Reg {
     Z80_IY = 0xfd,
     Z80_UNK = -1
 };
+
+std::map<enum Z80Reg, std::string> RegToName = {
+        {Z80_B,   "B"s},
+        {Z80_C,   "C"s},
+        {Z80_D,   "D"s},
+        {Z80_E,   "E"s},
+        {Z80_H,   "H"s},
+        {Z80_L,   "L"s},
+        {Z80_A,   "A"s},
+        {Z80_I,   "I"s},
+        {Z80_R,   "R"s},
+        {Z80_F,   "F"s},
+        {Z80_BC,  "BC"s},
+        {Z80_DE,  "DE"s},
+        {Z80_HL,  "HL"s},
+        {Z80_IXH, "IXH"s},
+        {Z80_IXL, "IXL"s},
+        {Z80_IYH, "IYH"s},
+        {Z80_IYL, "IYL"s},
+        {Z80_SP,  "SP"s},
+        {Z80_AF,  "AF"s},
+        {Z80_IX,  "IX"s},
+        {Z80_IY,  "IY"s},
+        {Z80_UNK, "UNKNOWN"s}
+};
+
+std::string regToName(enum Z80Reg R) {
+    return RegToName.find(R)->second;
+}
+
 enum Z80Cond {
     Z80C_C, Z80C_M, Z80C_NC, Z80C_NZ, Z80C_P, Z80C_PE, Z80C_PO, Z80C_Z, Z80C_UNK
 };
@@ -75,14 +105,30 @@ enum Z80Cond {
 
 FunctionTable OpCodeTable;
 
-/*char *GetRegister(Z80Reg reg){
-		switch (reg) {
-			case Z80_B:
-				return "BC"
-		}
-	}*/
+const char *BOI;
 
-void GetOpCode() {
+void errorIfI8080() {
+    if (options::Target == options::target::i8080) {
+        std::string I(BOI, lp - BOI);
+        Error("Target 'i8080' does not support instruction"s, I, PASS1);
+    }
+}
+
+void errorFormIfI8080() {
+    if (options::Target == options::target::i8080) {
+        std::string I(BOI, lp - BOI);
+        Error("Target 'i8080': instruction with these operands not supported"s, I, PASS1);
+    }
+}
+
+void errorRegIfI8080(enum Z80Reg R) {
+    if (options::Target == options::target::i8080) {
+        Error("Target 'i8080' has no register", regToName(R), PASS1);
+    }
+}
+
+void getOpCode(const char *_BOI) {
+    BOI = _BOI;
     std::string Instr;
     bp = lp;
     if ((Instr = getInstr(lp)).empty()) {
@@ -263,12 +309,14 @@ Z80Reg GetRegister(const char *&p) {
             if (c2 == 'X') {
                 if (!islabchar(*(p + 1))) {
                     ++p;
+                    errorRegIfI8080(Z80_IX);
                     return Z80_IXH;
                 }
             }
             if (c2 == 'Y') {
                 if (!islabchar(*(p + 1))) {
                     ++p;
+                    errorRegIfI8080(Z80_IY);
                     return Z80_IYH;
                 }
             }
@@ -287,14 +335,17 @@ Z80Reg GetRegister(const char *&p) {
                 char c3 = (char) toupper(*(p + 1));
                 if (!islabchar(c3)) {
                     ++p;
+                    errorRegIfI8080(Z80_IX);
                     return Z80_IX;
                 }
                 if (c3 == 'H' && !islabchar(*(p + 2))) {
                     p += 2;
+                    errorRegIfI8080(Z80_IX);
                     return Z80_IXH;
                 }
                 if (c3 == 'L' && !islabchar(*(p + 2))) {
                     p += 2;
+                    errorRegIfI8080(Z80_IX);
                     return Z80_IXL;
                 }
             }
@@ -302,18 +353,22 @@ Z80Reg GetRegister(const char *&p) {
                 char c3 = (char) toupper(*(p + 1));
                 if (!islabchar(c3)) {
                     ++p;
+                    errorRegIfI8080(Z80_IY);
                     return Z80_IY;
                 }
                 if (c3 == 'H' && !islabchar(*(p + 2))) {
                     p += 2;
+                    errorRegIfI8080(Z80_IY);
                     return Z80_IYH;
                 }
                 if (c3 == 'L' && !islabchar(*(p + 2))) {
                     p += 2;
+                    errorRegIfI8080(Z80_IY);
                     return Z80_IYL;
                 }
             }
             if (!islabchar(*p)) {
+                errorRegIfI8080(Z80_I);
                 return Z80_I;
             }
             break;
@@ -324,12 +379,14 @@ Z80Reg GetRegister(const char *&p) {
             if (c2 == 'H') {
                 if (!islabchar(*(p + 1))) {
                     ++p;
+                    errorRegIfI8080(Z80_IY);
                     return Z80_IYH;
                 }
             }
             if (c2 == 'L') {
                 if (!islabchar(*(p + 1))) {
                     ++p;
+                    errorRegIfI8080(Z80_IY);
                     return Z80_IYL;
                 }
             }
@@ -340,12 +397,14 @@ Z80Reg GetRegister(const char *&p) {
             if (c2 == 'H') {
                 if (!islabchar(*(p + 1))) {
                     ++p;
+                    errorRegIfI8080(Z80_IX);
                     return Z80_IXH;
                 }
             }
             if (c2 == 'L') {
                 if (!islabchar(*(p + 1))) {
                     ++p;
+                    errorRegIfI8080(Z80_IX);
                     return Z80_IXL;
                 }
             }
@@ -356,12 +415,14 @@ Z80Reg GetRegister(const char *&p) {
             if (c2 == 'X') {
                 if (!islabchar(*(p + 1))) {
                     ++p;
+                    errorRegIfI8080(Z80_IX);
                     return Z80_IXL;
                 }
             }
             if (c2 == 'Y') {
                 if (!islabchar(*(p + 1))) {
                     ++p;
+                    errorRegIfI8080(Z80_IX);
                     return Z80_IYL;
                 }
             }
@@ -373,6 +434,7 @@ Z80Reg GetRegister(const char *&p) {
             break;
         case 'R':
             if (!islabchar(*p)) {
+                errorRegIfI8080(Z80_R);
                 return Z80_R;
             }
             break;
@@ -408,18 +470,22 @@ void OpCode_ADC() {
                     case Z80_BC:
                         e[0] = 0xed;
                         e[1] = 0x4a;
+                        errorFormIfI8080();
                         break;
                     case Z80_DE:
                         e[0] = 0xed;
                         e[1] = 0x5a;
+                        errorFormIfI8080();
                         break;
                     case Z80_HL:
                         e[0] = 0xed;
                         e[1] = 0x6a;
+                        errorFormIfI8080();
                         break;
                     case Z80_SP:
                         e[0] = 0xed;
                         e[1] = 0x7a;
+                        errorFormIfI8080();
                         break;
                     default:;
                 }
@@ -773,6 +839,7 @@ void OpCode_AND() {
 
 /* modified */
 void OpCode_BIT() {
+    errorIfI8080();
     Z80Reg reg;
     int e[5], bit;
     do {
@@ -1001,6 +1068,7 @@ void OpCode_CP() {
 }
 
 void OpCode_CPD() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xa9;
@@ -1009,6 +1077,7 @@ void OpCode_CPD() {
 }
 
 void OpCode_CPDR() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xb9;
@@ -1017,6 +1086,7 @@ void OpCode_CPDR() {
 }
 
 void OpCode_CPI() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xa1;
@@ -1025,6 +1095,7 @@ void OpCode_CPI() {
 }
 
 void OpCode_CPIR() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xb1;
@@ -1143,6 +1214,7 @@ void OpCode_DI() {
 
 /* modified */
 void OpCode_DJNZ() {
+    errorIfI8080();
     int jmp;
     aint nad;
     int e[3];
@@ -1189,6 +1261,7 @@ void OpCode_EX() {
                     break;
                 }
             }
+            errorIfI8080();
             e[0] = 0x08;
             break;
         case Z80_DE:
@@ -1242,6 +1315,7 @@ void OpCode_EX() {
 
 /* added */
 void OpCode_EXA() {
+    errorIfI8080();
     EmitByte(0x08);
 }
 
@@ -1251,6 +1325,7 @@ void OpCode_EXD() {
 }
 
 void OpCode_EXX() {
+    errorFormIfI8080();
     EmitByte(0xd9);
 }
 
@@ -1259,6 +1334,7 @@ void OpCode_HALT() {
 }
 
 void OpCode_IM() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[2] = -1;
@@ -1298,6 +1374,7 @@ void OpCode_IN() {
                     if (cparen(lp)) {
                         e[0] = 0xed;
                     }
+                    errorFormIfI8080();
                 } else {
                     e[1] = GetByte(lp);
                     if (cparen(lp)) {
@@ -1322,6 +1399,7 @@ void OpCode_IN() {
                     break;
                 }
                 if (cparen(lp)) {
+                    errorFormIfI8080();
                     e[0] = 0xed;
                 }
                 switch (reg) {
@@ -1469,6 +1547,7 @@ void OpCode_INC() {
 }
 
 void OpCode_IND() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xaa;
@@ -1477,6 +1556,7 @@ void OpCode_IND() {
 }
 
 void OpCode_INDR() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xba;
@@ -1485,6 +1565,7 @@ void OpCode_INDR() {
 }
 
 void OpCode_INI() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xa2;
@@ -1493,6 +1574,7 @@ void OpCode_INI() {
 }
 
 void OpCode_INIR() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xb2;
@@ -1620,6 +1702,7 @@ void OpCode_JP() {
 
 /* modified */
 void OpCode_JR() {
+    errorIfI8080();
     aint jrad = 0;
     int e[4], jmp = 0;
     do {
@@ -2493,6 +2576,7 @@ void OpCode_LD() {
                                 if (cparen(lp)) {
                                     e[0] = 0xed;
                                 }
+                                errorFormIfI8080();
                                 break;
                             }
                         } else {
@@ -2505,6 +2589,7 @@ void OpCode_LD() {
                                         e[1] = 0x4b;
                                         e[2] = b & 255;
                                         e[3] = (b >> 8) & 255;
+                                        errorFormIfI8080();
                                     } else {
                                         e[0] = 0x01;
                                         e[1] = b & 255;
@@ -2592,6 +2677,7 @@ void OpCode_LD() {
                                 if (cparen(lp)) {
                                     e[0] = 0xed;
                                 }
+                                errorFormIfI8080();
                                 break;
                             }
                         } else {
@@ -2604,6 +2690,7 @@ void OpCode_LD() {
                                         e[1] = 0x5b;
                                         e[2] = b & 255;
                                         e[3] = (b >> 8) & 255;
+                                        errorFormIfI8080();
                                     } else {
                                         e[0] = 0x11;
                                         e[1] = b & 255;
@@ -2759,6 +2846,7 @@ void OpCode_LD() {
                             if (cparen(lp)) {
                                 e[0] = 0xed;
                             }
+                            errorFormIfI8080();
                         } else {
                             b = GetWord(lp);
                             e[0] = 0x31;
@@ -3129,12 +3217,14 @@ void OpCode_LD() {
                                 e[1] = 0x43;
                                 e[2] = b & 255;
                                 e[3] = (b >> 8) & 255;
+                                errorFormIfI8080();
                                 break;
                             case Z80_DE:
                                 e[0] = 0xed;
                                 e[1] = 0x53;
                                 e[2] = b & 255;
                                 e[3] = (b >> 8) & 255;
+                                errorFormIfI8080();
                                 break;
                             case Z80_HL:
                                 e[0] = 0x22;
@@ -3158,6 +3248,7 @@ void OpCode_LD() {
                                 e[1] = 0x73;
                                 e[2] = b & 255;
                                 e[3] = (b >> 8) & 255;
+                                errorFormIfI8080();
                                 break;
                             default:
                                 break;
@@ -3179,6 +3270,7 @@ void OpCode_LD() {
 
 /* modified */
 void OpCode_LDD() {
+    errorIfI8080();
     Z80Reg reg, reg2;
     int e[7], b;
 
@@ -3355,6 +3447,7 @@ void OpCode_LDD() {
 }
 
 void OpCode_LDDR() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xb8;
@@ -3364,6 +3457,7 @@ void OpCode_LDDR() {
 
 /* modified */
 void OpCode_LDI() {
+    errorIfI8080();
     Z80Reg reg, reg2;
     int e[11], b;
 
@@ -3648,6 +3742,7 @@ void OpCode_LDI() {
 }
 
 void OpCode_LDIR() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xb0;
@@ -3706,6 +3801,7 @@ void OpCode_MULUW() {
 }
 
 void OpCode_NEG() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0x44;
@@ -3812,6 +3908,7 @@ void OpCode_OR() {
 }
 
 void OpCode_OTDR() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xbb;
@@ -3820,6 +3917,7 @@ void OpCode_OTDR() {
 }
 
 void OpCode_OTIR() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xb3;
@@ -3842,36 +3940,44 @@ void OpCode_OUT() {
                             case Z80_A:
                                 e[0] = 0xed;
                                 e[1] = 0x79;
+                                errorFormIfI8080();
                                 break;
                             case Z80_B:
                                 e[0] = 0xed;
                                 e[1] = 0x41;
+                                errorFormIfI8080();
                                 break;
                             case Z80_C:
                                 e[0] = 0xed;
                                 e[1] = 0x49;
+                                errorFormIfI8080();
                                 break;
                             case Z80_D:
                                 e[0] = 0xed;
                                 e[1] = 0x51;
+                                errorFormIfI8080();
                                 break;
                             case Z80_E:
                                 e[0] = 0xed;
                                 e[1] = 0x59;
+                                errorFormIfI8080();
                                 break;
                             case Z80_H:
                                 e[0] = 0xed;
                                 e[1] = 0x61;
+                                errorFormIfI8080();
                                 break;
                             case Z80_L:
                                 e[0] = 0xed;
                                 e[1] = 0x69;
+                                errorFormIfI8080();
                                 break;
                             default:
                                 if (!GetByte(lp)) {
                                     e[0] = 0xed;
                                 }
                                 e[1] = 0x71;
+                                errorFormIfI8080();
                                 break;
                         }
                     }
@@ -3899,6 +4005,7 @@ void OpCode_OUT() {
 }
 
 void OpCode_OUTD() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xab;
@@ -3907,6 +4014,7 @@ void OpCode_OUTD() {
 }
 
 void OpCode_OUTI() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0xa3;
@@ -4026,6 +4134,7 @@ void OpCode_PUSH() {
 
 /* modified */
 void OpCode_RES() {
+    errorIfI8080();
     Z80Reg reg;
     int e[5], bit;
     do {
@@ -4144,6 +4253,7 @@ void OpCode_RET() {
 }
 
 void OpCode_RETI() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0x4d;
@@ -4152,6 +4262,7 @@ void OpCode_RETI() {
 }
 
 void OpCode_RETN() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0x45;
@@ -4161,6 +4272,7 @@ void OpCode_RETN() {
 
 /* modified */
 void OpCode_RL() {
+    errorIfI8080();
     Z80Reg reg;
     int e[5];
     do {
@@ -4250,6 +4362,7 @@ void OpCode_RLA() {
 
 /* modified */
 void OpCode_RLC() {
+    errorIfI8080();
     Z80Reg reg;
     int e[5];
     do {
@@ -4320,6 +4433,7 @@ void OpCode_RLCA() {
 }
 
 void OpCode_RLD() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0x6f;
@@ -4329,6 +4443,7 @@ void OpCode_RLD() {
 
 /* modified */
 void OpCode_RR() {
+    errorIfI8080();
     Z80Reg reg;
     int e[5];
     do {
@@ -4418,6 +4533,7 @@ void OpCode_RRA() {
 
 /* modified */
 void OpCode_RRC() {
+    errorIfI8080();
     Z80Reg reg;
     int e[5];
     do {
@@ -4488,6 +4604,7 @@ void OpCode_RRCA() {
 }
 
 void OpCode_RRD() {
+    errorIfI8080();
     int e[3];
     e[0] = 0xed;
     e[1] = 0x67;
@@ -4558,18 +4675,22 @@ void OpCode_SBC() {
                     case Z80_BC:
                         e[0] = 0xed;
                         e[1] = 0x42;
+                        errorFormIfI8080();
                         break;
                     case Z80_DE:
                         e[0] = 0xed;
                         e[1] = 0x52;
+                        errorFormIfI8080();
                         break;
                     case Z80_HL:
                         e[0] = 0xed;
                         e[1] = 0x62;
+                        errorFormIfI8080();
                         break;
                     case Z80_SP:
                         e[0] = 0xed;
                         e[1] = 0x72;
+                        errorFormIfI8080();
                         break;
                     default:;
                 }
@@ -4667,6 +4788,7 @@ void OpCode_SCF() {
 
 /* modified */
 void OpCode_SET() {
+    errorIfI8080();
     Z80Reg reg;
     int e[5], bit;
     do {
@@ -4741,6 +4863,7 @@ void OpCode_SET() {
 
 /* modified */
 void OpCode_SLA() {
+    errorIfI8080();
     Z80Reg reg;
     int e[5];
     do {
@@ -4823,6 +4946,7 @@ void OpCode_SLA() {
 
 /* modified */
 void OpCode_SLL() {
+    errorIfI8080();
     Z80Reg reg;
     int e[5];
     do {
@@ -4908,6 +5032,7 @@ void OpCode_SLL() {
 
 /* modified */
 void OpCode_SRA() {
+    errorIfI8080();
     Z80Reg reg;
     int e[5];
     do {
@@ -4993,6 +5118,7 @@ void OpCode_SRA() {
 
 /* modified */
 void OpCode_SRL() {
+    errorIfI8080();
     Z80Reg reg;
     int e[5];
     do {

@@ -42,7 +42,7 @@ bool parseDirective(const char *BOL, bool AtBOL);
 
 bool parseDirective_REPT();
 
-void parseInstruction(const char *BOL); /* added */
+void parseInstruction(const char *BOL, const char *BOI);
 char *replaceDefine(const char *lp, char *dest = sline);
 void parseLine(bool ParseLabels = true);
 
