@@ -1,7 +1,6 @@
 #ifndef SJASMPLUS_CODEEMITTER_H
 #define SJASMPLUS_CODEEMITTER_H
 
-#include "defines.h"
 #include "memory.h"
 #include "fs.h"
 
@@ -24,9 +23,11 @@ private:
     MemoryManager MemManager;
 
     fs::path RawOutputFileName;
-    bool OverrideRawOutput = false;
+    bool RawOutputEnable = false;
+    bool RawOutputOverride = false;
     fs::fstream RawOFS;
     uintmax_t ForcedRawOutputSize = 0;
+    fs::path ForcedOutputDirectory;
 
     void enforceFileSize();
 
@@ -152,16 +153,23 @@ public:
         return MemManager.getPtrToPageInSlot(Slot);
     }
 
-    void setRawOutputOptions(bool Override, const fs::path &FileName);
+    void setRawOutputOptions(bool EnableOrOverride,
+                             const fs::path &FileName,
+                             const fs::path &_ForcedOutputDirectory);
 
     void setRawOutput(const fs::path &FileName, OutputMode Mode = OutputMode::Truncate);
 
-    bool isRawOutputOverriden() { return OverrideRawOutput; }
+    bool isRawOutputEnabled() { return RawOutputEnable; }
+
+    bool isRawOutputOverriden() { return RawOutputOverride; }
 
     boost::optional<std::string> seekRawOutput(std::streamoff Offset, std::ios_base::seekdir Method);
 
     void setForcedRawOutputFileSize(uintmax_t NewSize) { ForcedRawOutputSize = NewSize; }
+
     bool isForcedRawOutputSize() { return ForcedRawOutputSize > 0; }
+
+    fs::path resolveOutputPath(const fs::path &p);
 };
 
 fs::path resolveOutputPath(const fs::path &p);

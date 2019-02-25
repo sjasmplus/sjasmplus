@@ -697,7 +697,7 @@ void dirSAVESNA() {
     aint val;
     int start = -1;
 
-    const fs::path &FileName = resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
     if (comma(lp)) {
         if (!comma(lp) && StartAddress < 0) {
             if (!parseExpression(lp, val)) {
@@ -741,7 +741,7 @@ void dirSAVETAP() {
     aint val;
     int start = -1;
 
-    const fs::path &FileName = resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!parseExpression(lp, val)) {
@@ -784,7 +784,7 @@ void dirSAVEBIN() {
     aint val;
     int start = -1, length = -1;
 
-    const fs::path &FileName = resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!parseExpression(lp, val)) {
@@ -838,7 +838,7 @@ void dirSAVEHOB() {
         exec = false;
     }
 
-    const fs::path &FileName = resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
     HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
@@ -900,7 +900,7 @@ void dirEMPTYTRD() {
         SkipParam(lp);
         return;
     }
-    const fs::path &FileName = resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
     if (FileName.empty()) {
         Error("[EMPTYTRD] Syntax error"s, bp, CATCHALL);
         return;
@@ -922,7 +922,7 @@ void dirSAVETRD() {
     aint val;
     int start = -1, length = -1, autostart = -1; //autostart added by boo_boo 19_0ct_2008
 
-    const fs::path &FileName = resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
     HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
@@ -1013,7 +1013,7 @@ void dirLABELSLIST() {
         SkipParam(lp);
         return;
     }
-    const fs::path &FileName = resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
     if (FileName.empty()) {
         Error("[LABELSLIST] Syntax error. File name not specified"s, bp, CATCHALL);
         return;
@@ -1217,7 +1217,7 @@ void dirINCLUDE() {
 }
 
 void dirOUTPUT() {
-    const fs::path &FileName = resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
 
     auto Mode = OutputMode::Truncate;
     if (comma(lp)) {
@@ -1233,7 +1233,7 @@ void dirOUTPUT() {
             Error("Unknown output mode (known modes are t,r and a)"s, bp, CATCHALL);
         }
     }
-    if (pass == LASTPASS) {
+    if (pass == LASTPASS && Em.isRawOutputEnabled()) {
         if (!Em.isRawOutputOverriden()) {
             Em.setRawOutput(FileName, Mode);
         } else {

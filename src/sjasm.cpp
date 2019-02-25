@@ -105,14 +105,16 @@ int main(int argc, char *argv[]) {
         Fatal("No inputfile(s)"s);
     }
 
-    if (options::RawOutputFileName.empty()) {
+    if (options::EnableOrOverrideRawOutput && options::RawOutputFileName.empty()) {
         options::RawOutputFileName = SrcFileNames[0];
         options::RawOutputFileName.replace_extension(".out");
-        if (!global::OutputDirectory.empty()) {
+        if (!options::OutputDirectory.empty()) {
             options::RawOutputFileName = options::RawOutputFileName.filename();
         }
     }
-    Em.setRawOutputOptions(options::OverrideRawOutput, options::RawOutputFileName);
+    Em.setRawOutputOptions(options::EnableOrOverrideRawOutput,
+                           options::RawOutputFileName,
+                           options::OutputDirectory);
 
     // init some vars
     InitCPU();

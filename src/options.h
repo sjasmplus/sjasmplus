@@ -39,6 +39,7 @@ extern fs::path SymbolListFName;
 extern fs::path ListingFName;
 extern fs::path ExportFName;
 extern fs::path RawOutputFileName;
+extern fs::path OutputDirectory;
 extern fs::path UnrealLabelListFName;
 
 extern bool IsPseudoOpBOF;
@@ -48,7 +49,7 @@ extern bool AddLabelListing;
 extern bool HideBanner;
 extern bool NoDestinationFile;
 extern bool FakeInstructions;
-extern bool OverrideRawOutput;
+extern bool EnableOrOverrideRawOutput;
 extern std::list<fs::path> IncludeDirsList;
 extern std::list<fs::path> CmdLineIncludeDirsList;
 

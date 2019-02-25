@@ -98,6 +98,7 @@ fs::path ListingFName;
 
 fs::path ExportFName;
 fs::path RawOutputFileName;
+fs::path OutputDirectory;
 fs::path UnrealLabelListFName;
 
 bool IsPseudoOpBOF = false;
@@ -107,7 +108,7 @@ bool AddLabelListing = false;
 bool HideBanner = false;
 bool NoDestinationFile = false;
 bool FakeInstructions = true;
-bool OverrideRawOutput = false;
+bool EnableOrOverrideRawOutput = false;
 
 std::list<fs::path> IncludeDirsList;
 std::list<fs::path> CmdLineIncludeDirsList;
@@ -196,10 +197,8 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
                     case OPT::RAW:
                         if (!S.Value.empty()) {
                             RawOutputFileName = fs::path(S.Value);
-                            OverrideRawOutput = true;
-                        } else {
-                            Fatal("No filename specified for --"s + S.Name);
                         }
+                        EnableOrOverrideRawOutput = true;
                         break;
                     case OPT::FULLPATH:
                         IsShowFullPath = true;
@@ -229,7 +228,7 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
                         break;
                     case OPT::OUTPUT_DIR:
                         if (!S.Value.empty()) {
-                            global::OutputDirectory = fs::absolute(S.Value);
+                            OutputDirectory = fs::absolute(S.Value);
                         } else {
                             Fatal("No directory specified for --"s + S.Name);
                         }

@@ -1,4 +1,3 @@
-#include "global.h"
 #include "fsutil.h"
 #include "codeemitter.h"
 
@@ -49,9 +48,15 @@ void CodeEmitter::doEnt() {
     Disp = false;
 }
 
-void CodeEmitter::setRawOutputOptions(bool Override, const fs::path &FileName) {
-    OverrideRawOutput = Override;
-    setRawOutput(FileName);
+void CodeEmitter::setRawOutputOptions(bool EnableOrOverride,
+                                      const fs::path &FileName,
+                                      const fs::path &_ForcedOutputDirectory) {
+    if (EnableOrOverride) {
+        RawOutputEnable = true;
+        RawOutputOverride = !FileName.empty();
+        setRawOutput(FileName);
+    }
+    ForcedOutputDirectory = _ForcedOutputDirectory;
 }
 
 void CodeEmitter::setRawOutput(const fs::path &FileName, OutputMode Mode) {
@@ -70,7 +75,7 @@ void CodeEmitter::setRawOutput(const fs::path &FileName, OutputMode Mode) {
         default:
             break;
     }
-    RawOutputFileName = global::OutputDirectory.empty() ? FileName : resolveOutputPath(FileName);
+    RawOutputFileName = ForcedOutputDirectory.empty() ? FileName : resolveOutputPath(FileName);
     RawOFS.open(RawOutputFileName, OpenMode);
 }
 
@@ -108,9 +113,9 @@ void CodeEmitter::enforceFileSize() {
     }
 }
 
-fs::path resolveOutputPath(const fs::path &p) {
-    if (!global::OutputDirectory.empty()) {
-        return fs::absolute(p, global::OutputDirectory);
+fs::path CodeEmitter::resolveOutputPath(const fs::path &p) {
+    if (!ForcedOutputDirectory.empty()) {
+        return fs::absolute(p, ForcedOutputDirectory);
     } else {
         return getAbsPath(p);
     }
