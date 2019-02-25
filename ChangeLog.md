@@ -5,16 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Version 2019xxyy
 
 ### Added
-- New option: --output-dir
-- Smart positioning of stack in 128K .sna snapshots
+- New option: `--output-dir`
+- Smart positioning of stack in 128K `.sna` snapshots
+- --raw option without a parameter enables generation of default `*.out` files
 
 ### Fixed
-- RST 10h calls in 128K .sna snapshots
-- Writing to address 0xFFFF was broken
-- ORG was broken if DISP was active
-- No more "Forward reference" error messages in EQU/DEFL
-- Fixed .(expression) prefix (acts like DUP/REPT for a single line)
-- Fixed include search order, including angle bracket includes as [documented](https://github.com/sjasmplus/sjasmplus/wiki#include-filename)
+- `RST 10h` calls in 128K .sna snapshots
+- Writing to address `0xFFFF` was broken
+- `ORG` was broken if `DISP` was active
+- No more "Forward reference" error messages in `EQU`/`DEFL`
+- Fixed `.(expression)` prefix (acts like `DUP`/`REPT` for a single line)
+- Fixed include search order, including angle bracketed includes as [documented](https://github.com/sjasmplus/sjasmplus/wiki#include-filename)
 
 ## 2017-03-11
 - Version 20170311

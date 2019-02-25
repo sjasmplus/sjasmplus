@@ -47,7 +47,6 @@ extern bool IsReversePOP;
 extern bool IsShowFullPath;
 extern bool AddLabelListing;
 extern bool HideBanner;
-extern bool NoDestinationFile;
 extern bool FakeInstructions;
 extern bool EnableOrOverrideRawOutput;
 extern std::list<fs::path> IncludeDirsList;

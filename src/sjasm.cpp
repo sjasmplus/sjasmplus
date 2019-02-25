@@ -83,9 +83,6 @@ int main(int argc, char *argv[]) {
     // init LUA
     initLUA();
 
-    // init vars
-    options::NoDestinationFile = true; // no *.out files by default
-
     // get arguments
     options::getOptions(argc, argv, SrcFileNames);
 
