@@ -30,10 +30,12 @@
 #define SJASMPLUS_Z80_H
 
 namespace Z80 {
-    void GetOpCode();
 
-    void Init();
-} //eof namespace Z80
+void GetOpCode();
+
+void Init();
+
+} // namespace Z80
 
 void InitCPU();
 
