@@ -19,6 +19,7 @@ set(SOURCE_FILES
 #        resources/SaveTAP_ZX_Spectrum_128K.bin.h
 #        resources/SaveTAP_ZX_Spectrum_256K.bin.h
 #        resources/SaveTAP_ZX_Spectrum_48K.bin.h
+        sjasm.cpp
         codeemitter.cpp
         codeemitter.h
         directives.cpp
@@ -56,8 +57,6 @@ set(SOURCE_FILES
         parser.h
         reader.cpp
         reader.h
-        sjasm.cpp
-        sjasm.h
         sjio.cpp
         sjio.h
         support.cpp
