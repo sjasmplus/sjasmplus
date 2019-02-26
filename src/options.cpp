@@ -320,7 +320,7 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
 
 void showHelp() {
     _COUT "\nOption flags as follows:" _ENDL;
-    _COUT "  --" _CMDL HELP _CMDL "                   Help information (you see it)" _ENDL;
+    _COUT "  --" _CMDL HELP _CMDL "                   This help information" _ENDL;
     _COUT "  -i<path> or -I<path> or --" _CMDL INC _CMDL "=<path>" _ENDL;
     _COUT "                           Include path" _ENDL;
     _COUT "  --" _CMDL LST _CMDL "=<filename>         Save listing to <filename>" _ENDL;
@@ -338,6 +338,9 @@ void showHelp() {
     _COUT "  --" _CMDL REVERSEPOP _CMDL "             Enable reverse POP order (as in base SjASM version)" _ENDL;
     _COUT "  --" _CMDL DIRBOL _CMDL "                 Enable processing directives from the beginning of line" _ENDL;
     _COUT "  --" _CMDL NOFAKES _CMDL "                Disable fake instructions" _ENDL;
+    _COUT "  --" _CMDL TARGET _CMDL "=<target>        Target CPU: Z80 (default) or i8080" _ENDL;
+    _COUT "    * 'i8080' restricts available instructions to those compatible with i8080." _ENDL;
+    _COUT "    * In both cases Z80 mnemonics are used." _ENDL;
     _COUT "  --" _CMDL DOS866 _CMDL "                 Encode from Windows codepage to DOS 866 (Cyrillic)" _ENDL;
 }
 
