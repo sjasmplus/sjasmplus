@@ -110,20 +110,20 @@ const char *BOI;
 void errorIfI8080() {
     if (options::Target == options::target::i8080) {
         std::string I(BOI, lp - BOI);
-        Error("Target 'i8080' does not support instruction"s, I, PASS1);
+        Error("Target 'i8080' does not support instruction"s, I, LASTPASS);
     }
 }
 
 void errorFormIfI8080() {
     if (options::Target == options::target::i8080) {
         std::string I(BOI, lp - BOI);
-        Error("Target 'i8080': instruction with these operands not supported"s, I, PASS1);
+        Error("Target 'i8080': instruction with these operands not supported"s, I, LASTPASS);
     }
 }
 
 void errorRegIfI8080(enum Z80Reg R) {
     if (options::Target == options::target::i8080) {
-        Error("Target 'i8080' has no register", regToName(R), PASS1);
+        Error("Target 'i8080' has no register", regToName(R), LASTPASS);
     }
 }
 
