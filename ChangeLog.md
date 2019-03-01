@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - New option: `--output-dir`
 - Smart positioning of stack in 128K `.sna` snapshots
 - `--raw` option without a parameter enables generation of default `*.out` files
+- New option `--target=i8080` to restrict instruction set to be compatible with i8080
 
 ### Fixed
 - `RST 10h` calls in 128K .sna snapshots
@@ -16,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - No more "Forward reference" error messages in `EQU`/`DEFL`
 - Fixed `.(expression)` prefix (acts like `DUP`/`REPT` for a single line)
 - Fixed include search order, including angle bracketed includes as [documented](https://github.com/sjasmplus/sjasmplus/wiki#include-filename)
+- Fixed infinite recursion in macro expansion when a parameter and substitution are the same
 
 ## 2017-03-11
 - Version 20170311
