@@ -276,12 +276,14 @@ int CMacroTable::emit(const std::string &Name, const char *&p) {
             }
             ++p;
         } else {
-            while (*p && *p != ',') {
+            while (*p > ' ' && *p != ',') {
                 Repl += *p;
                 ++p;
             }
         }
-        MacroDefineTable.addRepl(Arg, Repl);
+        if (Arg != Repl) {
+            MacroDefineTable.addRepl(Arg, Repl);
+        }
         SkipBlanks(p);
         if (ArgsLeft > 0 && *p != ',') {
             Error("Not enough arguments for macro"s, Name);
