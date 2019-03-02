@@ -60,7 +60,7 @@ bool cmphstr(const char *&p1, const char *p2, bool AllowParen) {
             return false;
         }
 
-        if (i <= strlen(p1) && p1[i] > ' ' && (AllowParen && p1[i] != '(')/* && p1[i]!=':'*/) {
+        if (i <= strlen(p1) && p1[i] > ' ' && !(AllowParen && p1[i] == '(')/* && p1[i]!=':'*/) {
             return false;
         }
         p1 += i;
