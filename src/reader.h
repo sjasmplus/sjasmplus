@@ -66,8 +66,11 @@ bool need(const char *&p, char c);
 
 int need(const char *&p, const char *c);
 
-int needa(const char *&p, const char *c1, int r1, const char *c2 = nullptr, int r2 = 0, const char *c3 = nullptr,
-          int r3 = 0);
+int needa(const char *&p,
+          const char *c1, int r1,
+          const char *c2 = nullptr, int r2 = 0,
+          const char *c3 = nullptr, int r3 = 0,
+          bool AllowParen = false);
 
 bool GetConstant(const char *&op, aint &val);
 
@@ -78,7 +81,7 @@ bool GetCharConstChar(const char *&op, aint &val);
 bool GetCharConstCharSingle(const char *&op, aint &val); /* added */
 int GetBytes(const char *&p, int *e, int add, int dc);
 
-bool cmphstr(const char *&p1, const char *p2);
+bool cmphstr(const char *&p1, const char *p2, bool AllowParen = false);
 
 std::string getString(const char *&p, bool KeepBrackets = false);
 

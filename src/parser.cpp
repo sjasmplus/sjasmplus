@@ -111,7 +111,7 @@ bool parseExpPrim(const char *&p, aint &nval) {
 
 bool ParseExpUnair(const char *&p, aint &nval) {
     int oper;
-    if ((oper = need(p, "! ~ + - ")) || (oper = needa(p, "not", '!', "low", 'l', "high", 'h'))) {
+    if ((oper = need(p, "! ~ + - ")) || (oper = needa(p, "not", '!', "low", 'l', "high", 'h', true))) {
         aint right;
         switch (oper) {
             case '!':

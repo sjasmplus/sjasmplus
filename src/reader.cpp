@@ -30,7 +30,7 @@
 #include "parser.h"
 #include "reader.h"
 
-bool cmphstr(const char *&p1, const char *p2) {
+bool cmphstr(const char *&p1, const char *p2, bool AllowParen) {
     /* old:
     if (isupper(*p1))
       while (p2[i]) {
@@ -60,7 +60,7 @@ bool cmphstr(const char *&p1, const char *p2) {
             return false;
         }
 
-        if (i <= strlen(p1) && p1[i] > ' '/* && p1[i]!=':'*/) {
+        if (i <= strlen(p1) && p1[i] > ' ' && (AllowParen && p1[i] != '(')/* && p1[i]!=':'*/) {
             return false;
         }
         p1 += i;
@@ -274,18 +274,22 @@ bool need(const char *&p, char c) {
     return true;
 }
 
-int needa(const char *&p, const char *c1, int r1, const char *c2, int r2, const char *c3, int r3) {
+int needa(const char *&p,
+          const char *c1, int r1,
+          const char *c2, int r2,
+          const char *c3, int r3,
+          bool AllowParen) {
     //  SkipBlanks(p);
     if (!isalpha((unsigned char) *p)) {
         return 0;
     }
-    if (cmphstr(p, c1)) {
+    if (cmphstr(p, c1, AllowParen)) {
         return r1;
     }
-    if (c2 && cmphstr(p, c2)) {
+    if (c2 && cmphstr(p, c2, AllowParen)) {
         return r2;
     }
-    if (c3 && cmphstr(p, c3)) {
+    if (c3 && cmphstr(p, c3, AllowParen)) {
         return r3;
     }
     return 0;
