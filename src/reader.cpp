@@ -42,36 +42,23 @@ bool cmphstr(const char *&p1, const char *p2) {
         if (p1[i]!=p2[i]) return 0;
         ++i;
       }*/
-    /* (begin) */
     if (strlen(p1) >= strlen(p2)) {
         unsigned int i = 0;
         unsigned int v = 0;
-        if (isupper(*p1)) {
-            while (p2[i]) {
-                if (p1[i] != toupper(p2[i])) {
-                    v = 0;
-                } else {
-                    ++v;
-                }
-                ++i;
+        auto optUpper = isupper(*p1) ?
+                        std::function<char(char)>([](char C) { return toupper(C); }) :
+                        std::function<char(char)>([](char C) { return C; });
+        while (p2[i]) {
+            if (p1[i] != optUpper(p2[i])) {
+                v = 0;
+            } else {
+                ++v;
             }
-            if (strlen(p2) != v) {
-                return false;
-            }
-        } else {
-            while (p2[i]) {
-                if (p1[i] != p2[i]) {
-                    v = 0;
-                } else {
-                    ++v;
-                }
-                ++i;
-            }
-            if (strlen(p2) != v) {
-                return false;
-            }
+            ++i;
         }
-        /* (end) */
+        if (strlen(p2) != v) {
+            return false;
+        }
 
         if (i <= strlen(p1) && p1[i] > ' '/* && p1[i]!=':'*/) {
             return false;
