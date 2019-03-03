@@ -25,7 +25,7 @@ private:
     std::string printCurrentLocalLine();
 
 public:
-    void init(bool Enabled, fs::path &FileName) override;
+    void init(fs::path &FileName) override;
 
     void initPass();
 

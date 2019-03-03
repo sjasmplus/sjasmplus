@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
     InitPass(1);
 
     // open lists
-    Listing.init(options::ListingEnabled, options::ListingFName);
+    Listing.init(options::ListingFName);
 
     // open source files
     for (auto &F : SrcFileNames) {

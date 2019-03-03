@@ -174,8 +174,8 @@ void ListingWriter::addByte(uint8_t Byte) {
     ByteBuffer.push_back(Byte);
 }
 
-void ListingWriter::init(bool Enabled, fs::path &FileName) {
-    if (Enabled && !FileName.empty()) {
+void ListingWriter::init(fs::path &FileName) {
+    if (!FileName.empty()) {
         open(FileName);
         isActive = true;
     } else {

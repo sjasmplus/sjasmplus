@@ -36,7 +36,6 @@
 namespace options {
 
 extern fs::path SymbolListFName;
-extern bool ListingEnabled;
 extern fs::path ListingFName;
 extern fs::path ExportFName;
 extern fs::path RawOutputFileName;
