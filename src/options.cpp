@@ -341,7 +341,7 @@ void showHelp() {
     _COUT "  --" _CMDL SYM _CMDL "                    Save symbols list to <sourcefile1>.sym" _ENDL;
     _COUT "  --" _CMDL SYM _CMDL "=<filename>         Save symbols list to <filename>" _ENDL;
     _COUT "  --" _CMDL EXP _CMDL "=<filename>         Save exports to <filename> (see EXPORT pseudo-op)" _ENDL;
-    _COUT "  --" _CMDL RAW _CMDL "                    Enable generation of an *.out file for every source file" _ENDL;
+    _COUT "  --" _CMDL RAW _CMDL "                    Save all output to <sourcefile1>.out" _ENDL;
     _COUT "  --" _CMDL RAW _CMDL "=<filename>         Save all output to <filename> ignoring OUTPUT pseudo-ops" _ENDL;
     _COUT "  --" _CMDL OUTPUT_DIR _CMDL "=<directory> Write all output files to the specified directory" _ENDL;
     _COUT "  Note: use OUTPUT, LUA/ENDLUA and other pseudo-ops to control output" _ENDL;
