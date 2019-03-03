@@ -229,9 +229,47 @@ char* GetPath(const char* fname, TCHAR** filenamebegin) {
 }
 */
 
+fs::path resolveIncludeFilename(const fs::path &FN) {
+    auto Res = getAbsPath(FN);
+    if (!fs::exists(Res)) {
+        bool CmdLineIncludesFirst =
+                !FN.empty() && FN.string()[0] == '<' &&
+                FN.string()[FN.string().size() - 1] == '>';
+        std::list<fs::path> &List1 = CmdLineIncludesFirst ?
+                                     options::CmdLineIncludeDirsList : options::IncludeDirsList;
+        std::list<fs::path> &List2 = CmdLineIncludesFirst ?
+                                     options::IncludeDirsList : options::CmdLineIncludeDirsList;
+        fs::path FileName = CmdLineIncludesFirst ?
+                            FN.string().substr(1, FN.string().size() - 2) :
+                            FN;
+        if (CmdLineIncludesFirst)
+            Res = getAbsPath(FileName);
+        bool Done = false;
+        for (auto &P : List1) {
+            auto F = P / FileName;
+            if (fs::exists(F)) {
+                Res = fs::absolute(F, P);
+                Done = true;
+                break;
+            }
+        }
+        if (!Done) {
+            for (auto &P : List2) {
+                auto F = P / FileName;
+                if (fs::exists(F)) {
+                    Res = fs::absolute(F, P);
+                    Done = true;
+                    break;
+                }
+            }
+        }
+    }
+    return Res;
+}
+
 void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
 
-    fs::path AbsFilePath = getAbsPath(FileName);
+    fs::path AbsFilePath = resolveIncludeFilename(FileName);
 
     uint16_t DestAddr = Em.getEmitAddress();
     if ((int) DestAddr + Length > 0x10000)
@@ -244,9 +282,9 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
     if (Length < 0) Fatal("BinIncFile(): len < 0"s, FileName.string());
     if (Length == 0) {
         // Load whole file
-        IFS.seekg(0, IFS.end);
+        IFS.seekg(0, std::ios_base::end);
         Length = IFS.tellg();
-        IFS.seekg(0, IFS.beg);
+        IFS.seekg(0, std::ios_base::beg);
     }
     if (Offset > 0) {
         IFS.seekg(Offset, IFS.beg);
@@ -332,42 +370,7 @@ void includeFile(const fs::path &IncFileName) {
 
     ReadLineBuf.clear();
 
-    auto FullFilePath = getAbsPath(IncFileName);
-    if (!fs::exists(FullFilePath)) {
-        bool CmdLineIncludesFirst =
-                !IncFileName.empty() && IncFileName.string()[0] == '<' &&
-                IncFileName.string()[IncFileName.string().size() - 1] == '>';
-        std::list<fs::path> &List1 = CmdLineIncludesFirst ?
-                options::CmdLineIncludeDirsList : options::IncludeDirsList;
-        std::list<fs::path> &List2 = CmdLineIncludesFirst ?
-                options::IncludeDirsList : options::CmdLineIncludeDirsList;
-        fs::path FileName = CmdLineIncludesFirst ?
-                IncFileName.string().substr(1, IncFileName.string().size() - 2) :
-                IncFileName;
-        if (CmdLineIncludesFirst)
-            FullFilePath = getAbsPath(FileName);
-        bool Done = false;
-        for (auto &P : List1) {
-            auto F = P / FileName;
-            if (fs::exists(F)) {
-                FullFilePath = fs::absolute(F, P);
-                Done = true;
-                break;
-            }
-        }
-        if (!Done) {
-            for (auto &P : List2) {
-                auto F = P / FileName;
-                if (fs::exists(F)) {
-                    FullFilePath = fs::absolute(F, P);
-                    Done = true;
-                    break;
-                }
-            }
-        }
-    }
-
-    openFile(FullFilePath);
+    openFile(resolveIncludeFilename(IncFileName));
 
     rlsquotes = squotes, rldquotes = dquotes, rlspace = space, rlcomment = comment, rlcolon = colon, rlnewline = newline;
     ReadLineBuf = SaveReadLineBuf;

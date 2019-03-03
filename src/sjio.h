@@ -51,6 +51,8 @@ void EmitBlock(uint8_t byte, aint len, bool nulled = false);
 
 void openFile(const fs::path &FileName);
 
+fs::path resolveIncludeFilename(const fs::path &FN);
+
 void includeFile(const fs::path &IncFileName);
 
 void readBufLine(bool Parse = true, bool SplitByColon = true); /* added */

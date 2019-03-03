@@ -579,7 +579,7 @@ void dirINCHOB() {
     }
 
     //used for implicit format check
-    fnaamh = getAbsPath(FileName);
+    fnaamh = resolveIncludeFilename(FileName);
     fs::ifstream IFSH(fnaamh, std::ios::binary);
     if (IFSH.fail()) {
         Fatal("[INCHOB] Error opening file "s + FileName.string() + ": "s + strerror(errno));
@@ -641,7 +641,7 @@ void dirINCTRD() {
     }
     //TODO: extract code to io_trd
     // open TRD
-    fs::path fnaamh2 = getAbsPath(FileName);
+    fs::path fnaamh2 = resolveIncludeFilename(FileName);
     fs::ifstream ifs;
     ifs.open(fnaamh2, std::ios_base::binary);
     if (ifs.fail()) {
@@ -2018,7 +2018,7 @@ void dirENDLUA() {
 }
 
 void dirINCLUDELUA() {
-    const fs::path &FileName = getAbsPath(getString(lp));
+    const fs::path &FileName = resolveIncludeFilename(getString(lp));
     int error;
 
     if (pass != 1) {
