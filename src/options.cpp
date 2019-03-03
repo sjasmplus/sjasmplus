@@ -30,7 +30,6 @@
 #include <tao/pegtl.hpp>
 
 #include "errors.h"
-#include "global.h"
 #include "options.h"
 
 using namespace tao::pegtl;
@@ -96,6 +95,7 @@ std::map<std::string, OPT> OptMap{
 };
 
 fs::path SymbolListFName;
+bool ListingEnabled = false;
 fs::path ListingFName;
 
 fs::path ExportFName;
@@ -236,9 +236,8 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
                     case OPT::LST:
                         if (!S.Value.empty()) {
                             ListingFName = fs::path(S.Value);
-                        } else {
-                            Fatal("No filename specified for --"s + S.Name);
                         }
+                        ListingEnabled = true;
                         break;
                     case OPT::EXP:
                         if (!S.Value.empty()) {
@@ -317,6 +316,10 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
             SrcFileNames.emplace_back(fs::path(argv[i++]));
         }
     }
+    if (ListingEnabled && ListingFName.empty() && SrcFileNames.size() > 0) {
+        ListingFName = SrcFileNames[0];
+        ListingFName.replace_extension(".lst");
+    }
 }
 
 void showHelp() {
@@ -324,7 +327,8 @@ void showHelp() {
     _COUT "  --" _CMDL HELP _CMDL "                   This help information" _ENDL;
     _COUT "  -i<path> or -I<path> or --" _CMDL INC _CMDL "=<path>" _ENDL;
     _COUT "                           Include path" _ENDL;
-    _COUT "  --" _CMDL LST _CMDL "=<filename>         Save listing to <filename>" _ENDL;
+    _COUT "  --" _CMDL LST _CMDL "                    Save listing to <sourcefile1>.lst" _ENDL;
+    _COUT "  --" _CMDL LST _CMDL "[=<filename>]       Save listing to <filename>" _ENDL;
     _COUT "  --" _CMDL LSTLAB _CMDL "                 Enable label table in listing" _ENDL;
     _COUT "  --" _CMDL SYM _CMDL "=<filename>         Save symbols list to <filename>" _ENDL;
     _COUT "  --" _CMDL EXP _CMDL "=<filename>         Save exports to <filename> (see EXPORT pseudo-op)" _ENDL;

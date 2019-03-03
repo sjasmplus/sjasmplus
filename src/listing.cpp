@@ -174,9 +174,9 @@ void ListingWriter::addByte(uint8_t Byte) {
     ByteBuffer.push_back(Byte);
 }
 
-void ListingWriter::init() {
-    if (!options::ListingFName.empty()) {
-        open(options::ListingFName);
+void ListingWriter::init(bool Enabled, fs::path &FileName) {
+    if (Enabled && !FileName.empty()) {
+        open(FileName);
         isActive = true;
     } else {
         isActive = false;

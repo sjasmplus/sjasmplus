@@ -18,7 +18,7 @@ protected:
     fs::ofstream OFS;
     void open(const fs::path &FileName);
 public:
-    virtual void init() = 0;
+    virtual void init(bool Enabled, fs::path &FileName) = 0;
     ~TextOutput();
     void write(const std::string &String);
 };
