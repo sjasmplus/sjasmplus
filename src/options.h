@@ -49,6 +49,7 @@ extern bool AddLabelListing;
 extern bool HideBanner;
 extern bool FakeInstructions;
 extern bool EnableOrOverrideRawOutput;
+extern bool ConvertWindowsToDOS;
 extern std::list<fs::path> IncludeDirsList;
 extern std::list<fs::path> CmdLineIncludeDirsList;
 

@@ -110,6 +110,7 @@ bool AddLabelListing = false;
 bool HideBanner = false;
 bool FakeInstructions = true;
 bool EnableOrOverrideRawOutput = false;
+bool ConvertWindowsToDOS = false;
 
 std::list<fs::path> IncludeDirsList;
 std::list<fs::path> CmdLineIncludeDirsList;
@@ -265,7 +266,7 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
                         FakeInstructions = false;
                         break;
                     case OPT::DOS866:
-                        ConvertEncoding = ENCDOS;
+                        ConvertWindowsToDOS = true;
                         break;
                     case OPT::DIRBOL:
                         IsPseudoOpBOF = true;
@@ -341,7 +342,7 @@ void showHelp() {
     _COUT "  --" _CMDL TARGET _CMDL "=<target>        Target CPU: Z80 (default) or i8080" _ENDL;
     _COUT "    * 'i8080' restricts available instructions to those compatible with i8080." _ENDL;
     _COUT "    * In both cases Z80 mnemonics are used." _ENDL;
-    _COUT "  --" _CMDL DOS866 _CMDL "                 Encode from Windows codepage to DOS 866 (Cyrillic)" _ENDL;
+    _COUT "  --" _CMDL DOS866 _CMDL "                 Convert from Windows CP1251 to DOS CP866 (Cyrillic)" _ENDL;
 }
 
 } // namespace options

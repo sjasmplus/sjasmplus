@@ -68,7 +68,6 @@ void InitPass(int p) {
 
 int main(int argc, char *argv[]) {
     std::vector<fs::path> SrcFileNames;
-    int base_encoding; /* added */
     const char *Banner = "SjASMPlus Z80 Cross-Assembler v." SJASMPLUS_VERSION;
 
     if (argc == 1) {
@@ -117,7 +116,7 @@ int main(int argc, char *argv[]) {
     InitCPU();
 
     // if memory type != none
-    base_encoding = ConvertEncoding;
+    bool W2DEncodingFlag = options::ConvertWindowsToDOS;
 
     // init first pass
     InitPass(1);
@@ -132,7 +131,7 @@ int main(int argc, char *argv[]) {
 
     _COUT "Pass 1 complete (" _CMDL ErrorCount _CMDL " errors)" _ENDL;
 
-    ConvertEncoding = base_encoding;
+    options::ConvertWindowsToDOS = W2DEncodingFlag;
 
     do {
         pass++;

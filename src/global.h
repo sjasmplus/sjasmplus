@@ -14,12 +14,6 @@ namespace global {
 extern const char *lp, *bp;
 extern char line[LINEMAX];
 
-enum EEncoding {
-    ENCDOS, ENCWIN
-};
-
-extern int ConvertEncoding;
-
 extern int pass, IsLabelNotFound;
 
 extern aint CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine;

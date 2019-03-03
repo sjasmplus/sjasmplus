@@ -1000,9 +1000,9 @@ void dirENCODING() {
         lowercased += std::tolower(*p);
     }
     if (lowercased == "dos") {
-        ConvertEncoding = ENCDOS;
+        options::ConvertWindowsToDOS = true;
     } else if (lowercased == "win") {
-        ConvertEncoding = ENCWIN;
+        options::ConvertWindowsToDOS = false;
     } else {
         Error("[ENCODING] Syntax error. Bad parameter"s, bp, CATCHALL);
     }

@@ -8,8 +8,6 @@ namespace global {
 const char *lp, *bp;
 char line[LINEMAX];
 
-int ConvertEncoding = ENCWIN;
-
 int pass = 0, IsLabelNotFound = 0;
 
 aint CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;

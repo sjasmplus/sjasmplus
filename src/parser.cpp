@@ -755,7 +755,7 @@ void parseLine(bool ParseLabels) {
     }
     lp = replaceDefine(line);
     const char *BOL = lp;
-    if (!ConvertEncoding) {
+    if (options::ConvertWindowsToDOS) {
         auto *lp2 = (unsigned char *) lp;
         while (*(lp2++)) {
             if ((*lp2) >= 128) {
