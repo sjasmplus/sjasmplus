@@ -2,6 +2,13 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## 2019-03-04
+- Version 20190304.3
+
+### Fixed
+- Spaces in MACRO arguments caused trouble
+- SAVETAP: Fix tape header tag
+
+## 2019-03-04
 - Version 20190304.2
 
 ### Fixed
