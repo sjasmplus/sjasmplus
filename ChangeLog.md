@@ -2,6 +2,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## 2019-03-04
+- Version 20190304.2
+
+### Fixed
+- Trailing whitespace after EDUP etc. was breaking things
+
+## 2019-03-04
 - Version 20190304.1
 
 ### Fixed
