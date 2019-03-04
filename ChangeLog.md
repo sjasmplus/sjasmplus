@@ -2,6 +2,13 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## 2019-03-04
+- Version 20190304.1
+
+### Fixed
+- SNA: Set BC=PC to match ZX Basic's USR behavior
+- Condition codes were not entirely case-insensitive
+
+## 2019-03-04
 - Version 20190304
 
 ### Added
