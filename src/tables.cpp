@@ -276,7 +276,7 @@ int CMacroTable::emit(const std::string &Name, const char *&p) {
             }
             ++p;
         } else {
-            while (*p > ' ' && *p != ',') {
+            while (*p && *p != ',') {
                 Repl += *p;
                 ++p;
             }
