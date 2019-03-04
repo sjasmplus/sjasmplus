@@ -1769,7 +1769,13 @@ void dirEDUP() {
     RepeatInfo &dup = RepeatStack.top();
     dup.Complete = true;
     const std::string &S = dup.Lines.back();
-    dup.Lines.back() = S.substr(0, S.size() - 4); // Cut out EDUP/ENDR/ENDM at the end
+    for (const auto &M : std::list<std::string>{"EDUP"s, "ENDR"s, "ENDM"s}) {
+        auto Pos = S.find(M);
+        if (Pos != std::string::npos) {
+            dup.Lines.back() = S.substr(0, Pos); // Cut out EDUP/ENDR/ENDM at the end
+            break;
+        }
+    }
     olistmacro = listmacro;
     listmacro = true;
     ml = STRDUP(line);
