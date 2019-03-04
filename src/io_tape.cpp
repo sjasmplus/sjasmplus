@@ -327,7 +327,7 @@ std::ostream &writecode(std::ostream &stream, const unsigned char *block, uint16
         /* Write out the code header file */
         stream << (char) 19;        /* Header len */
         stream << (char) 0;         /* MSB of len */
-        stream << 0;               /* Header is 0 */
+        stream << (char) 0;         /* Header is 0 */
         parity = 0;
         writebyte(stream, 3);    /* Filetype (Code) */
 
