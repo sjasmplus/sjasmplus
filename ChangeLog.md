@@ -5,13 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Version 20190304.2
 
 ### Fixed
-- Trailing whitespace after EDUP etc. was breaking things
+- Trailing whitespace after `EDUP` etc. was breaking things
 
 ## 2019-03-04
 - Version 20190304.1
 
 ### Fixed
-- SNA: Set BC=PC to match ZX Basic's USR behavior
+- `SNA`: Set `BC=PC` to match ZX Basic's `USR` behavior
 - Condition codes were not entirely case-insensitive
 
 ## 2019-03-04
