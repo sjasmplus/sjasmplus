@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - New option: `--output-dir`
 - Smart positioning of stack in 128K `.sna` snapshots
 - `--raw` option without a parameter enables generation of default `*.out` files
+- `--lst` and `--sym` now also work as expected without parameters
 - New option `--target=i8080` to restrict instruction set to be compatible with i8080
 
 ### Fixed
@@ -18,6 +19,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Fixed `.(expression)` prefix (acts like `DUP`/`REPT` for a single line)
 - Fixed include search order, including angle bracketed includes as [documented](https://github.com/sjasmplus/sjasmplus/wiki#include-filename)
 - Fixed infinite recursion in macro expansion when a parameter and substitution are the same
+- `HIGH(expr)` / `LOW(expr)` / `NOT(expr)` now do not require the argument to be separated by whitespace
+- INCBIN, INCTRD, INCHOB & INCLUDELUA now use the same file path resolution
+  mechanism as INCLUDE
+- Fixed per file output of exports by default (unless overriden by `--exp`)
 
 ## 2017-03-11
 - Version 20170311
