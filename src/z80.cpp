@@ -235,7 +235,7 @@ Z80Cond getz80cond(const char *&p) {
             if (!islabchar(*p)) {
                 return Z80C_P;
             }
-            switch (*(p++)) {
+            switch (toupper(*(p++))) {
                 case 'E':
                     if (!islabchar(*p)) {
                         return Z80C_PE;
