@@ -1,8 +1,8 @@
 # Change Log
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## 2019-xx-yy (WIP)
-- Version 2019xxyy
+## 2019-03-04
+- Version 20190304
 
 ### Added
 - New option: `--output-dir`
