@@ -78,7 +78,7 @@ std::map<std::string, OPT> OptMap{
         {LSTLAB,     OPT::LSTLAB},
         {SYM,        OPT::SYM},
         {LST,        OPT::LST},
-        {EXP,        OPT::LST},
+        {EXP,        OPT::EXP},
         {RAW,        OPT::RAW},
         {FULLPATH,   OPT::FULLPATH},
         {REVERSEPOP, OPT::REVERSEPOP},
@@ -313,7 +313,7 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
             }
         } catch (parse_error &E) {
             // Must be a filename
-            SrcFileNames.emplace_back(fs::path(argv[i++]));
+            SrcFileNames.emplace_back(fs::path(argv[i]));
         }
     }
     if (SrcFileNames.size() > 0) {
