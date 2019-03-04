@@ -33,7 +33,6 @@
 
 using namespace std::string_literals;
 
-#include "util.h"
 #include "listing.h"
 #include "directives.h"
 #include "parser.h"
@@ -47,6 +46,8 @@ using namespace std::string_literals;
 #include "sjio.h"
 
 fs::path CurrentSrcFileName;
+
+ExportWriter *Exports = nullptr;
 
 bool SourceReaderEnabled = false; // Reset by the END directive
 
@@ -116,7 +117,6 @@ bool rldquotes = false, rlsquotes = false, rlspace = false, rlcomment = false, r
 
 fs::ifstream realIFS;
 fs::ifstream *pIFS = &realIFS;
-fs::ofstream OFSExport;
 
 /*
 void CheckPage() {
@@ -827,16 +827,15 @@ bool readFileToListOfStrings(std::list<std::string> &List, const std::string &En
     Fatal("Unexpected end of file"s);
 }
 
-void writeExport(const std::string &Name, aint Value) {
-    if (!OFSExport.is_open()) {
-        OFSExport.open(options::ExportFName);
-        if (OFSExport.fail()) {
-            Fatal("Error opening file "s + options::ExportFName.string());
-        }
+void ExportWriter::init(fs::path &FileName) {
+    open(FileName);
+}
+
+void ExportWriter::write(const std::string &Name, aint Value) {
+    if (!OFS.is_open()) {
+        TextOutput::open(FileName);
     }
-    std::string Str{Name};
-    Str += ": EQU 0x"s + toHex32(Value) + "\n"s;
-    OFSExport << Str;
+    TextOutput::write(Name + ": EQU 0x"s + toHex32(Value) + "\n"s);
 }
 
 const fs::path getCurrentSrcFileName() {

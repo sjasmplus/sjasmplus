@@ -19,7 +19,7 @@ protected:
     void open(const fs::path &FileName);
 public:
     virtual void init(fs::path &FileName) = 0;
-    ~TextOutput();
+    virtual ~TextOutput();
     void write(const std::string &String);
 };
 

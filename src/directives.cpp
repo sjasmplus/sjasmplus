@@ -1425,12 +1425,6 @@ void dirEXPORT() {
     aint val;
     optional<std::string> Label;
 
-    if (options::ExportFName.empty()) {
-        options::ExportFName = getCurrentSrcFileName();
-        options::ExportFName.replace_extension(".exp");
-        Warning("[EXPORT] Filename for exportfile was not indicated. Output will be in"s,
-                options::ExportFName.string());
-    }
     if (!(Label = getID(lp))) {
         Error("[EXPORT] Syntax error"s, lp, CATCHALL);
         return;
@@ -1445,7 +1439,7 @@ void dirEXPORT() {
         Error("[EXPORT] Label not found"s, *Label, SUPPRESS);
         return;
     }
-    writeExport(*Label, val);
+    Exports->write(*Label, val);
 }
 
 void dirDISPLAY() {

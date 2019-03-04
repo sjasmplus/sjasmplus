@@ -34,6 +34,7 @@
 #include "errors.h"
 #include "tables.h"
 #include "io_trd.h"
+#include "util.h"
 
 void enableSourceReader();
 
@@ -79,9 +80,17 @@ EReturn SkipFile(const char *pp, const char *err); /* added */
 
 bool readFileToListOfStrings(std::list<std::string> &List, const std::string &EndMarker);
 
-void writeExport(const std::string &Name, aint Value);
-
 const fs::path getCurrentSrcFileName();
 
+class ExportWriter : public TextOutput {
+private:
+    fs::path FileName;
+public:
+    explicit ExportWriter(fs::path &_FileName) : FileName{_FileName} {}
+    void init(fs::path &FileName) override;
+    void write(const std::string &Name, aint Value);
+};
+
+extern ExportWriter *Exports;
 
 #endif //SJASMPLUS_SJIO_H

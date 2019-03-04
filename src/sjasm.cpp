@@ -124,9 +124,24 @@ int main(int argc, char *argv[]) {
     // open lists
     Listing.init(options::ListingFName);
 
+    bool PerFileExports = options::ExportFName.empty();
+
+    if (!PerFileExports) {
+        Exports = new ExportWriter{options::ExportFName};
+    }
+
     // open source files
-    for (auto &F : SrcFileNames) {
+    for (const auto &F : SrcFileNames) {
+        if (PerFileExports) {
+            auto E = F;
+            E.replace_extension(".exp");
+            Exports = new ExportWriter{E};
+        }
         openFile(getAbsPath(F));
+        if (PerFileExports) {
+            delete Exports;
+            Exports = nullptr;
+        }
     }
 
     _COUT "Pass 1 complete (" _CMDL ErrorCount _CMDL " errors)" _ENDL;
@@ -141,8 +156,17 @@ int main(int argc, char *argv[]) {
         if (pass == LASTPASS) {
 //            OpenDest();
         }
-        for (auto &F : SrcFileNames) {
+        for (const auto &F : SrcFileNames) {
+            if (PerFileExports) {
+                auto E = F;
+                E.replace_extension(".exp");
+                Exports = new ExportWriter{E};
+            }
             openFile(getAbsPath(F));
+            if (PerFileExports) {
+                delete Exports;
+                Exports = nullptr;
+            }
         }
 
         Em.reset();
@@ -152,6 +176,8 @@ int main(int argc, char *argv[]) {
             _COUT "Pass 3 complete" _ENDL;
         }
     } while (pass < 3);//MAXPASSES);
+
+    delete Exports;
 
     pass = 9999; /* added for detect end of compiling */
     if (options::AddLabelListing) {
