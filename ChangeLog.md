@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - `--raw` option without a parameter enables generation of default `*.out` files
 - `--lst` and `--sym` now also work as expected without parameters
 - New option `--target=i8080` to restrict instruction set to be compatible with i8080
+- `--labels` to dump UnrealSpeccy-compatible labels without polluting the source code
+  with external file names (via the existing directive)
 
 ### Fixed
 - `RST 10h` calls in 128K .sna snapshots
