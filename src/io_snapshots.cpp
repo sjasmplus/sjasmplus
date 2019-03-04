@@ -50,6 +50,9 @@ bool saveSNA(MemModel &M, const fs::path &fname, uint16_t start) {
     snbuf[2] = 0x27; //hl'
     snbuf[15] = 0x3a; //iy
     snbuf[16] = 0x5c; //iy
+    // Set BC=PC to match ZX Basic's USR behavior
+    snbuf[13] = (uint8_t) (start & 0xff); //bc
+    snbuf[14] = (uint8_t) (start >> 8); //bc
     if (!M.isPagedMemory()) {
         snbuf[0] = 0x3F; //i
         snbuf[3] = 0x9B; //de'
@@ -62,8 +65,6 @@ bool saveSNA(MemModel &M, const fs::path &fname, uint16_t start) {
         snbuf[10] = 0x2D; //hl
         snbuf[11] = 0xDC; //de
         snbuf[12] = 0x5C; //de
-        snbuf[13] = 0x00; //bc
-        snbuf[14] = 0x80; //bc
         snbuf[17] = 0x3C; //ix
         snbuf[18] = 0xFF; //ix
         snbuf[21] = 0x54; //af
