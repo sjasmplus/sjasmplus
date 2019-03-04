@@ -224,9 +224,7 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
         try {
             parse<Grammar, OptActions>(In, S);
             auto O = OptMap.find(S.Name);
-            cout << S.Name << endl;
             if (O != OptMap.end()) {
-                cout << S.Name << endl;
                 switch (O->second) {
                     case OPT::HELP:
                         showHelp();
