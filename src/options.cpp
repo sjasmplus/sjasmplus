@@ -42,6 +42,7 @@ const char SYM[] = "sym";
 const char LST[] = "lst";
 const char EXP[] = "exp";
 const char RAW[] = "raw";
+const char LABELS[] = "labels";
 const char FULLPATH[] = "fullpath";
 const char REVERSEPOP[] = "reversepop";
 const char NOBANNER[] = "nobanner";
@@ -61,6 +62,7 @@ enum class OPT {
     SYM,
     LST,
     EXP,
+    LABELS,
     RAW,
     FULLPATH,
     REVERSEPOP,
@@ -79,6 +81,7 @@ std::map<std::string, OPT> OptMap{
         {SYM,        OPT::SYM},
         {LST,        OPT::LST},
         {EXP,        OPT::EXP},
+        {LABELS,     OPT::LABELS},
         {RAW,        OPT::RAW},
         {FULLPATH,   OPT::FULLPATH},
         {REVERSEPOP, OPT::REVERSEPOP},
@@ -102,7 +105,9 @@ fs::path ListingFName;
 fs::path ExportFName;
 fs::path RawOutputFileName;
 fs::path OutputDirectory;
-fs::path UnrealLabelListFName;
+
+bool LabelsListEnabled = false;
+fs::path LabelsListFName;
 
 bool IsPseudoOpBOF = false;
 bool IsReversePOP = false;
@@ -139,7 +144,7 @@ struct ShortOptName : alpha {};
 
 struct ShortOpt : seq<one<'-'>, ShortOptName, opt<OptValue> > {};
 
-struct LongOptName : seq<lower, plus<sor<lower, seq<one<'-'>, lower > > > > {};
+struct LongOptName : seq<lower, plus<sor<sor<lower, digit>, seq<one<'-'>, sor<lower, digit> > > >, at<sor<eof, one<'='>, space > > > {};
 
 //struct TargetOptName : string<'t','a','r','g','e','t'> {};
 
@@ -219,7 +224,9 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
         try {
             parse<Grammar, OptActions>(In, S);
             auto O = OptMap.find(S.Name);
+            cout << S.Name << endl;
             if (O != OptMap.end()) {
+                cout << S.Name << endl;
                 switch (O->second) {
                     case OPT::HELP:
                         showHelp();
@@ -245,6 +252,12 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
                         } else {
                             Fatal("No filename specified for --"s + S.Name);
                         }
+                        break;
+                    case OPT::LABELS:
+                        if (!S.Value.empty()) {
+                            LabelsListFName = fs::path(S.Value);
+                        }
+                        LabelsListEnabled = true;
                         break;
                     case OPT::RAW:
                         if (!S.Value.empty()) {
@@ -309,7 +322,7 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
                         break;
                 }
             } else {
-                Error("Unrecognized option: "s, S.Name);
+                Fatal("Unrecognized option: "s, S.Name);
             }
         } catch (parse_error &E) {
             // Must be a filename
@@ -325,6 +338,10 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
             SymbolListFName = SrcFileNames[0];
             SymbolListFName.replace_extension(".sym");
         }
+        if (LabelsListEnabled && LabelsListFName.empty()) {
+            LabelsListFName = SrcFileNames[0];
+            LabelsListFName.replace_extension(".lab");
+        }
     }
 
 
@@ -337,10 +354,14 @@ void showHelp() {
     _COUT "                           Include path" _ENDL;
     _COUT "  --" _CMDL LST _CMDL "                    Save listing to <sourcefile1>.lst" _ENDL;
     _COUT "  --" _CMDL LST _CMDL "[=<filename>]       Save listing to <filename>" _ENDL;
-    _COUT "  --" _CMDL LSTLAB _CMDL "                 Enable label table in listing" _ENDL;
+    _COUT "  --" _CMDL LSTLAB _CMDL "                 List labels at the end of the listing file" _ENDL;
     _COUT "  --" _CMDL SYM _CMDL "                    Save symbols list to <sourcefile1>.sym" _ENDL;
     _COUT "  --" _CMDL SYM _CMDL "=<filename>         Save symbols list to <filename>" _ENDL;
     _COUT "  --" _CMDL EXP _CMDL "=<filename>         Save exports to <filename> (see EXPORT pseudo-op)" _ENDL;
+    _COUT "  --" _CMDL LABELS _CMDL "                 Save symbols(labels) list to <sourcefile1>.lab" _ENDL;
+    _COUT "                             in format compatible with UnrealSpeccy emulator" _ENDL;
+    _COUT "  --" _CMDL LABELS _CMDL "=<filename>      Save symbols(labels) list to <filename>" _ENDL;
+    _COUT "                             in format compatible with UnrealSpeccy emulator" _ENDL;
     _COUT "  --" _CMDL RAW _CMDL "                    Save all output to <sourcefile1>.out" _ENDL;
     _COUT "  --" _CMDL RAW _CMDL "=<filename>         Save all output to <filename> ignoring OUTPUT pseudo-ops" _ENDL;
     _COUT "  --" _CMDL OUTPUT_DIR _CMDL "=<directory> Write all output files to the specified directory" _ENDL;

@@ -186,8 +186,8 @@ int main(int argc, char *argv[]) {
 
     // closeListingFile();
 
-    if (!options::UnrealLabelListFName.empty()) {
-        LabelTable.dumpForUnreal(options::UnrealLabelListFName);
+    if (!options::LabelsListFName.empty()) {
+        LabelTable.dumpForUnreal(options::LabelsListFName);
     }
 
     if (!options::SymbolListFName.empty()) {

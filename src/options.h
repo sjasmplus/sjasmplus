@@ -40,7 +40,7 @@ extern fs::path ListingFName;
 extern fs::path ExportFName;
 extern fs::path RawOutputFileName;
 extern fs::path OutputDirectory;
-extern fs::path UnrealLabelListFName;
+extern fs::path LabelsListFName;
 
 extern bool IsPseudoOpBOF;
 extern bool IsReversePOP;

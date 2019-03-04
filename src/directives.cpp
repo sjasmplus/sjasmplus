@@ -1018,7 +1018,7 @@ void dirLABELSLIST() {
         Error("[LABELSLIST] Syntax error. File name not specified"s, bp, CATCHALL);
         return;
     }
-    options::UnrealLabelListFName = FileName;
+    options::LabelsListFName = FileName;
 }
 
 void dirIF() {
