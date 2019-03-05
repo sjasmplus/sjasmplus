@@ -220,6 +220,7 @@ bool saveTAP(MemModel &M, const fs::path &FileName, uint16_t Start) {
         }
         uint16_t loader_len = loader_defsize + (uint16_t)((M.getNumMemPages() - 2) * 5);
         auto *loader = new uint8_t[loader_len];
+        std::memset(loader, 0, loader_len);
         memcpy(loader, loader_code, loader_defsize);
         // Settings.Start
         loader[loader_defsize - 8] = uint8_t(Start & 0x00FF);
