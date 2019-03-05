@@ -1,6 +1,13 @@
 # Change Log
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## 2019-03-06
+- Version 20190306
+
+### Fixed
+- SAVETAP: zero-fill allocated memory buffer before using it
+- Fix a crash in EDUP
+
 ## 2019-03-04
 - Version 20190304.3
 
