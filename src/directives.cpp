@@ -29,6 +29,7 @@
 #include <string>
 #include <boost/optional.hpp>
 #include <boost/algorithm/string/predicate.hpp> // for iequals()
+#include <boost/algorithm/string/case_conv.hpp>
 
 #include "global.h"
 #include "options.h"
@@ -49,6 +50,7 @@
 #include "directives.h"
 
 using boost::iequals;
+using boost::algorithm::to_upper_copy;
 
 using namespace std::string_literals;
 
@@ -1768,11 +1770,12 @@ void dirEDUP() {
     char *ml;
     RepeatInfo &dup = RepeatStack.top();
     dup.Complete = true;
-    const std::string &S = dup.Lines.back();
+    // FIXME: !!! must do this properly
+    const std::string S = to_upper_copy(dup.Lines.back());
     for (const auto &M : std::list<std::string>{"EDUP"s, "ENDR"s, "ENDM"s}) {
         auto Pos = S.find(M);
         if (Pos != std::string::npos) {
-            dup.Lines.back() = S.substr(0, Pos); // Cut out EDUP/ENDR/ENDM at the end
+            dup.Lines.back() = dup.Lines.back().substr(0, Pos); // Cut out EDUP/ENDR/ENDM at the end
             break;
         }
     }
