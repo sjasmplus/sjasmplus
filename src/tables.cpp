@@ -27,6 +27,7 @@
 */
 
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string.hpp>
 
 using boost::algorithm::to_upper_copy;
 
@@ -276,11 +277,12 @@ int CMacroTable::emit(const std::string &Name, const char *&p) {
             }
             ++p;
         } else {
-            while (*p && *p != ',') {
+            while (*p > ' ' && *p != ',') {
                 Repl += *p;
                 ++p;
             }
         }
+        boost::trim(Repl);
         if (Arg != Repl) {
             MacroDefineTable.addRepl(Arg, Repl);
         }
