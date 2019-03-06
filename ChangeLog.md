@@ -2,6 +2,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## 2019-03-06
+- Version 20190306.1
+
+### Fixed
+- Fix some problems with `MACRO` arguments parsing
+
+## 2019-03-06
 - Version 20190306
 
 ### Fixed
