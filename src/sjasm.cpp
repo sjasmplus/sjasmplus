@@ -132,16 +132,7 @@ int main(int argc, char *argv[]) {
 
     // open source files
     for (const auto &F : SrcFileNames) {
-        if (PerFileExports) {
-            auto E = F;
-            E.replace_extension(".exp");
-            Exports = new ExportWriter{E};
-        }
-        openFile(getAbsPath(F));
-        if (PerFileExports) {
-            delete Exports;
-            Exports = nullptr;
-        }
+        openTopLevelFile(getAbsPath(F), PerFileExports);
     }
 
     _COUT "Pass 1 complete (" _CMDL ErrorCount _CMDL " errors)" _ENDL;
@@ -157,16 +148,7 @@ int main(int argc, char *argv[]) {
 //            OpenDest();
         }
         for (const auto &F : SrcFileNames) {
-            if (PerFileExports) {
-                auto E = F;
-                E.replace_extension(".exp");
-                Exports = new ExportWriter{E};
-            }
-            openFile(getAbsPath(F));
-            if (PerFileExports) {
-                delete Exports;
-                Exports = nullptr;
-            }
+            openTopLevelFile(getAbsPath(F), PerFileExports);
         }
 
         Em.reset();

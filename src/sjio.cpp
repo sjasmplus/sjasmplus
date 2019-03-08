@@ -353,6 +353,21 @@ void openFile(const fs::path &FileName) {
     CurrentLocalLine = oCurrentLocalLine;
 }
 
+// FileName should be an absolute path
+void openTopLevelFile(const fs::path &FileName, bool PerFileExports) {
+    if (PerFileExports) {
+        auto E = FileName;
+        E.replace_extension(".exp");
+        Exports = new ExportWriter{E};
+    }
+    openFile(getAbsPath(FileName));
+    if (PerFileExports) {
+        delete Exports;
+        Exports = nullptr;
+    }
+}
+
+
 void includeFile(const fs::path &IncFileName) {
     fs::ifstream *saveIFS = pIFS;
     fs::ifstream incIFS;

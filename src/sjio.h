@@ -52,6 +52,8 @@ void EmitBlock(uint8_t byte, aint len, bool nulled = false);
 
 void openFile(const fs::path &FileName);
 
+void openTopLevelFile(const fs::path &FileName, bool PerFileExports);
+
 fs::path resolveIncludeFilename(const fs::path &FN);
 
 void includeFile(const fs::path &IncFileName);
