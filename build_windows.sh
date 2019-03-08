@@ -12,4 +12,4 @@ mkdir ${BUILD_DIR}
 cd ${BUILD_DIR}
 
 ${TARGET}-cmake -DBoost_USE_STATIC_LIBS:BOOL=ON -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_BUILD_TYPE="Release" ..
-make
+make -j
