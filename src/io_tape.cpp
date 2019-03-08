@@ -193,6 +193,7 @@ bool saveTAP(MemModel &M, const fs::path &FileName, uint16_t Start) {
         // write code block
         writecode(ofs, ram + ram_start, ram_length, (uint16_t)0x5E00 + ram_start, false);
 
+        delete [] loader;
         delete[] ram;
     } else {  // Paged memory
         detect_vars_changes(M);
@@ -220,8 +221,8 @@ bool saveTAP(MemModel &M, const fs::path &FileName, uint16_t Start) {
         }
         uint16_t loader_len = loader_defsize + (uint16_t)((M.getNumMemPages() - 2) * 5);
         auto *loader = new uint8_t[loader_len];
-        std::memset(loader, 0, loader_len);
         memcpy(loader, loader_code, loader_defsize);
+        std::memset(loader + loader_defsize, 0, loader_len - loader_defsize);
         // Settings.Start
         loader[loader_defsize - 8] = uint8_t(Start & 0x00FF);
         loader[loader_defsize - 7] = uint8_t(Start >> 8);
@@ -283,6 +284,7 @@ bool saveTAP(MemModel &M, const fs::path &FileName, uint16_t Start) {
         // write main code block
         writecode(ofs, ram + ram_start, ram_length, (uint16_t)0x5E00 + ram_start, false);
 
+        delete[] loader;
         delete[] ram;
     }
 
