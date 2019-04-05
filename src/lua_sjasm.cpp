@@ -24,6 +24,7 @@ TOLUA_API int tolua_sjasm_open(lua_State *tolua_S);
 #include "io_snapshots.h"
 #include "fsutil.h"
 #include "codeemitter.h"
+#include "parser/defines.h"
 
 using namespace options;
 
@@ -49,9 +50,9 @@ static int tolua_sjasm_sj_get_define00(lua_State *tolua_S) {
         char *tolua_var_1 = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
             std::string tolua_ret;
-            auto it = DefineTable.find(tolua_var_1);
-            if (it != DefineTable.end()) {
-                tolua_ret = it->second;
+            auto Def = getDefine(tolua_var_1);
+            if (Def) {
+                tolua_ret = *Def;
             }
             tolua_pushstring(tolua_S, tolua_ret.c_str());
         }
@@ -85,10 +86,9 @@ static int tolua_sjasm_sj_insert_define00(lua_State *tolua_S) {
         char *tolua_var_3 = ((char *) tolua_tostring(tolua_S, 2, 0));
         {
             bool tolua_ret = false;
-            if (DefineTable.count(tolua_var_2) == 0) {
-                tolua_ret = true; // Indicate that a new entry will be created
+            if (!setDefine(tolua_var_2, tolua_var_3)) {
+                tolua_ret = true; // Indicate that a new entry has been created
             }
-            DefineTable[tolua_var_2] = tolua_var_3;
             tolua_pushboolean(tolua_S, (bool) tolua_ret);
         }
     }

@@ -34,7 +34,7 @@
 #include "options.h"
 #include "support.h"
 #include "codeemitter.h"
-
+#include "parser/defines.h"
 
 #include "parser.h"
 
@@ -529,9 +529,8 @@ char *replaceDefine(const char *lp, char *dest) {
         Id = getID(lp);
         dr = 1;
 
-        auto it = DefineTable.find(*Id);
-        if (it != DefineTable.end()) {
-            Repl = it->second;
+        if (auto Def = getDefine(*Id)) {
+            Repl = *Def;
         } else {
             Repl = MacroDefineTable.getReplacement(*Id);
             if (MacroLab.empty() || Repl.empty()) {
@@ -540,8 +539,7 @@ char *replaceDefine(const char *lp, char *dest) {
             }
         }
 
-        if (DefArrayTable.find(*Id) != DefArrayTable.end() && !DefArrayTable[*Id].empty()) {
-            auto &Arr = (DefArrayTable.find(*Id))->second;
+        if (const auto &Arr = getDefArray(*Id)) {
             aint val;
             //_COUT lp _ENDL;
             while (*(lp++) && (*lp <= ' ' || *lp == '['));
@@ -557,8 +555,8 @@ char *replaceDefine(const char *lp, char *dest) {
                 Error("Number of cell must be positive"s, CATCHALL);
                 break;
             }
-            if (Arr.size() > (unsigned) val) {
-                Repl = Arr[val];
+            if (Arr->size() > (unsigned) val) {
+                Repl = (*Arr)[val];
             } else {
                 Error("Cell of array not found"s, CATCHALL);
             }

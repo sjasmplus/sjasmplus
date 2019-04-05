@@ -37,6 +37,7 @@
 #include "codeemitter.h"
 #include "fs.h"
 #include "fsutil.h"
+#include "parser/defines.h"
 
 #include <sjasmplus_conf.h>
 #include <sstream>
@@ -53,17 +54,16 @@ void InitPass(int p) {
     InMemSrcMode = false;
     initParser();
     StructureTable.init();
-    DefineTable.clear();
-    DefArrayTable.clear();
+    clearDefines();
     MacroTable.init();
     MacroDefineTable.init();
 
     // predefined
-    DefineTable["_SJASMPLUS"s] = "1"s;
-    DefineTable["_VERSION"s] = "\"" SJASMPLUS_VERSION "\"";
-    DefineTable["_RELEASE"s] = "0"s;
-    DefineTable["_ERRORS"s] = "0"s;
-    DefineTable["_WARNINGS"s] = "0"s;
+    setDefine("_SJASMPLUS"s, "1"s);
+    setDefine("_VERSION"s, "\"" SJASMPLUS_VERSION "\"");
+    setDefine("_RELEASE"s, "0"s);
+    setDefine("_ERRORS"s, "0"s);
+    setDefine("_WARNINGS"s, "0"s);
 }
 
 int main(int argc, char *argv[]) {

@@ -6,6 +6,7 @@ extern "C" {
 #include "global.h"
 #include "lua_support.h"
 #include "fs.h"
+#include "parser/defines.h"
 
 #include "errors.h"
 
@@ -47,7 +48,7 @@ void Error(const std::string &fout, const std::string &bd, int type) {
     PreviousErrorLine = CurrentLocalLine;
     ++ErrorCount;
 
-    DefineTable["_ERRORS"s] = std::to_string(ErrorCount);
+    setDefine("_ERRORS"s, std::to_string(ErrorCount));
 
     /*SPRINTF3(ep, LINEMAX2, "%s line %lu: %s", filename, CurrentLocalLine, fout);
     if (bd) {
@@ -113,7 +114,7 @@ void Warning(const std::string &fout, const std::string &bd, int type) {
     }
 
     ++WarningCount;
-    DefineTable["_WARNINGS"s] = std::to_string(WarningCount);
+    setDefine("_WARNINGS"s, std::to_string(WarningCount));
 
     if (pass > LASTPASS) {
         ErrorStr = "warning: "s + fout;

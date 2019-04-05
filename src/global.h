@@ -30,8 +30,6 @@ extern void setInMemSrc(std::list<std::string> *NewInMemSrc);
 
 extern CLabelTable LabelTable;
 extern CLocalLabelTable LocalLabelTable;
-extern std::map<std::string, std::string> DefineTable;
-extern std::map<std::string, std::vector<std::string>> DefArrayTable;
 extern CMacroDefineTable MacroDefineTable;
 extern CMacroTable MacroTable;
 extern CStructureTable StructureTable;

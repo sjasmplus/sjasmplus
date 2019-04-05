@@ -49,6 +49,8 @@
 
 #include "directives.h"
 
+#include "parser/defines.h"
+
 using boost::iequals;
 using boost::algorithm::to_upper_copy;
 
@@ -1253,10 +1255,9 @@ void dirDEFINE() {
     }
 
     SkipBlanks(lp); // FIXME: This is not enough: need to account for comments
-    if (DefineTable.find(*Id) != DefineTable.end()) {
+    if (setDefine(*Id, getAll(lp))) {
         Error("Duplicate define"s, *Id);
     }
-    DefineTable[*Id] = getAll(lp);
 }
 
 void dirUNDEFINE() {
@@ -1272,22 +1273,12 @@ void dirUNDEFINE() {
         if (pass == PASS1) {
             LabelTable.removeAll();
         }
-        DefineTable.clear();
-        DefArrayTable.clear();
+        clearDefines();
     } else {
-        bool FoundID = false;
+        bool FoundID = unsetDefine(*Id);
 
-        auto it = DefineTable.find(*Id);
-        if (it != DefineTable.end()) {
-            DefineTable.erase(it);
+        if (unsetDefArray(*Id))
             FoundID = true;
-        }
-
-        auto it2 = DefArrayTable.find(*Id);
-        if (it2 != DefArrayTable.end()) {
-            DefArrayTable.erase(it2);
-            FoundID = true;
-        }
 
         if (LabelTable.find(*Id)) {
             if (pass == PASS1) {
@@ -1300,15 +1291,6 @@ void dirUNDEFINE() {
             Warning("[UNDEFINE] Identifier not found"s, *Id);
         }
     }
-}
-
-bool ifDefName(const std::string &Name) {
-    if (DefineTable.count(Name) > 0)
-        return true;
-    else if (DefArrayTable.count(Name) > 0)
-        return true;
-    else
-        return false;
 }
 
 void dirIFDEF() {
@@ -1874,7 +1856,7 @@ void dirDEFARRAY() {
             break;
         }
     }
-    DefArrayTable[*Id] = Arr;
+    setDefArray(*Id, Arr);
 }
 
 void _lua_showerror() {
@@ -1897,7 +1879,7 @@ void _lua_showerror() {
 
     ErrorCount++;
 
-    DefineTable["_ERRORS"s] = std::to_string(ErrorCount);
+    setDefine("_ERRORS"s, std::to_string(ErrorCount));
 
     lua_pop(LUA, 1);
 }

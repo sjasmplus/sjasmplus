@@ -29,8 +29,6 @@ void setInMemSrc(std::list<std::string> *NewInMemSrc) {
 
 CLabelTable LabelTable;
 CLocalLabelTable LocalLabelTable;
-std::map<std::string, std::string> DefineTable;
-std::map<std::string, std::vector<std::string>> DefArrayTable;
 CMacroDefineTable MacroDefineTable;
 CMacroTable MacroTable;
 CStructureTable StructureTable;
