@@ -10,6 +10,7 @@ configure_file(
         "${PROJECT_BINARY_DIR}/sjasmplus_conf.h"
 )
 include_directories(${PROJECT_BINARY_DIR})
+include_directories(${PROJECT_SOURCE_DIR}/src)
 
 find_package (Boost REQUIRED COMPONENTS filesystem system)
 include_directories(${Boost_INCLUDE_DIR})
@@ -55,6 +56,8 @@ set(SOURCE_FILES
         options.h
         parser.cpp
         parser.h
+        parser/defines.h
+        parser/defines.cpp
         reader.cpp
         reader.h
         sjio.cpp
