@@ -304,7 +304,7 @@ optional<std::string> validateLabel(const std::string &Name) {
 bool getLabelValue(const char *&p, aint &val) {
     std::string ML{MacroLab};
     const char *op = p;
-    bool AsIsLabel = false;
+    bool AsIsLabel = false; // @...
     bool DotLabel = false;
     int oIsLabelNotFound = IsLabelNotFound;
     if (!ML.empty() && *p == '@') {
@@ -314,11 +314,11 @@ bool getLabelValue(const char *&p, aint &val) {
     if (!ML.empty()) {
         switch (*p) {
             case '@':
-                AsIsLabel = 1;
+                AsIsLabel = true;
                 ++p;
                 break;
             case '.':
-                DotLabel = 1;
+                DotLabel = true;
                 ++p;
                 break;
             default:
