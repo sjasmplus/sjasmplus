@@ -717,6 +717,14 @@ bool ParseMacro() {
             return true;
         }
     } else if (R == MacroResult::Success) {
+        lp = p;
+        std::string tmp{line};
+
+        while (MacroTable.readLine(line, LINEMAX)) {
+            parseLineSafe();
+        }
+
+        std::strncpy(line, tmp.c_str(), LINEMAX);
         return true;
     } else if (R == MacroResult::NotEnoughArgs) {
         Error("Not enough arguments for macro"s, *Name);

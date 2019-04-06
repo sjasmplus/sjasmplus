@@ -6,8 +6,6 @@
 #include "errors.h"
 #include "reader.h"
 #include "sjio.h"
-#include "parser.h" // TODO: decouple
-#include "global.h" // TODO: decouple
 
 #include "macro.h"
 
@@ -258,19 +256,11 @@ MacroResult CMacroTable::emit(const std::string &Name, const char *&p) {
         }
     }
     SkipBlanks(p);
-    lp = p;
     auto Ret = *p ? MacroResult::TooManyArgs : MacroResult::Success;
 
     emitStart(OLabelPrefix, ODefs);
 
     setInMemSrc(&M.Body);
-    std::string tmp{line};
-
-    while (readLine(line, LINEMAX)) {
-        parseLineSafe();
-    }
-
-    std::strncpy(line, tmp.c_str(), LINEMAX);
 
     return Ret;
 }
