@@ -12,6 +12,7 @@ using namespace std::string_literals;
 enum class SMEMB {
     UNKNOWN,
     ALIGN,
+    SKIP,
     BYTE,
     WORD,
     BLOCK,
@@ -21,21 +22,21 @@ enum class SMEMB {
     PARENCLOSE
 };
 
-class CStructureEntry1 {
+class StructLabel {
 public:
     std::string Name;
     aint Offset;
 
-    CStructureEntry1(std::string _Name, aint _Offset) : Name(std::move(_Name)), Offset(_Offset) {}
+    StructLabel(std::string _Name, aint _Offset) : Name(std::move(_Name)), Offset(_Offset) {}
 
 };
 
-class CStructureEntry2 {
+class StructMember {
 public:
     aint Offset, Len, Def;
     SMEMB Type;
 
-    CStructureEntry2(aint _Offset, aint _Len, aint _Def, SMEMB _Type) :
+    StructMember(aint _Offset, aint _Len, aint _Def, SMEMB _Type) :
             Offset(_Offset), Len(_Len), Def(_Def), Type(_Type) {}
 
 };
@@ -51,14 +52,14 @@ public:
         Labels.emplace_back(Name, noffset);
     }
 
-    void addMember(CStructureEntry2 &E) {
+    void addMember(StructMember &E) {
         Members.emplace_back(E);
         noffset += E.Len;
     }
 
     void copyLabels(CStructure &St);
 
-    void copyMember(CStructureEntry2 &Src, aint ndef);
+    void copyMember(StructMember &Src, aint ndef);
 
     void copyMembers(CStructure &St, const char *&lp);
 
@@ -76,8 +77,8 @@ public:
             Name(Name), FullName(FullName), binding(idx), noffset(no), global(ngl) {}
 
 private:
-    std::list<CStructureEntry1> Labels;
-    std::list<CStructureEntry2> Members;
+    std::list<StructLabel> Labels;
+    std::list<StructMember> Members;
 };
 
 class CStructureTable {

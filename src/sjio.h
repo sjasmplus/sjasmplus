@@ -86,6 +86,8 @@ const fs::path getCurrentSrcFileName();
 
 optional<std::string> emitAlignment(uint16_t Alignment, optional<uint8_t> FillByte);
 
+void emitData(const std::vector<optional<uint8_t>> Bytes);
+
 class ExportWriter : public TextOutput {
 private:
     fs::path FileName;

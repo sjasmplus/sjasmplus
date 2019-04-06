@@ -174,6 +174,18 @@ void emitBytes(int *bytes) {
     }
 }
 
+void emitData(const std::vector<optional<uint8_t>> Bytes) {
+    Listing.setPreviousAddress(Em.getCPUAddress());
+    for (const auto &B : Bytes) {
+        if (B) {
+            emit(*B);
+        } else {
+            Em.incAddress();
+        }
+    }
+}
+
+
 void emitWords(int *words) {
     Listing.setPreviousAddress(Em.getCPUAddress());
     while (*words != -1) {

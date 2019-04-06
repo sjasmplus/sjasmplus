@@ -16,15 +16,15 @@ void CStructure::copyLabels(CStructure &St) {
     }
 }
 
-void CStructure::copyMember(CStructureEntry2 &Src, aint ndef) {
-    CStructureEntry2 M = {noffset, Src.Len, ndef, Src.Type};
+void CStructure::copyMember(StructMember &Src, aint ndef) {
+    StructMember M = {noffset, Src.Len, ndef, Src.Type};
     addMember(M);
 }
 
 void CStructure::copyMembers(CStructure &St, const char *&lp) {
     aint val;
     int parentheses = 0;
-    CStructureEntry2 M1 = {noffset, 0, 0, SMEMB::PARENOPEN};
+    StructMember M1 = {noffset, 0, 0, SMEMB::PARENOPEN};
     addMember(M1);
     SkipBlanks(lp);
     if (*lp == '{') {
@@ -72,7 +72,7 @@ void CStructure::copyMembers(CStructure &St, const char *&lp) {
             Error("closing } missing"s);
         }
     }
-    CStructureEntry2 M2 = {noffset, 0, 0, SMEMB::PARENCLOSE};
+    StructMember M2 = {noffset, 0, 0, SMEMB::PARENCLOSE};
     addMember(M2);
 }
 
@@ -163,8 +163,8 @@ void CStructure::emitLabels(const std::string &iid) {
 }
 
 void CStructure::emitMembers(const char *&p) {
-    int *e, et = 0, t;
-    e = new int[noffset + 1];
+    int t;
+    std::vector<optional<uint8_t>> Bytes;
     aint val;
     int haakjes = 0;
     SkipBlanks(p);
@@ -174,20 +174,25 @@ void CStructure::emitMembers(const char *&p) {
     }
     for (auto M : Members) {
         switch (M.Type) {
+            case SMEMB::SKIP:
+                t = M.Len;
+                while (t--) {
+                    Bytes.emplace_back(boost::none);
+                }
+                break;
             case SMEMB::BLOCK:
                 t = M.Len;
                 while (t--) {
-                    e[et++] = M.Def;
+                    Bytes.emplace_back(M.Def);
                 }
                 break;
-
             case SMEMB::BYTE:
                 synerr = false;
                 if (!parseExpression(p, val)) {
                     val = M.Def;
                 }
                 synerr = true;
-                e[et++] = val % 256;
+                Bytes.emplace_back(val % 256);
                 check8(val);
                 comma(p);
                 break;
@@ -197,8 +202,8 @@ void CStructure::emitMembers(const char *&p) {
                     val = M.Def;
                 }
                 synerr = true;
-                e[et++] = val % 256;
-                e[et++] = (val >> 8) % 256;
+                Bytes.emplace_back(val % 256);
+                Bytes.emplace_back((val >> 8) % 256);
                 check16(val);
                 comma(p);
                 break;
@@ -208,9 +213,9 @@ void CStructure::emitMembers(const char *&p) {
                     val = M.Def;
                 }
                 synerr = true;
-                e[et++] = val % 256;
-                e[et++] = (val >> 8) % 256;
-                e[et++] = (val >> 16) % 256;
+                Bytes.emplace_back(val % 256);
+                Bytes.emplace_back((val >> 8) % 256);
+                Bytes.emplace_back((val >> 16) % 256);
                 check24(val);
                 comma(p);
                 break;
@@ -220,10 +225,10 @@ void CStructure::emitMembers(const char *&p) {
                     val = M.Def;
                 }
                 synerr = true;
-                e[et++] = val % 256;
-                e[et++] = (val >> 8) % 256;
-                e[et++] = (val >> 16) % 256;
-                e[et++] = (val >> 24) % 256;
+                Bytes.emplace_back(val % 256);
+                Bytes.emplace_back((val >> 8) % 256);
+                Bytes.emplace_back((val >> 16) % 256);
+                Bytes.emplace_back((val >> 24) % 256);
                 comma(p);
                 break;
             case SMEMB::PARENOPEN:
@@ -254,9 +259,7 @@ void CStructure::emitMembers(const char *&p) {
     if (*p) {
         Error("[STRUCT] Syntax error - too many arguments?"s);
     } /* this line from SjASM 0.39g */
-    e[et] = -1;
-    emitBytes(e);
-    delete[] e;
+    emitData(Bytes);
 }
 
 CStructure &CStructureTable::add(const std::string &Name, int Offset, int idx, int Global) {
@@ -271,7 +274,7 @@ CStructure &CStructureTable::add(const std::string &Name, int Offset, int idx, i
     }
     CStructure S = {Name, FullName, idx, 0, Global};
     if (Offset) {
-        CStructureEntry2 M = {0, Offset, 0, SMEMBBLOCK};
+        StructMember M = {0, Offset, 0, SMEMB::SKIP};
         S.addMember(M);
     }
     return Entries[FullName] = S;
@@ -345,7 +348,7 @@ void parseStructMember(CStructure &St) {
                 val = 0;
             }
             check8(val);
-            { CStructureEntry2 SMM = {St.noffset, len, val & 255, SMEMB::BLOCK};
+            { StructMember SMM = {St.noffset, len, val & 255, SMEMB::BLOCK};
                 St.addMember(SMM); }
             break;
         case SMEMB::BYTE:
@@ -353,7 +356,7 @@ void parseStructMember(CStructure &St) {
                 val = 0;
             }
             check8(val);
-            { CStructureEntry2 SMB = {St.noffset, 1, val, SMEMB::BYTE};
+            { StructMember SMB = {St.noffset, 1, val, SMEMB::BYTE};
                 St.addMember(SMB); }
             break;
         case SMEMB::WORD:
@@ -361,7 +364,7 @@ void parseStructMember(CStructure &St) {
                 val = 0;
             }
             check16(val);
-            { CStructureEntry2 SMW = {St.noffset, 2, val, SMEMB::WORD};
+            { StructMember SMW = {St.noffset, 2, val, SMEMB::WORD};
                 St.addMember(SMW); }
             break;
         case SMEMB::D24:
@@ -369,14 +372,14 @@ void parseStructMember(CStructure &St) {
                 val = 0;
             }
             check24(val);
-            { CStructureEntry2 SM24 = {St.noffset, 3, val, SMEMB::D24};
+            { StructMember SM24 = {St.noffset, 3, val, SMEMB::D24};
                 St.addMember(SM24); }
             break;
         case SMEMB::DWORD:
             if (!parseExpression(lp, val)) {
                 val = 0;
             }
-            { CStructureEntry2 SMDW = {St.noffset, 4, val, SMEMB::DWORD};
+            { StructMember SMDW = {St.noffset, 4, val, SMEMB::DWORD};
                 St.addMember(SMDW); }
             break;
         case SMEMB::ALIGN:
