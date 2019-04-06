@@ -182,7 +182,7 @@ void CMacroTable::add(const std::string &Name, const char *&p) {
     if (*p/* && *p!=':'*/) {
         Error("Unexpected"s, p, PASS1);
     }
-    Listing.listFile();
+    Listing.listLine();
     if (!readFileToListOfStrings(M.Body, "endm"s)) {
         Error("Unexpected end of macro"s, PASS1);
     }
@@ -255,7 +255,7 @@ MacroResult CMacroTable::emit(const std::string &Name, const char *&p) {
     SkipBlanks(p);
     lp = p;
     auto Ret = *p ? MacroResult::TooManyArgs : MacroResult::Success;
-    Listing.listFile();
+    Listing.listLine();
     Listing.startMacro();
 
     auto OInMemSrc = InMemSrc;

@@ -718,7 +718,7 @@ EReturn ReadFile(const char *pp, const char *err) {
             return ENDIF;
         }
         if (cmphstr(p, "else")) {
-            Listing.listFile();
+            Listing.listLine();
             lp = replaceDefine(p);
             return ELSE;
         }
@@ -791,7 +791,7 @@ EReturn SkipFile(const char *pp, const char *err) {
         }
         if (cmphstr(p, "else")) {
             if (!iflevel) {
-                Listing.listFile();
+                Listing.listLine();
                 lp = replaceDefine(p);
                 return ELSE;
             }

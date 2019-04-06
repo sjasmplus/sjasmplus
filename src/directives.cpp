@@ -78,7 +78,7 @@ bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
         // .number or .(expression) prefix which acts as DUP/REPT for a single line
         aint val;
         size_t DirPos = olp - BOL;
-        Listing.listFile();
+        Listing.listLine();
         if (isdigit(Instr[1])) {
             const char *RepVal = Instr.c_str() + 1;
             if (!parseExpression(RepVal, val)) {
@@ -1038,7 +1038,7 @@ void dirIF() {
     }
 
     if (val) {
-        Listing.listFile();
+        Listing.listLine();
         switch (ReadFile(lp, "[IF] No endif")) {
             case ELSE:
                 if (SkipFile(lp, "[IF] No endif") != ENDIF) {
@@ -1052,7 +1052,7 @@ void dirIF() {
                 break;
         }
     } else {
-        Listing.listFile();
+        Listing.listLine();
         switch (SkipFile(lp, "[IF] No endif")) {
             case ELSE:
                 if (ReadFile(lp, "[IF] No endif") != ENDIF) {
@@ -1080,7 +1080,7 @@ void dirIFN() {
     }
 
     if (!val) {
-        Listing.listFile();
+        Listing.listLine();
         switch (ReadFile(lp, "[IFN] No endif")) {
             case ELSE:
                 if (SkipFile(lp, "[IFN] No endif") != ENDIF) {
@@ -1094,7 +1094,7 @@ void dirIFN() {
                 break;
         }
     } else {
-        Listing.listFile();
+        Listing.listLine();
         switch (SkipFile(lp, "[IFN] No endif")) {
             case ELSE:
                 if (ReadFile(lp, "[IFN] No endif") != ENDIF) {
@@ -1127,7 +1127,7 @@ void dirIFUSED() {
     }
 
     if (LabelTable.isUsed(*Id)) {
-        Listing.listFile();
+        Listing.listLine();
         switch (ReadFile(lp, "[IFUSED] No endif")) {
             case ELSE:
                 if (SkipFile(lp, "[IFUSED] No endif") != ENDIF) {
@@ -1141,7 +1141,7 @@ void dirIFUSED() {
                 break;
         }
     } else {
-        Listing.listFile();
+        Listing.listLine();
         switch (SkipFile(lp, "[IFUSED] No endif")) {
             case ELSE:
                 if (ReadFile(lp, "[IFUSED] No endif") != ENDIF) {
@@ -1174,7 +1174,7 @@ void dirIFNUSED() {
     }
 
     if (!LabelTable.isUsed(*Id)) {
-        Listing.listFile();
+        Listing.listLine();
         switch (ReadFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
                 if (SkipFile(lp, "[IFNUSED] No endif") != ENDIF) {
@@ -1188,7 +1188,7 @@ void dirIFNUSED() {
                 break;
         }
     } else {
-        Listing.listFile();
+        Listing.listLine();
         switch (SkipFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
                 if (ReadFile(lp, "[IFNUSED] No endif") != ENDIF) {
@@ -1214,7 +1214,7 @@ void dirENDIF() {
 
 void dirINCLUDE() {
     const fs::path &FileName = getFileName(lp);
-    Listing.listFile();
+    Listing.listLine();
     includeFile(FileName);
     Listing.omitLine();
 }
@@ -1311,7 +1311,7 @@ void dirIFDEF() {
     }
 
     if (ifDefName(*Id)) {
-        Listing.listFile();
+        Listing.listLine();
         /*switch (res=ReadFile()) {*/
         switch (res = ReadFile(lp, "[IFDEF] No endif")) {
             /*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1328,7 +1328,7 @@ void dirIFDEF() {
                 break;
         }
     } else {
-        Listing.listFile();
+        Listing.listLine();
         /*switch (res=SkipFile()) {*/
         switch (res = SkipFile(lp, "[IFDEF] No endif")) {
             /*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1367,7 +1367,7 @@ void dirIFNDEF() {
     }
 
     if (!ifDefName(*Id)) {
-        Listing.listFile();
+        Listing.listLine();
         /*switch (res=ReadFile()) {*/
         switch (res = ReadFile(lp, "[IFNDEF] No endif")) {
             /*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1384,7 +1384,7 @@ void dirIFNDEF() {
                 break;
         }
     } else {
-        Listing.listFile();
+        Listing.listLine();
         /*switch (res=SkipFile()) {*/
         switch (res = SkipFile(lp, "[IFNDEF] No endif")) {
             /*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1660,7 +1660,7 @@ void dirSTRUCT() {
         }
     }
     CStructure &St = StructureTable.add(*Name, offset, bind, global);
-    Listing.listFile();
+    Listing.listLine();
     while (true) {
         if (!ReadLine()) {
             Error("[STRUCT] Unexpected end of structure"s, PASS1);
@@ -1785,7 +1785,7 @@ void dirEDUP() {
     STRCPY(line, LINEMAX, ml);
     free(ml);
 
-    Listing.listFile();
+    Listing.listLine();
 }
 
 void checkRepeatStackAtEOF() {
@@ -1941,7 +1941,7 @@ void dirLUA() {
     }
 
     ln = CurrentLocalLine;
-    Listing.listFile();
+    Listing.listLine();
     while (true) {
         if (!ReadLine(false)) {
             Error("[LUA] Unexpected end of lua script"s, PASS3);

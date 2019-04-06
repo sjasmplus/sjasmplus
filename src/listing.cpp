@@ -91,7 +91,7 @@ void ListingWriter::listBytesLong(int pad, const std::string &Prefix) {
     ByteBuffer.clear();
 }
 
-void ListingWriter::listFile() {
+void ListingWriter::listLine() {
     int pad;
     if (pass != LASTPASS || OmitLine) {
         OmitLine = false;

@@ -776,30 +776,30 @@ void parseLine(bool ParseLabels) {
     }
     comlin += comnxtlin;
     if (!*lp) {
-        Listing.listFile();
+        Listing.listLine();
         return;
     }
     if (ParseLabels) {
         ParseLabel();
     }
     if (SkipBlanks()) {
-        Listing.listFile();
+        Listing.listLine();
         return;
     }
     ParseMacro();
     if (SkipBlanks()) {
-        Listing.listFile();
+        Listing.listLine();
         return;
     }
     parseInstruction(BOL, lp);
     if (SkipBlanks()) {
-        Listing.listFile();
+        Listing.listLine();
         return;
     }
     if (*lp) {
         Error("Unexpected"s, lp, LASTPASS);
     }
-    Listing.listFile();
+    Listing.listLine();
 }
 
 void parseLineSafe(bool ParseLabels) {

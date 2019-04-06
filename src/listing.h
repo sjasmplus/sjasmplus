@@ -33,7 +33,7 @@ public:
 
     void initPass();
 
-    void listFile();
+    void listLine();
 
     void listFileSkip(char *line);
 
