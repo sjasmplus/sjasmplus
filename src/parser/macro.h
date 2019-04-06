@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <stack>
 
 enum class MacroResult {
     Success,
@@ -49,6 +50,13 @@ struct CMacroTableEntry {
     std::list<std::string> Body;
 };
 
+typedef struct {
+    std::string LabelPrefix;
+    CMacroDefineTable Defs;
+    std::list<std::string> *Body;
+    std::list<std::string>::iterator BodyIt;
+} MacroState;
+
 class CMacroTable {
 public:
     void add(const std::string &Name, const char *&p);
@@ -66,7 +74,7 @@ public:
     }
 
     bool inMacroBody() {
-        return InMacroBody;
+        return CurrentBody != nullptr;
     }
 
     const char *readLine(char *Buffer, size_t BufSize);
@@ -77,11 +85,17 @@ private:
     int MacroNumber = 0;
     std::string LabelPrefix;
 
-    bool InMacroBody = false;
-    std::list<std::string> *InMemSrc = nullptr;
-    std::list<std::string>::iterator InMemSrcIt;
+    std::list<std::string> *CurrentBody = nullptr;
+    std::list<std::string>::iterator CurrentBodyIt;
+
+    std::stack<MacroState> Stack;
 
     void setInMemSrc(std::list<std::string> *NewInMemSrc);
+
+    void emitStart(const std::string &SavedLabelPrefix,
+            const CMacroDefineTable &SavedDefs);
+
+    void emitEnd();
 };
 
 

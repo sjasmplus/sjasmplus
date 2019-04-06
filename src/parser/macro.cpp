@@ -26,22 +26,24 @@ void CMacroTable::init() {
     Entries.clear();
     MacroNumber = 0;
     LabelPrefix.clear();
-    InMacroBody = false;
+    CurrentBody = nullptr;
+    while (!Stack.empty())
+        Stack.pop();
 }
 
 void CMacroTable::setInMemSrc(std::list<std::string> *NewInMemSrc) {
-    InMemSrc = NewInMemSrc;
-    InMemSrcIt = InMemSrc->begin();
-    InMacroBody = true;
+    CurrentBody = NewInMemSrc;
+    CurrentBodyIt = CurrentBody->begin();
 }
 
 const char *CMacroTable::readLine(char *Buffer, size_t BufSize) {
-    if (InMacroBody) {
-        if (InMemSrcIt == InMemSrc->end()) {
+    if (inMacroBody()) {
+        if (CurrentBodyIt == CurrentBody->end()) {
+            emitEnd();
             return nullptr;
         }
-        std::strncpy(Buffer, (*InMemSrcIt).c_str(), BufSize);
-        ++InMemSrcIt;
+        std::strncpy(Buffer, (*CurrentBodyIt).c_str(), BufSize);
+        ++CurrentBodyIt;
         return Buffer;
     } else {
         return nullptr;
@@ -258,31 +260,52 @@ MacroResult CMacroTable::emit(const std::string &Name, const char *&p) {
     SkipBlanks(p);
     lp = p;
     auto Ret = *p ? MacroResult::TooManyArgs : MacroResult::Success;
-    Listing.listLine();
-    Listing.startMacro();
 
-    auto OInMemSrc = InMemSrc;
-    auto OInMemSrcIt = InMemSrcIt;
-    auto OInMemSrcMode = InMacroBody;
+    emitStart(OLabelPrefix, ODefs);
 
     setInMemSrc(&M.Body);
     std::string tmp{line};
-    while (InMemSrcIt != InMemSrc->end()) {
-        std::strncpy(line, (*InMemSrcIt).c_str(), LINEMAX);
-        ++InMemSrcIt;
+
+    while (readLine(line, LINEMAX)) {
         parseLineSafe();
     }
+
     std::strncpy(line, tmp.c_str(), LINEMAX);
 
-    InMemSrc = OInMemSrc;
-    InMemSrcIt = OInMemSrcIt;
-    InMacroBody = OInMemSrcMode;
-
-    MacroDefineTable = ODefs;
-    LabelPrefix = OLabelPrefix;
-    Listing.endMacro();
-    Listing.omitLine();
     return Ret;
 }
 
+void CMacroTable::emitStart(const std::string &SavedLabelPrefix,
+                            const CMacroDefineTable &SavedDefs) {
 
+    Listing.listLine();
+    Listing.startMacro();
+
+    if (CurrentBody != nullptr) {
+        MacroState S{
+                SavedLabelPrefix,
+                SavedDefs,
+                CurrentBody,
+                CurrentBodyIt
+        };
+        Stack.push(S);
+    }
+}
+
+void CMacroTable::emitEnd() {
+    if (!Stack.empty()) {
+        auto S = Stack.top();
+        Stack.pop();
+        CurrentBody = S.Body;
+        CurrentBodyIt = S.BodyIt;
+        MacroDefineTable = S.Defs;
+        LabelPrefix = S.LabelPrefix;
+    } else {
+        CurrentBody = nullptr;
+        MacroDefineTable.init(); // FIXME: should not be needed
+        LabelPrefix.clear(); // FIXME: should not be needed
+    }
+
+    Listing.endMacro();
+    Listing.omitLine();
+}
