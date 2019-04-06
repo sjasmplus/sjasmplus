@@ -55,12 +55,7 @@ public:
 
     MacroResult emit(const std::string &Name, const char *&p);
 
-    void init() {
-        Entries.clear();
-        MacroNumber = 0;
-        MacroLab.clear();
-        InMemSrcMode = false;
-    }
+    void init();
 
     CMacroTable() {
         init();

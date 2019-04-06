@@ -22,6 +22,13 @@ void initMacros() {
     MacroDefineTable.init();
 }
 
+void CMacroTable::init() {
+    Entries.clear();
+    MacroNumber = 0;
+    MacroLab.clear();
+    InMemSrcMode = false;
+}
+
 void CMacroTable::setInMemSrc(std::list<std::string> *NewInMemSrc) {
     InMemSrc = NewInMemSrc;
     InMemSrcIt = InMemSrc->begin();
