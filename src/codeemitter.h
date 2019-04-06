@@ -4,6 +4,8 @@
 #include "memory.h"
 #include "fs.h"
 
+using boost::optional;
+
 enum class OutputMode {
     Truncate, Rewind, Append
 };
@@ -51,7 +53,7 @@ public:
         return Disp ? EmitAddress : CPUAddress;
     }
 
-    boost::optional<std::string> emitByte(uint8_t Byte);
+    optional<std::string> emitByte(uint8_t Byte);
 
     // ORG directive
     void setAddress(uint16_t NewAddress) {
@@ -109,12 +111,12 @@ public:
     }
 
     // Returns an error string in case of failure
-    boost::optional<std::string> setPage(int Page) {
+    optional<std::string> setPage(int Page) {
         return MemManager.setPage(Slot, Page);
     }
 
     // Save slot number set by the SLOT directive
-    boost::optional<std::string> setSlot(int NewSlot) {
+    optional<std::string> setSlot(int NewSlot) {
         auto Err = MemManager.validateSlot(NewSlot);
         if (Err) return Err;
         else {
@@ -163,7 +165,7 @@ public:
 
     bool isRawOutputOverriden() { return RawOutputOverride; }
 
-    boost::optional<std::string> seekRawOutput(std::streamoff Offset, std::ios_base::seekdir Method);
+    optional<std::string> seekRawOutput(std::streamoff Offset, std::ios_base::seekdir Method);
 
     void setForcedRawOutputFileSize(uintmax_t NewSize) { ForcedRawOutputSize = NewSize; }
 

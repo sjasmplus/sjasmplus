@@ -19,7 +19,7 @@ bool unsetDefine(const std::string &Name) {
     return Found;
 }
 
-boost::optional<std::string> getDefine(const std::string &Name) {
+optional<std::string> getDefine(const std::string &Name) {
     auto It = DefineTable.find(Name);
     if (It != DefineTable.end())
         return It->second;
@@ -33,7 +33,7 @@ bool setDefArray(const std::string &Name, const std::vector<std::string> &Arr) {
     return Found;
 }
 
-boost::optional<const std::vector<std::string> &> getDefArray(const std::string &Name) {
+optional<const std::vector<std::string> &> getDefArray(const std::string &Name) {
     auto It = DefArrayTable.find(Name);
     if (It != DefArrayTable.end() && !DefArrayTable[Name].empty())
         return It->second;

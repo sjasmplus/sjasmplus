@@ -15,6 +15,7 @@
 #include "errors.h"
 
 using namespace std::string_literals;
+using boost::optional;
 
 class MemModel {
 protected:
@@ -51,7 +52,7 @@ public:
     // Size  = size of the block
     // SearchLimit = if > 0 then do not search beyond this distance from Start
     // Backwards = whether to search backwards
-    boost::optional<uint16_t> findUnusedBlock(uint16_t Start, uint16_t Size,
+    optional<uint16_t> findUnusedBlock(uint16_t Start, uint16_t Size,
             uint16_t SearchLimit = 0, bool Backwards = false);
 
     bool isUnusedBlock(uint16_t Start, uint16_t Size) {
@@ -76,11 +77,11 @@ public:
     }
 
     // Return error string on error
-    virtual boost::optional<std::string> setPage(int Slot, int Page) = 0;
+    virtual optional<std::string> setPage(int Slot, int Page) = 0;
 
-    virtual boost::optional<std::string> setPage(uint16_t CurrentAddr, int Page) = 0;
+    virtual optional<std::string> setPage(uint16_t CurrentAddr, int Page) = 0;
 
-    virtual boost::optional<std::string> validateSlot(int Slot) = 0;
+    virtual optional<std::string> validateSlot(int Slot) = 0;
 
     virtual int getPageForAddress(uint16_t CurrentAddr) = 0;
 
@@ -118,15 +119,15 @@ public:
 
     int getPageNumInSlot(int Slot) override { return 0; }
 
-    boost::optional<std::string> setPage(int Slot, int Page) override {
+    optional<std::string> setPage(int Slot, int Page) override {
         return "The PLAIN memory model does not support page switching"s;
     }
 
-    boost::optional<std::string> setPage(uint16_t currentAddr, int Page) override {
+    optional<std::string> setPage(uint16_t currentAddr, int Page) override {
         return setPage((int) 0, 0);
     }
 
-    boost::optional<std::string> validateSlot(int Slot) override {
+    optional<std::string> validateSlot(int Slot) override {
         return setPage((int) 0, (int) 0);
     }
 
@@ -287,11 +288,11 @@ public:
 
     int getPageNumInSlot(int Slot) override { return SlotPages[Slot]; }
 
-    boost::optional<std::string> setPage(int Slot, int Page) override;
+    optional<std::string> setPage(int Slot, int Page) override;
 
-    boost::optional<std::string> setPage(uint16_t CurrentAddr, int Page) override;
+    optional<std::string> setPage(uint16_t CurrentAddr, int Page) override;
 
-    boost::optional<std::string> validateSlot(int Slot) override;
+    optional<std::string> validateSlot(int Slot) override;
 
     int getPageForAddress(uint16_t CurrentAddr) override;
 };
@@ -344,15 +345,15 @@ public:
         return CurrentMemModel->getPageNumInSlot(Slot);
     }
 
-    boost::optional<std::string> setPage(int Slot, int Page) {
+    optional<std::string> setPage(int Slot, int Page) {
         return CurrentMemModel->setPage(Slot, Page);
     }
 
-    boost::optional<std::string> setPage(uint16_t CurrentAddr, int Page) {
+    optional<std::string> setPage(uint16_t CurrentAddr, int Page) {
         return CurrentMemModel->setPage(CurrentAddr, Page);
     }
 
-    boost::optional<std::string> validateSlot(int Slot) {
+    optional<std::string> validateSlot(int Slot) {
         return CurrentMemModel->validateSlot(Slot);
     }
 

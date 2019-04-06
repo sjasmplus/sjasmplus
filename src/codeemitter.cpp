@@ -1,7 +1,7 @@
 #include "fsutil.h"
 #include "codeemitter.h"
 
-boost::optional<std::string> CodeEmitter::emitByte(uint8_t Byte) {
+optional<std::string> CodeEmitter::emitByte(uint8_t Byte) {
     const std::string ErrMsg{"CPU address space overflow"s};
     if (CPUAddrOverflow) {
         return ErrMsg;
@@ -79,7 +79,7 @@ void CodeEmitter::setRawOutput(const fs::path &FileName, OutputMode Mode) {
     RawOFS.open(RawOutputFileName, OpenMode);
 }
 
-boost::optional<std::string> CodeEmitter::seekRawOutput(std::streamoff Offset, std::ios_base::seekdir Method) {
+optional<std::string> CodeEmitter::seekRawOutput(std::streamoff Offset, std::ios_base::seekdir Method) {
     if (RawOFS.is_open()) {
 
         std::streampos NewPos;

@@ -8,7 +8,7 @@
 
 using boost::algorithm::to_upper_copy;
 
-boost::optional<uint16_t>
+optional<uint16_t>
 MemModel::findUnusedBlock(uint16_t Start, uint16_t Size,
         uint16_t SearchLimit, bool Backwards) {
     if ((!Backwards && ((unsigned int) Start + Size > 0x10000))
@@ -39,7 +39,7 @@ ZXMemModel::ZXMemModel(const std::string &Name, int NPages) : MemModel(Name) {
     MemUsage.resize(PageSize * NPages, false);
 }
 
-boost::optional<std::string> ZXMemModel::setPage(int Slot, int Page) {
+optional<std::string> ZXMemModel::setPage(int Slot, int Page) {
     auto err = validateSlot(Slot);
     if (err) return err;
 
@@ -52,12 +52,12 @@ boost::optional<std::string> ZXMemModel::setPage(int Slot, int Page) {
     return boost::none;
 }
 
-boost::optional<std::string> ZXMemModel::setPage(uint16_t CurrentAddr, int Page) {
+optional<std::string> ZXMemModel::setPage(uint16_t CurrentAddr, int Page) {
     int slot = CurrentAddr / PageSize;
     return setPage(slot, Page);
 }
 
-boost::optional<std::string> ZXMemModel::validateSlot(int Slot) {
+optional<std::string> ZXMemModel::validateSlot(int Slot) {
     if (Slot < 0 || Slot >= NumSlots) {
         return "Slot number should be between 0 and "s + std::to_string(NumSlots);
     } else return boost::none;
