@@ -11,7 +11,9 @@ CStructureTable StructureTable;
 void CStructure::copyLabels(CStructure &St) {
     if (St.Labels.empty() || PreviousIsLabel.empty())
         return;
-    Labels.insert(Labels.end(), St.Labels.begin(), St.Labels.end());
+    for (const auto &L : St.Labels) {
+        Labels.emplace_back(PreviousIsLabel + "."s + L.Name, noffset + L.Offset);
+    }
 }
 
 void CStructure::copyMember(CStructureEntry2 &Src, aint ndef) {
@@ -20,7 +22,6 @@ void CStructure::copyMember(CStructureEntry2 &Src, aint ndef) {
 }
 
 void CStructure::copyMembers(CStructure &St, const char *&lp) {
-//    CStructureEntry2 *ip;
     aint val;
     int parentheses = 0;
     CStructureEntry2 M1 = {noffset, 0, 0, SMEMBPARENOPEN};
@@ -30,8 +31,7 @@ void CStructure::copyMembers(CStructure &St, const char *&lp) {
         ++parentheses;
         ++lp;
     }
-//    ip = St->mbf;
-    for (auto M : Members) {
+    for (auto M : St.Members) {
         switch (M.Type) {
             case SMEMBBLOCK:
                 copyMember(M, M.Def);
