@@ -400,7 +400,7 @@ void parseStructMember(CStructure &St) {
                     CStructure &S = it->second;
                     const char *tmp = St.Name.c_str();
                     if (cmphstr(tmp, (*Name).c_str())) {
-                        Error("[STRUCT] Use structure itself"s, CATCHALL);
+                        Error("[STRUCT] The structure refers to itself"s, CATCHALL);
                         break;
                     }
                     lp = (char *) pp;
