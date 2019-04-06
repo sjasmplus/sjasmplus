@@ -35,6 +35,7 @@
 #include "support.h"
 #include "codeemitter.h"
 #include "parser/defines.h"
+#include "parser/macro.h"
 
 #include "parser.h"
 
@@ -533,7 +534,7 @@ char *replaceDefine(const char *lp, char *dest) {
             Repl = *Def;
         } else {
             Repl = MacroDefineTable.getReplacement(*Id);
-            if (MacroLab.empty() || Repl.empty()) {
+            if (MacroTable.labelPrefix().empty() || Repl.empty()) {
                 dr = 0;
                 Repl = (*Id);
             }
@@ -698,7 +699,7 @@ void ParseLabel() {
 }
 
 bool ParseMacro() {
-    int gl = 0, r;
+    int gl = 0;
     const char *p = lp;
     optional<std::string> Name;
     SkipBlanks(p);
@@ -709,12 +710,19 @@ bool ParseMacro() {
     if (!(Name = getID(p))) {
         return false;
     }
-    if (!(r = MacroTable.emit(*Name, p))) {
+    MacroResult R;
+    if ((R = MacroTable.emit(*Name, p)) == MacroResult::NotFound) {
         if (StructureTable.emit(*Name, ""s, p, gl)) {
             lp = (char *) p;
             return true;
         }
-    } else if (r == 2) { // Success
+    } else if (R == MacroResult::Success) {
+        return true;
+    } else if (R == MacroResult::NotEnoughArgs) {
+        Error("Not enough arguments for macro"s, *Name);
+        return false;
+    } else if (R == MacroResult::TooManyArgs) {
+        Error("Too many arguments for macro"s, *Name);
         return true;
     }
     return false;

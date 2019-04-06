@@ -24,14 +24,8 @@ extern int ErrorCount, IncludeLevel;
 
 extern stack<RepeatInfo> RepeatStack;
 
-extern std::list<std::string> *InMemSrc;
-extern std::list<std::string>::iterator InMemSrcIt;
-extern void setInMemSrc(std::list<std::string> *NewInMemSrc);
-
 extern CLabelTable LabelTable;
 extern CLocalLabelTable LocalLabelTable;
-extern CMacroDefineTable MacroDefineTable;
-extern CMacroTable MacroTable;
 extern CStructureTable StructureTable;
 
 extern ModulesList Modules;

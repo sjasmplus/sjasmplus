@@ -46,10 +46,11 @@
 #include "lua_support.h"
 #include "codeemitter.h"
 #include "fsutil.h"
+#include "parser/defines.h"
+#include "parser/macro.h"
 
 #include "directives.h"
 
-#include "parser/defines.h"
 
 using boost::iequals;
 using boost::algorithm::to_upper_copy;
@@ -101,7 +102,6 @@ bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
             return false;
         }
 
-        bool olistmacro;
         std::string S(DirPos, ' ');
         SkipBlanks(lp);
         if (*lp) {
@@ -109,16 +109,15 @@ bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
             lp += strlen(lp);
         }
         //_COUT pp _ENDL;
-        olistmacro = listmacro;
-        listmacro = true;
+        Listing.startMacro();
         std::string OLine{line};
         do {
             STRCPY(line, LINEMAX, S.c_str());
             parseLineSafe();
         } while (--val);
         STRCPY(line, LINEMAX, OLine.c_str());
-        listmacro = olistmacro;
-        donotlist = true;
+        Listing.endMacro();
+        Listing.omitLine();
 
         return true;
     }
@@ -1217,7 +1216,7 @@ void dirINCLUDE() {
     const fs::path &FileName = getFileName(lp);
     Listing.listFile();
     includeFile(FileName);
-    donotlist = true;
+    Listing.omitLine();
 }
 
 void dirOUTPUT() {
@@ -1544,7 +1543,7 @@ void dirDISPLAY() {
 
 void dirMACRO() {
     //if (lijst) Error("No macro definitions allowed here",0,FATAL);
-    if (InMemSrcMode) {
+    if (MacroTable.inMacroBody()) {
         Fatal("[MACRO] No macro definitions allowed here"s);
     }
     optional<std::string> Name;
@@ -1747,7 +1746,6 @@ void dirEDUP() {
             return;
         }
     }
-    int olistmacro;
     long gcurln, lcurln;
     char *ml;
     RepeatInfo &dup = RepeatStack.top();
@@ -1761,8 +1759,7 @@ void dirEDUP() {
             break;
         }
     }
-    olistmacro = listmacro;
-    listmacro = true;
+    Listing.startMacro();
     ml = STRDUP(line);
     if (ml == nullptr) {
         Fatal("[EDUP/ENDR] Out of memory"s);
@@ -1783,8 +1780,8 @@ void dirEDUP() {
     RepeatStack.pop();
     CurrentGlobalLine = gcurln;
     CurrentLocalLine = lcurln;
-    listmacro = olistmacro;
-    donotlist = true;
+    Listing.endMacro();
+    Listing.omitLine();
     STRCPY(line, LINEMAX, ml);
     free(ml);
 

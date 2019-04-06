@@ -4,13 +4,17 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <stack>
+
 #include "util.h"
 
-extern bool donotlist, listmacro;
 
 class ListingWriter : public TextOutput {
 private:
-    bool isActive = false;
+    bool IsActive = false;
+    bool OmitLine = false;
+    bool InMacro = false;
+    std::stack<bool> MacroStack;
     std::vector<uint8_t> ByteBuffer;
     int PreviousAddress;
     aint epadres;
@@ -37,6 +41,24 @@ public:
 
     void setPreviousAddress(int Value) {
         PreviousAddress = Value;
+    }
+
+    void omitLine() {
+        OmitLine = true;
+    }
+
+    void startMacro() {
+        MacroStack.push(InMacro);
+        InMacro = true;
+    }
+
+    void endMacro() {
+        if (!MacroStack.empty()) {
+            InMacro = MacroStack.top();
+            MacroStack.pop();
+        } else {
+            InMacro = false;
+        }
     }
 };
 

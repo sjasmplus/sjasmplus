@@ -52,7 +52,6 @@ using ::boost::optional;
 extern std::string TempLabel;
 
 extern std::string LastLabel;
-extern std::string MacroLab;
 extern std::string LastParsedLabel;
 
 void initLabels();

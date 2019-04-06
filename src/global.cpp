@@ -18,18 +18,7 @@ int ErrorCount = 0, IncludeLevel = -1;
 
 stack<RepeatInfo> RepeatStack; /* added */
 
-std::list<std::string> *InMemSrc = 0;
-std::list<std::string>::iterator InMemSrcIt;
-
-void setInMemSrc(std::list<std::string> *NewInMemSrc) {
-    InMemSrc = NewInMemSrc;
-    InMemSrcIt = InMemSrc->begin();
-    InMemSrcMode = true;
-}
-
 CLabelTable LabelTable;
 CLocalLabelTable LocalLabelTable;
-CMacroDefineTable MacroDefineTable;
-CMacroTable MacroTable;
 CStructureTable StructureTable;
 ModulesList Modules;

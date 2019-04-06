@@ -33,6 +33,8 @@
 #include "util.h"
 #include "global.h"
 #include "support.h"
+#include "parser/macro.h"
+
 #include "labels.h"
 
 struct update_label {
@@ -242,18 +244,16 @@ std::string PreviousIsLabel;
 
 
 std::string LastLabel;
-std::string MacroLab;
 std::string LastParsedLabel;
 
 void initLabels() {
     LastParsedLabel.clear();
     LastLabel = "_"s;
-    MacroLab.clear();
 }
 
 optional<std::string> validateLabel(const std::string &Name) {
     std::string LName{Name}; // Label name without @ or . prefix
-    std::string ML{MacroLab};
+    std::string ML{MacroTable.labelPrefix()};
     bool AsIsLabel = false;
     bool DotLabel = false;
     if (!ML.empty() && LName[0] == '@') {
@@ -285,7 +285,7 @@ optional<std::string> validateLabel(const std::string &Name) {
     }
     std::string RetValue;
     if (!ML.empty() && DotLabel) {
-        RetValue = MacroLab + ">"s;
+        RetValue = MacroTable.labelPrefix() + ">"s;
     } else {
         if (!AsIsLabel && !Modules.IsEmpty()) {
             RetValue = Modules.GetPrefix();
@@ -302,7 +302,7 @@ optional<std::string> validateLabel(const std::string &Name) {
 }
 
 bool getLabelValue(const char *&p, aint &val) {
-    std::string ML{MacroLab};
+    std::string ML{MacroTable.labelPrefix()};
     const char *op = p;
     bool AsIsLabel = false; // @...
     bool DotLabel = false;
@@ -326,7 +326,7 @@ bool getLabelValue(const char *&p, aint &val) {
         }
         TempLabel.clear();
         if (DotLabel) {
-            TempLabel += MacroLab + ">"s;
+            TempLabel += MacroTable.labelPrefix() + ">"s;
             if (!isalpha((unsigned char) *p) && *p != '_') {
                 Error("Invalid labelname"s, TempLabel);
                 return false;

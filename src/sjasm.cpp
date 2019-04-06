@@ -38,6 +38,7 @@
 #include "fs.h"
 #include "fsutil.h"
 #include "parser/defines.h"
+#include "parser/macro.h"
 
 #include <sjasmplus_conf.h>
 #include <sstream>
@@ -50,13 +51,10 @@ void InitPass(int p) {
     enableSourceReader();
     CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
     Listing.initPass();
-    MacroNumber = 0;
-    InMemSrcMode = false;
+    initMacros();
     initParser();
     StructureTable.init();
     clearDefines();
-    MacroTable.init();
-    MacroDefineTable.init();
 
     // predefined
     setDefine("_SJASMPLUS"s, "1"s);

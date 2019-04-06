@@ -44,8 +44,6 @@ using std::endl;
 #include "labels.h"
 #include "errors.h"
 
-extern int MacroNumber;
-extern bool InMemSrcMode;
 extern bool synerr;
 
 enum EStructureMembers {
@@ -64,57 +62,6 @@ public:
 
 private:
     std::map<std::string, void (*)(void)> Map;
-};
-
-class CMacroDefineTable {
-public:
-    void init() {
-        Replacements.clear();
-    }
-
-    void addRepl(const std::string &, const std::string &);
-
-    std::string getReplacement(const std::string &Name);
-
-    CMacroDefineTable() {
-        init();
-    }
-
-private:
-    // By Antipod: http://zx.pk.ru/showpost.php?p=159487&postcount=264
-    enum {
-        KDelimiter = '_',
-        KTotalJoinedParams = 64
-    };
-
-    void SplitToArray(const char *aName, char **&aArray, int &aCount, int *aPositions) const;
-
-    int Copy(char *aDest, int aDestPos, const char *aSource, int aSourcePos, int aBytes) const;
-
-    void FreeArray(char **aArray, int aCount);
-
-    std::map<std::string, std::string> Replacements;
-};
-
-struct CMacroTableEntry {
-    std::list<std::string> Args;
-    std::list<std::string> Body;
-};
-
-class CMacroTable {
-public:
-    void add(const std::string &Name, const char *&p);
-
-    int emit(const std::string &Name, const char *&p);
-
-    void init() { Entries.clear(); }
-
-    CMacroTable() {
-        init();
-    }
-
-private:
-    std::map<std::string, CMacroTableEntry> Entries;
 };
 
 class CStructureEntry1 {

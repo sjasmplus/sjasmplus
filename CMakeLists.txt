@@ -58,6 +58,8 @@ set(SOURCE_FILES
         parser.h
         parser/defines.h
         parser/defines.cpp
+        parser/macro.h
+        parser/macro.cpp
         reader.cpp
         reader.h
         sjio.cpp

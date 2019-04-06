@@ -30,6 +30,7 @@
 #include <iostream>
 #include <array>
 #include <boost/version.hpp>
+#include <parser/macro.h>
 
 using namespace std::string_literals;
 
@@ -697,14 +698,11 @@ EReturn ReadFile(const char *pp, const char *err) {
         if (!SourceReaderEnabled) {
             return END;
         }
-        if (InMemSrcMode) {
-            if (InMemSrcIt == InMemSrc->end()) {
+        if (MacroTable.inMacroBody()) {
+            if (!MacroTable.readLine(line, LINEMAX)) {
                 return END;
             }
-            //p = STRCPY(line, LINEMAX, lijstp->string); //mmm
-            STRCPY(line, LINEMAX, (*InMemSrcIt).c_str());
             p = line;
-            ++InMemSrcIt;
         } else {
             readBufLine(false);
             p = line;
@@ -749,14 +747,11 @@ EReturn SkipFile(const char *pp, const char *err) {
         if (!SourceReaderEnabled) {
             return END;
         }
-        if (InMemSrcMode) {
-            if (InMemSrcIt == InMemSrc->end()) {
+        if (MacroTable.inMacroBody()) {
+            if (!MacroTable.readLine(line, LINEMAX)) {
                 return END;
             }
-            //p = STRCPY(line, LINEMAX, lijstp->string); //mmm
-            STRCPY(line, LINEMAX, (*InMemSrcIt).c_str());
             p = line;
-            ++InMemSrcIt;
         } else {
             readBufLine(false);
             p = line;

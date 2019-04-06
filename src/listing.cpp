@@ -6,8 +6,6 @@
 #include "codeemitter.h"
 #include "listing.h"
 
-bool donotlist = false, listmacro = false;
-
 ListingWriter Listing;
 
 void ListingWriter::listBytes4() {
@@ -95,15 +93,15 @@ void ListingWriter::listBytesLong(int pad, const std::string &Prefix) {
 
 void ListingWriter::listFile() {
     int pad;
-    if (pass != LASTPASS || donotlist) {
-        donotlist = false;
+    if (pass != LASTPASS || OmitLine) {
+        OmitLine = false;
         ByteBuffer.clear();
         return;
     }
-    if (!isActive) {
+    if (!IsActive) {
         return;
     }
-    if (listmacro) {
+    if (InMacro) {
         if (ByteBuffer.empty()) {
             return;
         }
@@ -115,13 +113,13 @@ void ListingWriter::listFile() {
     OFS << Prefix << toHex16(pad) << ' ';
     if (ByteBuffer.size() < 5) {
         listBytes4();
-        if (listmacro) {
+        if (InMacro) {
             OFS << ">";
         }
         OFS << line << endl;
     } else if (ByteBuffer.size() < 6) {
         listBytes5();
-        if (listmacro) {
+        if (InMacro) {
             OFS << ">";
         }
         OFS << line << endl;
@@ -129,7 +127,7 @@ void ListingWriter::listFile() {
         for (int i = 0; i != 12; ++i) {
             OFS << ' ';
         }
-        if (listmacro) {
+        if (InMacro) {
             OFS << ">";
         }
         OFS << line << endl;
@@ -142,15 +140,15 @@ void ListingWriter::listFile() {
 
 void ListingWriter::listFileSkip(char *line) {
     aint pad;
-    if (pass != LASTPASS || donotlist) {
-        donotlist = false;
+    if (pass != LASTPASS || OmitLine) {
+        OmitLine = false;
         ByteBuffer.clear();
         return;
     }
-    if (!isActive) {
+    if (!IsActive) {
         return;
     }
-    if (listmacro) {
+    if (InMacro) {
         return;
     }
     if ((pad = PreviousAddress) == -1) {
@@ -161,7 +159,7 @@ void ListingWriter::listFileSkip(char *line) {
     if (!ByteBuffer.empty()) {
         Fatal("Internal error lfs"s);
     }
-    if (listmacro) {
+    if (InMacro) {
         OFS << ">";
     }
     OFS << line << endl;
@@ -177,16 +175,16 @@ void ListingWriter::addByte(uint8_t Byte) {
 void ListingWriter::init(fs::path &FileName) {
     if (!FileName.empty()) {
         open(FileName);
-        isActive = true;
+        IsActive = true;
     } else {
-        isActive = false;
+        IsActive = false;
     }
 }
 
 void ListingWriter::initPass() {
     epadres = 0;
     PreviousAddress = 0;
-    listmacro = false;
+    InMacro = false;
 
     // Put this here for now, as MaxLineNumber has the correct value only at the end of pass 1
     // i.e. it is usable only after the first pass
