@@ -672,6 +672,9 @@ std::string getString(const char *&p, bool KeepBrackets) {
     if (*p == '"') {
         limiter = '"';
         ++p;
+    } else if (*p == '\'') {
+        limiter = '\'';
+        ++p;
     } else if (*p == '<') {
         limiter = '>';
         if (KeepBrackets)
