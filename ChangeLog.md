@@ -1,6 +1,12 @@
 # Change Log
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## 2019-XX-YY
+- Version 20190306.1++WiP
+
+### Fixed
+- END was not terminating parsing if there were more lines in the buffer
+
 ## 2019-03-06
 - Version 20190306.1
 
