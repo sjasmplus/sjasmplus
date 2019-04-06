@@ -62,11 +62,11 @@ public:
     }
 
     const std::string &labelPrefix() {
-        return MacroLab;
+        return LabelPrefix;
     }
 
     bool inMacroBody() {
-        return InMemSrcMode;
+        return InMacroBody;
     }
 
     const char *readLine(char *Buffer, size_t BufSize);
@@ -75,9 +75,9 @@ private:
     std::map<std::string, CMacroTableEntry> Entries;
 
     int MacroNumber = 0;
-    std::string MacroLab;
+    std::string LabelPrefix;
 
-    bool InMemSrcMode = false;
+    bool InMacroBody = false;
     std::list<std::string> *InMemSrc = nullptr;
     std::list<std::string>::iterator InMemSrcIt;
 

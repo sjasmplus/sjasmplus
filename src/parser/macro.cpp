@@ -25,18 +25,18 @@ void initMacros() {
 void CMacroTable::init() {
     Entries.clear();
     MacroNumber = 0;
-    MacroLab.clear();
-    InMemSrcMode = false;
+    LabelPrefix.clear();
+    InMacroBody = false;
 }
 
 void CMacroTable::setInMemSrc(std::list<std::string> *NewInMemSrc) {
     InMemSrc = NewInMemSrc;
     InMemSrcIt = InMemSrc->begin();
-    InMemSrcMode = true;
+    InMacroBody = true;
 }
 
 const char *CMacroTable::readLine(char *Buffer, size_t BufSize) {
-    if (InMemSrcMode) {
+    if (InMacroBody) {
         if (InMemSrcIt == InMemSrc->end()) {
             return nullptr;
         }
@@ -196,15 +196,18 @@ MacroResult CMacroTable::emit(const std::string &Name, const char *&p) {
     }
     CMacroTableEntry &M = it->second;
 
-    std::string OMacroLab{MacroLab};
-    std::string LabNr{std::to_string(MacroNumber++)};
-    MacroLab = LabNr;
-    if (!OMacroLab.empty()) {
-        MacroLab += "."s + OMacroLab;
+    std::string OLabelPrefix{LabelPrefix};
+    LabelPrefix = std::to_string(MacroNumber++);
+    if (!OLabelPrefix.empty()) {
+        LabelPrefix += "."s + OLabelPrefix;
     } else {
         MacroDefineTable.init();
     }
     auto ODefs = MacroDefineTable;
+    auto rollback = [&]() {
+        LabelPrefix = OLabelPrefix;
+        MacroDefineTable = ODefs;
+    };
     std::string Repl;
     size_t ArgsLeft = M.Args.size();
     for (auto &Arg : M.Args) {
@@ -212,20 +215,20 @@ MacroResult CMacroTable::emit(const std::string &Name, const char *&p) {
         Repl.clear();
         SkipBlanks(p);
         if (!*p) {
-            MacroLab.clear();
+            rollback();
             return MacroResult::NotEnoughArgs;
         }
         if (*p == '<') {
             ++p;
             while (*p != '>') {
                 if (!*p) {
-                    MacroLab.clear();
+                    rollback();
                     return MacroResult::NotEnoughArgs;
                 }
                 if (*p == '!') {
                     ++p;
                     if (!*p) {
-                        MacroLab.clear();
+                        rollback();
                         return MacroResult::NotEnoughArgs;
                     }
                 }
@@ -245,7 +248,7 @@ MacroResult CMacroTable::emit(const std::string &Name, const char *&p) {
         }
         SkipBlanks(p);
         if (ArgsLeft > 0 && *p != ',') {
-            MacroLab.clear();
+            rollback();
             return MacroResult::NotEnoughArgs;
         }
         if (*p == ',') {
@@ -260,7 +263,7 @@ MacroResult CMacroTable::emit(const std::string &Name, const char *&p) {
 
     auto OInMemSrc = InMemSrc;
     auto OInMemSrcIt = InMemSrcIt;
-    auto OInMemSrcMode = InMemSrcMode;
+    auto OInMemSrcMode = InMacroBody;
 
     setInMemSrc(&M.Body);
     std::string tmp{line};
@@ -273,10 +276,10 @@ MacroResult CMacroTable::emit(const std::string &Name, const char *&p) {
 
     InMemSrc = OInMemSrc;
     InMemSrcIt = OInMemSrcIt;
-    InMemSrcMode = OInMemSrcMode;
+    InMacroBody = OInMemSrcMode;
 
     MacroDefineTable = ODefs;
-    MacroLab = OMacroLab;
+    LabelPrefix = OLabelPrefix;
     Listing.endMacro();
     Listing.omitLine();
     return Ret;
