@@ -1237,7 +1237,7 @@ void dirOUTPUT() {
             Error("Unknown output mode (known modes are t,r and a)"s, bp, CATCHALL);
         }
     }
-    if (pass == LASTPASS && Em.isRawOutputEnabled()) {
+    if (pass == LASTPASS) {
         if (!Em.isRawOutputOverriden()) {
             Em.setRawOutput(FileName, Mode);
         } else {

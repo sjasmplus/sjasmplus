@@ -52,7 +52,6 @@ void CodeEmitter::setRawOutputOptions(bool EnableOrOverride,
                                       const fs::path &FileName,
                                       const fs::path &_ForcedOutputDirectory) {
     if (EnableOrOverride) {
-        RawOutputEnable = true;
         RawOutputOverride = !FileName.empty();
         setRawOutput(FileName);
     }
@@ -75,6 +74,7 @@ void CodeEmitter::setRawOutput(const fs::path &FileName, OutputMode Mode) {
         default:
             break;
     }
+    RawOutputEnable = true;
     RawOutputFileName = ForcedOutputDirectory.empty() ? FileName : resolveOutputPath(FileName);
     RawOFS.open(RawOutputFileName, OpenMode);
 }
