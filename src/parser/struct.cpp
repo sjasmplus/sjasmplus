@@ -175,6 +175,7 @@ void CStructure::emitMembers(const char *&p) {
     for (auto M : Members) {
         switch (M.Type) {
             case SMEMB::SKIP:
+            case SMEMB::ALIGN:
                 t = M.Len;
                 while (t--) {
                     Bytes.emplace_back(boost::none);
@@ -386,7 +387,9 @@ void parseStructMember(CStructure &St) {
             if (!parseExpression(lp, val)) {
                 val = 4;
             }
-            St.noffset += ((~St.noffset + 1) & (val - 1));
+            { uint16_t Size = ((~St.noffset + 1) & (val - 1));
+                StructMember SMA = {St.noffset, Size, val, SMEMB::ALIGN};
+                St.addMember(SMA); }
             break;
         default:
             const char *pp = lp;
