@@ -421,7 +421,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
     }
     auto &B = ReadLineBuf;
     while (SourceReaderEnabled && (B.left() > 0 || (B.read(*pIFS)))) {
-        while (B.left() > 0) {
+        while (SourceReaderEnabled && B.left() > 0) {
             if (B.cur() == '\n' || B.cur() == '\r') {
                 if (B.nextIf('\n')) {
                     B.nextIf('\r');
