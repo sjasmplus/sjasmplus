@@ -142,7 +142,7 @@ void CheckPage() {
 }
 */
 
-void Emit(uint8_t byte) {
+void emit(uint8_t byte) {
     Listing.addByte(byte);
     if (pass == LASTPASS) {
         auto err = Em.emitByte(byte);
@@ -152,45 +152,45 @@ void Emit(uint8_t byte) {
     }
 }
 
-void EmitByte(uint8_t byte) {
+void emitByte(uint8_t byte) {
     Listing.setPreviousAddress(Em.getCPUAddress());
-    Emit(byte);
+    emit(byte);
 }
 
-void EmitWord(uint16_t word) {
+void emitWord(uint16_t word) {
     Listing.setPreviousAddress(Em.getCPUAddress());
-    Emit(word % 256);
-    Emit(word / 256);
+    emit(word % 256);
+    emit(word / 256);
 }
 
-void EmitBytes(int *bytes) {
+void emitBytes(int *bytes) {
     Listing.setPreviousAddress(Em.getCPUAddress());
     if (*bytes == -1) {
         Error("Illegal instruction"s, line, CATCHALL);
         getAll(lp);
     }
     while (*bytes != -1) {
-        Emit(*bytes++);
+        emit(*bytes++);
     }
 }
 
-void EmitWords(int *words) {
+void emitWords(int *words) {
     Listing.setPreviousAddress(Em.getCPUAddress());
     while (*words != -1) {
-        Emit((*words) % 256);
-        Emit((*words++) / 256);
+        emit((*words) % 256);
+        emit((*words++) / 256);
     }
 }
 
-void EmitBlock(uint8_t byte, aint len, bool nulled) {
+void emitBlock(uint8_t Byte, aint Len, bool NoFill) {
     Listing.setPreviousAddress(Em.getCPUAddress());
-    if (len) {
-        Listing.addByte(byte);
+    if (Len) {
+        Listing.addByte(Byte);
     }
-    while (len--) {
+    while (Len--) {
         if (pass == LASTPASS) {
-            if (!nulled) { // Should be called "filled"
-                auto err = Em.emitByte(byte);
+            if (!NoFill) {
+                auto err = Em.emitByte(Byte);
                 if (err) Fatal(*err);
             } else {
                 Em.incAddress();
@@ -199,6 +199,21 @@ void EmitBlock(uint8_t byte, aint len, bool nulled) {
             Em.incAddress();
         }
     }
+}
+
+optional<std::string> emitAlignment(uint16_t Alignment, optional<uint8_t> FillByte) {
+    auto OAddr = Em.getCPUAddress();
+    Listing.setPreviousAddress(Em.getCPUAddress());
+    auto Err = Em.align(Alignment, FillByte);
+    if (Err) return Err;
+    if (FillByte) {
+        auto Len = Em.getCPUAddress() - OAddr;
+        while (Len > 0) {
+            Listing.addByte(*FillByte);
+            Len--;
+        }
+    }
+    return boost::none;
 }
 
 /*
@@ -642,34 +657,20 @@ void *SaveRAM(void *dst, int start, int length) {
     return target;
 }
 
-uint16_t MemGetWord(uint16_t address) {
+uint16_t memGetWord(uint16_t address) {
     if (pass != LASTPASS) {
         return 0;
     }
 
-    return (uint16_t) MemGetByte(address) + ((uint16_t) MemGetByte(address + 1) * (uint16_t) 256);
+    return (uint16_t) memGetByte(address) + ((uint16_t) memGetByte(address + 1) * (uint16_t) 256);
 }
 
-uint8_t MemGetByte(uint16_t address) {
+uint8_t memGetByte(uint16_t address) {
     if (pass != LASTPASS) {
         return 0;
     }
 
     return Em.getByte(address);
-
-/*
-    CDeviceSlot *S;
-    for (int i = 0; i < Device->SlotsCount; i++) {
-        S = Device->GetSlot(i);
-        if (address >= S->Address && address < S->Address + S->Size) {
-            return S->Page->RAM[address - S->Address];
-        }
-    }
-
-    Warning("Error with MemGetByte!", 0);
-    ExitASM(1);
-    return 0;
-*/
 }
 
 
@@ -692,7 +693,7 @@ bool saveBinaryFile(const fs::path &FileName, int Start, int Length) {
     return !OFS.fail();
 }
 
-EReturn ReadFile(const char *pp, const char *err) {
+EReturn readFile(const char *pp, const char *err) {
     const char *p;
     while (ReadLineBuf.left() > 0 || !pIFS->eof()) {
         if (!SourceReaderEnabled) {
@@ -740,7 +741,7 @@ EReturn ReadFile(const char *pp, const char *err) {
 }
 
 
-EReturn SkipFile(const char *pp, const char *err) {
+EReturn skipFile(const char *pp, const char *err) {
     const char *p;
     int iflevel = 0;
     while (ReadLineBuf.left() > 0 || !pIFS->eof()) {
@@ -802,7 +803,7 @@ EReturn SkipFile(const char *pp, const char *err) {
 }
 
 
-int ReadLine(bool SplitByColon) {
+int readLine(bool SplitByColon) {
     if (!SourceReaderEnabled) {
         return 0;
     }

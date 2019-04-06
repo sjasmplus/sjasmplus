@@ -40,15 +40,15 @@ void enableSourceReader();
 
 void disableSourceReader();
 
-void EmitByte(uint8_t byte);
+void emitByte(uint8_t byte);
 
-void EmitWord(uint16_t word);
+void emitWord(uint16_t word);
 
-void EmitBytes(int *bytes);
+void emitBytes(int *bytes);
 
-void EmitWords(int *words);
+void emitWords(int *words);
 
-void EmitBlock(uint8_t byte, aint len, bool nulled = false);
+void emitBlock(uint8_t Byte, aint Len, bool NoFill = false);
 
 void openFile(const fs::path &FileName);
 
@@ -67,22 +67,24 @@ int SaveRAM(fs::ofstream &ofs, int, int);
 
 void *SaveRAM(void *dst, int start, int size);
 
-uint8_t MemGetByte(uint16_t address); /* added */
-uint16_t MemGetWord(uint16_t address); /* added */
+uint8_t memGetByte(uint16_t address); /* added */
+uint16_t memGetWord(uint16_t address); /* added */
 bool saveBinaryFile(const fs::path &FileName, int Start, int Length);
 
-int ReadLine(bool SplitByColon = true);
+int readLine(bool SplitByColon = true);
 
 EReturn ReadFile();
 
-EReturn ReadFile(const char *pp, const char *err); /* added */
+EReturn readFile(const char *pp, const char *err); /* added */
 EReturn SkipFile();
 
-EReturn SkipFile(const char *pp, const char *err); /* added */
+EReturn skipFile(const char *pp, const char *err); /* added */
 
 bool readFileToListOfStrings(std::list<std::string> &List, const std::string &EndMarker);
 
 const fs::path getCurrentSrcFileName();
+
+optional<std::string> emitAlignment(uint16_t Alignment, optional<uint8_t> FillByte);
 
 class ExportWriter : public TextOutput {
 private:

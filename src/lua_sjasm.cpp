@@ -631,7 +631,7 @@ static int tolua_sjasm_sj_get_byte00(lua_State *tolua_S) {
     {
         unsigned int address = ((unsigned int) tolua_tonumber(tolua_S, 1, 0));
         {
-            unsigned char tolua_ret = (unsigned char) MemGetByte(address);
+            unsigned char tolua_ret = (unsigned char) memGetByte(address);
             tolua_pushnumber(tolua_S, (lua_Number) tolua_ret);
         }
     }
@@ -661,7 +661,7 @@ static int tolua_sjasm_sj_get_word00(lua_State *tolua_S) {
     {
         unsigned int address = ((unsigned int) tolua_tonumber(tolua_S, 1, 0));
         {
-            unsigned char tolua_ret = (unsigned char) MemGetWord(address);
+            unsigned char tolua_ret = (unsigned char) memGetWord(address);
             tolua_pushnumber(tolua_S, (lua_Number) tolua_ret);
         }
     }
@@ -691,7 +691,7 @@ static int tolua_sjasm_sj_add_byte00(lua_State *tolua_S) {
     {
         unsigned char byte = ((unsigned char) tolua_tonumber(tolua_S, 1, 0));
         {
-            EmitByte(byte);
+            emitByte(byte);
         }
     }
     return 0;
@@ -720,7 +720,7 @@ static int tolua_sjasm_sj_add_word00(lua_State *tolua_S) {
     {
         unsigned int word = ((unsigned int) tolua_tonumber(tolua_S, 1, 0));
         {
-            EmitWord(word);
+            emitWord(word);
         }
     }
     return 0;

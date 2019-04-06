@@ -121,4 +121,18 @@ fs::path CodeEmitter::resolveOutputPath(const fs::path &p) {
     }
 }
 
+optional<std::string> CodeEmitter::align(uint16_t Alignment, optional<uint8_t> FillByte) {
+    if (Alignment > 0x8000 || Alignment < 2)
+        return "Invalid alignment value: "s + std::to_string(Alignment);
+    while (getCPUAddress() % Alignment != 0) {
+        if (FillByte) {
+            auto Err = emitByte(*FillByte);
+            if (Err) return Err;
+        } else {
+            incAddress();
+        }
+    }
+    return boost::none;
+}
+
 CodeEmitter Em;

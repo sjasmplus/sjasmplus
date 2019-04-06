@@ -566,7 +566,7 @@ void OpCode_ADC() {
                         }
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -732,7 +732,7 @@ void OpCode_ADD() {
                         }
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -826,7 +826,7 @@ void OpCode_AND() {
                         }
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -886,7 +886,7 @@ void OpCode_BIT() {
         if (bit < 0 || bit > 7) {
             e[0] = -1;
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -958,7 +958,7 @@ void OpCode_CALL() {
         if (b > 65535) {
             Error("[CALL] Value truncated, does not fit into 16 bits"s, std::to_string(b));
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -970,7 +970,7 @@ void OpCode_CALL() {
 }
 
 void OpCode_CCF() {
-    EmitByte(0x3f);
+    emitByte(0x3f);
 }
 
 /* modified */
@@ -1056,7 +1056,7 @@ void OpCode_CP() {
                         }
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -1073,7 +1073,7 @@ void OpCode_CPD() {
     e[0] = 0xed;
     e[1] = 0xa9;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_CPDR() {
@@ -1082,7 +1082,7 @@ void OpCode_CPDR() {
     e[0] = 0xed;
     e[1] = 0xb9;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_CPI() {
@@ -1091,7 +1091,7 @@ void OpCode_CPI() {
     e[0] = 0xed;
     e[1] = 0xa1;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_CPIR() {
@@ -1100,15 +1100,15 @@ void OpCode_CPIR() {
     e[0] = 0xed;
     e[1] = 0xb1;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_CPL() {
-    EmitByte(0x2f);
+    emitByte(0x2f);
 }
 
 void OpCode_DAA() {
-    EmitByte(0x27);
+    emitByte(0x27);
 }
 
 /* modified */
@@ -1197,7 +1197,7 @@ void OpCode_DEC() {
                     default:;
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -1209,7 +1209,7 @@ void OpCode_DEC() {
 }
 
 void OpCode_DI() {
-    EmitByte(0xf3);
+    emitByte(0xf3);
 }
 
 /* modified */
@@ -1231,7 +1231,7 @@ void OpCode_DJNZ() {
         }
         e[0] = 0x10;
         e[1] = jmp < 0 ? 256 + jmp : jmp;
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -1243,7 +1243,7 @@ void OpCode_DJNZ() {
 }
 
 void OpCode_EI() {
-    EmitByte(0xfb);
+    emitByte(0xfb);
 }
 
 void OpCode_EX() {
@@ -1310,27 +1310,27 @@ void OpCode_EX() {
                 default:;
             }
     }
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 /* added */
 void OpCode_EXA() {
     errorIfI8080();
-    EmitByte(0x08);
+    emitByte(0x08);
 }
 
 /* added */
 void OpCode_EXD() {
-    EmitByte(0xeb);
+    emitByte(0xeb);
 }
 
 void OpCode_EXX() {
     errorFormIfI8080();
-    EmitByte(0xd9);
+    emitByte(0xd9);
 }
 
 void OpCode_HALT() {
-    EmitByte(0x76);
+    emitByte(0x76);
 }
 
 void OpCode_IM() {
@@ -1351,7 +1351,7 @@ void OpCode_IM() {
         default:
             e[0] = -1;
     }
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 /* modified */
@@ -1438,7 +1438,7 @@ void OpCode_IN() {
                 }
                 e[1] = 0x70;
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -1535,7 +1535,7 @@ void OpCode_INC() {
                     default:;
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -1552,7 +1552,7 @@ void OpCode_IND() {
     e[0] = 0xed;
     e[1] = 0xaa;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_INDR() {
@@ -1561,7 +1561,7 @@ void OpCode_INDR() {
     e[0] = 0xed;
     e[1] = 0xba;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_INI() {
@@ -1570,7 +1570,7 @@ void OpCode_INI() {
     e[0] = 0xed;
     e[1] = 0xa2;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_INIR() {
@@ -1579,7 +1579,7 @@ void OpCode_INIR() {
     e[0] = 0xed;
     e[1] = 0xb2;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_INF() {
@@ -1587,7 +1587,7 @@ void OpCode_INF() {
     e[0] = 0xed;
     e[1] = 0x70;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 /* modified */
@@ -1689,7 +1689,7 @@ void OpCode_JP() {
                 Error("[JP] Value truncated, does not fit into 16 bits"s, std::to_string(b));
             }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -1754,7 +1754,7 @@ void OpCode_JR() {
             jmp = 0;
         }
         e[1] = jmp < 0 ? 256 + jmp : jmp;
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -3257,7 +3257,7 @@ void OpCode_LD() {
                 }
                 break;
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -3278,7 +3278,7 @@ void OpCode_LDD() {
         e[0] = 0xed;
         e[1] = 0xa8;
         e[2] = -1;
-        EmitBytes(e);
+        emitBytes(e);
         return;
     }
 
@@ -3435,7 +3435,7 @@ void OpCode_LDD() {
 				e[0] = 0xed;
 				e[1] = 0xa8;
 			}*/
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -3452,7 +3452,7 @@ void OpCode_LDDR() {
     e[0] = 0xed;
     e[1] = 0xb8;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 /* modified */
@@ -3465,7 +3465,7 @@ void OpCode_LDI() {
         e[0] = 0xed;
         e[1] = 0xa0;
         e[2] = -1;
-        EmitBytes(e);
+        emitBytes(e);
         return;
     }
 
@@ -3730,7 +3730,7 @@ void OpCode_LDI() {
                 }
         }
 
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -3747,7 +3747,7 @@ void OpCode_LDIR() {
     e[0] = 0xed;
     e[1] = 0xb0;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_MULUB() {
@@ -3776,7 +3776,7 @@ void OpCode_MULUB() {
             break;
         default:;
     }
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_MULUW() {
@@ -3797,7 +3797,7 @@ void OpCode_MULUW() {
             break;
         default:;
     }
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_NEG() {
@@ -3806,11 +3806,11 @@ void OpCode_NEG() {
     e[0] = 0xed;
     e[1] = 0x44;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_NOP() {
-    EmitByte(0x0);
+    emitByte(0x0);
 }
 
 /* modified */
@@ -3896,7 +3896,7 @@ void OpCode_OR() {
                         }
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -3913,7 +3913,7 @@ void OpCode_OTDR() {
     e[0] = 0xed;
     e[1] = 0xbb;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_OTIR() {
@@ -3922,7 +3922,7 @@ void OpCode_OTIR() {
     e[0] = 0xed;
     e[1] = 0xb3;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 /* modified */
@@ -3993,7 +3993,7 @@ void OpCode_OUT() {
                 }
             }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -4010,7 +4010,7 @@ void OpCode_OUTD() {
     e[0] = 0xed;
     e[1] = 0xab;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_OUTI() {
@@ -4019,7 +4019,7 @@ void OpCode_OUTI() {
     e[0] = 0xed;
     e[1] = 0xa3;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 /* added */
@@ -4056,7 +4056,7 @@ void OpCode_POPreverse() {
             c = 0;
         }
     } while (c);
-    EmitBytes(&e[t]);
+    emitBytes(&e[t]);
 }
 
 /* modified. old version of this procedure is pizPOPreverse() */
@@ -4093,7 +4093,7 @@ void OpCode_POP() {
         }
     } while (c);
     e[t] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_PUSH() {
@@ -4129,7 +4129,7 @@ void OpCode_PUSH() {
         }
     } while (c);
     e[t] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 /* modified */
@@ -4196,7 +4196,7 @@ void OpCode_RES() {
         if (bit < 0 || bit > 7) {
             e[0] = -1;
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -4241,7 +4241,7 @@ void OpCode_RET() {
                 e = 0xc9;
                 break;
         }
-        EmitByte(e);
+        emitByte(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -4258,7 +4258,7 @@ void OpCode_RETI() {
     e[0] = 0xed;
     e[1] = 0x4d;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void OpCode_RETN() {
@@ -4267,7 +4267,7 @@ void OpCode_RETN() {
     e[0] = 0xed;
     e[1] = 0x45;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 /* modified */
@@ -4345,7 +4345,7 @@ void OpCode_RL() {
                     default:;
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -4357,7 +4357,7 @@ void OpCode_RL() {
 }
 
 void OpCode_RLA() {
-    EmitByte(0x17);
+    emitByte(0x17);
 }
 
 /* modified */
@@ -4417,7 +4417,7 @@ void OpCode_RLC() {
                     default:;
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -4429,7 +4429,7 @@ void OpCode_RLC() {
 }
 
 void OpCode_RLCA() {
-    EmitByte(0x7);
+    emitByte(0x7);
 }
 
 void OpCode_RLD() {
@@ -4438,7 +4438,7 @@ void OpCode_RLD() {
     e[0] = 0xed;
     e[1] = 0x6f;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 /* modified */
@@ -4516,7 +4516,7 @@ void OpCode_RR() {
                     default:;
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -4528,7 +4528,7 @@ void OpCode_RR() {
 }
 
 void OpCode_RRA() {
-    EmitByte(0x1f);
+    emitByte(0x1f);
 }
 
 /* modified */
@@ -4588,7 +4588,7 @@ void OpCode_RRC() {
                     default:;
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -4600,7 +4600,7 @@ void OpCode_RRC() {
 }
 
 void OpCode_RRCA() {
-    EmitByte(0xf);
+    emitByte(0xf);
 }
 
 void OpCode_RRD() {
@@ -4609,7 +4609,7 @@ void OpCode_RRD() {
     e[0] = 0xed;
     e[1] = 0x67;
     e[2] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 /* modified */
@@ -4647,7 +4647,7 @@ void OpCode_RST() {
                 getAll(lp);
                 return;
         }
-        EmitByte(e);
+        emitByte(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -4771,7 +4771,7 @@ void OpCode_SBC() {
                         }
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -4783,7 +4783,7 @@ void OpCode_SBC() {
 }
 
 void OpCode_SCF() {
-    EmitByte(0x37);
+    emitByte(0x37);
 }
 
 /* modified */
@@ -4850,7 +4850,7 @@ void OpCode_SET() {
         if (bit < 0 || bit > 7) {
             e[0] = -1;
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -4933,7 +4933,7 @@ void OpCode_SLA() {
                     default:;
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -5019,7 +5019,7 @@ void OpCode_SLL() {
                     default:;
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -5105,7 +5105,7 @@ void OpCode_SRA() {
                     default:;
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -5191,7 +5191,7 @@ void OpCode_SRL() {
                     default:;
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -5319,7 +5319,7 @@ void OpCode_SUB() {
                         }
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;
@@ -5413,7 +5413,7 @@ void OpCode_XOR() {
                         }
                 }
         }
-        EmitBytes(e);
+        emitBytes(e);
         /* (begin add) */
         if (*lp && comma(lp)) {
             continue;

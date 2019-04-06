@@ -78,7 +78,7 @@ bool parseExpPrim(const char *&p, aint &nval) {
             return false;
         }
 
-        nval = (aint) (MemGetByte(nval) + (MemGetByte(nval + 1) << 8));
+        nval = (aint) (memGetByte(nval) + (memGetByte(nval + 1) << 8));
 
         return true;
     } else if (isdigit((unsigned char) *p) || (*p == '#' && isalnum((unsigned char) *(p + 1))) ||

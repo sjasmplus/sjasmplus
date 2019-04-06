@@ -77,6 +77,8 @@ public:
 
     bool isDisp() { return Disp; }
 
+    optional<std::string> align(uint16_t Alignment, optional<uint8_t> FillByte);
+
     void reset() {
         CPUAddress = EmitAddress = 0;
         Disp = CPUAddrOverflow = EmitAddrOverflow = false;

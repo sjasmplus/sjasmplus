@@ -149,7 +149,7 @@ void dirBYTE() {
         Error("BYTE/DEFB/DB with no arguments"s);
         return;
     }
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void dirDC() {
@@ -159,7 +159,7 @@ void dirDC() {
         Error("DC with no arguments"s);
         return;
     }
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void dirDZ() {
@@ -171,7 +171,7 @@ void dirDZ() {
     }
     e[teller++] = 0;
     e[teller] = -1;
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void dirABYTE() {
@@ -185,7 +185,7 @@ void dirABYTE() {
             Error("ABYTE with no arguments"s);
             return;
         }
-        EmitBytes(e);
+        emitBytes(e);
     } else {
         Error("[ABYTE] Expression expected"s);
     }
@@ -202,7 +202,7 @@ void dirABYTEC() {
             Error("ABYTEC with no arguments"s);
             return;
         }
-        EmitBytes(e);
+        emitBytes(e);
     } else {
         Error("[ABYTEC] Expression expected"s);
     }
@@ -221,7 +221,7 @@ void dirABYTEZ() {
         }
         e[teller++] = 0;
         e[teller] = -1;
-        EmitBytes(e);
+        emitBytes(e);
     } else {
         Error("[ABYTEZ] Expression expected"s);
     }
@@ -254,7 +254,7 @@ void dirWORD() {
         Error("DW/DEFW/WORD with no arguments"s);
         return;
     }
-    EmitWords(e);
+    emitWords(e);
 }
 
 void dirDWORD() {
@@ -285,7 +285,7 @@ void dirDWORD() {
         Error("DWORD with no arguments"s);
         return;
     }
-    EmitWords(e);
+    emitWords(e);
 }
 
 void dirD24() {
@@ -318,7 +318,7 @@ void dirD24() {
         Error("D24 with no arguments"s);
         return;
     }
-    EmitBytes(e);
+    emitBytes(e);
 }
 
 void dirBLOCK() {
@@ -330,7 +330,7 @@ void dirBLOCK() {
         if (comma(lp)) {
             parseExpression(lp, val);
         }
-        EmitBlock(val, teller);
+        emitBlock(val, teller);
     } else {
         Error("[BLOCK] Syntax Error"s, lp, CATCHALL);
     }
@@ -419,7 +419,7 @@ void dirSLOT() {
 
 void dirALIGN() {
     aint val;
-    aint byte;
+    aint Byte;
     bool noexp = false;
     if (!parseExpression(lp, val)) {
         noexp = true;
@@ -442,20 +442,20 @@ void dirALIGN() {
         case 4096:
         case 8192:
         case 16384:
-        case 32768:
-            val = (~(Em.getCPUAddress()) + 1) & (val - 1);
+        case 32768: {
+            optional<uint8_t> FillByte = boost::none;
             if (!noexp && comma(lp)) {
-                if (!parseExpression(lp, byte)) {
-                    EmitBlock(0, val, true);
-                } else if (byte > 255 || byte < 0) {
-                    Error("[ALIGN] Illegal align byte"s);
-                    break;
-                } else {
-                    EmitBlock(byte, val, false);
+                if (parseExpression(lp, Byte)) {
+                    if (Byte > 255 || Byte < 0) {
+                        Error("[ALIGN] Illegal align fill byte"s);
+                        break;
+                    }
+                    FillByte = Byte;
                 }
-            } else {
-                EmitBlock(0, val, true);
             }
+            auto Err = emitAlignment(val, FillByte);
+            if (Err) Error(*Err);
+        }
             break;
         default:
             Error("[ALIGN] Illegal align"s);
@@ -1040,9 +1040,9 @@ void dirIF() {
 
     if (val) {
         Listing.listLine();
-        switch (ReadFile(lp, "[IF] No endif")) {
+        switch (readFile(lp, "[IF] No endif")) {
             case ELSE:
-                if (SkipFile(lp, "[IF] No endif") != ENDIF) {
+                if (skipFile(lp, "[IF] No endif") != ENDIF) {
                     Error("[IF] No endif"s);
                 }
                 break;
@@ -1054,9 +1054,9 @@ void dirIF() {
         }
     } else {
         Listing.listLine();
-        switch (SkipFile(lp, "[IF] No endif")) {
+        switch (skipFile(lp, "[IF] No endif")) {
             case ELSE:
-                if (ReadFile(lp, "[IF] No endif") != ENDIF) {
+                if (readFile(lp, "[IF] No endif") != ENDIF) {
                     Error("[IF] No endif"s);
                 }
                 break;
@@ -1082,9 +1082,9 @@ void dirIFN() {
 
     if (!val) {
         Listing.listLine();
-        switch (ReadFile(lp, "[IFN] No endif")) {
+        switch (readFile(lp, "[IFN] No endif")) {
             case ELSE:
-                if (SkipFile(lp, "[IFN] No endif") != ENDIF) {
+                if (skipFile(lp, "[IFN] No endif") != ENDIF) {
                     Error("[IFN] No endif"s);
                 }
                 break;
@@ -1096,9 +1096,9 @@ void dirIFN() {
         }
     } else {
         Listing.listLine();
-        switch (SkipFile(lp, "[IFN] No endif")) {
+        switch (skipFile(lp, "[IFN] No endif")) {
             case ELSE:
-                if (ReadFile(lp, "[IFN] No endif") != ENDIF) {
+                if (readFile(lp, "[IFN] No endif") != ENDIF) {
                     Error("[IFN] No endif"s);
                 }
                 break;
@@ -1129,9 +1129,9 @@ void dirIFUSED() {
 
     if (LabelTable.isUsed(*Id)) {
         Listing.listLine();
-        switch (ReadFile(lp, "[IFUSED] No endif")) {
+        switch (readFile(lp, "[IFUSED] No endif")) {
             case ELSE:
-                if (SkipFile(lp, "[IFUSED] No endif") != ENDIF) {
+                if (skipFile(lp, "[IFUSED] No endif") != ENDIF) {
                     Error("[IFUSED] No endif"s);
                 }
                 break;
@@ -1143,9 +1143,9 @@ void dirIFUSED() {
         }
     } else {
         Listing.listLine();
-        switch (SkipFile(lp, "[IFUSED] No endif")) {
+        switch (skipFile(lp, "[IFUSED] No endif")) {
             case ELSE:
-                if (ReadFile(lp, "[IFUSED] No endif") != ENDIF) {
+                if (readFile(lp, "[IFUSED] No endif") != ENDIF) {
                     Error("[IFUSED] No endif"s);
                 }
                 break;
@@ -1176,9 +1176,9 @@ void dirIFNUSED() {
 
     if (!LabelTable.isUsed(*Id)) {
         Listing.listLine();
-        switch (ReadFile(lp, "[IFNUSED] No endif")) {
+        switch (readFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
-                if (SkipFile(lp, "[IFNUSED] No endif") != ENDIF) {
+                if (skipFile(lp, "[IFNUSED] No endif") != ENDIF) {
                     Error("[IFNUSED] No endif"s);
                 }
                 break;
@@ -1190,9 +1190,9 @@ void dirIFNUSED() {
         }
     } else {
         Listing.listLine();
-        switch (SkipFile(lp, "[IFNUSED] No endif")) {
+        switch (skipFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
-                if (ReadFile(lp, "[IFNUSED] No endif") != ENDIF) {
+                if (readFile(lp, "[IFNUSED] No endif") != ENDIF) {
                     Error("[IFNUSED] No endif"s);
                 }
                 break;
@@ -1314,10 +1314,10 @@ void dirIFDEF() {
     if (ifDefName(*Id)) {
         Listing.listLine();
         /*switch (res=ReadFile()) {*/
-        switch (res = ReadFile(lp, "[IFDEF] No endif")) {
+        switch (res = readFile(lp, "[IFDEF] No endif")) {
             /*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
             case ELSE:
-                if (SkipFile(lp, "[IFDEF] No endif") != ENDIF) {
+                if (skipFile(lp, "[IFDEF] No endif") != ENDIF) {
                     Error("[IFDEF] No endif"s);
                 }
                 break;
@@ -1331,10 +1331,10 @@ void dirIFDEF() {
     } else {
         Listing.listLine();
         /*switch (res=SkipFile()) {*/
-        switch (res = SkipFile(lp, "[IFDEF] No endif")) {
+        switch (res = skipFile(lp, "[IFDEF] No endif")) {
             /*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
             case ELSE:
-                if (ReadFile(lp, "[IFDEF] No endif") != ENDIF) {
+                if (readFile(lp, "[IFDEF] No endif") != ENDIF) {
                     Error("[IFDEF] No endif"s);
                 }
                 break;
@@ -1370,10 +1370,10 @@ void dirIFNDEF() {
     if (!ifDefName(*Id)) {
         Listing.listLine();
         /*switch (res=ReadFile()) {*/
-        switch (res = ReadFile(lp, "[IFNDEF] No endif")) {
+        switch (res = readFile(lp, "[IFNDEF] No endif")) {
             /*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
             case ELSE:
-                if (SkipFile(lp, "[IFNDEF] No endif") != ENDIF) {
+                if (skipFile(lp, "[IFNDEF] No endif") != ENDIF) {
                     Error("[IFNDEF] No endif"s);
                 }
                 break;
@@ -1387,10 +1387,10 @@ void dirIFNDEF() {
     } else {
         Listing.listLine();
         /*switch (res=SkipFile()) {*/
-        switch (res = SkipFile(lp, "[IFNDEF] No endif")) {
+        switch (res = skipFile(lp, "[IFNDEF] No endif")) {
             /*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
             case ELSE:
-                if (ReadFile(lp, "[IFNDEF] No endif") != ENDIF) {
+                if (readFile(lp, "[IFNDEF] No endif") != ENDIF) {
                     Error("[IFNDEF] No endif"s);
                 }
                 break;
@@ -1663,7 +1663,7 @@ void dirSTRUCT() {
     CStructure &St = StructureTable.add(*Name, offset, bind, global);
     Listing.listLine();
     while (true) {
-        if (!ReadLine()) {
+        if (!readLine()) {
             Error("[STRUCT] Unexpected end of structure"s, PASS1);
             break;
         }
@@ -1944,7 +1944,7 @@ void dirLUA() {
     ln = CurrentLocalLine;
     Listing.listLine();
     while (true) {
-        if (!ReadLine(false)) {
+        if (!readLine(false)) {
             Error("[LUA] Unexpected end of lua script"s, PASS3);
             break;
         }
