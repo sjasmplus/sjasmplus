@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Fixed
 - `END` was not terminating parsing if there were more lines in the buffer
 - Nested `STRUCT`s now work as documented
+- If a `STRUCT`'s leading offset is defined it no longer overwrites existing
+  output
+- `ALIGN` inside `STRUCT` was broken
 
 ## 2019-03-06
 - Version 20190306.1
