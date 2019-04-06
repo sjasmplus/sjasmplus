@@ -20,5 +20,4 @@ stack<RepeatInfo> RepeatStack; /* added */
 
 CLabelTable LabelTable;
 CLocalLabelTable LocalLabelTable;
-CStructureTable StructureTable;
 ModulesList Modules;

@@ -37,8 +37,9 @@
 #include "codeemitter.h"
 #include "fs.h"
 #include "fsutil.h"
-#include "parser/defines.h"
+#include "parser/define.h"
 #include "parser/macro.h"
+#include "parser/struct.h"
 
 #include <sjasmplus_conf.h>
 #include <sstream>

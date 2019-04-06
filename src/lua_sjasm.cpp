@@ -24,7 +24,7 @@ TOLUA_API int tolua_sjasm_open(lua_State *tolua_S);
 #include "io_snapshots.h"
 #include "fsutil.h"
 #include "codeemitter.h"
-#include "parser/defines.h"
+#include "parser/define.h"
 
 using namespace options;
 

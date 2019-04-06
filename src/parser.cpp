@@ -34,8 +34,9 @@
 #include "options.h"
 #include "support.h"
 #include "codeemitter.h"
-#include "parser/defines.h"
+#include "parser/define.h"
 #include "parser/macro.h"
+#include "parser/struct.h"
 
 #include "parser.h"
 
@@ -843,116 +844,6 @@ void parseLineSafe(bool ParseLabels) {
     lp = rp;
 }
 
-void ParseStructLabel(CStructure &St) {
-    std::string L;
-    PreviousIsLabel.clear();
-    if (White()) {
-        return;
-    }
-    if (*lp == '.') {
-        ++lp;
-    }
-    while (*lp && islabchar(*lp)) {
-        L += *lp;
-        ++lp;
-    }
-    if (*lp == ':') {
-        ++lp;
-    }
-    SkipBlanks();
-    if (isdigit(L[0])) {
-        Error("[STRUCT] Number labels not allowed within structs"s);
-        return;
-    }
-    PreviousIsLabel = L;
-    St.addLabel(L);
-}
-
-void parseStructMember(CStructure &St) {
-    aint val, len;
-    bp = lp;
-    switch (GetStructMemberId(lp)) {
-        case SMEMBBLOCK:
-            if (!parseExpression(lp, len)) {
-                len = 1;
-                Error("[STRUCT] Expression expected"s, PASS1);
-            }
-            if (comma(lp)) {
-                if (!parseExpression(lp, val)) {
-                    val = 0;
-                    Error("[STRUCT] Expression expected"s, PASS1);
-                }
-            } else {
-                val = 0;
-            }
-            check8(val);
-            { CStructureEntry2 SMM = {St.noffset, len, val & 255, SMEMBBLOCK};
-            St.addMember(SMM); }
-            break;
-        case SMEMBBYTE:
-            if (!parseExpression(lp, val)) {
-                val = 0;
-            }
-            check8(val);
-            { CStructureEntry2 SMB = {St.noffset, 1, val, SMEMBBYTE};
-            St.addMember(SMB); }
-            break;
-        case SMEMBWORD:
-            if (!parseExpression(lp, val)) {
-                val = 0;
-            }
-            check16(val);
-            { CStructureEntry2 SMW = {St.noffset, 2, val, SMEMBWORD};
-            St.addMember(SMW); }
-            break;
-        case SMEMBD24:
-            if (!parseExpression(lp, val)) {
-                val = 0;
-            }
-            check24(val);
-            { CStructureEntry2 SM24 = {St.noffset, 3, val, SMEMBD24};
-            St.addMember(SM24); }
-            break;
-        case SMEMBDWORD:
-            if (!parseExpression(lp, val)) {
-                val = 0;
-            }
-            { CStructureEntry2 SMDW = {St.noffset, 4, val, SMEMBDWORD};
-            St.addMember(SMDW); }
-            break;
-        case SMEMBALIGN:
-            if (!parseExpression(lp, val)) {
-                val = 4;
-            }
-            St.noffset += ((~St.noffset + 1) & (val - 1));
-            break;
-        default:
-            const char *pp = lp;
-            optional<std::string> Name;
-            int gl = 0;
-            SkipBlanks(pp);
-            if (*pp == '@') {
-                ++pp;
-                gl = 1;
-            }
-            if ((Name = getID(pp))) {
-                auto it = StructureTable.find(*Name, gl);
-                if (it != StructureTable.NotFound()) {
-                    CStructure &S = it->second;
-                    const char *tmp = St.Name.c_str();
-                    if (cmphstr(tmp, (*Name).c_str())) {
-                        Error("[STRUCT] Use structure itself"s, CATCHALL);
-                        break;
-                    }
-                    lp = (char *) pp;
-                    St.copyLabels(S);
-                    St.copyMembers(S, lp);
-                }
-            }
-            break;
-    }
-}
-
 void parseStructLine(CStructure &St) {
     replacedefineteller = comnxtlin = 0;
     lp = replaceDefine(line);
@@ -964,7 +855,7 @@ void parseStructLine(CStructure &St) {
     if (!*lp) {
         return;
     }
-    ParseStructLabel(St);
+    parseStructLabel(St);
     if (SkipBlanks()) {
         return;
     }

@@ -46,8 +46,9 @@
 #include "lua_support.h"
 #include "codeemitter.h"
 #include "fsutil.h"
-#include "parser/defines.h"
+#include "parser/define.h"
 #include "parser/macro.h"
+#include "parser/struct.h"
 
 #include "directives.h"
 

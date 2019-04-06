@@ -95,8 +95,6 @@ bool needbparen(const char *&p);
 
 bool islabchar(char p);
 
-EStructureMembers GetStructMemberId(const char *&p);
-
 const std::string getAll(const char *&p);
 
 #endif // SJASMPLUS_READER_H

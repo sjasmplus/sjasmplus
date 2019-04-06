@@ -26,7 +26,6 @@ extern stack<RepeatInfo> RepeatStack;
 
 extern CLabelTable LabelTable;
 extern CLocalLabelTable LocalLabelTable;
-extern CStructureTable StructureTable;
 
 extern ModulesList Modules;
 

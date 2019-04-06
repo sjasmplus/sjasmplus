@@ -1,4 +1,4 @@
-#include "defines.h"
+#include "define.h"
 
 std::map<std::string, std::string> DefineTable;
 std::map<std::string, std::vector<std::string>> DefArrayTable;

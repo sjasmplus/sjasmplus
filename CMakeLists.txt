@@ -56,10 +56,12 @@ set(SOURCE_FILES
         options.h
         parser.cpp
         parser.h
-        parser/defines.h
-        parser/defines.cpp
+        parser/define.h
+        parser/define.cpp
         parser/macro.h
         parser/macro.cpp
+        parser/struct.h
+        parser/struct.cpp
         reader.cpp
         reader.h
         sjio.cpp

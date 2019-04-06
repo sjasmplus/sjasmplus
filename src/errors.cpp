@@ -6,7 +6,7 @@ extern "C" {
 #include "global.h"
 #include "lua_support.h"
 #include "fs.h"
-#include "parser/defines.h"
+#include "parser/define.h"
 
 #include "errors.h"
 

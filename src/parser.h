@@ -29,7 +29,7 @@
 #ifndef SJASMPLUS_PARSER_H
 #define SJASMPLUS_PARSER_H
 
-#include "tables.h"
+#include "parser/struct.h"
 
 extern char sline[LINEMAX2], sline2[LINEMAX2];
 
