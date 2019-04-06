@@ -24,7 +24,7 @@ void CStructure::copyMember(CStructureEntry2 &Src, aint ndef) {
 void CStructure::copyMembers(CStructure &St, const char *&lp) {
     aint val;
     int parentheses = 0;
-    CStructureEntry2 M1 = {noffset, 0, 0, SMEMBPARENOPEN};
+    CStructureEntry2 M1 = {noffset, 0, 0, SMEMB::PARENOPEN};
     addMember(M1);
     SkipBlanks(lp);
     if (*lp == '{') {
@@ -33,13 +33,13 @@ void CStructure::copyMembers(CStructure &St, const char *&lp) {
     }
     for (auto M : St.Members) {
         switch (M.Type) {
-            case SMEMBBLOCK:
+            case SMEMB::BLOCK:
                 copyMember(M, M.Def);
                 break;
-            case SMEMBBYTE:
-            case SMEMBWORD:
-            case SMEMBD24:
-            case SMEMBDWORD:
+            case SMEMB::BYTE:
+            case SMEMB::WORD:
+            case SMEMB::D24:
+            case SMEMB::DWORD:
                 synerr = false;
                 if (!parseExpression(lp, val)) {
                     val = M.Def;
@@ -48,14 +48,14 @@ void CStructure::copyMembers(CStructure &St, const char *&lp) {
                 copyMember(M, val);
                 comma(lp);
                 break;
-            case SMEMBPARENOPEN:
+            case SMEMB::PARENOPEN:
                 SkipBlanks(lp);
                 if (*lp == '{') {
                     ++parentheses;
                     ++lp;
                 }
                 break;
-            case SMEMBPARENCLOSE:
+            case SMEMB::PARENCLOSE:
                 SkipBlanks(lp);
                 if (parentheses && *lp == '}') {
                     --parentheses;
@@ -72,7 +72,7 @@ void CStructure::copyMembers(CStructure &St, const char *&lp) {
             Error("closing } missing"s);
         }
     }
-    CStructureEntry2 M2 = {noffset, 0, 0, SMEMBPARENCLOSE};
+    CStructureEntry2 M2 = {noffset, 0, 0, SMEMB::PARENCLOSE};
     addMember(M2);
 }
 
@@ -119,7 +119,7 @@ void CStructure::deflab() {
     }
 }
 
-void CStructure::emitlab(const std::string &iid) {
+void CStructure::emitLabels(const std::string &iid) {
     std::string ln, sn, op;
     optional<std::string> p;
     aint oval;
@@ -140,7 +140,7 @@ void CStructure::emitlab(const std::string &iid) {
         }
     }
     sn += "."s;
-    for (auto &L : Labels) {
+    for (const auto &L : Labels) {
         ln = sn + L.Name;
         op = ln;
         if (!(p = validateLabel(ln))) {
@@ -162,7 +162,7 @@ void CStructure::emitlab(const std::string &iid) {
     }
 }
 
-void CStructure::emitmembs(const char *&p) {
+void CStructure::emitMembers(const char *&p) {
     int *e, et = 0, t;
     e = new int[noffset + 1];
     aint val;
@@ -174,14 +174,14 @@ void CStructure::emitmembs(const char *&p) {
     }
     for (auto M : Members) {
         switch (M.Type) {
-            case SMEMBBLOCK:
+            case SMEMB::BLOCK:
                 t = M.Len;
                 while (t--) {
                     e[et++] = M.Def;
                 }
                 break;
 
-            case SMEMBBYTE:
+            case SMEMB::BYTE:
                 synerr = false;
                 if (!parseExpression(p, val)) {
                     val = M.Def;
@@ -191,7 +191,7 @@ void CStructure::emitmembs(const char *&p) {
                 check8(val);
                 comma(p);
                 break;
-            case SMEMBWORD:
+            case SMEMB::WORD:
                 synerr = false;
                 if (!parseExpression(p, val)) {
                     val = M.Def;
@@ -202,7 +202,7 @@ void CStructure::emitmembs(const char *&p) {
                 check16(val);
                 comma(p);
                 break;
-            case SMEMBD24:
+            case SMEMB::D24:
                 synerr = false;
                 if (!parseExpression(p, val)) {
                     val = M.Def;
@@ -214,7 +214,7 @@ void CStructure::emitmembs(const char *&p) {
                 check24(val);
                 comma(p);
                 break;
-            case SMEMBDWORD:
+            case SMEMB::DWORD:
                 synerr = false;
                 if (!parseExpression(p, val)) {
                     val = M.Def;
@@ -226,14 +226,14 @@ void CStructure::emitmembs(const char *&p) {
                 e[et++] = (val >> 24) % 256;
                 comma(p);
                 break;
-            case SMEMBPARENOPEN:
+            case SMEMB::PARENOPEN:
                 SkipBlanks(p);
                 if (*p == '{') {
                     ++haakjes;
                     ++p;
                 }
                 break;
-            case SMEMBPARENCLOSE:
+            case SMEMB::PARENCLOSE:
                 SkipBlanks(p);
                 if (haakjes && *p == '}') {
                     --haakjes;
@@ -255,7 +255,7 @@ void CStructure::emitmembs(const char *&p) {
         Error("[STRUCT] Syntax error - too many arguments?"s);
     } /* this line from SjASM 0.39g */
     e[et] = -1;
-    EmitBytes(e);
+    emitBytes(e);
     delete[] e;
 }
 
@@ -296,9 +296,9 @@ bool CStructureTable::emit(const std::string &Name, const std::string &FullName,
     }
     auto S = it->second;
     if (!FullName.empty()) {
-        S.emitlab(FullName);
+        S.emitLabels(FullName);
     }
-    S.emitmembs(p);
+    S.emitMembers(p);
     return true;
 }
 
@@ -331,7 +331,7 @@ void parseStructMember(CStructure &St) {
     aint val, len;
     bp = lp;
     switch (getStructMemberId(lp)) {
-        case SMEMBBLOCK:
+        case SMEMB::BLOCK:
             if (!parseExpression(lp, len)) {
                 len = 1;
                 Error("[STRUCT] Expression expected"s, PASS1);
@@ -345,41 +345,41 @@ void parseStructMember(CStructure &St) {
                 val = 0;
             }
             check8(val);
-            { CStructureEntry2 SMM = {St.noffset, len, val & 255, SMEMBBLOCK};
+            { CStructureEntry2 SMM = {St.noffset, len, val & 255, SMEMB::BLOCK};
                 St.addMember(SMM); }
             break;
-        case SMEMBBYTE:
+        case SMEMB::BYTE:
             if (!parseExpression(lp, val)) {
                 val = 0;
             }
             check8(val);
-            { CStructureEntry2 SMB = {St.noffset, 1, val, SMEMBBYTE};
+            { CStructureEntry2 SMB = {St.noffset, 1, val, SMEMB::BYTE};
                 St.addMember(SMB); }
             break;
-        case SMEMBWORD:
+        case SMEMB::WORD:
             if (!parseExpression(lp, val)) {
                 val = 0;
             }
             check16(val);
-            { CStructureEntry2 SMW = {St.noffset, 2, val, SMEMBWORD};
+            { CStructureEntry2 SMW = {St.noffset, 2, val, SMEMB::WORD};
                 St.addMember(SMW); }
             break;
-        case SMEMBD24:
+        case SMEMB::D24:
             if (!parseExpression(lp, val)) {
                 val = 0;
             }
             check24(val);
-            { CStructureEntry2 SM24 = {St.noffset, 3, val, SMEMBD24};
+            { CStructureEntry2 SM24 = {St.noffset, 3, val, SMEMB::D24};
                 St.addMember(SM24); }
             break;
-        case SMEMBDWORD:
+        case SMEMB::DWORD:
             if (!parseExpression(lp, val)) {
                 val = 0;
             }
-            { CStructureEntry2 SMDW = {St.noffset, 4, val, SMEMBDWORD};
+            { CStructureEntry2 SMDW = {St.noffset, 4, val, SMEMB::DWORD};
                 St.addMember(SMDW); }
             break;
-        case SMEMBALIGN:
+        case SMEMB::ALIGN:
             if (!parseExpression(lp, val)) {
                 val = 4;
             }
@@ -412,91 +412,91 @@ void parseStructMember(CStructure &St) {
     }
 }
 
-EStructureMembers getStructMemberId(const char *&p) {
+SMEMB getStructMemberId(const char *&p) {
     if (*p == '#') {
         ++p;
         if (*p == '#') {
             ++p;
-            return SMEMBALIGN;
+            return SMEMB::ALIGN;
         }
-        return SMEMBBLOCK;
+        return SMEMB::BLOCK;
     }
     //  if (*p=='.') ++p;
     switch (*p * 2 + *(p + 1)) {
         case 'b' * 2 + 'y':
         case 'B' * 2 + 'Y':
             if (cmphstr(p, "byte")) {
-                return SMEMBBYTE;
+                return SMEMB::BYTE;
             }
             break;
         case 'w' * 2 + 'o':
         case 'W' * 2 + 'O':
             if (cmphstr(p, "word")) {
-                return SMEMBWORD;
+                return SMEMB::WORD;
             }
             break;
         case 'b' * 2 + 'l':
         case 'B' * 2 + 'L':
             if (cmphstr(p, "block")) {
-                return SMEMBBLOCK;
+                return SMEMB::BLOCK;
             }
             break;
         case 'd' * 2 + 'b':
         case 'D' * 2 + 'B':
             if (cmphstr(p, "db")) {
-                return SMEMBBYTE;
+                return SMEMB::BYTE;
             }
             break;
         case 'd' * 2 + 'w':
         case 'D' * 2 + 'W':
             if (cmphstr(p, "dw")) {
-                return SMEMBWORD;
+                return SMEMB::WORD;
             }
             if (cmphstr(p, "dword")) {
-                return SMEMBDWORD;
+                return SMEMB::DWORD;
             }
             break;
         case 'd' * 2 + 's':
         case 'D' * 2 + 'S':
             if (cmphstr(p, "ds")) {
-                return SMEMBBLOCK;
+                return SMEMB::BLOCK;
             }
             break;
         case 'd' * 2 + 'd':
         case 'D' * 2 + 'D':
             if (cmphstr(p, "dd")) {
-                return SMEMBDWORD;
+                return SMEMB::DWORD;
             }
             break;
         case 'a' * 2 + 'l':
         case 'A' * 2 + 'L':
             if (cmphstr(p, "align")) {
-                return SMEMBALIGN;
+                return SMEMB::ALIGN;
             }
             break;
         case 'd' * 2 + 'e':
         case 'D' * 2 + 'E':
             if (cmphstr(p, "defs")) {
-                return SMEMBBLOCK;
+                return SMEMB::BLOCK;
             }
             if (cmphstr(p, "defb")) {
-                return SMEMBBYTE;
+                return SMEMB::BYTE;
             }
             if (cmphstr(p, "defw")) {
-                return SMEMBWORD;
+                return SMEMB::WORD;
             }
             if (cmphstr(p, "defd")) {
-                return SMEMBDWORD;
+                return SMEMB::DWORD;
             }
             break;
         case 'd' * 2 + '2':
         case 'D' * 2 + '2':
             if (cmphstr(p, "d24")) {
-                return SMEMBD24;
+                return SMEMB::D24;
             }
             break;
         default:
             break;
     }
-    return SMEMBUNKNOWN;
+    return SMEMB::UNKNOWN;
 }

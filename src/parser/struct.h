@@ -9,8 +9,16 @@
 
 using namespace std::string_literals;
 
-enum EStructureMembers {
-    SMEMBUNKNOWN, SMEMBALIGN, SMEMBBYTE, SMEMBWORD, SMEMBBLOCK, SMEMBDWORD, SMEMBD24, SMEMBPARENOPEN, SMEMBPARENCLOSE
+enum class SMEMB {
+    UNKNOWN,
+    ALIGN,
+    BYTE,
+    WORD,
+    BLOCK,
+    DWORD,
+    D24,
+    PARENOPEN,
+    PARENCLOSE
 };
 
 class CStructureEntry1 {
@@ -25,9 +33,9 @@ public:
 class CStructureEntry2 {
 public:
     aint Offset, Len, Def;
-    EStructureMembers Type;
+    SMEMB Type;
 
-    CStructureEntry2(aint _Offset, aint _Len, aint _Def, EStructureMembers _Type) :
+    CStructureEntry2(aint _Offset, aint _Len, aint _Def, SMEMB _Type) :
             Offset(_Offset), Len(_Len), Def(_Def), Type(_Type) {}
 
 };
@@ -56,9 +64,9 @@ public:
 
     void deflab();
 
-    void emitlab(const std::string &iid);
+    void emitLabels(const std::string &iid);
 
-    void emitmembs(const char *&p);
+    void emitMembers(const char *&p);
 
     CStructure() : Name(""s), FullName(""s) {
         binding = noffset = global = 0;
@@ -96,7 +104,7 @@ private:
 
 extern CStructureTable StructureTable;
 
-EStructureMembers getStructMemberId(const char *&p);
+SMEMB getStructMemberId(const char *&p);
 
 void parseStructLabel(CStructure &St);
 
