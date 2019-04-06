@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Version 20190306.1++WiP
 
 ### Fixed
-- END was not terminating parsing if there were more lines in the buffer
+- `END` was not terminating parsing if there were more lines in the buffer
+- Nested `STRUCT`s now work as documented
 
 ## 2019-03-06
 - Version 20190306.1
