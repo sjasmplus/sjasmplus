@@ -46,7 +46,7 @@
 #include "lua_support.h"
 #include "codeemitter.h"
 #include "fsutil.h"
-#include "parser/define.h"
+#include "parser/directives.h"
 #include "parser/macro.h"
 #include "parser/struct.h"
 
@@ -63,7 +63,29 @@ int StartAddress = -1;
 FunctionTable DirectivesTable;
 FunctionTable DirectivesTable_dup;
 
+/*
+ * Use this function for now
+ * Remove/refactor when transition to the new parser is complete
+ */
+bool tryNewDirectiveParser(const char *BOL, bool AtBOL) {
+    size_t DirPos = (lp - BOL) + 1;
+    parser::State S{};
+    tao::pegtl::memory_input<> In(lp, lp + strlen(lp), "", DirPos, CurrentLocalLine, DirPos);
+    try {
+        if(tao::pegtl::parse<parser::Directive, parser::Actions, parser::Ctrl>(In, S)) {
+            getAll(lp);
+            return true;
+        } else {
+            return false;
+        }
+    } catch (tao::pegtl::parse_error &E) {
+        Fatal(E.what());
+    }
+}
+
 bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
+    if(tryNewDirectiveParser(BOL, AtBOL))
+        return true;
     const char *olp = lp;
     std::string Instr;
     bp = lp;
@@ -1805,8 +1827,10 @@ void dirENDM() {
 }
 
 void dirDEFARRAY() {
+    /*
     parser::State S{};
-    tao::pegtl::memory_input<> In(lp, "DEFARRAY");
+//    tao::pegtl::memory_input<> In(lp, "DEFARRAY");
+    tao::pegtl::memory_input<> In(lp, lp + strlen(lp), "DEFARRAY", 0, CurrentLocalLine, 0);
     try {
         tao::pegtl::parse<parser::DefArrayParams, parser::Actions, parser::Ctrl>(In, S);
     } catch (tao::pegtl::parse_error &E) {
@@ -1815,6 +1839,7 @@ void dirDEFARRAY() {
     getAll(lp);
 
     setDefArray(S.Id, S.StringList);
+     */
 }
 
 void _lua_showerror() {
