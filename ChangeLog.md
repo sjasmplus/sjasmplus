@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - If a `STRUCT`'s leading offset is defined it no longer overwrites existing
   output
 - `ALIGN` inside `STRUCT` was broken
+- `DEFARRAY` arguments are now parsed as documented
 
 ## 2019-03-06
 - Version 20190306.1
