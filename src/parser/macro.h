@@ -6,9 +6,9 @@
 #include <list>
 #include <stack>
 
-#include "common.h"
+using namespace std::string_literals;
 
-using namespace tao::pegtl;
+#include "common.h"
 
 namespace parser {
 
@@ -24,11 +24,13 @@ struct MacroArgString : plus<MacroArgChar> {};
 
 struct MacroArgStringBr : plus<MacroArgCharBr> {};
 
-struct MacroArgBracketed : if_must<one<'<'>, MacroArgStringBr, one<'>'> > {};
+struct MacroArgClosingBr : one<'>'> {};
+
+struct MacroArgBracketed : if_must<one<'<'>, MacroArgStringBr, MacroArgClosingBr > {};
 
 struct MacroArg : sor<MacroArgBracketed, MacroArgString> {};
 
-struct MacroArgList : seq<list<MacroArg, one<','>, Nothing1L>, eolf> {};
+struct MacroArgList : seq<list_must<MacroArg, one<','>, Nothing1L> > {};
 
 template<>
 struct Actions<MacroEscChar> {

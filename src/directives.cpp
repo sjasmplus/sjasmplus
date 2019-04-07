@@ -1805,28 +1805,16 @@ void dirENDM() {
 }
 
 void dirDEFARRAY() {
-    optional<std::string> Id;
-
-    if (!(Id = getID(lp))) {
-        Error("[DEFARRAY] Syntax error"s);
-        return;
-    }
-    SkipBlanks(lp);
-    if (!*lp) {
-        Error("DEFARRAY must have at least one entry"s);
-        return;
-    }
-
     parser::State S{};
-    tao::pegtl::memory_input<> In(lp, "");
+    tao::pegtl::memory_input<> In(lp, "DEFARRAY");
     try {
-        tao::pegtl::parse<parser::DefArrayArgList, parser::Actions>(In, S);
+        tao::pegtl::parse<parser::DefArrayParams, parser::Actions, parser::Ctrl>(In, S);
     } catch (tao::pegtl::parse_error &E) {
         Fatal(E.what());
     }
     getAll(lp);
 
-    setDefArray(*Id, S.StringList);
+    setDefArray(S.Id, S.StringList);
 }
 
 void _lua_showerror() {

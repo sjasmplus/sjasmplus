@@ -9,11 +9,12 @@
 using boost::optional;
 
 #include "macro.h"
-using namespace tao::pegtl;
 
 namespace parser {
 
 struct DefArrayArgList : MacroArgList {};
+
+struct DefArrayParams : seq<star<Nothing1L>, must<Identifier, RequiredNothing1L, DefArrayArgList, TrailingNothing> > {};
 
 }
 

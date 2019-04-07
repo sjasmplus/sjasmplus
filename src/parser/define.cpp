@@ -1,5 +1,12 @@
 #include "define.h"
 
+namespace parser {
+
+template<> const std::string Ctrl<DefArrayArgList>::ErrMsg = "expected array elements"s;
+
+}
+
+
 std::map<std::string, std::string> DefineTable;
 std::map<std::string, std::vector<std::string>> DefArrayTable;
 
