@@ -56,6 +56,7 @@ set(SOURCE_FILES
         options.h
         parser.cpp
         parser.h
+        parser/common.h
         parser/define.h
         parser/define.cpp
         parser/macro.h

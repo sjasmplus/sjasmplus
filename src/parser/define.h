@@ -8,6 +8,16 @@
 
 using boost::optional;
 
+#include "macro.h"
+using namespace tao::pegtl;
+
+namespace parser {
+
+struct DefArrayArgList : MacroArgList {};
+
+}
+
+
 // Return true if redefined and existing define
 bool setDefine(const std::string &Name, const std::string &Value);
 

@@ -1817,44 +1817,16 @@ void dirDEFARRAY() {
         return;
     }
 
-    std::vector<std::string> Arr;
-    std::string Val;
-    while (*lp) {
-        Val.clear();
-        SkipBlanks(lp);
-        if (*lp == '<') {
-            ++lp;
-            while (*lp != '>') {
-                if (!*lp) {
-                    Error("[DEFARRAY] No closing bracket - <..>"s);
-                    return;
-                }
-                if (*lp == '!') {
-                    ++lp;
-                    if (!*lp) {
-                        Error("[DEFARRAY] No closing bracket - <..>"s);
-                        return;
-                    }
-                }
-                Val += *lp;
-                ++lp;
-            }
-            ++lp;
-        } else {
-            while (*lp && *lp != ',') {
-                Val += *lp;
-                ++lp;
-            }
-        }
-        Arr.emplace_back(Val);
-        SkipBlanks(lp);
-        if (*lp == ',') {
-            ++lp;
-        } else {
-            break;
-        }
+    parser::State S{};
+    tao::pegtl::memory_input<> In(lp, "");
+    try {
+        tao::pegtl::parse<parser::DefArrayArgList, parser::Actions>(In, S);
+    } catch (tao::pegtl::parse_error &E) {
+        Fatal(E.what());
     }
-    setDefArray(*Id, Arr);
+    getAll(lp);
+
+    setDefArray(*Id, S.StringList);
 }
 
 void _lua_showerror() {

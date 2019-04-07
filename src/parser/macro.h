@@ -6,6 +6,73 @@
 #include <list>
 #include <stack>
 
+#include "common.h"
+
+using namespace tao::pegtl;
+
+namespace parser {
+
+struct MacroEscChar : one<'!', '>'> {};
+
+struct MacroEscSeq : if_must<one<'!'>, MacroEscChar> {};
+
+struct MacroArgChar : not_one<','> {};
+
+struct MacroArgCharBr : sor<MacroEscSeq, not_one<'>'> > {};
+
+struct MacroArgString : plus<MacroArgChar> {};
+
+struct MacroArgStringBr : plus<MacroArgCharBr> {};
+
+struct MacroArgBracketed : if_must<one<'<'>, MacroArgStringBr, one<'>'> > {};
+
+struct MacroArg : sor<MacroArgBracketed, MacroArgString> {};
+
+struct MacroArgList : seq<list<MacroArg, one<','>, Nothing1L>, eolf> {};
+
+template<>
+struct Actions<MacroEscChar> {
+    template<typename Input>
+    static void apply(const Input &In, State &S) {
+        assert(In.string().size() == 1);
+        S.EscChar = In.string()[0];
+    }
+};
+
+template<>
+struct Actions<MacroArgCharBr> {
+    template<typename Input>
+    static void apply(const Input &In, State &S) {
+        if (S.EscChar != 0) {
+            S.String += S.EscChar;
+            S.EscChar = 0;
+        } else {
+            assert(In.string().size() == 1);
+            S.String += In.string()[0];
+        }
+    }
+};
+
+template<>
+struct Actions<MacroArgString> {
+    template<typename Input>
+    static void apply(const Input &In, State &S) {
+        S.StringList.emplace_back(In.string());
+    }
+};
+
+template<>
+struct Actions<MacroArgStringBr> {
+    template<typename Input>
+    static void apply(const Input &In, State &S) {
+        S.StringList.emplace_back(S.String);
+        S.String.clear();
+    }
+};
+
+
+}
+
 enum class MacroResult {
     Success,
     NotFound,
