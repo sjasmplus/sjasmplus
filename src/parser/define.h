@@ -10,15 +10,6 @@ using boost::optional;
 
 #include "macro.h"
 
-namespace parser {
-
-struct DefArrayArgList : MacroArgList {};
-
-struct DefArrayParams : seq<star<Nothing1L>, must<Identifier, RequiredNothing1L, DefArrayArgList, TrailingNothing> > {};
-
-}
-
-
 // Return true if redefined and existing define
 bool setDefine(const std::string &Name, const std::string &Value);
 
@@ -37,5 +28,23 @@ void clearDefines();
 
 // Checks if either DEFINE or DEFARRAY for given name exists
 bool ifDefName(const std::string &Name);
+
+namespace parser {
+
+struct DefArrayArgList : MacroArgList {};
+
+struct DefArrayParams : seq<star<Nothing1L>, must<Identifier, RequiredNothing1L, DefArrayArgList> > {};
+
+struct DefArray : if_must<TAO_PEGTL_ISTRING("DEFARRAY"), RequiredNothing1L, DefArrayParams> {};
+
+template<>
+struct Actions<DefArray> {
+    template<typename Input>
+    static void apply(const Input &In, State &S) {
+        setDefArray(S.Id, S.StringList);
+    }
+};
+
+}
 
 #endif //SJASMPLUS_PARSER_DEFINES_H

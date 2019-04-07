@@ -60,6 +60,7 @@ set(SOURCE_FILES
         parser/common.cpp
         parser/define.h
         parser/define.cpp
+        parser/directives.h
         parser/macro.h
         parser/macro.cpp
         parser/struct.h

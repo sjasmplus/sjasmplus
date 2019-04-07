@@ -4,6 +4,8 @@ namespace parser {
 
 template<> const std::string Ctrl<DefArrayArgList>::ErrMsg = "expected array elements"s;
 
+template<> const std::string Ctrl<DefArrayParams>::ErrMsg = "expected parameters"s;
+
 }
 
 
