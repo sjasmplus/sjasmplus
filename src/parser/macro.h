@@ -65,7 +65,7 @@ template<>
 struct Actions<MacroArgString> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
-        S.StringList.emplace_back(In.string());
+        S.StringVec.emplace_back(In.string());
     }
 };
 
@@ -73,7 +73,7 @@ template<>
 struct Actions<MacroArgStringBr> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
-        S.StringList.emplace_back(S.String);
+        S.StringVec.emplace_back(S.String);
         S.String.clear();
     }
 };

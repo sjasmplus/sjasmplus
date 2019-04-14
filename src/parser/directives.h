@@ -5,6 +5,7 @@
 
 namespace parser {
 struct Directive : if_must<sor<
+        Define,
         DefArray
 
 >, TrailingNothing > {};

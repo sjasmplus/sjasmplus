@@ -1271,20 +1271,6 @@ void dirOUTPUT() {
     }
 }
 
-void dirDEFINE() {
-    optional<std::string> Id;
-
-    if (!(Id = getID(lp))) {
-        Error("[DEFINE] Illegal syntax"s);
-        return;
-    }
-
-    SkipBlanks(lp); // FIXME: This is not enough: need to account for comments
-    if (setDefine(*Id, getAll(lp))) {
-        Error("Duplicate define"s, *Id);
-    }
-}
-
 void dirUNDEFINE() {
     optional<std::string> Id;
 
@@ -2062,7 +2048,6 @@ void InsertDirectives() {
     DirectivesTable.insertDirective("ifused"s, dirIFUSED);
     DirectivesTable.insertDirective("ufnused"s, dirIFNUSED); /* added */
     DirectivesTable.insertDirective("output"s, dirOUTPUT);
-    DirectivesTable.insertDirective("define"s, dirDEFINE);
     DirectivesTable.insertDirective("undefine"s, dirUNDEFINE);
     DirectivesTable.insertDirective("defarray"s, dirDEFARRAY); /* added */
     DirectivesTable.insertDirective("ifdef"s, dirIFDEF);

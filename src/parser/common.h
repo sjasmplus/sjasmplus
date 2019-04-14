@@ -88,7 +88,7 @@ struct State {
     std::string Id;
     char EscChar;
     std::string String;
-    std::vector<std::string> StringList;
+    std::vector<std::string> StringVec;
 };
 
 template<>
