@@ -17,6 +17,8 @@ std::string formatMsg(PMSG Type, const tao::pegtl::parse_error &E);
 
 void msg(PMSG Type, const tao::pegtl::parse_error &E);
 
+[[noreturn]] void fatal(const tao::pegtl::parse_error &E);
+
 
 } // namespace parser
 

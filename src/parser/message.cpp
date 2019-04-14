@@ -25,9 +25,11 @@ std::string formatMsg(PMSG Type, const tao::pegtl::parse_error &E) {
 
 void msg(PMSG Type, const tao::pegtl::parse_error &E) {
     cerr << formatMsg(Type, E) << endl;
-    if (Type == PMSG::ERROR) {
-        exit(1);
-    }
+}
+
+void fatal(const tao::pegtl::parse_error &E) {
+    msg(PMSG::ERROR, E);
+    std::terminate();
 }
 
 } // namespace parser

@@ -82,7 +82,7 @@ bool tryNewDirectiveParser(const char *BOL, bool AtBOL) {
             return false;
         }
     } catch (tao::pegtl::parse_error &E) {
-        parser::msg(PMSG::ERROR, E);
+        parser::fatal(E);
     }
 }
 
