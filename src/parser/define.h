@@ -33,12 +33,16 @@ namespace parser {
 
 struct DefArrayArgList : MacroArgList {};
 
-struct DefArrayParams : seq<star<Nothing1L>, must<Identifier, RequiredNothing1L, DefArrayArgList> > {};
+struct DefArraySp1 : RequiredNothing1L {};
 
-struct DefArray : if_must<TAO_PEGTL_ISTRING("DEFARRAY"), RequiredNothing1L, DefArrayParams> {};
+struct DefArraySp2 : RequiredNothing1L {};
+
+struct DefArray : if_must<TAO_PEGTL_ISTRING("DEFARRAY"), DefArraySp1,
+        Identifier, DefArraySp2, DefArrayArgList> { };
 
 template<> const std::string Ctrl<DefArrayArgList>::ErrMsg;
-template<> const std::string Ctrl<DefArrayParams>::ErrMsg;
+template<> const std::string Ctrl<DefArraySp1>::ErrMsg;
+template<> const std::string Ctrl<DefArraySp2>::ErrMsg;
 
 template<>
 struct Actions<DefArray> {
