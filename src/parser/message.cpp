@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 
 #include "message.h"
 
@@ -29,7 +30,7 @@ void msg(PMSG Type, const tao::pegtl::parse_error &E) {
 
 void fatal(const tao::pegtl::parse_error &E) {
     msg(PMSG::ERROR, E);
-    std::terminate();
+    std::exit(EXIT_FAILURE);
 }
 
 } // namespace parser
