@@ -491,7 +491,7 @@ void dirALIGN() {
 
 void dirMODULE() {
     optional <std::string> Name;
-    if (Name = getID(lp)) {
+    if ((Name = getID(lp))) {
         Modules.Begin(*Name);
     } else {
         Error("[MODULE] Syntax error"s, CATCHALL);

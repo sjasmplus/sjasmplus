@@ -552,7 +552,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
         }
     }
     //for end line
-    if (pIFS->eof() && B.left() <= 0 && line) {
+    if (pIFS->eof() && B.left() <= 0 && line[0]) {
         if (rlnewline) {
             CurrentLocalLine++;
             CompiledCurrentLine++;
