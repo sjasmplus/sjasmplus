@@ -79,6 +79,11 @@ struct Ctrl : normal<Rule> {
     }
 };
 
+template<> const std::string Ctrl<Identifier>::ErrMsg;
+template<> const std::string Ctrl<RequiredNothing1L>::ErrMsg;
+template<> const std::string Ctrl<TrailingNothing>::ErrMsg;
+
+
 struct State {
     std::string Id;
     char EscChar;

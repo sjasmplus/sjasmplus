@@ -32,6 +32,12 @@ struct MacroArg : sor<MacroArgBracketed, MacroArgString> {};
 
 struct MacroArgList : seq<list_must<MacroArg, one<','>, Nothing1L> > {};
 
+template<> const std::string Ctrl<MacroEscChar>::ErrMsg;
+template<> const std::string Ctrl<MacroArgStringBr>::ErrMsg;
+template<> const std::string Ctrl<MacroArgClosingBr>::ErrMsg;
+template<> const std::string Ctrl<MacroArg>::ErrMsg;
+
+
 template<>
 struct Actions<MacroEscChar> {
     template<typename Input>

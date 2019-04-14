@@ -37,6 +37,9 @@ struct DefArrayParams : seq<star<Nothing1L>, must<Identifier, RequiredNothing1L,
 
 struct DefArray : if_must<TAO_PEGTL_ISTRING("DEFARRAY"), RequiredNothing1L, DefArrayParams> {};
 
+template<> const std::string Ctrl<DefArrayArgList>::ErrMsg;
+template<> const std::string Ctrl<DefArrayParams>::ErrMsg;
+
 template<>
 struct Actions<DefArray> {
     template<typename Input>
