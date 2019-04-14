@@ -49,6 +49,7 @@
 #include "parser/directives.h"
 #include "parser/macro.h"
 #include "parser/struct.h"
+#include "parser/message.h"
 
 #include "directives.h"
 
@@ -68,9 +69,11 @@ FunctionTable DirectivesTable_dup;
  * Remove/refactor when transition to the new parser is complete
  */
 bool tryNewDirectiveParser(const char *BOL, bool AtBOL) {
-    size_t DirPos = (lp - BOL) + 1;
+    size_t DirPos = lp - BOL;
     parser::State S{};
-    tao::pegtl::memory_input<> In(lp, lp + strlen(lp), "", DirPos, CurrentLocalLine, DirPos);
+    tao::pegtl::memory_input<> In(lp, lp + strlen(lp),
+                                  getCurrentSrcFileNameForMsg().string(),
+                                  DirPos, CurrentLocalLine, DirPos);
     try {
         if(tao::pegtl::parse<parser::Directive, parser::Actions, parser::Ctrl>(In, S)) {
             getAll(lp);
@@ -79,7 +82,7 @@ bool tryNewDirectiveParser(const char *BOL, bool AtBOL) {
             return false;
         }
     } catch (tao::pegtl::parse_error &E) {
-        Fatal(E.what());
+        parser::msg(PMSG::ERROR, E);
     }
 }
 

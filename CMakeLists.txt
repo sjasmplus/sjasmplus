@@ -63,6 +63,8 @@ set(SOURCE_FILES
         parser/directives.h
         parser/macro.h
         parser/macro.cpp
+        parser/message.h
+        parser/message.cpp
         parser/struct.h
         parser/struct.cpp
         reader.cpp
