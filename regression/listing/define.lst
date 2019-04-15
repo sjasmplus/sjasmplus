@@ -3,15 +3,14 @@
 03   0000                     org #8000
 04   8000                     
 05   8000                     DEFINE Scalar db 1
-06   8000                     DEFARRAY Array,db 2,db 3,db 4
+06   8000                     DEFARRAY Array db 2,db 3,db 4
 07   8000                     
 08   8000 01                  Scalar
-09   8001 04                  Array[3]
-10   8002 03                  Array[2]
-11   8003 02                  Array[1]
-12   8004                     Array[0]
-13   8004                     Array
-14   8004             
+09   8001 04                  Array[2]
+10   8002 03                  Array[1]
+11   8003 02                  Array[0]
+12   8004 02                  Array
+13   8005             
 
 Value    Label
 ------ - -----------------------------------------------------------
