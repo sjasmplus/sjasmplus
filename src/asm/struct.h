@@ -45,7 +45,7 @@ class CStructs;
 
 class CStruct {
 public:
-    CStructs &Parent;
+    CStructs *Parent;
     std::string Name, FullName;
     int binding;
     aint noffset;
@@ -72,9 +72,9 @@ public:
 
     void emitMembers(const char *&p);
 
-    CStruct() = delete;
+    CStruct() = default;
 
-    explicit CStruct(CStructs &_Parent,
+    explicit CStruct(CStructs *_Parent,
                      const std::string &_Name, const std::string &_FullName,
                      int _Binding, aint _NOffset, int _Global) :
             Parent{_Parent},

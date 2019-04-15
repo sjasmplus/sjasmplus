@@ -101,8 +101,8 @@ void parseStructMember(CStruct &St) {
                 gl = 1;
             }
             if ((Name = getID(pp))) {
-                auto it = St.Parent.find(*Name, gl);
-                if (it != St.Parent.NotFound()) {
+                auto it = St.Parent->find(*Name, gl);
+                if (it != St.Parent->NotFound()) {
                     CStruct &S = it->second;
                     const char *tmp = St.Name.c_str();
                     if (cmphstr(tmp, (*Name).c_str())) {
