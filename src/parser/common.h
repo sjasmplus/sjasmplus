@@ -55,7 +55,7 @@ struct Nothing1L : sor<Space1L, AnyComment1L> {};
 
 struct RequiredNothing1L : plus<Nothing1L> {};
 
-struct TrailingNothing : seq<opt<until<eol, Nothing1L> >, at<eolf> > {};
+struct TrailingNothing : sor<seq<RequiredNothing1L, at<eolf> >, at<eolf> > {};
 
 // FIXME !!!
 struct Expr : plus<digit> {};

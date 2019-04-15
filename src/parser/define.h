@@ -9,7 +9,7 @@ namespace parser {
 
 struct DefineSp : RequiredNothing1L {};
 
-struct DefineArg : until<seq<star<Nothing1L>, eolf> > {};
+struct DefineArg : until<at<TrailingNothing> > {};
 
 struct Define : seq<if_must<TAO_PEGTL_ISTRING("DEFINE"), DefineSp, Identifier> ,
         opt<RequiredNothing1L, DefineArg> > {};
