@@ -183,5 +183,3 @@ include_directories(BEFORE sjasm ${LUA_DIR} ${TOLUAPP_DIR} "${PEGTL_DIR}include"
 add_executable(sjasmplus ${SOURCE_FILES})
 
 target_link_libraries (sjasmplus ${Boost_LIBRARIES})
-
-add_subdirectory(tests tests EXCLUDE_FROM_ALL)
