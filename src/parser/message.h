@@ -5,17 +5,17 @@
 #include <vector>
 #include <tao/pegtl/parse_error.hpp>
 
-enum class PMSG {
-    NOTE,
-    WARNING,
-    ERROR
+enum class MsgType {
+    Note,
+    Warning,
+    Error
 };
 
 namespace parser {
 
-std::string formatMsg(PMSG Type, const tao::pegtl::parse_error &E);
+std::string formatMsg(MsgType Type, const tao::pegtl::parse_error &E);
 
-void msg(PMSG Type, const tao::pegtl::parse_error &E);
+void msg(MsgType Type, const tao::pegtl::parse_error &E);
 
 [[noreturn]] void fatal(const tao::pegtl::parse_error &E);
 

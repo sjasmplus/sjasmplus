@@ -9,27 +9,27 @@ using std::endl;
 
 namespace parser {
 
-std::string formatMsg(PMSG Type, const tao::pegtl::parse_error &E) {
+std::string formatMsg(MsgType Type, const tao::pegtl::parse_error &E) {
     const auto &Pos = E.positions.back();
     return Pos.source + ":"s + std::to_string(Pos.line) + ":"s +
            std::to_string(Pos.byte_in_line + 1) + ": "s + [&]() {
         switch (Type) {
-            case PMSG::NOTE:
+            case MsgType::Note:
                 return "note: "s;
-            case PMSG::WARNING:
+            case MsgType::Warning:
                 return "warning "s;
-            case PMSG::ERROR:
+            case MsgType::Error:
                 return "error: "s;
         }
     }() + E.what();
 }
 
-void msg(PMSG Type, const tao::pegtl::parse_error &E) {
+void msg(MsgType Type, const tao::pegtl::parse_error &E) {
     cerr << formatMsg(Type, E) << endl;
 }
 
 void fatal(const tao::pegtl::parse_error &E) {
-    msg(PMSG::ERROR, E);
+    msg(MsgType::Error, E);
     std::exit(EXIT_FAILURE);
 }
 
