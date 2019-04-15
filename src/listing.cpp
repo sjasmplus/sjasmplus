@@ -89,7 +89,7 @@ void ListingWriter::listBytesLong(int pad, const std::string &Prefix) {
     ByteBuffer.clear();
 }
 
-void ListingWriter::listLine() {
+void ListingWriter::listLine(const char *Line) {
     int pad;
     if (pass != LASTPASS || OmitLine) {
         OmitLine = false;
@@ -114,13 +114,13 @@ void ListingWriter::listLine() {
         if (InMacro) {
             OFS << ">";
         }
-        OFS << line << endl;
+        OFS << Line << endl;
     } else if (ByteBuffer.size() < 6) {
         listBytes5();
         if (InMacro) {
             OFS << ">";
         }
-        OFS << line << endl;
+        OFS << Line << endl;
     } else {
         for (int i = 0; i != 12; ++i) {
             OFS << ' ';
@@ -128,7 +128,7 @@ void ListingWriter::listLine() {
         if (InMacro) {
             OFS << ">";
         }
-        OFS << line << endl;
+        OFS << Line << endl;
         listBytesLong(pad, Prefix);
     }
     epadres = Asm.Em.getCPUAddress();
@@ -136,7 +136,7 @@ void ListingWriter::listLine() {
     ByteBuffer.clear();
 }
 
-void ListingWriter::listFileSkip(char *line) {
+void ListingWriter::listLineSkip(const char *Line) {
     aint pad;
     if (pass != LASTPASS || OmitLine) {
         OmitLine = false;
@@ -160,7 +160,7 @@ void ListingWriter::listFileSkip(char *line) {
     if (InMacro) {
         OFS << ">";
     }
-    OFS << line << endl;
+    OFS << Line << endl;
     epadres = Asm.Em.getCPUAddress();
     PreviousAddress = -1;
     ByteBuffer.clear();

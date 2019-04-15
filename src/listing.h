@@ -39,9 +39,9 @@ public:
 
     void initPass();
 
-    void listLine();
+    void listLine(const char *Line);
 
-    void listFileSkip(char *line);
+    void listLineSkip(const char *Line);
 
     void addByte(uint8_t Byte);
 

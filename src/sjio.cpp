@@ -676,7 +676,7 @@ EReturn readFile(const char *pp, const char *err) {
             return ENDIF;
         }
         if (cmphstr(p, "else")) {
-            Asm->Listing.listLine();
+            Asm->Listing.listLine(line);
             lp = replaceDefine(p);
             return ELSE;
         }
@@ -749,12 +749,12 @@ EReturn skipFile(const char *pp, const char *err) {
         }
         if (cmphstr(p, "else")) {
             if (!iflevel) {
-                Asm->Listing.listLine();
+                Asm->Listing.listLine(line);
                 lp = replaceDefine(p);
                 return ELSE;
             }
         }
-        Asm->Listing.listFileSkip(line);
+        Asm->Listing.listLineSkip(line);
     }
     Fatal("Unexpected end of file"s);
 }
@@ -790,7 +790,7 @@ bool readFileToListOfStrings(std::list<std::string> &List, const std::string &En
             }
         }
         List.emplace_back(line);
-        Asm->Listing.listFileSkip(line);
+        Asm->Listing.listLineSkip(line);
     }
     Fatal("Unexpected end of file"s);
 }

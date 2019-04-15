@@ -103,7 +103,7 @@ bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
         // .number or .(expression) prefix which acts as DUP/REPT for a single line
         aint val;
         size_t DirPos = olp - BOL;
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         if (isdigit(Instr[1])) {
             const char *RepVal = Instr.c_str() + 1;
             if (!parseExpression(RepVal, val)) {
@@ -1063,7 +1063,7 @@ void dirIF() {
     }
 
     if (val) {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         switch (readFile(lp, "[IF] No endif")) {
             case ELSE:
                 if (skipFile(lp, "[IF] No endif") != ENDIF) {
@@ -1077,7 +1077,7 @@ void dirIF() {
                 break;
         }
     } else {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         switch (skipFile(lp, "[IF] No endif")) {
             case ELSE:
                 if (readFile(lp, "[IF] No endif") != ENDIF) {
@@ -1105,7 +1105,7 @@ void dirIFN() {
     }
 
     if (!val) {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         switch (readFile(lp, "[IFN] No endif")) {
             case ELSE:
                 if (skipFile(lp, "[IFN] No endif") != ENDIF) {
@@ -1119,7 +1119,7 @@ void dirIFN() {
                 break;
         }
     } else {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         switch (skipFile(lp, "[IFN] No endif")) {
             case ELSE:
                 if (readFile(lp, "[IFN] No endif") != ENDIF) {
@@ -1152,7 +1152,7 @@ void dirIFUSED() {
     }
 
     if (Asm->Labels.isUsed(*Id)) {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         switch (readFile(lp, "[IFUSED] No endif")) {
             case ELSE:
                 if (skipFile(lp, "[IFUSED] No endif") != ENDIF) {
@@ -1166,7 +1166,7 @@ void dirIFUSED() {
                 break;
         }
     } else {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         switch (skipFile(lp, "[IFUSED] No endif")) {
             case ELSE:
                 if (readFile(lp, "[IFUSED] No endif") != ENDIF) {
@@ -1199,7 +1199,7 @@ void dirIFNUSED() {
     }
 
     if (!Asm->Labels.isUsed(*Id)) {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         switch (readFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
                 if (skipFile(lp, "[IFNUSED] No endif") != ENDIF) {
@@ -1213,7 +1213,7 @@ void dirIFNUSED() {
                 break;
         }
     } else {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         switch (skipFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
                 if (readFile(lp, "[IFNUSED] No endif") != ENDIF) {
@@ -1239,7 +1239,7 @@ void dirENDIF() {
 
 void dirINCLUDE() {
     const fs::path &FileName = getFileName(lp);
-    Asm->Listing.listLine();
+    Asm->Listing.listLine(line);
     includeFile(FileName);
     Asm->Listing.omitLine();
 }
@@ -1322,7 +1322,7 @@ void dirIFDEF() {
     }
 
     if (Asm->Defines.defined(*Id)) {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         /*switch (res=ReadFile()) {*/
         switch (res = readFile(lp, "[IFDEF] No endif")) {
             /*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1339,7 +1339,7 @@ void dirIFDEF() {
                 break;
         }
     } else {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         /*switch (res=SkipFile()) {*/
         switch (res = skipFile(lp, "[IFDEF] No endif")) {
             /*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1378,7 +1378,7 @@ void dirIFNDEF() {
     }
 
     if (!Asm->Defines.defined(*Id)) {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         /*switch (res=ReadFile()) {*/
         switch (res = readFile(lp, "[IFNDEF] No endif")) {
             /*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1395,7 +1395,7 @@ void dirIFNDEF() {
                 break;
         }
     } else {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         /*switch (res=SkipFile()) {*/
         switch (res = skipFile(lp, "[IFNDEF] No endif")) {
             /*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1563,7 +1563,7 @@ void dirMACRO() {
         Error("[MACRO] Illegal macroname"s, PASS1);
         return;
     }
-    Asm->Macros.add(*Name, lp);
+    Asm->Macros.add(*Name, lp, line);
 }
 
 void dirENDS() {
@@ -1671,7 +1671,7 @@ void dirSTRUCT() {
         }
     }
     CStruct &St = Asm->Structs.add(*Name, offset, bind, global);
-    Asm->Listing.listLine();
+    Asm->Listing.listLine(line);
     while (true) {
         if (!readLine()) {
             Error("[STRUCT] Unexpected end of structure"s, PASS1);
@@ -1686,7 +1686,7 @@ void dirSTRUCT() {
             break;
         }
         parseStructLine(St);
-        Asm->Listing.listFileSkip(line);
+        Asm->Listing.listLineSkip(line);
     }
     St.deflab();
 }
@@ -1796,7 +1796,7 @@ void dirEDUP() {
     STRCPY(line, LINEMAX, ml);
     free(ml);
 
-    Asm->Listing.listLine();
+    Asm->Listing.listLine(line);
 }
 
 void checkRepeatStackAtEOF() {
@@ -1915,7 +1915,7 @@ void dirLUA() {
     }
 
     ln = CurrentLocalLine;
-    Asm->Listing.listLine();
+    Asm->Listing.listLine(line);
     while (true) {
         if (!readLine(false)) {
             Error("[LUA] Unexpected end of lua script"s, PASS3);
@@ -1950,7 +1950,7 @@ void dirLUA() {
             }
         }
 
-        Asm->Listing.listFileSkip(line);
+        Asm->Listing.listLineSkip(line);
     }
 
     if (execute) {

@@ -30,6 +30,8 @@ const char *CMacros::readLine(char *Buffer, size_t BufSize) {
     if (inMacroBody()) {
         if (CurrentBodyIt == CurrentBody->end()) {
             emitEnd();
+            Asm.Listing.endMacro();
+            Asm.Listing.omitLine();
             return nullptr;
         }
         std::strncpy(Buffer, (*CurrentBodyIt).c_str(), BufSize);
@@ -150,7 +152,7 @@ void CMacroDefineTable::FreeArray(char **aArray, int aCount) {
 }
 
 
-void CMacros::add(const std::string &Name, const char *&p) {
+void CMacros::add(const std::string &Name, const char *&p, const char *Line) {
     optional <std::string> ArgName;
     if (Entries.find(Name) != Entries.end()) {
         Error("Duplicate macroname"s, PASS1);
@@ -174,14 +176,14 @@ void CMacros::add(const std::string &Name, const char *&p) {
     if (*p/* && *p!=':'*/) {
         Error("Unexpected"s, p, PASS1);
     }
-    Asm.Listing.listLine();
+    Asm.Listing.listLine(Line);
     if (!readFileToListOfStrings(M.Body, "endm"s)) {
         Error("Unexpected end of macro"s, PASS1);
     }
     Entries[Name] = M;
 }
 
-MacroResult CMacros::emit(const std::string &Name, const char *&p) {
+MacroResult CMacros::emit(const std::string &Name, const char *&p, const char *Line) {
     auto it = Entries.find(Name);
     if (it == Entries.end()) {
         return MacroResult::NotFound;
@@ -250,6 +252,8 @@ MacroResult CMacros::emit(const std::string &Name, const char *&p) {
     SkipBlanks(p);
     auto Ret = *p ? MacroResult::TooManyArgs : MacroResult::Success;
 
+    Asm.Listing.listLine(Line);
+    Asm.Listing.startMacro();
     emitStart(OLabelPrefix, ODefs);
 
     setInMemSrc(&M.Body);
@@ -259,9 +263,6 @@ MacroResult CMacros::emit(const std::string &Name, const char *&p) {
 
 void CMacros::emitStart(const std::string &SavedLabelPrefix,
                             const CMacroDefineTable &SavedDefs) {
-
-    Asm.Listing.listLine();
-    Asm.Listing.startMacro();
 
     if (CurrentBody != nullptr) {
         MacroState S{
@@ -287,7 +288,4 @@ void CMacros::emitEnd() {
         MacroDefineTable.init(); // FIXME: should not be needed
         LabelPrefix.clear(); // FIXME: should not be needed
     }
-
-    Asm.Listing.endMacro();
-    Asm.Listing.omitLine();
 }

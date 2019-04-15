@@ -715,7 +715,7 @@ bool ParseMacro() {
         return false;
     }
     MacroResult R;
-    if ((R = Asm->Macros.emit(*Name, p)) == MacroResult::NotFound) {
+    if ((R = Asm->Macros.emit(*Name, p, line)) == MacroResult::NotFound) {
         if (Asm->Structs.emit(*Name, ""s, p, gl)) {
             lp = (char *) p;
             return true;
@@ -783,35 +783,35 @@ void parseLine(bool ParseLabels) {
     }
     if (comlin) {
         comlin += comnxtlin;
-        Asm->Listing.listFileSkip(line);
+        Asm->Listing.listLineSkip(line);
         return;
     }
     comlin += comnxtlin;
     if (!*lp) {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         return;
     }
     if (ParseLabels) {
         ParseLabel();
     }
     if (SkipBlanks()) {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         return;
     }
     ParseMacro();
     if (SkipBlanks()) {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         return;
     }
     parseInstruction(BOL, lp);
     if (SkipBlanks()) {
-        Asm->Listing.listLine();
+        Asm->Listing.listLine(line);
         return;
     }
     if (*lp) {
         Error("Unexpected"s, lp, LASTPASS);
     }
-    Asm->Listing.listLine();
+    Asm->Listing.listLine(line);
 }
 
 void parseLineSafe(bool ParseLabels) {

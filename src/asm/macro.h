@@ -70,9 +70,9 @@ public:
         init();
     }
 
-    void add(const std::string &Name, const char *&p);
+    void add(const std::string &Name, const char *&p, const char *Line);
 
-    MacroResult emit(const std::string &Name, const char *&p);
+    MacroResult emit(const std::string &Name, const char *&p, const char *Line);
 
     void init();
 
