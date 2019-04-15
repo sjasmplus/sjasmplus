@@ -78,7 +78,7 @@ private:
 };
 
 
-bool CLabelTable::insert(const std::string &Name, aint Value, bool Undefined, bool IsDEFL) {
+bool CLabels::insert(const std::string &Name, aint Value, bool Undefined, bool IsDEFL) {
     auto it = name_index.find(Name);
     if (it != name_index.end()) {
         auto &LabelData = *it;
@@ -105,7 +105,7 @@ bool CLabelTable::insert(const std::string &Name, aint Value, bool Undefined, bo
     return true;
 }
 
-bool CLabelTable::updateValue(const std::string &Name, aint Value) {
+bool CLabels::updateValue(const std::string &Name, aint Value) {
     auto it = name_index.find(Name);
     if (it != name_index.end()) {
         name_index.modify(it, update_value(Value));
@@ -114,7 +114,7 @@ bool CLabelTable::updateValue(const std::string &Name, aint Value) {
     return true;
 }
 
-bool CLabelTable::getValue(const std::string &Name, aint &Value) {
+bool CLabels::getValue(const std::string &Name, aint &Value) {
     auto it = name_index.find(Name);
     if (it != name_index.end()) {
 
@@ -138,7 +138,7 @@ bool CLabelTable::getValue(const std::string &Name, aint &Value) {
     return false;
 }
 
-bool CLabelTable::find(const std::string &Name) {
+bool CLabels::find(const std::string &Name) {
     auto it = name_index.find(Name);
     if (it != name_index.end()) {
         if (it->page == -1) {
@@ -151,7 +151,7 @@ bool CLabelTable::find(const std::string &Name) {
     return false;
 }
 
-bool CLabelTable::isUsed(const std::string &Name) {
+bool CLabels::isUsed(const std::string &Name) {
     auto it = name_index.find(Name);
     if (it != name_index.end()) {
         if (it->used > 0) {
@@ -163,7 +163,7 @@ bool CLabelTable::isUsed(const std::string &Name) {
     return false;
 }
 
-bool CLabelTable::remove(const std::string &Name) {
+bool CLabels::remove(const std::string &Name) {
     auto it = name_index.find(Name);
     if (it != name_index.end()) {
         name_index.erase(it);
@@ -173,11 +173,11 @@ bool CLabelTable::remove(const std::string &Name) {
     return false;
 }
 
-void CLabelTable::removeAll() {
+void CLabels::removeAll() {
     _LabelContainer.clear();
 }
 
-std::string CLabelTable::dump() const {
+std::string CLabels::dump() const {
     std::stringstream Str;
     Str << std::endl
         << "Value    Label" << std::endl
@@ -195,7 +195,7 @@ std::string CLabelTable::dump() const {
     return Str.str();
 }
 
-void CLabelTable::dumpForUnreal(const fs::path &FileName) const {
+void CLabels::dumpForUnreal(const fs::path &FileName) const {
     fs::ofstream OFS(FileName);
     if (!OFS.is_open()) {
         Fatal("Error opening file"s, FileName.string());
@@ -226,7 +226,7 @@ void CLabelTable::dumpForUnreal(const fs::path &FileName) const {
     }
 }
 
-void CLabelTable::dumpSymbols(const fs::path &FileName) const {
+void CLabels::dumpSymbols(const fs::path &FileName) const {
     fs::ofstream OFS(FileName);
     if (!OFS) {
         Fatal("Error opening file"s, FileName.string());
@@ -238,22 +238,14 @@ void CLabelTable::dumpSymbols(const fs::path &FileName) const {
     }
 }
 
-std::string TempLabel;
-
-std::string PreviousIsLabel;
-
-
-std::string LastLabel;
-std::string LastParsedLabel;
-
-void initLabels() {
+void CLabels::init() {
     LastParsedLabel.clear();
     LastLabel = "_"s;
 }
 
-optional<std::string> validateLabel(const std::string &Name) {
+optional<std::string> CLabels::validateLabel(const std::string &Name) {
     std::string LName{Name}; // Label name without @ or . prefix
-    std::string ML{MacroTable.labelPrefix()};
+    std::string ML{Asm.Macros.labelPrefix()};
     bool AsIsLabel = false;
     bool DotLabel = false;
     if (!ML.empty() && LName[0] == '@') {
@@ -285,10 +277,10 @@ optional<std::string> validateLabel(const std::string &Name) {
     }
     std::string RetValue;
     if (!ML.empty() && DotLabel) {
-        RetValue = MacroTable.labelPrefix() + ">"s;
+        RetValue = Asm.Macros.labelPrefix() + ">"s;
     } else {
-        if (!AsIsLabel && !Modules.IsEmpty()) {
-            RetValue = Modules.GetPrefix();
+        if (!AsIsLabel && !Asm.Modules.IsEmpty()) {
+            RetValue = Asm.Modules.GetPrefix();
         }
         if (DotLabel) {
             RetValue += LastLabel + "."s;
@@ -301,8 +293,8 @@ optional<std::string> validateLabel(const std::string &Name) {
     else return boost::none;
 }
 
-bool getLabelValue(const char *&p, aint &val) {
-    std::string ML{MacroTable.labelPrefix()};
+bool CLabels::getLabelValue(const char *&p, aint &val) {
+    std::string ML{Asm.Macros.labelPrefix()};
     const char *op = p;
     bool AsIsLabel = false; // @...
     bool DotLabel = false;
@@ -326,7 +318,7 @@ bool getLabelValue(const char *&p, aint &val) {
         }
         TempLabel.clear();
         if (DotLabel) {
-            TempLabel += MacroTable.labelPrefix() + ">"s;
+            TempLabel += Asm.Macros.labelPrefix() + ">"s;
             if (!isalpha((unsigned char) *p) && *p != '_') {
                 Error("Invalid labelname"s, TempLabel);
                 return false;
@@ -342,7 +334,7 @@ bool getLabelValue(const char *&p, aint &val) {
                 if (offset > 0) {
                     TempLabel = TempLabel.substr(offset);
                 }
-                if (LabelTable.getValue(TempLabel, val)) {
+                if (getValue(TempLabel, val)) {
                     return true;
                 }
                 IsLabelNotFound = oIsLabelNotFound;
@@ -376,8 +368,8 @@ bool getLabelValue(const char *&p, aint &val) {
             break;
     }
     TempLabel.clear();
-    if (!AsIsLabel && !Modules.IsEmpty()) {
-        TempLabel = Modules.GetPrefix();
+    if (!AsIsLabel && !Asm.Modules.IsEmpty()) {
+        TempLabel = Asm.Modules.GetPrefix();
     }
     if (DotLabel) {
         TempLabel += LastLabel + ".";
@@ -391,11 +383,11 @@ bool getLabelValue(const char *&p, aint &val) {
         TempLabel += *p;
         ++p;
     }
-    if (LabelTable.getValue(TempLabel, val)) {
+    if (getValue(TempLabel, val)) {
         return true;
     }
     IsLabelNotFound = oIsLabelNotFound;
-    if (!DotLabel && !AsIsLabel && LabelTable.getValue(TempLabel.substr(len), val)) {
+    if (!DotLabel && !AsIsLabel && getValue(TempLabel.substr(len), val)) {
         return true;
     }
     if (pass == LASTPASS) {
@@ -406,7 +398,7 @@ bool getLabelValue(const char *&p, aint &val) {
     return true;
 }
 
-bool GetLocalLabelValue(const char *&op, aint &val) {
+bool CLabels::getLocalLabelValue(const char *&op, aint &val) {
     aint nval = 0;
     int nummer = 0;
     const char *p = op;
@@ -431,11 +423,11 @@ bool GetLocalLabelValue(const char *&op, aint &val) {
     switch (ch) {
         case 'b':
         case 'B':
-            nval = LocalLabelTable.searchBack(nummer);
+            nval = LocalLabels.searchBack(nummer);
             break;
         case 'f':
         case 'F':
-            nval = LocalLabelTable.searchForward(nummer);
+            nval = LocalLabels.searchForward(nummer);
             break;
         default:
             return false;
@@ -453,7 +445,7 @@ bool GetLocalLabelValue(const char *&op, aint &val) {
     return true;
 }
 
-aint CLocalLabelTable::searchForward(aint LabelNum) {
+aint CLocalLabels::searchForward(aint LabelNum) {
     auto it = Labels.begin();
     while (it != Labels.end()) {
         if (it->Line <= CompiledCurrentLine) {
@@ -472,7 +464,7 @@ aint CLocalLabelTable::searchForward(aint LabelNum) {
     return (aint) -1;
 }
 
-aint CLocalLabelTable::searchBack(aint LabelNum) {
+aint CLocalLabels::searchBack(aint LabelNum) {
     auto it = Labels.rbegin();
     while (it != Labels.rend()) {
         if (it->Line > CompiledCurrentLine) {
@@ -491,14 +483,12 @@ aint CLocalLabelTable::searchBack(aint LabelNum) {
     return (aint) -1;
 }
 
-int LuaGetLabel(char *name) {
+int CLabels::luaGetLabel(char *name) {
     aint val;
 
-    if (!LabelTable.getValue(name, val)) {
+    if (!getValue(name, val)) {
         return -1;
     } else {
         return val;
     }
 }
-
-//eof labels.cpp

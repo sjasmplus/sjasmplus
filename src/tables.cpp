@@ -40,8 +40,6 @@ using boost::algorithm::to_upper_copy;
 
 #include "tables.h"
 
-bool synerr;
-
 bool FunctionTable::insert(const std::string &Name, void(*FuncPtr)()) {
     std::string uName{to_upper_copy(Name)};
     if (Map.find(uName) != Map.end()) {

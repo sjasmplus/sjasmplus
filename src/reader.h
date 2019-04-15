@@ -33,6 +33,7 @@
 
 using boost::optional;
 
+#include "asm/common.h"
 #include "io_trd.h"
 #include "tables.h"
 

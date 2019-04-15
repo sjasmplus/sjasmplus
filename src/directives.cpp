@@ -39,16 +39,12 @@
 #include "z80.h"
 #include "sjio.h"
 #include "util.h"
-#include "listing.h"
+#include "asm.h"
 #include "sjio.h"
 #include "io_snapshots.h"
 #include "io_tape.h"
 #include "lua_support.h"
-#include "codeemitter.h"
-#include "fsutil.h"
 #include "parser/directives.h"
-#include "parser/macro.h"
-#include "parser/struct.h"
 #include "parser/message.h"
 
 #include "directives.h"
@@ -58,6 +54,9 @@ using boost::iequals;
 using boost::algorithm::to_upper_copy;
 
 using namespace std::string_literals;
+
+// FIXME: errors.cpp
+extern Assembler *Asm;
 
 int StartAddress = -1;
 
@@ -70,7 +69,7 @@ FunctionTable DirectivesTable_dup;
  */
 bool tryNewDirectiveParser(const char *BOL, bool AtBOL) {
     size_t DirPos = lp - BOL;
-    parser::State S{};
+    parser::State S{*Asm};
     tao::pegtl::memory_input<> In(lp, lp + strlen(lp),
                                   getCurrentSrcFileNameForMsg().string(),
                                   DirPos, CurrentLocalLine, DirPos);
@@ -99,12 +98,12 @@ bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
 
     if (DirectivesTable.callIfExists(Instr, AtBOL)) {
         return true;
-    } else if ((!AtBOL || options::IsPseudoOpBOF) && Instr[0] == '.' &&
+    } else if ((!AtBOL || Asm->options().IsPseudoOpBOF) && Instr[0] == '.' &&
                ((Instr.size() >= 2 && isdigit(Instr[1])) || *lp == '(')) {
         // .number or .(expression) prefix which acts as DUP/REPT for a single line
         aint val;
         size_t DirPos = olp - BOL;
-        Listing.listLine();
+        Asm->Listing.listLine();
         if (isdigit(Instr[1])) {
             const char *RepVal = Instr.c_str() + 1;
             if (!parseExpression(RepVal, val)) {
@@ -135,15 +134,15 @@ bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
             lp += strlen(lp);
         }
         //_COUT pp _ENDL;
-        Listing.startMacro();
+        Asm->Listing.startMacro();
         std::string OLine{line};
         do {
             STRCPY(line, LINEMAX, S.c_str());
             parseLineSafe();
         } while (--val);
         STRCPY(line, LINEMAX, OLine.c_str());
-        Listing.endMacro();
-        Listing.omitLine();
+        Asm->Listing.endMacro();
+        Asm->Listing.omitLine();
 
         return true;
     }
@@ -363,9 +362,9 @@ void dirBLOCK() {
 
 void dirORG() {
     aint val;
-    if (Em.isPagedMemory()) {
+    if (Asm->Em.isPagedMemory()) {
         if (parseExpression(lp, val)) {
-            Em.setAddress(val);
+            Asm->Em.setAddress(val);
         } else {
             Error("[ORG] Syntax error"s, lp, CATCHALL);
             return;
@@ -375,7 +374,7 @@ void dirORG() {
                 Error("[ORG] Syntax error"s, lp, CATCHALL);
                 return;
             }
-            auto err = Em.setPage(val);
+            auto err = Asm->Em.setPage(val);
             if (err) {
                 Error("[ORG] "s + *err, lp, CATCHALL);
                 return;
@@ -383,7 +382,7 @@ void dirORG() {
         }
     } else {
         if (parseExpression(lp, val)) {
-            Em.setAddress(val);
+            Asm->Em.setAddress(val);
         } else {
             Error("[ORG] Syntax error"s, CATCHALL);
         }
@@ -393,7 +392,7 @@ void dirORG() {
 void dirDISP() {
     aint val;
     if (parseExpression(lp, val)) {
-        Em.doDisp(val);
+        Asm->Em.doDisp(val);
     } else {
         Error("[DISP] Syntax error"s, CATCHALL);
         return;
@@ -401,15 +400,15 @@ void dirDISP() {
 }
 
 void dirENT() {
-    if (!Em.isDisp()) {
+    if (!Asm->Em.isDisp()) {
         Error("ENT should be after DISP"s);
         return;
     }
-    Em.doEnt();
+    Asm->Em.doEnt();
 }
 
 void dirPAGE() {
-    if (!Em.isMemManagerActive()) {
+    if (!Asm->Em.isMemManagerActive()) {
         Error("[PAGE] works in device emulation mode only"s);
         return;
     }
@@ -418,7 +417,7 @@ void dirPAGE() {
         Error("Syntax error"s, CATCHALL);
         return;
     }
-    auto err = Em.setPage(val);
+    auto err = Asm->Em.setPage(val);
     if (err) {
         Error("[PAGE] "s + *err, lp);
         return;
@@ -426,7 +425,7 @@ void dirPAGE() {
 }
 
 void dirSLOT() {
-    if (!Em.isMemManagerActive()) {
+    if (!Asm->Em.isMemManagerActive()) {
         Error("[SLOT] works in device emulation mode only"s);
         return;
     }
@@ -435,7 +434,7 @@ void dirSLOT() {
         Error("Syntax error"s, CATCHALL);
         return;
     }
-    auto err = Em.setSlot(val);
+    auto err = Asm->Em.setSlot(val);
     if (err) {
         Error("[SLOT] "s + *err, lp);
         return;
@@ -492,7 +491,7 @@ void dirALIGN() {
 void dirMODULE() {
     optional <std::string> Name;
     if ((Name = getID(lp))) {
-        Modules.Begin(*Name);
+        Asm->Modules.Begin(*Name);
     } else {
         Error("[MODULE] Syntax error"s, CATCHALL);
     }
@@ -500,10 +499,10 @@ void dirMODULE() {
 
 void dirENDMODULE() {
 
-    if (Modules.IsEmpty()) {
+    if (Asm->Modules.IsEmpty()) {
         Error("ENDMODULE without MODULE"s);
     } else {
-        Modules.End();
+        Asm->Modules.End();
     }
 }
 
@@ -534,11 +533,11 @@ void dirSIZE() {
     if (pass == LASTPASS) {
         return;
     }
-    if (Em.isForcedRawOutputSize()) {
+    if (Asm->Em.isForcedRawOutputSize()) {
         Error("[SIZE] Multiple SIZE directives?"s);
         return;
     }
-    Em.setForcedRawOutputFileSize(val);
+    Asm->Em.setForcedRawOutputFileSize(val);
 }
 
 void dirINCBIN() {
@@ -714,7 +713,7 @@ void dirINCTRD() {
 }
 
 void dirSAVESNA() {
-    if (!Em.isMemManagerActive()) {
+    if (!Asm->Em.isMemManagerActive()) {
         Error("[SAVESNA] works in device emulation mode only"s);
         return;
     }
@@ -726,7 +725,7 @@ void dirSAVESNA() {
     aint val;
     int start = -1;
 
-    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
     if (comma(lp)) {
         if (!comma(lp) && StartAddress < 0) {
             if (!parseExpression(lp, val)) {
@@ -749,14 +748,14 @@ void dirSAVESNA() {
         start = StartAddress;
     }
 
-    if (exec && !zx::saveSNA(Em.getMemModel(), FileName, start)) {
+    if (exec && !zx::saveSNA(Asm->Em.getMemModel(), FileName, start)) {
         Error("[SAVESNA] Error writing file (Disk full?)"s, bp, CATCHALL);
         return;
     }
 }
 
 void dirSAVETAP() {
-    if (!Em.isMemManagerActive()) {
+    if (!Asm->Em.isMemManagerActive()) {
         Error("[SAVETAP] works in device emulation mode only"s);
         return;
     }
@@ -770,7 +769,7 @@ void dirSAVETAP() {
     aint val;
     int start = -1;
 
-    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!parseExpression(lp, val)) {
@@ -793,14 +792,14 @@ void dirSAVETAP() {
         start = StartAddress;
     }
 
-    if (exec && !zx::saveTAP(Em.getMemModel(), FileName, start)) {
+    if (exec && !zx::saveTAP(Asm->Em.getMemModel(), FileName, start)) {
         Error("[SAVETAP] Error writing file (Disk full?)"s, bp, CATCHALL);
         return;
     }
 }
 
 void dirSAVEBIN() {
-    if (!Em.isMemManagerActive()) {
+    if (!Asm->Em.isMemManagerActive()) {
         Error("[SAVEBIN] works in device emulation mode only"s);
         return;
     }
@@ -813,7 +812,7 @@ void dirSAVEBIN() {
     aint val;
     int start = -1, length = -1;
 
-    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
     if (comma(lp)) {
         if (!comma(lp)) {
             if (!parseExpression(lp, val)) {
@@ -855,7 +854,7 @@ void dirSAVEBIN() {
 }
 
 void dirSAVEHOB() {
-    if (!Em.isMemManagerActive()) {
+    if (!Asm->Em.isMemManagerActive()) {
         Error("[SAVEHOB] works in device emulation mode only"s);
         return;
     }
@@ -867,7 +866,7 @@ void dirSAVEHOB() {
         exec = false;
     }
 
-    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
     HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
@@ -921,7 +920,7 @@ void dirSAVEHOB() {
 }
 
 void dirEMPTYTRD() {
-    if (!Em.isMemManagerActive()) {
+    if (!Asm->Em.isMemManagerActive()) {
         Error("[EMPTYTRD] works in device emulation mode only"s);
         return;
     }
@@ -929,7 +928,7 @@ void dirEMPTYTRD() {
         SkipParam(lp);
         return;
     }
-    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
     if (FileName.empty()) {
         Error("[EMPTYTRD] Syntax error"s, bp, CATCHALL);
         return;
@@ -938,7 +937,7 @@ void dirEMPTYTRD() {
 }
 
 void dirSAVETRD() {
-    if (!Em.isMemManagerActive()) {
+    if (!Asm->Em.isMemManagerActive()) {
         Error("[SAVETRD] works in device emulation mode only"s);
         return;
     }
@@ -951,7 +950,7 @@ void dirSAVETRD() {
     aint val;
     int start = -1, length = -1, autostart = -1; //autostart added by boo_boo 19_0ct_2008
 
-    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
     HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
@@ -1029,9 +1028,9 @@ void dirENCODING() {
         lowercased += std::tolower(*p);
     }
     if (lowercased == "dos") {
-        options::ConvertWindowsToDOS = true;
+        Asm->setConvWin2Dos(true);
     } else if (lowercased == "win") {
-        options::ConvertWindowsToDOS = false;
+        Asm->setConvWin2Dos(false);
     } else {
         Error("[ENCODING] Syntax error. Bad parameter"s, bp, CATCHALL);
     }
@@ -1042,12 +1041,12 @@ void dirLABELSLIST() {
         SkipParam(lp);
         return;
     }
-    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
     if (FileName.empty()) {
         Error("[LABELSLIST] Syntax error. File name not specified"s, bp, CATCHALL);
         return;
     }
-    options::LabelsListFName = FileName;
+    Asm->setLabelsListFName(FileName);
 }
 
 void dirIF() {
@@ -1064,7 +1063,7 @@ void dirIF() {
     }
 
     if (val) {
-        Listing.listLine();
+        Asm->Listing.listLine();
         switch (readFile(lp, "[IF] No endif")) {
             case ELSE:
                 if (skipFile(lp, "[IF] No endif") != ENDIF) {
@@ -1078,7 +1077,7 @@ void dirIF() {
                 break;
         }
     } else {
-        Listing.listLine();
+        Asm->Listing.listLine();
         switch (skipFile(lp, "[IF] No endif")) {
             case ELSE:
                 if (readFile(lp, "[IF] No endif") != ENDIF) {
@@ -1106,7 +1105,7 @@ void dirIFN() {
     }
 
     if (!val) {
-        Listing.listLine();
+        Asm->Listing.listLine();
         switch (readFile(lp, "[IFN] No endif")) {
             case ELSE:
                 if (skipFile(lp, "[IFN] No endif") != ENDIF) {
@@ -1120,7 +1119,7 @@ void dirIFN() {
                 break;
         }
     } else {
-        Listing.listLine();
+        Asm->Listing.listLine();
         switch (skipFile(lp, "[IFN] No endif")) {
             case ELSE:
                 if (readFile(lp, "[IFN] No endif") != ENDIF) {
@@ -1138,22 +1137,22 @@ void dirIFN() {
 
 void dirIFUSED() {
     optional<std::string> Id;
-    if (!((Id = getID(lp))) && LastParsedLabel.empty()) {
+    if (!((Id = getID(lp))) && Asm->Labels.lastParsedLabel().empty()) {
         Error("[IFUSED] Syntax error"s, CATCHALL);
         return;
     }
     if (!Id) {
-        Id = LastParsedLabel;
+        Id = Asm->Labels.lastParsedLabel();
     } else {
-        Id = validateLabel(*Id);
+        Id = Asm->Labels.validateLabel(*Id);
         if (!Id) {
             Error("[IFUSED] Invalid label name"s, CATCHALL);
             return;
         }
     }
 
-    if (LabelTable.isUsed(*Id)) {
-        Listing.listLine();
+    if (Asm->Labels.isUsed(*Id)) {
+        Asm->Listing.listLine();
         switch (readFile(lp, "[IFUSED] No endif")) {
             case ELSE:
                 if (skipFile(lp, "[IFUSED] No endif") != ENDIF) {
@@ -1167,7 +1166,7 @@ void dirIFUSED() {
                 break;
         }
     } else {
-        Listing.listLine();
+        Asm->Listing.listLine();
         switch (skipFile(lp, "[IFUSED] No endif")) {
             case ELSE:
                 if (readFile(lp, "[IFUSED] No endif") != ENDIF) {
@@ -1185,22 +1184,22 @@ void dirIFUSED() {
 
 void dirIFNUSED() {
     optional<std::string> Id;
-    if (((Id = getID(lp))) && LastParsedLabel.empty()) {
+    if (((Id = getID(lp))) && Asm->Labels.lastParsedLabel().empty()) {
         Error("[IFUSED] Syntax error"s, CATCHALL);
         return;
     }
     if (!Id) {
-        Id = LastParsedLabel;
+        Id = Asm->Labels.lastParsedLabel();
     } else {
-        Id = validateLabel(*Id);
+        Id = Asm->Labels.validateLabel(*Id);
         if (!Id) {
             Error("[IFUSED] Invalid label name"s, CATCHALL);
             return;
         }
     }
 
-    if (!LabelTable.isUsed(*Id)) {
-        Listing.listLine();
+    if (!Asm->Labels.isUsed(*Id)) {
+        Asm->Listing.listLine();
         switch (readFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
                 if (skipFile(lp, "[IFNUSED] No endif") != ENDIF) {
@@ -1214,7 +1213,7 @@ void dirIFNUSED() {
                 break;
         }
     } else {
-        Listing.listLine();
+        Asm->Listing.listLine();
         switch (skipFile(lp, "[IFNUSED] No endif")) {
             case ELSE:
                 if (readFile(lp, "[IFNUSED] No endif") != ENDIF) {
@@ -1240,13 +1239,13 @@ void dirENDIF() {
 
 void dirINCLUDE() {
     const fs::path &FileName = getFileName(lp);
-    Listing.listLine();
+    Asm->Listing.listLine();
     includeFile(FileName);
-    Listing.omitLine();
+    Asm->Listing.omitLine();
 }
 
 void dirOUTPUT() {
-    const fs::path &FileName = Em.resolveOutputPath(getFileName(lp));
+    const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
 
     auto Mode = OutputMode::Truncate;
     if (comma(lp)) {
@@ -1263,8 +1262,8 @@ void dirOUTPUT() {
         }
     }
     if (pass == LASTPASS) {
-        if (!Em.isRawOutputOverriden()) {
-            Em.setRawOutput(FileName, Mode);
+        if (!Asm->Em.isRawOutputOverriden()) {
+            Asm->Em.setRawOutput(FileName, Mode);
         } else {
             Warning("OUTPUT directive had no effect as output is overriden"s);
         }
@@ -1282,18 +1281,18 @@ void dirUNDEFINE() {
     if (*lp == '*') {
         lp++;
         if (pass == PASS1) {
-            LabelTable.removeAll();
+            Asm->Labels.removeAll();
         }
-        clearDefines();
+        Asm->Defines.clear();
     } else {
-        bool FoundID = unsetDefine(*Id);
+        bool FoundID = Asm->Defines.unset(*Id);
 
-        if (unsetDefArray(*Id))
+        if (Asm->Defines.unsetArray(*Id))
             FoundID = true;
 
-        if (LabelTable.find(*Id)) {
+        if (Asm->Labels.find(*Id)) {
             if (pass == PASS1) {
-                LabelTable.remove(*Id);
+                Asm->Labels.remove(*Id);
             }
             FoundID = true;
         }
@@ -1322,8 +1321,8 @@ void dirIFDEF() {
         return;
     }
 
-    if (ifDefName(*Id)) {
-        Listing.listLine();
+    if (Asm->Defines.defined(*Id)) {
+        Asm->Listing.listLine();
         /*switch (res=ReadFile()) {*/
         switch (res = readFile(lp, "[IFDEF] No endif")) {
             /*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1340,7 +1339,7 @@ void dirIFDEF() {
                 break;
         }
     } else {
-        Listing.listLine();
+        Asm->Listing.listLine();
         /*switch (res=SkipFile()) {*/
         switch (res = skipFile(lp, "[IFDEF] No endif")) {
             /*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1378,8 +1377,8 @@ void dirIFNDEF() {
         return;
     }
 
-    if (!ifDefName(*Id)) {
-        Listing.listLine();
+    if (!Asm->Defines.defined(*Id)) {
+        Asm->Listing.listLine();
         /*switch (res=ReadFile()) {*/
         switch (res = readFile(lp, "[IFNDEF] No endif")) {
             /*case ELSE: if (SkipFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1396,7 +1395,7 @@ void dirIFNDEF() {
                 break;
         }
     } else {
-        Listing.listLine();
+        Asm->Listing.listLine();
         /*switch (res=SkipFile()) {*/
         switch (res = skipFile(lp, "[IFNDEF] No endif")) {
             /*case ELSE: if (ReadFile()!=ENDIF) Error("No endif",0); break;*/
@@ -1429,12 +1428,12 @@ void dirEXPORT() {
     }
     IsLabelNotFound = 0;
     const char *n = (*Label).c_str();
-    getLabelValue(n, val);
+    Asm->Labels.getLabelValue(n, val);
     if (IsLabelNotFound) {
         Error("[EXPORT] Label not found"s, *Label, SUPPRESS);
         return;
     }
-    Exports->write(*Label, val);
+    Asm->Exports->write(*Label, val);
 }
 
 void dirDISPLAY() {
@@ -1555,7 +1554,7 @@ void dirDISPLAY() {
 
 void dirMACRO() {
     //if (lijst) Error("No macro definitions allowed here",0,FATAL);
-    if (MacroTable.inMacroBody()) {
+    if (Asm->Macros.inMacroBody()) {
         Fatal("[MACRO] No macro definitions allowed here"s);
     }
     optional<std::string> Name;
@@ -1564,7 +1563,7 @@ void dirMACRO() {
         Error("[MACRO] Illegal macroname"s, PASS1);
         return;
     }
-    MacroTable.add(*Name, lp);
+    Asm->Macros.add(*Name, lp);
 }
 
 void dirENDS() {
@@ -1671,8 +1670,8 @@ void dirSTRUCT() {
             Error("[STRUCT] Forward reference"s, ALL);
         }
     }
-    CStructure &St = StructureTable.add(*Name, offset, bind, global);
-    Listing.listLine();
+    CStruct &St = Asm->Structs.add(*Name, offset, bind, global);
+    Asm->Listing.listLine();
     while (true) {
         if (!readLine()) {
             Error("[STRUCT] Unexpected end of structure"s, PASS1);
@@ -1687,7 +1686,7 @@ void dirSTRUCT() {
             break;
         }
         parseStructLine(St);
-        Listing.listFileSkip(line);
+        Asm->Listing.listFileSkip(line);
     }
     St.deflab();
 }
@@ -1703,7 +1702,7 @@ void dirFPOS() {
         Error("[FPOS] Syntax error"s, CATCHALL);
     }
     if (pass == LASTPASS) {
-        auto Err = Em.seekRawOutput(Offset, Method);
+        auto Err = Asm->Em.seekRawOutput(Offset, Method);
         if (Err) Error(*Err);
     }
 }
@@ -1771,7 +1770,7 @@ void dirEDUP() {
             break;
         }
     }
-    Listing.startMacro();
+    Asm->Listing.startMacro();
     ml = STRDUP(line);
     if (ml == nullptr) {
         Fatal("[EDUP/ENDR] Out of memory"s);
@@ -1792,12 +1791,12 @@ void dirEDUP() {
     RepeatStack.pop();
     CurrentGlobalLine = gcurln;
     CurrentLocalLine = lcurln;
-    Listing.endMacro();
-    Listing.omitLine();
+    Asm->Listing.endMacro();
+    Asm->Listing.omitLine();
     STRCPY(line, LINEMAX, ml);
     free(ml);
 
-    Listing.listLine();
+    Asm->Listing.listLine();
 }
 
 void checkRepeatStackAtEOF() {
@@ -1844,14 +1843,14 @@ void _lua_showerror() {
         ErrorStr += "\n"s;
     }
 
-    Listing.write(ErrorStr);
+    Asm->Listing.write(ErrorStr);
     _COUT ErrorStr _END;
 
     PreviousErrorLine = ln;
 
     ErrorCount++;
 
-    setDefine("_ERRORS"s, std::to_string(ErrorCount));
+    Asm->Defines.set("_ERRORS"s, std::to_string(ErrorCount));
 
     lua_pop(LUA, 1);
 }
@@ -1916,7 +1915,7 @@ void dirLUA() {
     }
 
     ln = CurrentLocalLine;
-    Listing.listLine();
+    Asm->Listing.listLine();
     while (true) {
         if (!readLine(false)) {
             Error("[LUA] Unexpected end of lua script"s, PASS3);
@@ -1951,7 +1950,7 @@ void dirLUA() {
             }
         }
 
-        Listing.listFileSkip(line);
+        Asm->Listing.listFileSkip(line);
     }
 
     if (execute) {
@@ -1999,7 +1998,7 @@ void dirDEVICE() {
     optional<std::string> Id;
 
     if ((Id = getID(lp))) {
-        Em.setMemModel(*Id);
+        Asm->Em.setMemModel(*Id);
     } else {
         Error("[DEVICE] Syntax error"s, CATCHALL);
     }
@@ -2100,7 +2099,7 @@ void InsertDirectives() {
 }
 
 bool LuaSetPage(aint n) {
-    auto err = Em.setPage(n);
+    auto err = Asm->Em.setPage(n);
     if (err) {
         Error("sj.set_page: "s + *err, lp, CATCHALL);
         return false;
@@ -2109,7 +2108,7 @@ bool LuaSetPage(aint n) {
 }
 
 bool LuaSetSlot(aint n) {
-    auto err = Em.setSlot(n);
+    auto err = Asm->Em.setSlot(n);
     if (err) {
         Error("sj.set_slot: "s + *err, lp, CATCHALL);
         return false;

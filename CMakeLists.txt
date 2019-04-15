@@ -20,6 +20,17 @@ set(SOURCE_FILES
 #        resources/SaveTAP_ZX_Spectrum_128K.bin.h
 #        resources/SaveTAP_ZX_Spectrum_256K.bin.h
 #        resources/SaveTAP_ZX_Spectrum_48K.bin.h
+        asm.h
+        asm.cpp
+        asm/common.h
+        asm/define.h
+        asm/define.cpp
+        asm/export.h
+        asm/export.cpp
+        asm/macro.h
+        asm/macro.cpp
+        asm/struct.h
+        asm/struct.cpp
         sjasm.cpp
         codeemitter.cpp
         codeemitter.h
@@ -28,8 +39,6 @@ set(SOURCE_FILES
         errors.cpp
         errors.h
         fs.h
-        fsutil.cpp
-        fsutil.h
         global.cpp
         global.h
         io_snapshots.cpp
@@ -65,6 +74,7 @@ set(SOURCE_FILES
         parser/macro.cpp
         parser/message.h
         parser/message.cpp
+        parser/state.h
         parser/struct.h
         parser/struct.cpp
         reader.cpp

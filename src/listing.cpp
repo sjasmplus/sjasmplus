@@ -3,10 +3,8 @@
 #include "global.h"
 #include "options.h"
 #include "util.h"
-#include "codeemitter.h"
+#include "asm.h"
 #include "listing.h"
-
-ListingWriter Listing;
 
 void ListingWriter::listBytes4() {
     int i = 0;
@@ -68,9 +66,9 @@ std::string ListingWriter::printCurrentLocalLine() {
         case 1:
             S += (unsigned char) ('0' + v);
     }
-    S += (IncludeLevel > 0 ? '+' : ' ');
-    S += (IncludeLevel > 1 ? '+' : ' ');
-    S += (IncludeLevel > 2 ? '+' : ' ');
+    S += (Asm.includeLevel() > 0 ? '+' : ' ');
+    S += (Asm.includeLevel() > 1 ? '+' : ' ');
+    S += (Asm.includeLevel() > 2 ? '+' : ' ');
     return S;
 }
 
@@ -133,7 +131,7 @@ void ListingWriter::listLine() {
         OFS << line << endl;
         listBytesLong(pad, Prefix);
     }
-    epadres = Em.getCPUAddress();
+    epadres = Asm.Em.getCPUAddress();
     PreviousAddress = -1;
     ByteBuffer.clear();
 }
@@ -163,7 +161,7 @@ void ListingWriter::listFileSkip(char *line) {
         OFS << ">";
     }
     OFS << line << endl;
-    epadres = Em.getCPUAddress();
+    epadres = Asm.Em.getCPUAddress();
     PreviousAddress = -1;
     ByteBuffer.clear();
 }
@@ -189,22 +187,22 @@ void ListingWriter::initPass() {
     // Put this here for now, as MaxLineNumber has the correct value only at the end of pass 1
     // i.e. it is usable only after the first pass
     NumDigitsInLineNumber = 1;
-    if (MaxLineNumber > 9) {
+    if (Asm.maxLineNumber() > 9) {
         NumDigitsInLineNumber = 2;
     }
-    if (MaxLineNumber > 99) {
+    if (Asm.maxLineNumber() > 99) {
         NumDigitsInLineNumber = 3;
     }
-    if (MaxLineNumber > 999) {
+    if (Asm.maxLineNumber() > 999) {
         NumDigitsInLineNumber = 4;
     }
-    if (MaxLineNumber > 9999) {
+    if (Asm.maxLineNumber() > 9999) {
         NumDigitsInLineNumber = 5;
     }
-    if (MaxLineNumber > 99999) {
+    if (Asm.maxLineNumber() > 99999) {
         NumDigitsInLineNumber = 6;
     }
-    if (MaxLineNumber > 999999) {
+    if (Asm.maxLineNumber() > 999999) {
         NumDigitsInLineNumber = 7;
     }
 }

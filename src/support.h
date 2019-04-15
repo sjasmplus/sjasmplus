@@ -31,8 +31,6 @@
 
 #include "defines.h"
 
-char *strpad(char *string, char ch, aint length);
-
 #if defined (_MSC_VER)
 
 #define STRDUP _strdup

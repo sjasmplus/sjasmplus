@@ -29,11 +29,14 @@
 #ifndef SJASMPLUS_PARSER_H
 #define SJASMPLUS_PARSER_H
 
-#include "parser/struct.h"
+#include "defines.h"
+#include "asm.h"
+
+extern bool synerr;
 
 extern char sline[LINEMAX2], sline2[LINEMAX2];
 
-void initParser();
+void initLegacyParser();
 
 bool parseExpression(const char *&p, aint &nval);
 bool parseExpPrim(const char *&p, aint &nval);
@@ -48,7 +51,7 @@ void parseLine(bool ParseLabels = true);
 
 void parseLineSafe(bool ParseLabels = true);
 
-void parseStructLine(CStructure &St);
+void parseStructLine(CStruct &St);
 
 unsigned long luaCalculate(const char *str);
 

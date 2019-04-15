@@ -33,12 +33,15 @@
 #include "global.h"
 #include "options.h"
 #include "support.h"
-#include "codeemitter.h"
-#include "parser/define.h"
-#include "parser/macro.h"
+#include "asm.h"
 #include "parser/struct.h"
 
 #include "parser.h"
+
+bool synerr;
+
+// FIXME: errors.cpp
+extern Assembler *Asm;
 
 char sline[LINEMAX2], sline2[LINEMAX2];
 
@@ -46,7 +49,7 @@ aint comlin = 0;
 int replacedefineteller = 0, comnxtlin;
 char dirDEFl[] = "def", dirDEFu[] = "DEF"; /* added for ReplaceDefine */
 
-void initParser() {
+void initLegacyParser() {
     comlin = 0;
 }
 
@@ -85,20 +88,20 @@ bool parseExpPrim(const char *&p, aint &nval) {
                (*p == '$' && isalnum((unsigned char) *(p + 1))) || *p == '%') {
         res = GetConstant(p, nval);
     } else if (isalpha((unsigned char) *p) || *p == '_' || *p == '.' || *p == '@') {
-        res = getLabelValue(p, nval);
+        res = Asm->Labels.getLabelValue(p, nval);
     } else if (*p == '?' &&
                (isalpha((unsigned char) *(p + 1)) || *(p + 1) == '_' || *(p + 1) == '.' || *(p + 1) == '@')) {
         ++p;
-        res = getLabelValue(p, nval);
-    } else if (Em.isPagedMemory() && *p == '$' && *(p + 1) == '$') {
+        res = Asm->Labels.getLabelValue(p, nval);
+    } else if (Asm->Em.isPagedMemory() && *p == '$' && *(p + 1) == '$') {
         ++p;
         ++p;
-        nval = Em.getPage();
+        nval = Asm->Em.getPage();
 
         return true;
     } else if (*p == '$') {
         ++p;
-        nval = Em.getCPUAddress();
+        nval = Asm->Em.getCPUAddress();
 
         return true;
     } else if (!(res = GetCharConst(p, nval))) {
@@ -531,17 +534,17 @@ char *replaceDefine(const char *lp, char *dest) {
         Id = getID(lp);
         dr = 1;
 
-        if (auto Def = getDefine(*Id)) {
+        if (auto Def = Asm->Defines.get(*Id)) {
             Repl = *Def;
         } else {
-            Repl = MacroDefineTable.getReplacement(*Id);
-            if (MacroTable.labelPrefix().empty() || Repl.empty()) {
+            Repl = Asm->Macros.getReplacement(*Id);
+            if (Asm->Macros.labelPrefix().empty() || Repl.empty()) {
                 dr = 0;
                 Repl = (*Id);
             }
         }
 
-        if (const auto &Arr = getDefArray(*Id)) {
+        if (const auto &Arr = Asm->Defines.getArray(*Id)) {
             aint val;
             //_COUT lp _ENDL;
             while (*(lp++) && (*lp <= ' ' || *lp == '['));
@@ -612,7 +615,7 @@ void ParseLabel() {
     if (White()) {
         return;
     }
-    if (options::IsPseudoOpBOF && parseDirective(lp, true)) {
+    if (Asm->options().IsPseudoOpBOF && parseDirective(lp, true)) {
         while (*lp == ':') {
             ++lp;
         }
@@ -635,7 +638,7 @@ void ParseLabel() {
         val = atoi(LUnparsed.c_str());
         //_COUT CurrentLine _CMDL " " _CMDL val _CMDL " " _CMDL CurAddress _ENDL;
         if (pass == 1) {
-            LocalLabelTable.insert(CompiledCurrentLine, val, Em.getCPUAddress());
+            Asm->Labels.insertLocal(CompiledCurrentLine, val, Asm->Em.getCPUAddress());
         }
     } else {
         bool IsDEFL = false;
@@ -659,27 +662,27 @@ void ParseLabel() {
                 ++p;
                 gl = 1;
             }
-            if ((Name = getID(p)) && StructureTable.emit(*Name, LUnparsed, p, gl)) {
+            if ((Name = getID(p)) && Asm->Structs.emit(*Name, LUnparsed, p, gl)) {
                 lp = (char *) p;
                 return;
             }
-            val = Em.getCPUAddress();
+            val = Asm->Em.getCPUAddress();
         }
         optional<std::string> L;
-        if (!(L = validateLabel(LUnparsed))) {
+        if (!(L = Asm->Labels.validateLabel(LUnparsed))) {
             return;
         }
         // Copy label name to last parsed label variable
         if (!IsDEFL) {
-            LastParsedLabel = *L;
+            Asm->Labels.setLastParsedLabel(*L);
         }
         if (pass == LASTPASS) {
-            if (IsDEFL && !LabelTable.insert(*L, val, false, IsDEFL)) {
+            if (IsDEFL && !Asm->Labels.insert(*L, val, false, IsDEFL)) {
                 Error("Duplicate label"s, *L, PASS3);
             }
             aint oval;
             const char *t = LUnparsed.c_str();
-            if (!getLabelValue(t, oval)) {
+            if (!Asm->Labels.getLabelValue(t, oval)) {
                 Fatal("Internal error. ParseLabel()"s);
             }
             /*if (val!=oval) Error("Label has different value in pass 2",temp);*/
@@ -688,11 +691,11 @@ void ParseLabel() {
                         "previous value "s + std::to_string(oval) + " not equal "s + std::to_string(val));
                 //_COUT "" _CMDL filename _CMDL ":" _CMDL CurrentLocalLine _CMDL ":(DEBUG)  " _CMDL "Label has different value in pass 2: ";
                 //_COUT val _CMDL "!=" _CMDL oval _ENDL;
-                LabelTable.updateValue(*L, val);
+                Asm->Labels.updateValue(*L, val);
             }
-        } else if (pass == 2 && !LabelTable.insert(*L, val, false, IsDEFL) && !LabelTable.updateValue(*L, val)) {
+        } else if (pass == 2 && !Asm->Labels.insert(*L, val, false, IsDEFL) && !Asm->Labels.updateValue(*L, val)) {
             Error("Duplicate label"s, *L, PASS2);
-        } else if (!LabelTable.insert(*L, val, false, IsDEFL)) {
+        } else if (!Asm->Labels.insert(*L, val, false, IsDEFL)) {
             Error("Duplicate label"s, *L, PASS1);
         }
 
@@ -712,8 +715,8 @@ bool ParseMacro() {
         return false;
     }
     MacroResult R;
-    if ((R = MacroTable.emit(*Name, p)) == MacroResult::NotFound) {
-        if (StructureTable.emit(*Name, ""s, p, gl)) {
+    if ((R = Asm->Macros.emit(*Name, p)) == MacroResult::NotFound) {
+        if (Asm->Structs.emit(*Name, ""s, p, gl)) {
             lp = (char *) p;
             return true;
         }
@@ -721,7 +724,7 @@ bool ParseMacro() {
         lp = p;
         std::string tmp{line};
 
-        while (MacroTable.readLine(line, LINEMAX)) {
+        while (Asm->Macros.readLine(line, LINEMAX)) {
             parseLineSafe();
         }
 
@@ -770,7 +773,7 @@ void parseLine(bool ParseLabels) {
     }
     lp = replaceDefine(line);
     const char *BOL = lp;
-    if (options::ConvertWindowsToDOS) {
+    if (Asm->options().ConvertWindowsToDOS) {
         auto *lp2 = (unsigned char *) lp;
         while (*(lp2++)) {
             if ((*lp2) >= 128) {
@@ -780,35 +783,35 @@ void parseLine(bool ParseLabels) {
     }
     if (comlin) {
         comlin += comnxtlin;
-        Listing.listFileSkip(line);
+        Asm->Listing.listFileSkip(line);
         return;
     }
     comlin += comnxtlin;
     if (!*lp) {
-        Listing.listLine();
+        Asm->Listing.listLine();
         return;
     }
     if (ParseLabels) {
         ParseLabel();
     }
     if (SkipBlanks()) {
-        Listing.listLine();
+        Asm->Listing.listLine();
         return;
     }
     ParseMacro();
     if (SkipBlanks()) {
-        Listing.listLine();
+        Asm->Listing.listLine();
         return;
     }
     parseInstruction(BOL, lp);
     if (SkipBlanks()) {
-        Listing.listLine();
+        Asm->Listing.listLine();
         return;
     }
     if (*lp) {
         Error("Unexpected"s, lp, LASTPASS);
     }
-    Listing.listLine();
+    Asm->Listing.listLine();
 }
 
 void parseLineSafe(bool ParseLabels) {
@@ -844,7 +847,7 @@ void parseLineSafe(bool ParseLabels) {
     lp = rp;
 }
 
-void parseStructLine(CStructure &St) {
+void parseStructLine(CStruct &St) {
     replacedefineteller = comnxtlin = 0;
     lp = replaceDefine(line);
     if (comlin) {

@@ -1,4 +1,5 @@
-#include "fsutil.h"
+#include "asm.h"
+
 #include "codeemitter.h"
 
 optional<std::string> CodeEmitter::emitByte(uint8_t Byte) {
@@ -117,7 +118,7 @@ fs::path CodeEmitter::resolveOutputPath(const fs::path &p) {
     if (!ForcedOutputDirectory.empty()) {
         return fs::absolute(p, ForcedOutputDirectory);
     } else {
-        return getAbsPath(p);
+        return Asm.getAbsPath(p);
     }
 }
 
@@ -134,5 +135,3 @@ optional<std::string> CodeEmitter::align(uint16_t Alignment, optional<uint8_t> F
     }
     return boost::none;
 }
-
-CodeEmitter Em;

@@ -6,11 +6,13 @@
 #include <string>
 #include <stack>
 
+#include "asm/common.h"
 #include "util.h"
 
 
 class ListingWriter : public TextOutput {
 private:
+    Assembler &Asm;
     bool IsActive = false;
     bool OmitLine = false;
     bool InMacro = false;
@@ -29,6 +31,10 @@ private:
     std::string printCurrentLocalLine();
 
 public:
+    ListingWriter() = delete;
+
+    explicit ListingWriter(Assembler &_Asm) : Asm{_Asm} {}
+
     void init(fs::path &FileName) override;
 
     void initPass();
@@ -61,7 +67,5 @@ public:
         }
     }
 };
-
-extern ListingWriter Listing;
 
 #endif //SJASMPLUS_LISTING_H

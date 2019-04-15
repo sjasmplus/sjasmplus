@@ -6,6 +6,8 @@
 #include <tao/pegtl.hpp>
 using namespace tao::pegtl;
 
+#include "state.h"
+
 namespace parser {
 
 // https://github.com/sjasmplus/sjasmplus/wiki#character-and-string-constants
@@ -84,13 +86,6 @@ template<> const std::string Ctrl<RequiredNothing1L>::ErrMsg;
 template<> const std::string Ctrl<TrailingNothing>::ErrMsg;
 
 
-struct State {
-    std::string Id;
-    char EscChar;
-    std::string String;
-    std::vector<std::string> StringVec;
-};
-
 template<>
 struct Actions<EscChar> {
     template<typename Input>
@@ -144,17 +139,6 @@ struct Actions<Identifier> {
         S.Id = In.string();
     }
 };
-
-/*
-template<>
-struct Actions<Nothing> {
-    template<typename Input>
-    static void apply(const Input &In, State &S) {
-        cout << "**N**" << In.string() << "*" << endl;
-    }
-};
-*/
-
 
 } // namespace parser
 

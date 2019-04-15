@@ -30,14 +30,23 @@
 #include "reader.h"
 #include "parser.h"
 #include "directives.h"
-#include "options.h"
 #include "sjio.h"
 #include "support.h"
 #include "codeemitter.h"
 
 #include "z80.h"
 
+// FIXME: errors.cpp
+extern Assembler *Asm;
+
 namespace Z80 {
+
+struct {
+    bool FakeInstructions = false;
+    options::target Target = options::target::Z80;
+    bool IsReversePOP = false;
+} Options;
+
 enum Z80Reg {
     Z80_B = 0,
     Z80_C,
@@ -96,7 +105,7 @@ enum Z80Cond {
     Z80C_C, Z80C_M, Z80C_NC, Z80C_NZ, Z80C_P, Z80C_PE, Z80C_PO, Z80C_Z, Z80C_UNK
 };
 
-#define ASSERT_FAKE_INSTRUCTIONS(operation) if (!options::FakeInstructions) { \
+#define ASSERT_FAKE_INSTRUCTIONS(operation) if (!Options.FakeInstructions) { \
         operation; \
     }
 //char* my_p = lp;
@@ -108,21 +117,21 @@ FunctionTable OpCodeTable;
 const char *BOI;
 
 void errorIfI8080() {
-    if (options::Target == options::target::i8080) {
+    if (Options.Target == options::target::i8080) {
         std::string I(BOI, lp - BOI);
         Error("Target 'i8080' does not support instruction"s, I, LASTPASS);
     }
 }
 
 void errorFormIfI8080() {
-    if (options::Target == options::target::i8080) {
+    if (Options.Target == options::target::i8080) {
         std::string I(BOI, lp - BOI);
         Error("Target 'i8080': instruction with these operands not supported"s, I, LASTPASS);
     }
 }
 
 void errorRegIfI8080(enum Z80Reg R) {
-    if (options::Target == options::target::i8080) {
+    if (Options.Target == options::target::i8080) {
         Error("Target 'i8080' has no register", regToName(R), LASTPASS);
     }
 }
@@ -180,7 +189,7 @@ int z80GetIDxoffset(const char *&p) {
 }
 
 int GetAddress(const char *&p, aint &ad) {
-    if (GetLocalLabelValue(p, ad)) {
+    if (Asm->Labels.getLocalLabelValue(p, ad)) {
         return 1;
     }
     if (parseExpression(p, ad)) {
@@ -1222,9 +1231,9 @@ void OpCode_DJNZ() {
         /* added */
         e[0] = e[1] = e[2] = -1;
         if (!GetAddress(lp, nad)) {
-            nad = Em.getCPUAddress() + 2;
+            nad = Asm->Em.getCPUAddress() + 2;
         }
-        jmp = nad - Em.getCPUAddress() - 2;
+        jmp = nad - Asm->Em.getCPUAddress() - 2;
         if (jmp < -128 || jmp > 127) {
             Error("[DJNZ] Target out of range"s, std::to_string(jmp));
             jmp = 0;
@@ -1743,9 +1752,9 @@ void OpCode_JR() {
 				_COUT "JUST BREAKPOINT" _ENDL;
 			}*/
         if (!(GetAddress(lp, jrad))) {
-            jrad = Em.getCPUAddress() + 2;
+            jrad = Asm->Em.getCPUAddress() + 2;
         }
-        jmp = jrad - Em.getCPUAddress() - 2;
+        jmp = jrad - Asm->Em.getCPUAddress() - 2;
         if (jmp < -128 || jmp > 127) {
             /*if (pass == LASTPASS) {
 					_COUT "AAAAAAA:" _CMDL jmp _CMDL " " _CMDL jrad _CMDL " " _CMDL CurAddress _ENDL;
@@ -3274,7 +3283,7 @@ void OpCode_LDD() {
     Z80Reg reg, reg2;
     int e[7], b;
 
-    if (!options::FakeInstructions) {
+    if (!Options.FakeInstructions) {
         e[0] = 0xed;
         e[1] = 0xa8;
         e[2] = -1;
@@ -3461,7 +3470,7 @@ void OpCode_LDI() {
     Z80Reg reg, reg2;
     int e[11], b;
 
-    if (!options::FakeInstructions) {
+    if (!Options.FakeInstructions) {
         e[0] = 0xed;
         e[1] = 0xa0;
         e[2] = -1;
@@ -5473,7 +5482,7 @@ void Init() {
     OpCodeTable.insert("out"s, OpCode_OUT);
     OpCodeTable.insert("outd"s, OpCode_OUTD);
     OpCodeTable.insert("outi"s, OpCode_OUTI);
-    if (options::IsReversePOP) {
+    if (Options.IsReversePOP) {
         OpCodeTable.insert("pop"s, OpCode_POPreverse);
     } else {
         OpCodeTable.insert("pop"s, OpCode_POP);
@@ -5507,7 +5516,14 @@ void Init() {
 }
 } // namespace Z80
 
-void InitCPU() {
+void initCPUParser(bool FakeInstructions,
+                   options::target Target,
+                   bool IsReversePOP) {
+
+    Z80::Options.FakeInstructions = FakeInstructions;
+    Z80::Options.Target = Target;
+    Z80::Options.IsReversePOP = IsReversePOP;
+
     Z80::Init();
     InsertDirectives();
 }

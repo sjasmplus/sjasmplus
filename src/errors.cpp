@@ -2,13 +2,21 @@ extern "C" {
 #include "lua_sjasm.h"
 }
 
-#include "listing.h"
+#include "asm.h"
 #include "global.h"
 #include "lua_support.h"
 #include "fs.h"
 #include "parser/define.h"
 
 #include "errors.h"
+
+// Temporary:
+Assembler *Asm;
+
+void initLegacyErrorHandler(Assembler *_Asm) {
+    Asm = _Asm;
+}
+//
 
 std::string ErrorStr;
 bool IsSkipErrors;
@@ -48,7 +56,7 @@ void Error(const std::string &fout, const std::string &bd, int type) {
     PreviousErrorLine = CurrentLocalLine;
     ++ErrorCount;
 
-    setDefine("_ERRORS"s, std::to_string(ErrorCount));
+    Asm->Defines.set("_ERRORS"s, std::to_string(ErrorCount));
 
     /*SPRINTF3(ep, LINEMAX2, "%s line %lu: %s", filename, CurrentLocalLine, fout);
     if (bd) {
@@ -79,7 +87,7 @@ void Error(const std::string &fout, const std::string &bd, int type) {
     ErrorStr += "\n"s;
 //    }
 
-    Listing.write(ErrorStr);
+    Asm->Listing.write(ErrorStr);
 
     _COUT ErrorStr _END;
 
@@ -114,7 +122,7 @@ void Warning(const std::string &fout, const std::string &bd, int type) {
     }
 
     ++WarningCount;
-    setDefine("_WARNINGS"s, std::to_string(WarningCount));
+    Asm->Defines.set("_WARNINGS"s, std::to_string(WarningCount));
 
     if (pass > LASTPASS) {
         ErrorStr = "warning: "s + fout;
@@ -137,7 +145,7 @@ void Warning(const std::string &fout, const std::string &bd, int type) {
     ErrorStr += "\n"s;
 //    }
 
-    Listing.write(ErrorStr);
+    Asm->Listing.write(ErrorStr);
     _COUT ErrorStr _END;
 }
 

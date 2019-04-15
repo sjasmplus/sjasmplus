@@ -41,10 +41,7 @@ using std::cerr;
 using std::endl;
 
 #include "defines.h"
-#include "labels.h"
 #include "errors.h"
-
-extern bool synerr;
 
 class FunctionTable {
 public:

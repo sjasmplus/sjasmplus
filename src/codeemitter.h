@@ -2,7 +2,7 @@
 #define SJASMPLUS_CODEEMITTER_H
 
 #include "memory.h"
-#include "fs.h"
+#include "asm/common.h"
 
 using boost::optional;
 
@@ -14,6 +14,7 @@ class CodeEmitter {
 
 private:
 
+    Assembler &Asm;
     uint16_t CPUAddress;
     uint16_t EmitAddress; // = CPUAddress unless the DISP directive is used
     bool Disp; // DISP flag
@@ -34,7 +35,8 @@ private:
     void enforceFileSize();
 
 public:
-    CodeEmitter() {
+    CodeEmitter() = delete;
+    explicit CodeEmitter(Assembler &_Asm) : Asm(_Asm) {
 	reset();
     }
 
@@ -177,7 +179,5 @@ public:
 };
 
 fs::path resolveOutputPath(const fs::path &p);
-
-extern CodeEmitter Em;
 
 #endif //SJASMPLUS_CODEEMITTER_H

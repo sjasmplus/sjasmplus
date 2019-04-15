@@ -97,32 +97,6 @@ std::map<std::string, OPT> OptMap{
         {TARGET,     OPT::TARGET}
 };
 
-bool SymbolListEnabled = false;
-fs::path SymbolListFName;
-bool ListingEnabled = false;
-fs::path ListingFName;
-
-fs::path ExportFName;
-fs::path RawOutputFileName;
-fs::path OutputDirectory;
-
-bool LabelsListEnabled = false;
-fs::path LabelsListFName;
-
-bool IsPseudoOpBOF = false;
-bool IsReversePOP = false;
-bool IsShowFullPath = false;
-bool AddLabelListing = false;
-bool HideBanner = false;
-bool FakeInstructions = true;
-bool EnableOrOverrideRawOutput = false;
-bool ConvertWindowsToDOS = false;
-
-std::list<fs::path> IncludeDirsList;
-std::list<fs::path> CmdLineIncludeDirsList;
-
-target Target = target::Z80;
-
 struct State {
     std::string Name;
     std::string Value;
@@ -217,7 +191,43 @@ struct OptActions<TargetUnknown> {
     }
 };
 
-void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
+void showHelp() {
+    _COUT "\nOption flags as follows:" _ENDL;
+    _COUT "  --" _CMDL HELP _CMDL "                   This help information" _ENDL;
+    _COUT "  -i<path> or -I<path> or --" _CMDL INC _CMDL "=<path>" _ENDL;
+    _COUT "                           Include path" _ENDL;
+    _COUT "  --" _CMDL LST _CMDL "                    Save listing to <sourcefile1>.lst" _ENDL;
+    _COUT "  --" _CMDL LST _CMDL "[=<filename>]       Save listing to <filename>" _ENDL;
+    _COUT "  --" _CMDL LSTLAB _CMDL "                 List labels at the end of the listing file" _ENDL;
+    _COUT "  --" _CMDL SYM _CMDL "                    Save symbols list to <sourcefile1>.sym" _ENDL;
+    _COUT "  --" _CMDL SYM _CMDL "=<filename>         Save symbols list to <filename>" _ENDL;
+    _COUT "  --" _CMDL EXP _CMDL "=<filename>         Save exports to <filename> (see EXPORT pseudo-op)" _ENDL;
+    _COUT "  --" _CMDL LABELS _CMDL "                 Save symbols(labels) list to <sourcefile1>.lab" _ENDL;
+    _COUT "                             in format compatible with UnrealSpeccy emulator" _ENDL;
+    _COUT "  --" _CMDL LABELS _CMDL "=<filename>      Save symbols(labels) list to <filename>" _ENDL;
+    _COUT "                             in format compatible with UnrealSpeccy emulator" _ENDL;
+    _COUT "  --" _CMDL RAW _CMDL "                    Save all output to <sourcefile1>.out" _ENDL;
+    _COUT "  --" _CMDL RAW _CMDL "=<filename>         Save all output to <filename> ignoring OUTPUT pseudo-ops" _ENDL;
+    _COUT "  --" _CMDL OUTPUT_DIR _CMDL "=<directory> Write all output files to the specified directory" _ENDL;
+    _COUT "  Note: use OUTPUT, LUA/ENDLUA and other pseudo-ops to control output" _ENDL;
+    _COUT " Logging:" _ENDL;
+    _COUT "  --" _CMDL NOBANNER _CMDL "               Do not show startup message" _ENDL;
+    _COUT "  --" _CMDL FULLPATH _CMDL "               Show full path to error file" _ENDL;
+    _COUT " Other:" _ENDL;
+    _COUT "  --" _CMDL REVERSEPOP _CMDL "             Enable reverse POP order (as in base SjASM version)" _ENDL;
+    _COUT "  --" _CMDL DIRBOL _CMDL "                 Enable processing directives from the beginning of line" _ENDL;
+    _COUT "  --" _CMDL NOFAKES _CMDL "                Disable fake instructions" _ENDL;
+    _COUT "  --" _CMDL TARGET _CMDL "=<target>        Target CPU: Z80 (default) or i8080" _ENDL;
+    _COUT "    * 'i8080' restricts available instructions to those compatible with i8080." _ENDL;
+    _COUT "    * In both cases Z80 mnemonics are used." _ENDL;
+    _COUT "  --" _CMDL DOS866 _CMDL "                 Convert from Windows CP1251 to DOS CP866 (Cyrillic)" _ENDL;
+}
+
+} // namespace options
+
+using namespace options;
+
+COptions::COptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
     for (size_t i = 1; i < (size_t) argc; i++) {
         State S{};
         argv_input<> In(argv, i);
@@ -327,7 +337,7 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
             SrcFileNames.emplace_back(fs::path(argv[i]));
         }
     }
-    if (SrcFileNames.size() > 0) {
+    if (!SrcFileNames.empty()) {
         if (ListingEnabled && ListingFName.empty()) {
             ListingFName = SrcFileNames[0];
             ListingFName.replace_extension(".lst");
@@ -344,37 +354,3 @@ void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
 
 
 }
-
-void showHelp() {
-    _COUT "\nOption flags as follows:" _ENDL;
-    _COUT "  --" _CMDL HELP _CMDL "                   This help information" _ENDL;
-    _COUT "  -i<path> or -I<path> or --" _CMDL INC _CMDL "=<path>" _ENDL;
-    _COUT "                           Include path" _ENDL;
-    _COUT "  --" _CMDL LST _CMDL "                    Save listing to <sourcefile1>.lst" _ENDL;
-    _COUT "  --" _CMDL LST _CMDL "[=<filename>]       Save listing to <filename>" _ENDL;
-    _COUT "  --" _CMDL LSTLAB _CMDL "                 List labels at the end of the listing file" _ENDL;
-    _COUT "  --" _CMDL SYM _CMDL "                    Save symbols list to <sourcefile1>.sym" _ENDL;
-    _COUT "  --" _CMDL SYM _CMDL "=<filename>         Save symbols list to <filename>" _ENDL;
-    _COUT "  --" _CMDL EXP _CMDL "=<filename>         Save exports to <filename> (see EXPORT pseudo-op)" _ENDL;
-    _COUT "  --" _CMDL LABELS _CMDL "                 Save symbols(labels) list to <sourcefile1>.lab" _ENDL;
-    _COUT "                             in format compatible with UnrealSpeccy emulator" _ENDL;
-    _COUT "  --" _CMDL LABELS _CMDL "=<filename>      Save symbols(labels) list to <filename>" _ENDL;
-    _COUT "                             in format compatible with UnrealSpeccy emulator" _ENDL;
-    _COUT "  --" _CMDL RAW _CMDL "                    Save all output to <sourcefile1>.out" _ENDL;
-    _COUT "  --" _CMDL RAW _CMDL "=<filename>         Save all output to <filename> ignoring OUTPUT pseudo-ops" _ENDL;
-    _COUT "  --" _CMDL OUTPUT_DIR _CMDL "=<directory> Write all output files to the specified directory" _ENDL;
-    _COUT "  Note: use OUTPUT, LUA/ENDLUA and other pseudo-ops to control output" _ENDL;
-    _COUT " Logging:" _ENDL;
-    _COUT "  --" _CMDL NOBANNER _CMDL "               Do not show startup message" _ENDL;
-    _COUT "  --" _CMDL FULLPATH _CMDL "               Show full path to error file" _ENDL;
-    _COUT " Other:" _ENDL;
-    _COUT "  --" _CMDL REVERSEPOP _CMDL "             Enable reverse POP order (as in base SjASM version)" _ENDL;
-    _COUT "  --" _CMDL DIRBOL _CMDL "                 Enable processing directives from the beginning of line" _ENDL;
-    _COUT "  --" _CMDL NOFAKES _CMDL "                Disable fake instructions" _ENDL;
-    _COUT "  --" _CMDL TARGET _CMDL "=<target>        Target CPU: Z80 (default) or i8080" _ENDL;
-    _COUT "    * 'i8080' restricts available instructions to those compatible with i8080." _ENDL;
-    _COUT "    * In both cases Z80 mnemonics are used." _ENDL;
-    _COUT "  --" _CMDL DOS866 _CMDL "                 Convert from Windows CP1251 to DOS CP866 (Cyrillic)" _ENDL;
-}
-
-} // namespace options

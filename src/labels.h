@@ -37,6 +37,9 @@
 #include <boost/multi_index/tag.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/optional.hpp>
+
+#include "asm/common.h"
+#include "asm.h"
 #include "fs.h"
 
 using ::boost::multi_index_container;
@@ -47,14 +50,27 @@ using ::boost::multi_index::tag;
 using ::boost::multi_index::member;
 using ::boost::optional;
 
-#define LABMAX 64
+struct CLocalLabelTableEntry {
+    aint Line, Number, Value;
 
-extern std::string TempLabel;
+    CLocalLabelTableEntry(aint _Line, aint _Number, aint _Value) :
+            Line(_Line), Number(_Number), Value(_Value) {}
+};
 
-extern std::string LastLabel;
-extern std::string LastParsedLabel;
+class CLocalLabels {
+public:
+    aint searchForward(aint LabelNum);
 
-void initLabels();
+    aint searchBack(aint LabelNum);
+
+    void insert(aint Line, aint Number, aint Value) {
+        Labels.emplace_back(Line, Number, Value);
+    }
+
+private:
+    std::list<CLocalLabelTableEntry> Labels;
+};
+
 
 struct LabelData {
     std::string name;
@@ -76,8 +92,13 @@ typedef multi_index_container<
 
 typedef LabelContainer::index<name_tag>::type LabelContainerByName;
 
-class CLabelTable {
+class CLabels {
 public:
+    CLabels() = delete;
+
+    explicit CLabels(Assembler &_Asm) : Asm{_Asm} {}
+
+    void init();
 
     bool insert(const std::string &name, aint value, bool Undefined = false, bool isDefl = false);
 
@@ -99,40 +120,39 @@ public:
 
     void dumpSymbols(const fs::path &FileName) const;
 
-private:
-    LabelContainer _LabelContainer;
-    LabelContainerByName &name_index = _LabelContainer.get<name_tag>();
-};
+    optional<std::string> validateLabel(const std::string &Name);
 
-optional<std::string> validateLabel(const std::string &Name);
+    bool getLabelValue(const char *&p, aint &val);
 
-extern std::string PreviousIsLabel;
+    bool getLocalLabelValue(const char *&op, aint &val);
 
-bool getLabelValue(const char *&p, aint &val);
+    int luaGetLabel(char *name);
 
-bool GetLocalLabelValue(const char *&op, aint &val);
-
-struct CLocalLabelTableEntry {
-    aint Line, Number, Value;
-
-    CLocalLabelTableEntry(aint _Line, aint _Number, aint _Value) :
-            Line(_Line), Number(_Number), Value(_Value) {}
-};
-
-class CLocalLabelTable {
-public:
-    aint searchForward(aint LabelNum);
-
-    aint searchBack(aint LabelNum);
-
-    void insert(aint Line, aint Number, aint Value) {
-        Labels.emplace_back(Line, Number, Value);
+    const std::string &lastParsedLabel() const {
+        return LastParsedLabel;
     }
 
-private:
-    std::list<CLocalLabelTableEntry> Labels;
-};
+    void setLastParsedLabel(const std::string L) {
+        LastParsedLabel = L;
+    }
 
-int LuaGetLabel(char *name);
+    void insertLocal(aint Line, aint Number, aint Value) {
+        LocalLabels.insert(Line, Number, Value);
+    }
+
+    std::string TempLabel;
+
+private:
+    Assembler &Asm;
+
+
+    std::string LastLabel;
+    std::string LastParsedLabel;
+
+    LabelContainer _LabelContainer;
+    LabelContainerByName &name_index = _LabelContainer.get<name_tag>();
+
+    CLocalLabels LocalLabels;
+};
 
 #endif // SJASMPLUS_LABELS_H

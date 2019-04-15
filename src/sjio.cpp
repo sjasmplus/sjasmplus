@@ -41,14 +41,12 @@ using namespace std::string_literals;
 #include "global.h"
 #include "options.h"
 #include "support.h"
-#include "fsutil.h"
 #include "codeemitter.h"
 
 #include "sjio.h"
 
-fs::path CurrentSrcFileName;
-
-ExportWriter *Exports = nullptr;
+// FIXME: errors.cpp
+extern Assembler *Asm;
 
 bool SourceReaderEnabled = false; // Reset by the END directive
 
@@ -114,6 +112,12 @@ public:
 
 TyReadLineBuf ReadLineBuf;
 
+// Temporary
+void clearReadLineBuf() {
+    ReadLineBuf.clear();
+}
+// --
+
 bool rldquotes = false, rlsquotes = false, rlspace = false, rlcomment = false, rlcolon = false, rlnewline = true;
 
 fs::ifstream realIFS;
@@ -143,28 +147,28 @@ void CheckPage() {
 */
 
 void emit(uint8_t byte) {
-    Listing.addByte(byte);
+    Asm->Listing.addByte(byte);
     if (pass == LASTPASS) {
-        auto err = Em.emitByte(byte);
+        auto err = Asm->Em.emitByte(byte);
         if (err) Fatal(*err);
     } else {
-        Em.incAddress();
+        Asm->Em.incAddress();
     }
 }
 
 void emitByte(uint8_t byte) {
-    Listing.setPreviousAddress(Em.getCPUAddress());
+    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
     emit(byte);
 }
 
 void emitWord(uint16_t word) {
-    Listing.setPreviousAddress(Em.getCPUAddress());
+    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
     emit(word % 256);
     emit(word / 256);
 }
 
 void emitBytes(int *bytes) {
-    Listing.setPreviousAddress(Em.getCPUAddress());
+    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
     if (*bytes == -1) {
         Error("Illegal instruction"s, line, CATCHALL);
         getAll(lp);
@@ -175,19 +179,19 @@ void emitBytes(int *bytes) {
 }
 
 void emitData(const std::vector<optional<uint8_t>> Bytes) {
-    Listing.setPreviousAddress(Em.getCPUAddress());
+    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
     for (const auto &B : Bytes) {
         if (B) {
             emit(*B);
         } else {
-            Em.incAddress();
+            Asm->Em.incAddress();
         }
     }
 }
 
 
 void emitWords(int *words) {
-    Listing.setPreviousAddress(Em.getCPUAddress());
+    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
     while (*words != -1) {
         emit((*words) % 256);
         emit((*words++) / 256);
@@ -195,33 +199,33 @@ void emitWords(int *words) {
 }
 
 void emitBlock(uint8_t Byte, aint Len, bool NoFill) {
-    Listing.setPreviousAddress(Em.getCPUAddress());
+    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
     if (Len) {
-        Listing.addByte(Byte);
+        Asm->Listing.addByte(Byte);
     }
     while (Len--) {
         if (pass == LASTPASS) {
             if (!NoFill) {
-                auto err = Em.emitByte(Byte);
+                auto err = Asm->Em.emitByte(Byte);
                 if (err) Fatal(*err);
             } else {
-                Em.incAddress();
+                Asm->Em.incAddress();
             }
         } else {
-            Em.incAddress();
+            Asm->Em.incAddress();
         }
     }
 }
 
 optional<std::string> emitAlignment(uint16_t Alignment, optional<uint8_t> FillByte) {
-    auto OAddr = Em.getCPUAddress();
-    Listing.setPreviousAddress(Em.getCPUAddress());
-    auto Err = Em.align(Alignment, FillByte);
+    auto OAddr = Asm->Em.getCPUAddress();
+    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
+    auto Err = Asm->Em.align(Alignment, FillByte);
     if (Err) return Err;
     if (FillByte) {
-        auto Len = Em.getCPUAddress() - OAddr;
+        auto Len = Asm->Em.getCPUAddress() - OAddr;
         while (Len > 0) {
-            Listing.addByte(*FillByte);
+            Asm->Listing.addByte(*FillByte);
             Len--;
         }
     }
@@ -258,20 +262,20 @@ char* GetPath(const char* fname, TCHAR** filenamebegin) {
 */
 
 fs::path resolveIncludeFilename(const fs::path &FN) {
-    auto Res = getAbsPath(FN);
+    auto Res = Asm->getAbsPath(FN);
     if (!fs::exists(Res)) {
         bool CmdLineIncludesFirst =
                 !FN.empty() && FN.string()[0] == '<' &&
                 FN.string()[FN.string().size() - 1] == '>';
-        std::list<fs::path> &List1 = CmdLineIncludesFirst ?
-                                     options::CmdLineIncludeDirsList : options::IncludeDirsList;
-        std::list<fs::path> &List2 = CmdLineIncludesFirst ?
-                                     options::IncludeDirsList : options::CmdLineIncludeDirsList;
+        const std::list<fs::path> &List1 = CmdLineIncludesFirst ?
+                                     Asm->options().CmdLineIncludeDirsList : Asm->options().IncludeDirsList;
+        const std::list<fs::path> &List2 = CmdLineIncludesFirst ?
+                                     Asm->options().IncludeDirsList : Asm->options().CmdLineIncludeDirsList;
         fs::path FileName = CmdLineIncludesFirst ?
                             FN.string().substr(1, FN.string().size() - 2) :
                             FN;
         if (CmdLineIncludesFirst)
-            Res = getAbsPath(FileName);
+            Res = Asm->getAbsPath(FileName);
         bool Done = false;
         for (auto &P : List1) {
             auto F = P / FileName;
@@ -299,7 +303,7 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
 
     fs::path AbsFilePath = resolveIncludeFilename(FileName);
 
-    uint16_t DestAddr = Em.getEmitAddress();
+    uint16_t DestAddr = Asm->Em.getEmitAddress();
     if ((int) DestAddr + Length > 0x10000)
         Fatal(std::to_string(Length) + " bytes of file \""s + FileName.string() +
               "\" won't fit at current address="s +
@@ -329,72 +333,13 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
                 Fatal("Could not read "s + std::to_string(Length) + " bytes. File too small?",
                         FileName.string());
             }
-            auto err = Em.emitByte(Byte);
+            auto err = Asm->Em.emitByte(Byte);
             if (err) Fatal(*err, FileName.string());
             Remaining--;
         }
     }
     IFS.close();
 }
-
-// FileName should be an absolute path
-void openFile(const fs::path &FileName) {
-    fs::path SaveCurrentSrcFileNameForMsg;
-    fs::path SaveCurrentDirectory;
-
-    CurrentSrcFileName = FileName;
-
-    if (++IncludeLevel > 20) Fatal("Over 20 files nested");
-
-    pIFS->open(FileName, std::ios::binary);
-    if (pIFS->fail()) {
-        Fatal("Error opening file "s + FileName.string(), strerror(errno));
-    }
-
-    aint oCurrentLocalLine = CurrentLocalLine;
-    CurrentLocalLine = 0;
-    SaveCurrentSrcFileNameForMsg = getCurrentSrcFileNameForMsg();
-
-    if (options::IsShowFullPath || BOOST_VERSION < 106000) {
-        setCurrentSrcFileNameForMsg(FileName);
-    }
-#if (BOOST_VERSION >= 106000)
-    else {
-        setCurrentSrcFileNameForMsg(fs::relative(FileName, global::MainSrcFileDir));
-    }
-#endif
-    SaveCurrentDirectory = global::CurrentDirectory;
-    global::CurrentDirectory = FileName.parent_path();
-
-    ReadLineBuf.clear();
-    readBufLine(true);
-
-    checkRepeatStackAtEOF();
-
-    pIFS->close();
-    --IncludeLevel;
-    global::CurrentDirectory = SaveCurrentDirectory;
-    setCurrentSrcFileNameForMsg(SaveCurrentSrcFileNameForMsg);
-    if (CurrentLocalLine > MaxLineNumber) {
-        MaxLineNumber = CurrentLocalLine;
-    }
-    CurrentLocalLine = oCurrentLocalLine;
-}
-
-// FileName should be an absolute path
-void openTopLevelFile(const fs::path &FileName, bool PerFileExports) {
-    if (PerFileExports) {
-        auto E = FileName;
-        E.replace_extension(".exp");
-        Exports = new ExportWriter{E};
-    }
-    openFile(getAbsPath(FileName));
-    if (PerFileExports) {
-        delete Exports;
-        Exports = nullptr;
-    }
-}
-
 
 void includeFile(const fs::path &IncFileName) {
     fs::ifstream *saveIFS = pIFS;
@@ -413,7 +358,7 @@ void includeFile(const fs::path &IncFileName) {
 
     ReadLineBuf.clear();
 
-    openFile(resolveIncludeFilename(IncFileName));
+    Asm->openFile(resolveIncludeFilename(IncFileName));
 
     rlsquotes = squotes, rldquotes = dquotes, rlspace = space, rlcomment = comment, rlcolon = colon, rlnewline = newline;
     ReadLineBuf = SaveReadLineBuf;
@@ -495,7 +440,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                 lp = line;
                 *rlppos = 0;
                 std::string Instr;
-                if ((!rlnewline || options::IsPseudoOpBOF) &&
+                if ((!rlnewline || Asm->options().IsPseudoOpBOF) &&
                     !((Instr = getInstr(lp)).empty()) && DirectivesTable.find(Instr)) {
                     // it's a directive
                     while (B.nextIf(':'));
@@ -589,7 +534,7 @@ int SaveRAM(fs::ofstream &ofs, int start, int length) {
     }
 
     auto *data = new char[length];
-    Em.getBytes((uint8_t *) data, start, length);
+    Asm->Em.getBytes((uint8_t *) data, start, length);
     ofs.write(data, length);
     delete[] data;
     if (ofs.fail()) {
@@ -640,7 +585,7 @@ void *SaveRAM(void *dst, int start, int length) {
         length = 0x10000 - start;
     }
 
-    Em.getBytes(target, start, length);
+    Asm->Em.getBytes(target, start, length);
     target += length;
 
 /*
@@ -682,7 +627,7 @@ uint8_t memGetByte(uint16_t address) {
         return 0;
     }
 
-    return Em.getByte(address);
+    return Asm->Em.getByte(address);
 }
 
 
@@ -711,8 +656,8 @@ EReturn readFile(const char *pp, const char *err) {
         if (!SourceReaderEnabled) {
             return END;
         }
-        if (MacroTable.inMacroBody()) {
-            if (!MacroTable.readLine(line, LINEMAX)) {
+        if (Asm->Macros.inMacroBody()) {
+            if (!Asm->Macros.readLine(line, LINEMAX)) {
                 return END;
             }
             p = line;
@@ -731,7 +676,7 @@ EReturn readFile(const char *pp, const char *err) {
             return ENDIF;
         }
         if (cmphstr(p, "else")) {
-            Listing.listLine();
+            Asm->Listing.listLine();
             lp = replaceDefine(p);
             return ELSE;
         }
@@ -760,8 +705,8 @@ EReturn skipFile(const char *pp, const char *err) {
         if (!SourceReaderEnabled) {
             return END;
         }
-        if (MacroTable.inMacroBody()) {
-            if (!MacroTable.readLine(line, LINEMAX)) {
+        if (Asm->Macros.inMacroBody()) {
+            if (!Asm->Macros.readLine(line, LINEMAX)) {
                 return END;
             }
             p = line;
@@ -804,12 +749,12 @@ EReturn skipFile(const char *pp, const char *err) {
         }
         if (cmphstr(p, "else")) {
             if (!iflevel) {
-                Listing.listLine();
+                Asm->Listing.listLine();
                 lp = replaceDefine(p);
                 return ELSE;
             }
         }
-        Listing.listFileSkip(line);
+        Asm->Listing.listFileSkip(line);
     }
     Fatal("Unexpected end of file"s);
 }
@@ -845,24 +790,9 @@ bool readFileToListOfStrings(std::list<std::string> &List, const std::string &En
             }
         }
         List.emplace_back(line);
-        Listing.listFileSkip(line);
+        Asm->Listing.listFileSkip(line);
     }
     Fatal("Unexpected end of file"s);
-}
-
-void ExportWriter::init(fs::path &FileName) {
-    open(FileName);
-}
-
-void ExportWriter::write(const std::string &Name, aint Value) {
-    if (!OFS.is_open()) {
-        TextOutput::open(FileName);
-    }
-    TextOutput::write(Name + ": EQU 0x"s + toHex32(Value) + "\n"s);
-}
-
-const fs::path getCurrentSrcFileName() {
-    return CurrentSrcFileName;
 }
 
 

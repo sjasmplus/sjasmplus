@@ -22,11 +22,13 @@ TOLUA_API int tolua_sjasm_open(lua_State *tolua_S);
 #include "options.h"
 #include "global.h"
 #include "io_snapshots.h"
-#include "fsutil.h"
 #include "codeemitter.h"
 #include "parser/define.h"
 
 using namespace options;
+
+// FIXME: errors.cpp
+extern Assembler *Asm;
 
 /* function to register type */
 static void tolua_reg_types(lua_State *tolua_S) {
@@ -50,7 +52,7 @@ static int tolua_sjasm_sj_get_define00(lua_State *tolua_S) {
         char *tolua_var_1 = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
             std::string tolua_ret;
-            auto Def = getDefine(tolua_var_1);
+            auto Def = Asm->Defines.get(tolua_var_1);
             if (Def) {
                 tolua_ret = *Def;
             }
@@ -86,7 +88,7 @@ static int tolua_sjasm_sj_insert_define00(lua_State *tolua_S) {
         char *tolua_var_3 = ((char *) tolua_tostring(tolua_S, 2, 0));
         {
             bool tolua_ret = false;
-            if (!setDefine(tolua_var_2, tolua_var_3)) {
+            if (!Asm->Defines.set(tolua_var_2, tolua_var_3)) {
                 tolua_ret = true; // Indicate that a new entry has been created
             }
             tolua_pushboolean(tolua_S, (bool) tolua_ret);
@@ -118,7 +120,7 @@ static int tolua_sjasm_sj_get_label00(lua_State *tolua_S) {
     {
         char *tolua_var_4 = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
-            int tolua_ret = (int) LuaGetLabel(tolua_var_4);
+            int tolua_ret = (int) Asm->Labels.luaGetLabel(tolua_var_4);
             tolua_pushnumber(tolua_S, (lua_Number) tolua_ret);
         }
     }
@@ -154,7 +156,7 @@ static int tolua_sjasm_sj_insert_label00(lua_State *tolua_S) {
         bool tolua_var_7 = ((bool) tolua_toboolean(tolua_S, 3, false));
         bool tolua_var_8 = ((bool) tolua_toboolean(tolua_S, 4, false));
         {
-            bool tolua_ret = (bool) LabelTable.insert(tolua_var_5, tolua_var_6, tolua_var_7, tolua_var_8);
+            bool tolua_ret = (bool) Asm->Labels.insert(tolua_var_5, tolua_var_6, tolua_var_7, tolua_var_8);
             tolua_pushboolean(tolua_S, (bool) tolua_ret);
         }
     }
@@ -172,7 +174,7 @@ static int tolua_sjasm_sj_insert_label00(lua_State *tolua_S) {
 #ifndef TOLUA_DISABLE_tolua_get_sj_unsigned_current_address
 
 static int tolua_get_sj_unsigned_current_address(lua_State *tolua_S) {
-    tolua_pushnumber(tolua_S, (lua_Number) Em.getCPUAddress());
+    tolua_pushnumber(tolua_S, (lua_Number) Asm->Em.getCPUAddress());
     return 1;
 }
 
@@ -313,7 +315,7 @@ static int tolua_sjasm_zx_save_snapshot_sna12800(lua_State *tolua_S) {
         char *fname = ((char *) tolua_tostring(tolua_S, 1, 0));
         unsigned short start = ((unsigned short) tolua_tonumber(tolua_S, 2, 0));
         {
-            int tolua_ret = (int) zx::saveSNA(Em.getMemModel(), fname, start);
+            int tolua_ret = (int) zx::saveSNA(Asm->Em.getMemModel(), fname, start);
             tolua_pushnumber(tolua_S, (lua_Number) tolua_ret);
         }
     }
@@ -331,7 +333,7 @@ static int tolua_sjasm_zx_save_snapshot_sna12800(lua_State *tolua_S) {
 #ifndef TOLUA_DISABLE_tolua_get_sj_current_path
 
 static int tolua_get_sj_current_path(lua_State *tolua_S) {
-    tolua_pushstring(tolua_S, (const char *) global::CurrentDirectory.c_str());
+    tolua_pushstring(tolua_S, (const char *) Asm->currentDirectory().c_str());
     return 1;
 }
 
@@ -481,7 +483,7 @@ static int tolua_sjasm_sj_get_path00(lua_State *tolua_S) {
         TCHAR *filenamebegin = ((TCHAR *) tolua_tousertype(tolua_S, 2, 0));
         {
             // FIXME: Copied strdup() from GetPath(); need to actually figure out how this works
-            char *tolua_ret = strdup((const char *) getAbsPath(fname).c_str());
+            char *tolua_ret = strdup((const char *) Asm->getAbsPath(fname).c_str());
             tolua_pushstring(tolua_S, (const char *) tolua_ret);
             filenamebegin = fname;
             tolua_pushusertype(tolua_S, (void *) filenamebegin, "TCHAR");
@@ -513,7 +515,7 @@ static int tolua_sjasm_sj_set_device00(lua_State *tolua_S) {
     {
         char *id = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
-            Em.setMemModel(id);
+            Asm->Em.setMemModel(id);
             tolua_pushboolean(tolua_S, true);
         }
     }
@@ -541,7 +543,7 @@ static int tolua_sjasm_sj_get_device00(lua_State *tolua_S) {
 #endif
     {
         {
-            char *tolua_ret = (char *) Em.getMemModelName().c_str();
+            char *tolua_ret = (char *) Asm->Em.getMemModelName().c_str();
             tolua_pushstring(tolua_S, (const char *) tolua_ret);
         }
     }

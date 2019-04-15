@@ -29,14 +29,16 @@
 #ifndef SJASMPLUS_Z80_H
 #define SJASMPLUS_Z80_H
 
+#include "options.h"
+
 namespace Z80 {
 
 void getOpCode(const char *_BOI);
 
-void Init();
-
 } // namespace Z80
 
-void InitCPU();
+void initCPUParser(bool FakeInstructions = false,
+        options::target Target = options::target::Z80,
+        bool IsReversePOP = false);
 
 #endif // SJASMPLUS_Z80_H

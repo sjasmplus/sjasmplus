@@ -35,24 +35,6 @@
 
 namespace options {
 
-extern fs::path SymbolListFName;
-extern fs::path ListingFName;
-extern fs::path ExportFName;
-extern fs::path RawOutputFileName;
-extern fs::path OutputDirectory;
-extern fs::path LabelsListFName;
-
-extern bool IsPseudoOpBOF;
-extern bool IsReversePOP;
-extern bool IsShowFullPath;
-extern bool AddLabelListing;
-extern bool HideBanner;
-extern bool FakeInstructions;
-extern bool EnableOrOverrideRawOutput;
-extern bool ConvertWindowsToDOS;
-extern std::list<fs::path> IncludeDirsList;
-extern std::list<fs::path> CmdLineIncludeDirsList;
-
 enum class target {
     Z80,
     i8080,
@@ -60,12 +42,40 @@ enum class target {
     _NOTSPECIFIED
 };
 
-extern target Target;
-
-void getOptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames);
-
 void showHelp();
 
 } // namespace options
+
+class COptions {
+public:
+    COptions() = delete;
+    explicit COptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames);
+
+    bool SymbolListEnabled = false;
+    fs::path SymbolListFName;
+    bool ListingEnabled = false;
+    fs::path ListingFName;
+
+    fs::path ExportFName;
+    fs::path RawOutputFileName;
+    fs::path OutputDirectory;
+
+    bool LabelsListEnabled = false;
+    fs::path LabelsListFName;
+
+    bool IsPseudoOpBOF = false;
+    bool IsReversePOP = false;
+    bool IsShowFullPath = false;
+    bool AddLabelListing = false;
+    bool HideBanner = false;
+    bool FakeInstructions = true;
+    bool EnableOrOverrideRawOutput = false;
+    bool ConvertWindowsToDOS = false;
+
+    std::list<fs::path> IncludeDirsList;
+    std::list<fs::path> CmdLineIncludeDirsList;
+
+    options::target Target = options::target::Z80;
+};
 
 #endif // SJASMPLUS_OPTIONS_H

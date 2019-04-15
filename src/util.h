@@ -2,7 +2,7 @@
 #define SJASMPLUS_UTIL_H
 
 #include <string>
-#include "defines.h"
+#include "asm/common.h"
 #include "fs.h"
 
 std::string toHex8(aint Number);

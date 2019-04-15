@@ -29,12 +29,16 @@
 #ifndef SJASMPLUS_SJIO_H
 #define SJASMPLUS_SJIO_H
 
+#include <boost/optional.hpp>
+
 #include "defines.h"
 #include "fs.h"
 #include "errors.h"
 #include "tables.h"
 #include "io_trd.h"
 #include "util.h"
+
+using boost::optional;
 
 void enableSourceReader();
 
@@ -49,10 +53,6 @@ void emitBytes(int *bytes);
 void emitWords(int *words);
 
 void emitBlock(uint8_t Byte, aint Len, bool NoFill = false);
-
-void openFile(const fs::path &FileName);
-
-void openTopLevelFile(const fs::path &FileName, bool PerFileExports);
 
 fs::path resolveIncludeFilename(const fs::path &FN);
 
@@ -82,21 +82,8 @@ EReturn skipFile(const char *pp, const char *err); /* added */
 
 bool readFileToListOfStrings(std::list<std::string> &List, const std::string &EndMarker);
 
-const fs::path getCurrentSrcFileName();
-
 optional<std::string> emitAlignment(uint16_t Alignment, optional<uint8_t> FillByte);
 
 void emitData(const std::vector<optional<uint8_t>> Bytes);
-
-class ExportWriter : public TextOutput {
-private:
-    fs::path FileName;
-public:
-    explicit ExportWriter(fs::path &_FileName) : FileName{_FileName} {}
-    void init(fs::path &FileName) override;
-    void write(const std::string &Name, aint Value);
-};
-
-extern ExportWriter *Exports;
 
 #endif //SJASMPLUS_SJIO_H

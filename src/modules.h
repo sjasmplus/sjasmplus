@@ -32,8 +32,16 @@
 #include <stack>
 #include <string>
 
-class ModulesList {
+#include "asm/common.h"
+
+class CModules {
 public:
+    Assembler &Asm;
+
+    CModules() = delete;
+
+    explicit CModules(Assembler &_Asm) : Asm{_Asm} {}
+
     void Begin(const std::string &name);
 
     void End();
