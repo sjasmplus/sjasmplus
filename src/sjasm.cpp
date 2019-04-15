@@ -30,6 +30,7 @@
 
 int main(int argc, char *argv[]) {
 
-    Assembler Asm(argc, argv);
-
+    int RetValue;
+    Assembler Asm(argc, argv, RetValue);
+    return RetValue;
 }

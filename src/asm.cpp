@@ -46,7 +46,7 @@ extern int ErrorCount; // FIXME
 extern aint CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine; // FIXME
 
 
-void Assembler::assemble() {
+void Assembler::assemble(int &RetValue) {
     // if memory type != none
     bool W2DEncodingFlag = Options.ConvertWindowsToDOS;
 
@@ -111,14 +111,13 @@ void Assembler::assemble() {
     // Shutdown Lua
     shutdownLUA();
 
-    if (ErrorCount != 0)
-        exitFail();
+    RetValue = ErrorCount == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 // FIXME:
 void initLegacyErrorHandler(Assembler *_Asm);
 
-Assembler::Assembler(int argc, char *argv[]) :
+Assembler::Assembler(int argc, char *argv[], int &RetValue) :
         Em{*this},
         Labels{*this},
         Macros{*this},
@@ -146,7 +145,7 @@ Assembler::Assembler(int argc, char *argv[]) :
 
     init();
 
-    assemble();
+    assemble(RetValue);
 }
 
 void initLegacyParser(); // FIXME

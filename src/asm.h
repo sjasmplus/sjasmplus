@@ -20,7 +20,7 @@ class Assembler {
 public:
     Assembler() = delete;
 
-    Assembler(int argc, char *argv[]);
+    Assembler(int argc, char *argv[], int &RetValue);
 
     void initPass(int P);
 
@@ -67,7 +67,7 @@ public:
 private:
     void init();
 
-    void assemble();
+    void assemble(int &RetValue);
 
     std::vector<fs::path> SrcFileNames;
     COptions Options;
