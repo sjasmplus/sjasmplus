@@ -267,8 +267,8 @@ void CStruct::emitMembers(const char *&p) {
 CStruct &CStructs::add(const std::string &Name, int Offset, int idx, int Global) {
     std::string FullName;
 
-    if (!Global && !Asm.Modules.IsEmpty()) {
-        FullName = Asm.Modules.GetPrefix();
+    if (!Global && !Asm.Modules.empty()) {
+        FullName = Asm.Modules.getPrefix();
     }
     FullName += Name;
     if (Entries.find(FullName) != Entries.end()) {
@@ -283,7 +283,7 @@ CStruct &CStructs::add(const std::string &Name, int Offset, int idx, int Global)
 }
 
 std::map<std::string, CStruct>::iterator CStructs::find(const std::string &Name, int Global) {
-    const std::string &FullName = Global ? Name : Name + Asm.Modules.GetPrefix();
+    const std::string &FullName = Global ? Name : Name + Asm.Modules.getPrefix();
     auto it = Entries.find(FullName);
     if (it != Entries.end())
         return it;

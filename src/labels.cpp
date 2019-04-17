@@ -279,8 +279,8 @@ optional<std::string> CLabels::validateLabel(const std::string &Name) {
     if (!ML.empty() && DotLabel) {
         RetValue = Asm.Macros.labelPrefix() + ">"s;
     } else {
-        if (!AsIsLabel && !Asm.Modules.IsEmpty()) {
-            RetValue = Asm.Modules.GetPrefix();
+        if (!AsIsLabel && !Asm.Modules.empty()) {
+            RetValue = Asm.Modules.getPrefix();
         }
         if (DotLabel) {
             RetValue += LastLabel + "."s;
@@ -368,8 +368,8 @@ bool CLabels::getLabelValue(const char *&p, aint &val) {
             break;
     }
     TempLabel.clear();
-    if (!AsIsLabel && !Asm.Modules.IsEmpty()) {
-        TempLabel = Asm.Modules.GetPrefix();
+    if (!AsIsLabel && !Asm.Modules.empty()) {
+        TempLabel = Asm.Modules.getPrefix();
     }
     if (DotLabel) {
         TempLabel += LastLabel + ".";

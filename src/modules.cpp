@@ -28,20 +28,20 @@
 
 #include "modules.h"
 
-void CModules::Begin(const std::string &name) {
-    Names.push(GetPrefix() + name);
+void CModules::begin(const std::string &Name) {
+    Names.push(getPrefix() + Name);
 }
 
-void CModules::End() {
+void CModules::end() {
     //Require(!Names.empty());
     Names.pop();
 }
 
-bool CModules::IsEmpty() const {
+bool CModules::empty() const {
     return Names.empty();
 }
 
-std::string CModules::GetPrefix() const {
+std::string CModules::getPrefix() const {
     return Names.empty()
            ? std::string{}
            : Names.top() + '.';

@@ -491,7 +491,7 @@ void dirALIGN() {
 void dirMODULE() {
     optional <std::string> Name;
     if ((Name = getID(lp))) {
-        Asm->Modules.Begin(*Name);
+        Asm->Modules.begin(*Name);
     } else {
         Error("[MODULE] Syntax error"s, CATCHALL);
     }
@@ -499,10 +499,10 @@ void dirMODULE() {
 
 void dirENDMODULE() {
 
-    if (Asm->Modules.IsEmpty()) {
+    if (Asm->Modules.empty()) {
         Error("ENDMODULE without MODULE"s);
     } else {
-        Asm->Modules.End();
+        Asm->Modules.end();
     }
 }
 

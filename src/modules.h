@@ -42,13 +42,13 @@ public:
 
     explicit CModules(Assembler &_Asm) : Asm{_Asm} {}
 
-    void Begin(const std::string &name);
+    void begin(const std::string &Name);
 
-    void End();
+    void end();
 
-    bool IsEmpty() const;
+    bool empty() const;
 
-    std::string GetPrefix() const;
+    std::string getPrefix() const;
 
 private:
     std::stack<std::string> Names;
