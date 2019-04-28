@@ -16,4 +16,4 @@ make
 
 # Usage
 
-See [Documentation](https://github.com/mkoloberdin/sjasmplus/wiki) (Wiki)
+See [Documentation](https://github.com/sjasmplus/sjasmplus/wiki) (Wiki)
