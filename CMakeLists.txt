@@ -12,8 +12,9 @@ configure_file(
 include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
+set(Boost_NO_BOOST_CMAKE ON) # https://gitlab.kitware.com/cmake/cmake/-/issues/19841
 find_package (Boost REQUIRED COMPONENTS filesystem system)
-include_directories(${Boost_INCLUDE_DIR})
+include_directories(${Boost_INCLUDE_DIRS})
 
 set(SOURCE_FILES
 #        resources/bin2c/bin2c.cpp
