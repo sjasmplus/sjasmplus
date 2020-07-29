@@ -128,7 +128,7 @@ bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
         }
 
         std::string S(DirPos, ' ');
-        SkipBlanks(lp);
+        skipWhiteSpace(lp);
         if (*lp) {
             S += lp;
             lp += strlen(lp);
@@ -168,7 +168,7 @@ bool parseDirective_REPT() {
 
 void dirBYTE() {
     int teller, e[256];
-    teller = GetBytes(lp, e, 0, 0);
+    teller = getBytes(lp, e, 0, 0);
     if (!teller) {
         Error("BYTE/DEFB/DB with no arguments"s);
         return;
@@ -178,7 +178,7 @@ void dirBYTE() {
 
 void dirDC() {
     int teller, e[129];
-    teller = GetBytes(lp, e, 0, 1);
+    teller = getBytes(lp, e, 0, 1);
     if (!teller) {
         Error("DC with no arguments"s);
         return;
@@ -188,7 +188,7 @@ void dirDC() {
 
 void dirDZ() {
     int teller, e[130];
-    teller = GetBytes(lp, e, 0, 0);
+    teller = getBytes(lp, e, 0, 0);
     if (!teller) {
         Error("DZ with no arguments"s);
         return;
@@ -204,7 +204,7 @@ void dirABYTE() {
     if (parseExpression(lp, add)) {
         check8(add);
         add &= 255;
-        teller = GetBytes(lp, e, add, 0);
+        teller = getBytes(lp, e, add, 0);
         if (!teller) {
             Error("ABYTE with no arguments"s);
             return;
@@ -221,7 +221,7 @@ void dirABYTEC() {
     if (parseExpression(lp, add)) {
         check8(add);
         add &= 255;
-        teller = GetBytes(lp, e, add, 1);
+        teller = getBytes(lp, e, add, 1);
         if (!teller) {
             Error("ABYTEC with no arguments"s);
             return;
@@ -238,7 +238,7 @@ void dirABYTEZ() {
     if (parseExpression(lp, add)) {
         check8(add);
         add &= 255;
-        teller = GetBytes(lp, e, add, 0);
+        teller = getBytes(lp, e, add, 0);
         if (!teller) {
             Error("ABYTEZ with no arguments"s);
             return;
@@ -254,7 +254,7 @@ void dirABYTEZ() {
 void dirWORD() {
     aint val;
     int teller = 0, e[129];
-    SkipBlanks();
+    skipWhiteSpace(lp);
     while (*lp) {
         if (parseExpression(lp, val)) {
             check16(val);
@@ -266,12 +266,12 @@ void dirWORD() {
             Error("[DW/DEFW/WORD] Syntax error"s, lp, CATCHALL);
             return;
         }
-        SkipBlanks();
+        skipWhiteSpace(lp);
         if (*lp != ',') {
             break;
         }
         ++lp;
-        SkipBlanks();
+        skipWhiteSpace(lp);
     }
     e[teller] = -1;
     if (!teller) {
@@ -284,7 +284,7 @@ void dirWORD() {
 void dirDWORD() {
     aint val;
     int teller = 0, e[129 * 2];
-    SkipBlanks();
+    skipWhiteSpace(lp);
     while (*lp) {
         if (parseExpression(lp, val)) {
             if (teller > 127) {
@@ -297,12 +297,12 @@ void dirDWORD() {
             Error("[DWORD] Syntax error"s, lp, CATCHALL);
             return;
         }
-        SkipBlanks();
+        skipWhiteSpace(lp);
         if (*lp != ',') {
             break;
         }
         ++lp;
-        SkipBlanks();
+        skipWhiteSpace(lp);
     }
     e[teller * 2] = -1;
     if (!teller) {
@@ -315,7 +315,7 @@ void dirDWORD() {
 void dirD24() {
     aint val;
     int teller = 0, e[129 * 3];
-    SkipBlanks();
+    skipWhiteSpace(lp);
     while (*lp) {
         if (parseExpression(lp, val)) {
             check24(val);
@@ -330,12 +330,12 @@ void dirD24() {
             Error("[D24] Syntax error"s, lp, CATCHALL);
             return;
         }
-        SkipBlanks();
+        skipWhiteSpace(lp);
         if (*lp != ',') {
             break;
         }
         ++lp;
-        SkipBlanks();
+        skipWhiteSpace(lp);
     }
     e[teller * 3] = -1;
     if (!teller) {
@@ -633,7 +633,7 @@ void dirINCTRD() {
     HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
-            HobetaFileName = GetHobetaFileName(lp);
+            HobetaFileName = getHobetaFileName(lp);
         } else {
             Error("[INCTRD] Syntax error"s, bp, CATCHALL);
             return;
@@ -870,7 +870,7 @@ void dirSAVEHOB() {
     HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
-            HobetaFileName = GetHobetaFileName(lp);
+            HobetaFileName = getHobetaFileName(lp);
         } else {
             Error("[SAVEHOB] Syntax error. No parameters"s, bp, PASS3);
             return;
@@ -925,7 +925,7 @@ void dirEMPTYTRD() {
         return;
     }
     if (pass != LASTPASS) {
-        SkipParam(lp);
+        skipArg(lp);
         return;
     }
     const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
@@ -954,7 +954,7 @@ void dirSAVETRD() {
     HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
-            HobetaFileName = GetHobetaFileName(lp);
+            HobetaFileName = getHobetaFileName(lp);
         } else {
             Error("[SAVETRD] Syntax error. No parameters"s, bp, PASS3);
             return;
@@ -971,7 +971,7 @@ void dirSAVETRD() {
                 return;
             }
             if (val > 0xFFFF) {
-                Error("[SAVETRD] Values more than 0FFFFh are not allowed"s, bp, PASS3);
+                Error("[SAVETRD] Values greater than 0FFFFh are not allowed"s, bp, PASS3);
                 return;
             }
             start = val;
@@ -1038,7 +1038,7 @@ void dirENCODING() {
 
 void dirLABELSLIST() {
     if (pass != 1) {
-        SkipParam(lp);
+        skipArg(lp);
         return;
     }
     const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
@@ -1313,7 +1313,7 @@ void dirIFDEF() {
       if (*p=='i' || *p=='I') break;
       ++p;
     }
-    if (!cmphstr(p,"ifdef")) Error("ifdef error",0,FATAL);
+    if (!cmpHStr(p,"ifdef")) Error("ifdef error",0,FATAL);
     */
     EReturn res;
     if (!(Id = getID(lp))) {
@@ -1369,7 +1369,7 @@ void dirIFNDEF() {
       if (*p=='i' || *p=='I') break;
       ++p;
     }
-    if (!cmphstr(p,"ifndef")) Error("ifndef error",0,FATAL);
+    if (!cmpHStr(p,"ifndef")) Error("ifndef error",0,FATAL);
     */
     EReturn res;
     if (!(Id = getID(lp))) {
@@ -1442,7 +1442,7 @@ void dirDISPLAY() {
     aint val;
     int t = 0;
     while (true) {
-        SkipBlanks(lp);
+        skipWhiteSpace(lp);
         if (!*lp) {
             Error("[DISPLAY] Expression expected"s, PASS3);
             break;
@@ -1476,14 +1476,14 @@ void dirDISPLAY() {
                     Error("[DISPLAY] Syntax error"s, line, PASS3);
                     return;
             }
-            SkipBlanks(lp);
+            skipWhiteSpace(lp);
 
             if ((*(lp) != 0x2c)) {
                 Error("[DISPLAY] Syntax error"s, line, PASS3);
                 return;
             }
             ++lp;
-            SkipBlanks(lp);
+            skipWhiteSpace(lp);
         }
 
         if (*lp == '"') {
@@ -1497,7 +1497,7 @@ void dirDISPLAY() {
                     Error("[DISPLAY] Too many arguments"s, line, PASS3);
                     return;
                 }
-                GetCharConstChar(lp, val);
+                getCharConstChar(lp, val);
                 check8(val);
                 Message += (char) (val & 255);
             } while (*lp != '"');
@@ -1513,7 +1513,7 @@ void dirDISPLAY() {
                     Error("[DISPLAY] Too many arguments"s, line, PASS3);
                     return;
                 }
-                GetCharConstCharSingle(lp, val);
+                getCharConstCharSingle(lp, val);
                 check8(val);
                 Message += (char) (val & 255);
             } while (*lp != 0x27);
@@ -1540,7 +1540,7 @@ void dirDISPLAY() {
                 return;
             }
         }
-        SkipBlanks(lp);
+        skipWhiteSpace(lp);
         if (*lp != ',') {
             break;
         }
@@ -1650,7 +1650,7 @@ void dirSTRUCT() {
     int global = 0;
     aint offset = 0, bind = 0;
     optional<std::string> Name;
-    SkipBlanks();
+    skipWhiteSpace(lp);
     if (*lp == '@') {
         ++lp;
         global = 1;
@@ -1677,12 +1677,12 @@ void dirSTRUCT() {
             Error("[STRUCT] Unexpected end of structure"s, PASS1);
             break;
         }
-        lp = line; /*if (White()) { SkipBlanks(lp); if (*lp=='.') ++lp; if (cmphstr(lp,"ends")) break; }*/
-        SkipBlanks(lp);
+        lp = line; /*if (isWhiteSpaceChar()) { skipWhiteSpace(lp); if (*lp=='.') ++lp; if (cmpHStr(lp,"ends")) break; }*/
+        skipWhiteSpace(lp);
         if (*lp == '.') {
             ++lp;
         }
-        if (cmphstr(lp, "ends")) {
+        if (cmpHStr(lp, "ends")) {
             break;
         }
         parseStructLine(St);
@@ -1694,7 +1694,7 @@ void dirSTRUCT() {
 void dirFPOS() {
     aint Offset;
     auto Method = std::ios_base::beg;
-    SkipBlanks(lp);
+    skipWhiteSpace(lp);
     if ((*lp == '+') || (*lp == '-')) {
         Method = std::ios_base::cur;
     }
@@ -1889,7 +1889,7 @@ void dirLUA() {
 
     luaMemFile luaMF;
 
-    SkipBlanks();
+    skipWhiteSpace(lp);
 
     if ((Id = getID(lp))) {
         if (iequals(*Id, "pass1"s)) {
@@ -1923,8 +1923,8 @@ void dirLUA() {
         }
         lp = line;
         rp = line;
-        SkipBlanks(rp);
-        if (cmphstr(rp, "endlua")) {
+        skipWhiteSpace(rp);
+        if (cmpHStr(rp, "endlua")) {
             if (execute) {
                 if ((bp - buff) + (rp - lp - 6) < 32760 && (rp - lp - 6) > 0) {
                     STRNCPY(bp, 32768 - (bp - buff) + 1, lp, rp - lp - 6);

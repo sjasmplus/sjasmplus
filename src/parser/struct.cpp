@@ -9,20 +9,20 @@ extern std::string PreviousIsLabel;
 void parseStructLabel(CStruct &St) {
     std::string L;
     PreviousIsLabel.clear();
-    if (White()) {
+    if (isWhiteSpaceChar(*lp)) {
         return;
     }
     if (*lp == '.') {
         ++lp;
     }
-    while (*lp && islabchar(*lp)) {
+    while (*lp && isLabChar(*lp)) {
         L += *lp;
         ++lp;
     }
     if (*lp == ':') {
         ++lp;
     }
-    SkipBlanks();
+    skipWhiteSpace(lp);
     if (isdigit(L[0])) {
         Error("[STRUCT] Number labels not allowed within structs"s);
         return;
@@ -95,7 +95,7 @@ void parseStructMember(CStruct &St) {
             const char *pp = lp;
             optional<std::string> Name;
             int gl = 0;
-            SkipBlanks(pp);
+            skipWhiteSpace(pp);
             if (*pp == '@') {
                 ++pp;
                 gl = 1;
@@ -105,7 +105,7 @@ void parseStructMember(CStruct &St) {
                 if (it != St.Parent->NotFound()) {
                     CStruct &S = it->second;
                     const char *tmp = St.Name.c_str();
-                    if (cmphstr(tmp, (*Name).c_str())) {
+                    if (cmpHStr(tmp, (*Name).c_str())) {
                         Error("[STRUCT] The structure refers to itself"s, CATCHALL);
                         break;
                     }
@@ -131,73 +131,73 @@ SMEMB getStructMemberId(const char *&p) {
     switch (*p * 2 + *(p + 1)) {
         case 'b' * 2 + 'y':
         case 'B' * 2 + 'Y':
-            if (cmphstr(p, "byte")) {
+            if (cmpHStr(p, "byte")) {
                 return SMEMB::BYTE;
             }
             break;
         case 'w' * 2 + 'o':
         case 'W' * 2 + 'O':
-            if (cmphstr(p, "word")) {
+            if (cmpHStr(p, "word")) {
                 return SMEMB::WORD;
             }
             break;
         case 'b' * 2 + 'l':
         case 'B' * 2 + 'L':
-            if (cmphstr(p, "block")) {
+            if (cmpHStr(p, "block")) {
                 return SMEMB::BLOCK;
             }
             break;
         case 'd' * 2 + 'b':
         case 'D' * 2 + 'B':
-            if (cmphstr(p, "db")) {
+            if (cmpHStr(p, "db")) {
                 return SMEMB::BYTE;
             }
             break;
         case 'd' * 2 + 'w':
         case 'D' * 2 + 'W':
-            if (cmphstr(p, "dw")) {
+            if (cmpHStr(p, "dw")) {
                 return SMEMB::WORD;
             }
-            if (cmphstr(p, "dword")) {
+            if (cmpHStr(p, "dword")) {
                 return SMEMB::DWORD;
             }
             break;
         case 'd' * 2 + 's':
         case 'D' * 2 + 'S':
-            if (cmphstr(p, "ds")) {
+            if (cmpHStr(p, "ds")) {
                 return SMEMB::BLOCK;
             }
             break;
         case 'd' * 2 + 'd':
         case 'D' * 2 + 'D':
-            if (cmphstr(p, "dd")) {
+            if (cmpHStr(p, "dd")) {
                 return SMEMB::DWORD;
             }
             break;
         case 'a' * 2 + 'l':
         case 'A' * 2 + 'L':
-            if (cmphstr(p, "align")) {
+            if (cmpHStr(p, "align")) {
                 return SMEMB::ALIGN;
             }
             break;
         case 'd' * 2 + 'e':
         case 'D' * 2 + 'E':
-            if (cmphstr(p, "defs")) {
+            if (cmpHStr(p, "defs")) {
                 return SMEMB::BLOCK;
             }
-            if (cmphstr(p, "defb")) {
+            if (cmpHStr(p, "defb")) {
                 return SMEMB::BYTE;
             }
-            if (cmphstr(p, "defw")) {
+            if (cmpHStr(p, "defw")) {
                 return SMEMB::WORD;
             }
-            if (cmphstr(p, "defd")) {
+            if (cmpHStr(p, "defd")) {
                 return SMEMB::DWORD;
             }
             break;
         case 'd' * 2 + '2':
         case 'D' * 2 + '2':
-            if (cmphstr(p, "d24")) {
+            if (cmpHStr(p, "d24")) {
                 return SMEMB::D24;
             }
             break;

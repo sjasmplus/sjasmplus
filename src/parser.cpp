@@ -26,7 +26,6 @@
 
 */
 
-#include "listing.h"
 #include "reader.h"
 #include "sjio.h"
 #include "z80.h"
@@ -55,7 +54,7 @@ void initLegacyParser() {
 
 bool parseExpPrim(const char *&p, aint &nval) {
     bool res = false;
-    SkipBlanks(p);
+    skipWhiteSpace(p);
     if (!*p) {
         return false;
     }
@@ -86,7 +85,7 @@ bool parseExpPrim(const char *&p, aint &nval) {
         return true;
     } else if (isdigit((unsigned char) *p) || (*p == '#' && isalnum((unsigned char) *(p + 1))) ||
                (*p == '$' && isalnum((unsigned char) *(p + 1))) || *p == '%') {
-        res = GetConstant(p, nval);
+        res = getConstant(p, nval);
     } else if (isalpha((unsigned char) *p) || *p == '_' || *p == '.' || *p == '@') {
         res = Asm->Labels.getLabelValue(p, nval);
     } else if (*p == '?' &&
@@ -104,7 +103,7 @@ bool parseExpPrim(const char *&p, aint &nval) {
         nval = Asm->Em.getCPUAddress();
 
         return true;
-    } else if (!(res = GetCharConst(p, nval))) {
+    } else if (!(res = getCharConst(p, nval))) {
         if (synerr) {
             Error("Syntax error"s, p, CATCHALL);
         }
@@ -116,7 +115,7 @@ bool parseExpPrim(const char *&p, aint &nval) {
 
 bool ParseExpUnair(const char *&p, aint &nval) {
     int oper;
-    if ((oper = need(p, "! ~ + - ")) || (oper = needa(p, "not", '!', "low", 'l', "high", 'h', true))) {
+    if ((oper = need(p, "! ~ + - ")) || (oper = needA(p, "not", '!', "low", 'l', "high", 'h', true))) {
         aint right;
         switch (oper) {
             case '!':
@@ -171,7 +170,7 @@ bool ParseExpMul(const char *&p, aint &nval) {
     if (!ParseExpUnair(p, left)) {
         return false;
     }
-    while ((oper = need(p, "* / % ")) || (oper = needa(p, "mod", '%'))) {
+    while ((oper = need(p, "* / % ")) || (oper = needA(p, "mod", '%'))) {
         if (!ParseExpUnair(p, right)) {
             return false;
         }
@@ -237,7 +236,7 @@ bool ParseExpShift(const char *&p, aint &nval) {
     if (!ParseExpAdd(p, left)) {
         return false;
     }
-    while ((oper = need(p, "<<>>")) || (oper = needa(p, "shl", '<' + '<', "shr", '>'))) {
+    while ((oper = need(p, "<<>>")) || (oper = needA(p, "shl", '<' + '<', "shr", '>'))) {
         if (oper == '>' + '>' && *p == '>') {
             ++p;
             oper = '>' + '@';
@@ -357,7 +356,7 @@ bool ParseExpBitAnd(const char *&p, aint &nval) {
     if (!ParseExpEqu(p, left)) {
         return false;
     }
-    while (need(p, "&_") || needa(p, "and", '&')) {
+    while (need(p, "&_") || needA(p, "and", '&')) {
         if (!ParseExpEqu(p, right)) {
             return false;
         }
@@ -372,7 +371,7 @@ bool ParseExpBitXor(const char *&p, aint &nval) {
     if (!ParseExpBitAnd(p, left)) {
         return false;
     }
-    while (need(p, "^ ") || needa(p, "xor", '^')) {
+    while (need(p, "^ ") || needA(p, "xor", '^')) {
         if (!ParseExpBitAnd(p, right)) {
             return false;
         }
@@ -387,7 +386,7 @@ bool ParseExpBitOr(const char *&p, aint &nval) {
     if (!ParseExpBitXor(p, left)) {
         return false;
     }
-    while (need(p, "|_") || needa(p, "or", '|')) {
+    while (need(p, "|_") || needA(p, "or", '|')) {
         if (!ParseExpBitXor(p, right)) {
             return false;
         }
@@ -571,18 +570,18 @@ char *replaceDefine(const char *lp, char *dest) {
             kp = lp - (*Id).size();
             while (*(kp--) && *kp <= ' ');
             kp = kp - 4;
-            if (cmphstr(kp, "ifdef")) {
+            if (cmpHStr(kp, "ifdef")) {
                 dr = 0;
                 Repl = *Id;
             } else {
                 --kp;
-                if (cmphstr(kp, "ifndef")) {
+                if (cmpHStr(kp, "ifndef")) {
                     dr = 0;
                     Repl = *Id;
-                } else if (cmphstr(kp, "define")) {
+                } else if (cmpHStr(kp, "define")) {
                     dr = 0;
                     Repl = *Id;
-                } else if (cmphstr(kp, "defarray")) {
+                } else if (cmpHStr(kp, "defarray")) {
                     dr = 0;
                     Repl = *Id;
                 }
@@ -612,7 +611,7 @@ char *replaceDefine(const char *lp, char *dest) {
 void ParseLabel() {
     std::string LUnparsed;
     aint val;
-    if (White()) {
+    if (isWhiteSpaceChar(*lp)) {
         return;
     }
     if (Asm->options().IsPseudoOpBOF && parseDirective(lp, true)) {
@@ -621,17 +620,17 @@ void ParseLabel() {
         }
         return;
     }
-    while (*lp && !White() && *lp != ':' && *lp != '=') {
+    while (*lp && !isWhiteSpaceChar(*lp) && *lp != ':' && *lp != '=') {
         LUnparsed += *lp;
         ++lp;
     }
     if (*lp == ':') {
         ++lp;
     }
-    SkipBlanks();
+    skipWhiteSpace(lp);
     IsLabelNotFound = 0;
     if (isdigit((unsigned char) LUnparsed[0])) {
-        if (NeedEQU() || NeedDEFL()) {
+        if (needEQU(lp) || needDEFL(lp)) {
             Error("Number labels only allowed as address labels"s);
             return;
         }
@@ -642,12 +641,12 @@ void ParseLabel() {
         }
     } else {
         bool IsDEFL = false;
-        if (NeedEQU()) {
+        if (needEQU(lp)) {
             if (!parseExpression(lp, val)) {
                 Error("Expression error"s, lp);
                 val = 0;
             }
-        } else if (NeedDEFL()) {
+        } else if (needDEFL(lp)) {
             if (!parseExpression(lp, val)) {
                 Error("Expression error"s, lp);
                 val = 0;
@@ -657,7 +656,7 @@ void ParseLabel() {
             int gl = 0;
             const char *p = lp;
             optional<std::string> Name;
-            SkipBlanks(p);
+            skipWhiteSpace(p);
             if (*p == '@') {
                 ++p;
                 gl = 1;
@@ -706,7 +705,7 @@ bool ParseMacro() {
     int gl = 0;
     const char *p = lp;
     optional<std::string> Name;
-    SkipBlanks(p);
+    skipWhiteSpace(p);
     if (*p == '@') {
         gl = 1;
         ++p;
@@ -794,17 +793,17 @@ void parseLine(bool ParseLabels) {
     if (ParseLabels) {
         ParseLabel();
     }
-    if (SkipBlanks()) {
+    if (skipWhiteSpace(lp)) {
         Asm->Listing.listLine(line);
         return;
     }
     ParseMacro();
-    if (SkipBlanks()) {
+    if (skipWhiteSpace(lp)) {
         Asm->Listing.listLine(line);
         return;
     }
     parseInstruction(BOL, lp);
-    if (SkipBlanks()) {
+    if (skipWhiteSpace(lp)) {
         Asm->Listing.listLine(line);
         return;
     }
@@ -859,11 +858,11 @@ void parseStructLine(CStruct &St) {
         return;
     }
     parseStructLabel(St);
-    if (SkipBlanks()) {
+    if (skipWhiteSpace(lp)) {
         return;
     }
     parseStructMember(St);
-    if (SkipBlanks()) {
+    if (skipWhiteSpace(lp)) {
         return;
     }
     if (*lp) {

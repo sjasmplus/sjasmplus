@@ -404,7 +404,7 @@ bool CLabels::getLocalLabelValue(const char *&op, aint &val) {
     const char *p = op;
     char ch;
     std::string Name;
-    SkipBlanks(p);
+    skipWhiteSpace(p);
     if (!isdigit((unsigned char) *p)) {
         return false;
     }

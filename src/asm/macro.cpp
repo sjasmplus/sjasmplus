@@ -159,14 +159,14 @@ void CMacros::add(const std::string &Name, const char *&p, const char *Line) {
         return;
     }
     CMacroTableEntry M;
-    SkipBlanks(p);
+    skipWhiteSpace(p);
     while (*p) {
         if (!(ArgName = getID(p))) {
             Error("Illegal macro argument"s, p, PASS1);
             break;
         }
         M.Args.emplace_back(*ArgName);
-        SkipBlanks(p);
+        skipWhiteSpace(p);
         if (*p == ',') {
             ++p;
         } else {
@@ -207,7 +207,7 @@ MacroResult CMacros::emit(const std::string &Name, const char *&p, const char *L
     for (auto &Arg : M.Args) {
         ArgsLeft--;
         Repl.clear();
-        SkipBlanks(p);
+        skipWhiteSpace(p);
         if (!*p) {
             rollback();
             return MacroResult::NotEnoughArgs;
@@ -240,7 +240,7 @@ MacroResult CMacros::emit(const std::string &Name, const char *&p, const char *L
         if (Arg != Repl) {
             MacroDefineTable.addRepl(Arg, Repl);
         }
-        SkipBlanks(p);
+        skipWhiteSpace(p);
         if (ArgsLeft > 0 && *p != ',') {
             rollback();
             return MacroResult::NotEnoughArgs;
@@ -249,7 +249,7 @@ MacroResult CMacros::emit(const std::string &Name, const char *&p, const char *L
             ++p;
         }
     }
-    SkipBlanks(p);
+    skipWhiteSpace(p);
     auto Ret = *p ? MacroResult::TooManyArgs : MacroResult::Success;
 
     Asm.Listing.listLine(Line);

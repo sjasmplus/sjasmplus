@@ -37,65 +37,66 @@ using boost::optional;
 #include "io_trd.h"
 #include "tables.h"
 
-bool White();
+bool isWhiteSpaceChar(const char C);
 
-void SkipParam(const char *&p); /* added */
-bool SkipBlanks();
+void skipArg(const char *&P);
 
-void SkipBlanks(const char *&p);
+bool skipWhiteSpace(const char *&P);
 
-bool NeedEQU();
+bool needEQU(const char *&P);
 
-bool NeedDEFL(); /* added */
-optional<std::string> getID(const char *&p);
+bool needDEFL(const char *&P);
 
-std::string getInstr(const char *&p);
+optional<std::string> getID(const char *&P);
 
-bool comma(const char *&p);
+std::string getInstr(const char *&P);
 
-bool oparen(const char *&p, char c);
+bool comma(const char *&P);
 
-bool cparen(const char *&p);
+bool oParen(const char *&P, char C);
 
-const char * getparen(const char *p);
+bool cParen(const char *&P);
+
+const char * getParen(const char *P);
 
 bool check8(aint val, bool error = true); /* changes applied from SjASM 0.39g */
 bool check8o(long val); /* changes applied from SjASM 0.39g */
 bool check16(aint val, bool error = true); /* changes applied from SjASM 0.39g */
 bool check24(aint val, bool error = true); /* changes applied from SjASM 0.39g */
-bool need(const char *&p, char c);
+bool need(const char *&P, char C);
 
-int need(const char *&p, const char *c);
+int need(const char *&P, const char *C);
 
-int needa(const char *&p,
-          const char *c1, int r1,
-          const char *c2 = nullptr, int r2 = 0,
-          const char *c3 = nullptr, int r3 = 0,
+int needA(const char *&P,
+          const char *C1, int R1,
+          const char *C2 = nullptr, int R2 = 0,
+          const char *C3 = nullptr, int R3 = 0,
           bool AllowParen = false);
 
-bool GetConstant(const char *&op, aint &val);
+bool getConstant(const char *&OP, aint &Val);
 
-bool GetCharConst(const char *&p, aint &val);
+bool getCharConst(const char *&P, aint &Val);
 
-bool GetCharConstChar(const char *&op, aint &val);
+bool getCharConstChar(const char *&OP, aint &Val);
 
-bool GetCharConstCharSingle(const char *&op, aint &val); /* added */
-int GetBytes(const char *&p, int *e, int add, int dc);
+bool getCharConstCharSingle(const char *&OP, aint &Val);
 
-bool cmphstr(const char *&p1, const char *p2, bool AllowParen = false);
+int getBytes(const char *&P, int *E, int Add, int DC);
 
-std::string getString(const char *&p, bool KeepBrackets = false);
+bool cmpHStr(const char *&P1, const char *P2, bool AllowParen = false);
 
-fs::path getFileName(const char *&p);
+std::string getString(const char *&P, bool KeepBrackets = false);
 
-HobetaFilename GetHobetaFileName(const char *&p);
+fs::path getFileName(const char *&P);
 
-bool needcomma(const char *&p);
+HobetaFilename getHobetaFileName(const char *&P);
 
-bool needbparen(const char *&p);
+bool needComma(const char *&P);
 
-bool islabchar(char p);
+bool needBParen(const char *&P);
 
-const std::string getAll(const char *&p);
+bool isLabChar(char P);
+
+const std::string getAll(const char *&P);
 
 #endif // SJASMPLUS_READER_H

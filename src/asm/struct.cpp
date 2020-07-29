@@ -27,7 +27,7 @@ void CStruct::copyMembers(CStruct &St, const char *&lp) {
     int parentheses = 0;
     StructMember M1 = {noffset, 0, 0, SMEMB::PARENOPEN};
     addMember(M1);
-    SkipBlanks(lp);
+    skipWhiteSpace(lp);
     if (*lp == '{') {
         ++parentheses;
         ++lp;
@@ -50,14 +50,14 @@ void CStruct::copyMembers(CStruct &St, const char *&lp) {
                 comma(lp);
                 break;
             case SMEMB::PARENOPEN:
-                SkipBlanks(lp);
+                skipWhiteSpace(lp);
                 if (*lp == '{') {
                     ++parentheses;
                     ++lp;
                 }
                 break;
             case SMEMB::PARENCLOSE:
-                SkipBlanks(lp);
+                skipWhiteSpace(lp);
                 if (parentheses && *lp == '}') {
                     --parentheses;
                     ++lp;
@@ -168,7 +168,7 @@ void CStruct::emitMembers(const char *&p) {
     std::vector<optional<uint8_t>> Bytes;
     aint val;
     int haakjes = 0;
-    SkipBlanks(p);
+    skipWhiteSpace(p);
     if (*p == '{') {
         ++haakjes;
         ++p;
@@ -234,14 +234,14 @@ void CStruct::emitMembers(const char *&p) {
                 comma(p);
                 break;
             case SMEMB::PARENOPEN:
-                SkipBlanks(p);
+                skipWhiteSpace(p);
                 if (*p == '{') {
                     ++haakjes;
                     ++p;
                 }
                 break;
             case SMEMB::PARENCLOSE:
-                SkipBlanks(p);
+                skipWhiteSpace(p);
                 if (haakjes && *p == '}') {
                     --haakjes;
                     ++p;
@@ -257,7 +257,7 @@ void CStruct::emitMembers(const char *&p) {
             Error("closing } missing"s);
         }
     }
-    SkipBlanks(p);
+    skipWhiteSpace(p);
     if (*p) {
         Error("[STRUCT] Syntax error - too many arguments?"s);
     } /* this line from SjASM 0.39g */

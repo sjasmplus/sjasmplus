@@ -146,7 +146,7 @@ public:
     }
 
     void getBytes(uint8_t *Dest, int Slot, uint16_t AddrInPage, uint16_t Size) override {
-        Fatal("GetBytes()"s, *(setPage(0, 0)));
+        Fatal("getBytes()"s, *(setPage(0, 0)));
     }
 
     const uint8_t *getPtrToMem() override {

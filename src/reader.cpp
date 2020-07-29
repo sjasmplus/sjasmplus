@@ -26,11 +26,10 @@
 
 */
 
-#include "global.h"
 #include "parser.h"
 #include "reader.h"
 
-bool cmphstr(const char *&p1, const char *p2, bool AllowParen) {
+bool cmpHStr(const char *&P1, const char *P2, bool AllowParen) {
     /* old:
     if (isupper(*p1))
       while (p2[i]) {
@@ -42,189 +41,179 @@ bool cmphstr(const char *&p1, const char *p2, bool AllowParen) {
         if (p1[i]!=p2[i]) return 0;
         ++i;
       }*/
-    if (strlen(p1) >= strlen(p2)) {
+    if (strlen(P1) >= strlen(P2)) {
         unsigned int i = 0;
         unsigned int v = 0;
-        auto optUpper = isupper(*p1) ?
+        auto optUpper = isupper(*P1) ?
                         std::function<char(char)>([](char C) { return toupper(C); }) :
                         std::function<char(char)>([](char C) { return C; });
-        while (p2[i]) {
-            if (p1[i] != optUpper(p2[i])) {
+        while (P2[i]) {
+            if (P1[i] != optUpper(P2[i])) {
                 v = 0;
             } else {
                 ++v;
             }
             ++i;
         }
-        if (strlen(p2) != v) {
+        if (strlen(P2) != v) {
             return false;
         }
 
-        if (i <= strlen(p1) && p1[i] > ' ' && !(AllowParen && p1[i] == '(')/* && p1[i]!=':'*/) {
+        if (i <= strlen(P1) && P1[i] > ' ' && !(AllowParen && P1[i] == '(')/* && p1[i]!=':'*/) {
             return false;
         }
-        p1 += i;
+        P1 += i;
         return true;
     } else {
         return false;
     }
 }
 
-bool White(char c) {
-    return isspace(c);
+bool isWhiteSpaceChar(const char C) {
+    return isspace(C);
 }
 
-bool White() {
-    return White(*lp);
-}
-
-void SkipBlanks(const char *&p) {
-    while ((*p > 0) && (*p <= ' ')) {
-        ++p;
+bool skipWhiteSpace(const char *&P) {
+    while ((*P > 0) && (*P <= ' ')) {
+        ++P;
     }
+    return (*P == 0);
 }
 
-bool SkipBlanks() {
-    SkipBlanks(lp);
-    return (*lp == 0);
-}
-
-/* added */
-void SkipParam(const char *&p) {
-    SkipBlanks(p);
-    if (!(*p)) {
+void skipArg(const char *&P) {
+    skipWhiteSpace(P);
+    if (!(*P)) {
         return;
     }
-    while (((*p) != '\0') && ((*p) != ',')) {
-        p++;
+    while (((*P) != '\0') && ((*P) != ',')) {
+        P++;
     }
 }
 
-bool NeedEQU() {
-    const char *olp = lp;
-    SkipBlanks();
+bool needEQU(const char *&P) {
+    const char *olp = P;
+    skipWhiteSpace(P);
     /*if (*lp=='=') { ++lp; return 1; }*/
     /* cut: if (*lp=='=') { ++lp; return 1; } */
-    if (*lp == '.') {
-        ++lp;
+    if (*P == '.') {
+        ++P;
     }
-    if (cmphstr(lp, "equ")) {
+    if (cmpHStr(P, "equ")) {
         return true;
     }
-    lp = olp;
+    P = olp;
     return false;
 }
 
-/* added */
-bool NeedDEFL() {
-    const char *olp = lp;
-    SkipBlanks();
-    if (*lp == '=') {
-        ++lp;
+bool needDEFL(const char *&P) {
+    const char *olp = P;
+    skipWhiteSpace(P);
+    if (*P == '=') {
+        ++P;
         return true;
     }
-    if (*lp == '.') {
-        ++lp;
+    if (*P == '.') {
+        ++P;
     }
-    if (cmphstr(lp, "defl")) {
+    if (cmpHStr(P, "defl")) {
         return true;
     }
-    lp = olp;
+    P = olp;
     return false;
 }
 
-bool comma(const char *&p) {
-    SkipBlanks(p);
-    if (*p != ',') {
+bool comma(const char *&P) {
+    skipWhiteSpace(P);
+    if (*P != ',') {
         return false;
     }
-    ++p;
+    ++P;
     return true;
 }
 
 int cpc = '4';
 
 /* not modified */
-bool oparen(const char *&p, char c) {
-    SkipBlanks(p);
-    if (*p != c) {
+bool oParen(const char *&P, char C) {
+    skipWhiteSpace(P);
+    if (*P != C) {
         return false;
     }
-    if (c == '[') {
+    if (C == '[') {
         cpc = ']';
     }
-    if (c == '(') {
+    if (C == '(') {
         cpc = ')';
     }
-    if (c == '{') {
+    if (C == '{') {
         cpc = '}';
     }
-    ++p;
+    ++P;
     return true;
 }
 
-bool cparen(const char *&p) {
-    SkipBlanks(p);
-    if (*p != cpc) {
+bool cParen(const char *&P) {
+    skipWhiteSpace(P);
+    if (*P != cpc) {
         return false;
     }
-    ++p;
+    ++P;
     return true;
 }
 
-const char * getparen(const char *p) {
+const char * getParen(const char *P) {
     int teller = 0;
-    SkipBlanks(p);
-    while (*p) {
-        if (*p == '(') {
+    skipWhiteSpace(P);
+    while (*P) {
+        if (*P == '(') {
             ++teller;
-        } else if (*p == ')') {
+        } else if (*P == ')') {
             if (teller == 1) {
-                SkipBlanks(++p);
-                return p;
+                skipWhiteSpace(++P);
+                return P;
             } else {
                 --teller;
             }
         }
-        ++p;
+        ++P;
     }
     return nullptr;
 }
 
-optional<std::string> getID(const char *&p) {
+optional<std::string> getID(const char *&P) {
     std::string S;
-    SkipBlanks(p);
-    //if (!isalpha(*p) && *p!='_') return 0;
-    if (*p && !isalpha((unsigned char) *p) && *p != '_') {
+    skipWhiteSpace(P);
+    //if (!isalpha(*P) && *P!='_') return 0;
+    if (*P && !isalpha((unsigned char) *P) && *P != '_') {
         return boost::none;
     }
-    while (*p) {
-        if (!isalnum((unsigned char) *p) && *p != '_' && *p != '.' && *p != '?' && *p != '!' && *p != '#' &&
-            *p != '@') {
+    while (*P) {
+        if (!isalnum((unsigned char) *P) && *P != '_' && *P != '.' && *P != '?' && *P != '!' && *P != '#' &&
+            *P != '@') {
             break;
         }
-        S.push_back(*p);
-        ++p;
+        S.push_back(*P);
+        ++P;
     }
     if (!S.empty()) return S;
     else return boost::none;
 }
 
-std::string getInstr(const char *&p) {
+std::string getInstr(const char *&P) {
     std::string I;
-    SkipBlanks(p);
-    if (!isalpha((unsigned char) *p) && *p != '.') {
+    skipWhiteSpace(P);
+    if (!isalpha((unsigned char) *P) && *P != '.') {
         return ""s;
     } else {
-        I += *p;
-        ++p;
+        I += *P;
+        ++P;
     }
-    while (*p) {
-        if (!isalnum((unsigned char) *p) && *p != '_') {
+    while (*P) {
+        if (!isalnum((unsigned char) *P) && *P != '_') {
             break;
         }
-        I += *p;
-        ++p;
+        I += *P;
+        ++P;
     }
     return I;
 }
@@ -265,57 +254,57 @@ bool check24(aint val, bool error) {
     return true;
 }
 
-bool need(const char *&p, char c) {
-    SkipBlanks(p);
-    if (*p != c) {
+bool need(const char *&P, char C) {
+    skipWhiteSpace(P);
+    if (*P != C) {
         return false;
     }
-    ++p;
+    ++P;
     return true;
 }
 
-int needa(const char *&p,
-          const char *c1, int r1,
-          const char *c2, int r2,
-          const char *c3, int r3,
+int needA(const char *&P,
+          const char *C1, int R1,
+          const char *C2, int R2,
+          const char *C3, int R3,
           bool AllowParen) {
-    //  SkipBlanks(p);
-    if (!isalpha((unsigned char) *p)) {
+    //  skipWhiteSpace(P);
+    if (!isalpha((unsigned char) *P)) {
         return 0;
     }
-    if (cmphstr(p, c1, AllowParen)) {
-        return r1;
+    if (cmpHStr(P, C1, AllowParen)) {
+        return R1;
     }
-    if (c2 && cmphstr(p, c2, AllowParen)) {
-        return r2;
+    if (C2 && cmpHStr(P, C2, AllowParen)) {
+        return R2;
     }
-    if (c3 && cmphstr(p, c3, AllowParen)) {
-        return r3;
+    if (C3 && cmpHStr(P, C3, AllowParen)) {
+        return R3;
     }
     return 0;
 }
 
-int need(const char *&p, const char *c) {
-    SkipBlanks(p);
-    while (*c) {
-        if (*p != *c) {
-            c += 2;
+int need(const char *&P, const char *C) {
+    skipWhiteSpace(P);
+    while (*C) {
+        if (*P != *C) {
+            C += 2;
             continue;
         }
-        ++c;
-        if (*c == ' ') {
-            ++p;
-            return *(c - 1);
+        ++C;
+        if (*C == ' ') {
+            ++P;
+            return *(C - 1);
         }
-        if (*c == '_' && *(p + 1) != *(c - 1)) {
-            ++p;
-            return *(c - 1);
+        if (*C == '_' && *(P + 1) != *(C - 1)) {
+            ++P;
+            return *(C - 1);
         }
-        if (*(p + 1) == *c) {
-            p += 2;
-            return *(c - 1) + *c;
+        if (*(P + 1) == *C) {
+            P += 2;
+            return *(C - 1) + *C;
         }
-        ++c;
+        ++C;
     }
     return 0;
 }
@@ -344,14 +333,14 @@ int getval(int p) {
     }
 }
 
-bool GetConstant(const char *&op, aint &val) {
+bool getConstant(const char *&OP, aint &Val) {
     aint base, pb = 1, v, oval;
-    const char *p = op, *p2, *p3;
+    const char *p = OP, *p2, *p3;
 
-    SkipBlanks(p);
+    skipWhiteSpace(p);
 
     p3 = p;
-    val = 0;
+    Val = 0;
 
     switch (*p) {
         case '#':
@@ -359,45 +348,45 @@ bool GetConstant(const char *&op, aint &val) {
             ++p;
             while (isalnum((unsigned char) *p)) {
                 if ((v = getval(*p)) >= 16) {
-                    Error("Digit not in base"s, op);
+                    Error("Digit not in base"s, OP);
                     return false;
                 }
-                oval = val;
-                val = val * 16 + v;
+                oval = Val;
+                Val = Val * 16 + v;
                 ++p;
-                if (oval > val) {
+                if (oval > Val) {
                     Error("Overflow"s, SUPPRESS);
                 }
             }
 
             if (p - p3 < 2) {
-                Error("Syntax error"s, op, CATCHALL);
+                Error("Syntax error"s, OP, CATCHALL);
                 return false;
             }
 
-            op = p;
+            OP = p;
 
             return true;
         case '%':
             ++p;
             while (isdigit((unsigned char) *p)) {
                 if ((v = getval(*p)) >= 2) {
-                    Error("Digit not in base"s, op);
+                    Error("Digit not in base"s, OP);
                     return false;
                 }
-                oval = val;
-                val = val * 2 + v;
+                oval = Val;
+                Val = Val * 2 + v;
                 ++p;
-                if (oval > val) {
+                if (oval > Val) {
                     Error("Overflow"s, SUPPRESS);
                 }
             }
             if (p - p3 < 2) {
-                Error("Syntax error"s, op, CATCHALL);
+                Error("Syntax error"s, OP, CATCHALL);
                 return false;
             }
 
-            op = p;
+            OP = p;
 
             return true;
         case '0':
@@ -406,22 +395,22 @@ bool GetConstant(const char *&op, aint &val) {
                 ++p;
                 while (isalnum((unsigned char) *p)) {
                     if ((v = getval(*p)) >= 16) {
-                        Error("Digit not in base"s, op);
+                        Error("Digit not in base"s, OP);
                         return false;
                     }
-                    oval = val;
-                    val = val * 16 + v;
+                    oval = Val;
+                    Val = Val * 16 + v;
                     ++p;
-                    if (oval > val) {
+                    if (oval > Val) {
                         Error("Overflow"s, SUPPRESS);
                     }
                 }
                 if (p - p3 < 3) {
-                    Error("Syntax error"s, op, CATCHALL);
+                    Error("Syntax error"s, OP, CATCHALL);
                     return false;
                 }
 
-                op = p;
+                OP = p;
 
                 return true;
             }
@@ -467,28 +456,28 @@ bool GetConstant(const char *&op, aint &val) {
             }
             do {
                 if ((v = getval(*p)) >= base) {
-                    Error("Digit not in base"s, op);
+                    Error("Digit not in base"s, OP);
                     return false;
                 }
-                oval = val;
-                val += v * pb;
-                if (oval > val) {
+                oval = Val;
+                Val += v * pb;
+                if (oval > Val) {
                     Error("Overflow"s, SUPPRESS);
                 }
                 pb *= base;
             } while (p-- != p3);
 
-            op = p2;
+            OP = p2;
 
             return true;
     }
 }
 
-bool GetCharConstChar(const char *&op, aint &val) {
-    if ((val = *op++) != '\\') {
+bool getCharConstChar(const char *&OP, aint &Val) {
+    if ((Val = *OP++) != '\\') {
         return true;
     }
-    switch (val = *op++) {
+    switch (Val = *OP++) {
         case '\\':
         case '\'':
         case '\"':
@@ -496,45 +485,45 @@ bool GetCharConstChar(const char *&op, aint &val) {
             return true;
         case 'n':
         case 'N':
-            val = 10;
+            Val = 10;
             return true;
         case 't':
         case 'T':
-            val = 9;
+            Val = 9;
             return true;
         case 'v':
         case 'V':
-            val = 11;
+            Val = 11;
             return true;
         case 'b':
         case 'B':
-            val = 8;
+            Val = 8;
             return true;
         case 'r':
         case 'R':
-            val = 13;
+            Val = 13;
             return true;
         case 'f':
         case 'F':
-            val = 12;
+            Val = 12;
             return true;
         case 'a':
         case 'A':
-            val = 7;
+            Val = 7;
             return true;
         case 'e':
         case 'E':
-            val = 27;
+            Val = 27;
             return true;
         case 'd':
         case 'D':
-            val = 127;
+            Val = 127;
             return true;
         default:
-            --op;
-            val = '\\';
+            --OP;
+            Val = '\\';
 
-            Error("Unknown escape"s, op);
+            Error("Unknown escape"s, OP);
 
             return true;
     }
@@ -542,188 +531,188 @@ bool GetCharConstChar(const char *&op, aint &val) {
 }
 
 /* added */
-bool GetCharConstCharSingle(const char *&op, aint &val) {
-    if ((val = *op++) != '\\') {
+bool getCharConstCharSingle(const char *&OP, aint &Val) {
+    if ((Val = *OP++) != '\\') {
         return true;
     }
-    switch (val = *op++) {
+    switch (Val = *OP++) {
         case '\'':
             return true;
     }
-    --op;
-    val = '\\';
+    --OP;
+    Val = '\\';
     return true;
 }
 
-bool GetCharConst(const char *&p, aint &val) {
+bool getCharConst(const char *&P, aint &Val) {
     aint s = 24, r, t = 0;
-    val = 0;
-    const char *op = p;
+    Val = 0;
+    const char *op = P;
     char q;
-    if (*p != '\'' && *p != '"') {
+    if (*P != '\'' && *P != '"') {
         return false;
     }
-    q = *p++;
+    q = *P++;
     do {
-        if (!*p || *p == q) {
-            p = op;
+        if (!*P || *P == q) {
+            P = op;
             return false;
         }
-        GetCharConstChar(p, r);
-        val += r << s;
+        getCharConstChar(P, r);
+        Val += r << s;
         s -= 8;
         ++t;
-    } while (*p != q);
+    } while (*P != q);
     if (t > 4) {
         Error("Overflow"s, SUPPRESS);
     }
-    val = val >> (s + 8);
-    ++p;
+    Val = Val >> (s + 8);
+    ++P;
     return true;
 }
 
 /* modified */
-int GetBytes(const char *&p, int *e, int add, int dc) {
+int getBytes(const char *&P, int *E, int Add, int DC) {
     aint val;
     int t = 0;
     while (true) {
-        SkipBlanks(p);
-        if (!*p) {
+        skipWhiteSpace(P);
+        if (!*P) {
             Error("Expression expected"s, SUPPRESS);
             break;
         }
         if (t == 128) {
-            Error("Too many arguments"s, p, SUPPRESS);
+            Error("Too many arguments"s, P, SUPPRESS);
             break;
         }
-        if (*p == '"') {
-            p++;
+        if (*P == '"') {
+            P++;
             do {
-                if (!*p || *p == '"') {
-                    Error("Syntax error"s, p, SUPPRESS);
-                    e[t] = -1;
+                if (!*P || *P == '"') {
+                    Error("Syntax error"s, P, SUPPRESS);
+                    E[t] = -1;
                     return t;
                 }
                 if (t == 128) {
-                    Error("Too many arguments"s, p, SUPPRESS);
-                    e[t] = -1;
+                    Error("Too many arguments"s, P, SUPPRESS);
+                    E[t] = -1;
                     return t;
                 }
-                GetCharConstChar(p, val);
+                getCharConstChar(P, val);
                 check8(val);
-                e[t++] = (val + add) & 255;
-            } while (*p != '"');
-            ++p;
-            if (dc && t) {
-                e[t - 1] |= 128;
+                E[t++] = (val + Add) & 255;
+            } while (*P != '"');
+            ++P;
+            if (DC && t) {
+                E[t - 1] |= 128;
             }
             /* (begin add) */
-        } else if ((*p == 0x27) && (!*(p + 2) || *(p + 2) != 0x27)) {
-            p++;
+        } else if ((*P == 0x27) && (!*(P + 2) || *(P + 2) != 0x27)) {
+            P++;
             do {
-                if (!*p || *p == 0x27) {
-                    Error("Syntax error"s, p, SUPPRESS);
-                    e[t] = -1;
+                if (!*P || *P == 0x27) {
+                    Error("Syntax error"s, P, SUPPRESS);
+                    E[t] = -1;
                     return t;
                 }
                 if (t == 128) {
-                    Error("Too many arguments"s, p, SUPPRESS);
-                    e[t] = -1;
+                    Error("Too many arguments"s, P, SUPPRESS);
+                    E[t] = -1;
                     return t;
                 }
-                GetCharConstCharSingle(p, val);
+                getCharConstCharSingle(P, val);
                 check8(val);
-                e[t++] = (val + add) & 255;
-            } while (*p != 0x27);
+                E[t++] = (val + Add) & 255;
+            } while (*P != 0x27);
 
-            ++p;
+            ++P;
 
-            if (dc && t) {
-                e[t - 1] |= 128;
+            if (DC && t) {
+                E[t - 1] |= 128;
             }
             /* (end add) */
         } else {
-            if (parseExpression(p, val)) {
+            if (parseExpression(P, val)) {
                 check8(val);
-                e[t++] = (val + add) & 255;
+                E[t++] = (val + Add) & 255;
             } else {
-                Error("Syntax error"s, p, SUPPRESS);
+                Error("Syntax error"s, P, SUPPRESS);
                 break;
             }
         }
-        SkipBlanks(p);
-        if (*p != ',') {
+        skipWhiteSpace(P);
+        if (*P != ',') {
             break;
         }
-        ++p;
+        ++P;
     }
-    e[t] = -1;
+    E[t] = -1;
     return t;
 }
 
-std::string getString(const char *&p, bool KeepBrackets) {
+std::string getString(const char *&P, bool KeepBrackets) {
     std::string Res;
-    SkipBlanks(p);
-    if (!*p) {
+    skipWhiteSpace(P);
+    if (!*P) {
         return std::string{};
     }
     char limiter = '\0';
 
-    if (*p == '"') {
+    if (*P == '"') {
         limiter = '"';
-        ++p;
-    } else if (*p == '\'') {
+        ++P;
+    } else if (*P == '\'') {
         limiter = '\'';
-        ++p;
-    } else if (*p == '<') {
+        ++P;
+    } else if (*P == '<') {
         limiter = '>';
         if (KeepBrackets)
-            Res += *p;
-        ++p;
+            Res += *P;
+        ++P;
     }
     //TODO: research strange ':' logic
-    while (*p && *p != limiter) {
-        Res += *p++;
+    while (*P && *P != limiter) {
+        Res += *P++;
     }
-    if (*p != limiter) {
+    if (*P != limiter) {
         Error("No closing '"s + std::string{limiter} + "'"s);
     }
-    if (*p) {
-        if (*p == '>' && KeepBrackets)
-            Res += *p;
-        ++p;
+    if (*P) {
+        if (*P == '>' && KeepBrackets)
+            Res += *P;
+        ++P;
     }
     return Res;
 }
 
-fs::path getFileName(const char *&p) {
-    const std::string &result = getString(p, true);
+fs::path getFileName(const char *&P) {
+    const std::string &result = getString(P, true);
     return fs::path(result);
 }
 
-HobetaFilename GetHobetaFileName(const char *&p) {
-    const std::string &result = getString(p);
+HobetaFilename getHobetaFileName(const char *&P) {
+    const std::string &result = getString(P);
     return HobetaFilename(result);
 }
 
-bool needcomma(const char *&p) {
-    SkipBlanks(p);
-    if (*p != ',') {
+bool needComma(const char *&P) {
+    skipWhiteSpace(P);
+    if (*P != ',') {
         Error("Comma expected"s);
     }
-    return (*(p++) == ',');
+    return (*(P++) == ',');
 }
 
-bool needbparen(const char *&p) {
-    SkipBlanks(p);
-    if (*p != ']') {
+bool needBParen(const char *&P) {
+    skipWhiteSpace(P);
+    if (*P != ']') {
         Error("']' expected"s);
     }
-    return (*(p++) == ']');
+    return (*(P++) == ']');
 }
 
-bool islabchar(char p) {
-    if (isalnum((unsigned char) p) || p == '_' || p == '.' || p == '?' || p == '!' || p == '#' || p == '@') {
+bool isLabChar(char P) {
+    if (isalnum((unsigned char) P) || P == '_' || P == '.' || P == '?' || P == '!' || P == '#' || P == '@') {
         return true;
     }
     return false;
@@ -734,7 +723,7 @@ int GetArray(const char *&p, int *e, int add, int dc) {
     aint val;
     int t = 0;
     while (true) {
-        SkipBlanks(p);
+        skipWhiteSpace(p);
         if (!*p) {
             Error("Expression expected"s, SUPPRESS);
             break;
@@ -756,7 +745,7 @@ int GetArray(const char *&p, int *e, int add, int dc) {
                     e[t] = -1;
                     return t;
                 }
-                GetCharConstChar(p, val);
+                getCharConstChar(p, val);
                 check8(val);
                 e[t++] = (val + add) & 255;
             } while (*p != '"');
@@ -778,7 +767,7 @@ int GetArray(const char *&p, int *e, int add, int dc) {
                     e[t] = -1;
                     return t;
                 }
-                GetCharConstCharSingle(p, val);
+                getCharConstCharSingle(p, val);
                 check8(val);
                 e[t++] = (val + add) & 255;
             } while (*p != 0x27);
@@ -796,7 +785,7 @@ int GetArray(const char *&p, int *e, int add, int dc) {
                 break;
             }
         }
-        SkipBlanks(p);
+        skipWhiteSpace(p);
         if (*p != ',') {
             break;
         }
@@ -806,10 +795,10 @@ int GetArray(const char *&p, int *e, int add, int dc) {
     return t;
 }
 
-const std::string getAll(const char *&p) {
-    std::string R{p};
-    while ((*p > 0)) {
-        ++p;
+const std::string getAll(const char *&P) {
+    std::string R{P};
+    while ((*P > 0)) {
+        ++P;
     }
     return R;
 }

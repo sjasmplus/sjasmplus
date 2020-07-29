@@ -667,28 +667,28 @@ EReturn readFile(const char *pp, const char *err) {
             //_COUT "RF:" _CMDL rlcolon _CMDL line _ENDL;
         }
 
-        SkipBlanks(p);
+        skipWhiteSpace(p);
         if (*p == '.') {
             ++p;
         }
-        if (cmphstr(p, "endif")) {
+        if (cmpHStr(p, "endif")) {
             lp = replaceDefine(p);
             return ENDIF;
         }
-        if (cmphstr(p, "else")) {
+        if (cmpHStr(p, "else")) {
             Asm->Listing.listLine(line);
             lp = replaceDefine(p);
             return ELSE;
         }
-        if (cmphstr(p, "endt")) {
+        if (cmpHStr(p, "endt")) {
             lp = replaceDefine(p);
             return ENDTEXTAREA;
         }
-        if (cmphstr(p, "dephase")) {
+        if (cmpHStr(p, "dephase")) {
             lp = replaceDefine(p);
             return ENDTEXTAREA;
         } // hmm??
-        if (cmphstr(p, "unphase")) {
+        if (cmpHStr(p, "unphase")) {
             lp = replaceDefine(p);
             return ENDTEXTAREA;
         } // hmm??
@@ -715,31 +715,31 @@ EReturn skipFile(const char *pp, const char *err) {
             p = line;
             //_COUT "SF:" _CMDL rlcolon _CMDL line _ENDL;
         }
-        SkipBlanks(p);
+        skipWhiteSpace(p);
         if (*p == '.') {
             ++p;
         }
-        if (cmphstr(p, "if")) {
+        if (cmpHStr(p, "if")) {
             ++iflevel;
         }
-        if (cmphstr(p, "ifn")) {
+        if (cmpHStr(p, "ifn")) {
             ++iflevel;
         }
-        if (cmphstr(p, "ifused")) {
+        if (cmpHStr(p, "ifused")) {
             ++iflevel;
         }
-        if (cmphstr(p, "ifnused")) {
+        if (cmpHStr(p, "ifnused")) {
             ++iflevel;
         }
-        //if (cmphstr(p,"ifexist")) { ++iflevel; }
-        //if (cmphstr(p,"ifnexist")) { ++iflevel; }
-        if (cmphstr(p, "ifdef")) {
+        //if (cmpHStr(p,"ifexist")) { ++iflevel; }
+        //if (cmpHStr(p,"ifnexist")) { ++iflevel; }
+        if (cmpHStr(p, "ifdef")) {
             ++iflevel;
         }
-        if (cmphstr(p, "ifndef")) {
+        if (cmpHStr(p, "ifndef")) {
             ++iflevel;
         }
-        if (cmphstr(p, "endif")) {
+        if (cmpHStr(p, "endif")) {
             if (iflevel) {
                 --iflevel;
             } else {
@@ -747,7 +747,7 @@ EReturn skipFile(const char *pp, const char *err) {
                 return ENDIF;
             }
         }
-        if (cmphstr(p, "else")) {
+        if (cmpHStr(p, "else")) {
             if (!iflevel) {
                 Asm->Listing.listLine(line);
                 lp = replaceDefine(p);
@@ -780,11 +780,11 @@ bool readFileToListOfStrings(std::list<std::string> &List, const std::string &En
         p = line;
 
         if (*p) {
-            SkipBlanks(p);
+            skipWhiteSpace(p);
             if (*p == '.') {
                 ++p;
             }
-            if (cmphstr(p, EndMarker.c_str())) {
+            if (cmpHStr(p, EndMarker.c_str())) {
                 lp = replaceDefine(p);
                 return true;
             }
