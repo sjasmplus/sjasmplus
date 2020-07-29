@@ -87,7 +87,7 @@ void CStruct::deflab() {
     if (pass == LASTPASS) {
         const char *t = op.c_str();
         if (!this->Parent->Asm.Labels.getLabelValue(t, oval)) {
-            Fatal("Internal error. ParseLabel()"s);
+            Fatal("Internal error. parseLabel()"s);
         }
         if (noffset != oval) {
             Error("Label has different value in pass 2"s, this->Parent->Asm.Labels.TempLabel);
@@ -107,7 +107,7 @@ void CStruct::deflab() {
         if (pass == LASTPASS) {
             const char *t = op.c_str();
             if (!this->Parent->Asm.Labels.getLabelValue(t, oval)) {
-                Fatal("Internal error. ParseLabel()"s);
+                Fatal("Internal error. parseLabel()"s);
             }
             if (L.Offset != oval) {
                 Error("Label has different value in pass 2"s, this->Parent->Asm.Labels.TempLabel);
@@ -130,7 +130,7 @@ void CStruct::emitLabels(const std::string &iid) {
     if (pass == LASTPASS) {
         const char *t = op.c_str();
         if (!this->Parent->Asm.Labels.getLabelValue(t, oval)) {
-            Fatal("Internal error. ParseLabel()"s);
+            Fatal("Internal error. parseLabel()"s);
         }
         if (this->Parent->Asm.Em.getCPUAddress() != oval) {
             Error("Label has different value in pass 2"s, this->Parent->Asm.Labels.TempLabel);
@@ -150,7 +150,7 @@ void CStruct::emitLabels(const std::string &iid) {
         if (pass == LASTPASS) {
             const char *t = op.c_str();
             if (!this->Parent->Asm.Labels.getLabelValue(t, oval)) {
-                Fatal("Internal error. ParseLabel()"s);
+                Fatal("Internal error. parseLabel()"s);
             }
             if (L.Offset + this->Parent->Asm.Em.getCPUAddress() != oval) {
                 Error("Label has different value in pass 2"s, this->Parent->Asm.Labels.TempLabel);

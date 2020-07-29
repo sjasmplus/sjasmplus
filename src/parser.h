@@ -41,17 +41,19 @@ void initLegacyParser();
 bool parseExpression(const char *&p, aint &nval);
 bool parseExpPrim(const char *&p, aint &nval);
 
-bool parseDirective(const char *BOL, bool AtBOL);
+bool parseDirective(const char *BOL, const char *&P);
 
-bool parseDirective_REPT();
+bool parseDirective_REPT(const char *&P);
 
-void parseInstruction(const char *BOL, const char *BOI);
+void parseInstruction(const char *BOL, const char *&BOI);
+
 char *replaceDefine(const char *lp, char *dest = sline);
-void parseLine(bool ParseLabels = true);
 
-void parseLineSafe(bool ParseLabels = true);
+void parseLine(const char *&P, bool ParseLabels = true);
 
-void parseStructLine(CStruct &St);
+void parseLineSafe(const char *&P, bool ParseLabels = true);
+
+void parseStructLine(const char *&P, CStruct &St);
 
 unsigned long luaCalculate(const char *str);
 

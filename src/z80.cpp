@@ -136,17 +136,17 @@ void errorRegIfI8080(enum Z80Reg R) {
     }
 }
 
-void getOpCode(const char *_BOI) {
-    BOI = _BOI;
+void getOpCode(const char *&P) {
+    BOI = P;
     std::string Instr;
-    bp = lp;
-    if ((Instr = getInstr(lp)).empty()) {
-        Error("Unrecognized instruction"s, lp, LASTPASS);
+    bp = P;
+    if ((Instr = getInstr(P)).empty()) {
+        Error("Unrecognized instruction"s, P, LASTPASS);
         return;
     }
     if (!OpCodeTable.callIfExists(Instr)) {
         Error("Unrecognized instruction"s, bp, LASTPASS);
-        getAll(lp);
+        getAll(P);
     }
 }
 

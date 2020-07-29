@@ -33,7 +33,7 @@
 
 namespace Z80 {
 
-void getOpCode(const char *_BOI);
+void getOpCode(const char *&P);
 
 } // namespace Z80
 

@@ -410,7 +410,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                 rlsquotes = rldquotes = rlcomment = rlspace = rlcolon = false;
                 //_COUT line _ENDL;
                 if (Parse) {
-                    parseLine();
+                    parseLine(lp);
                 } else {
                     return;
                 }
@@ -428,7 +428,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                 }*/
                 rlcolon = true;
                 if (Parse) {
-                    parseLine();
+                    parseLine(lp);
                 } else {
                     return;
                 }
@@ -453,7 +453,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     }
                     rlcolon = true;
                     if (Parse) {
-                        parseLine();
+                        parseLine(lp);
                     } else {
                         return;
                     }
@@ -507,7 +507,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
         rlnewline = true;
         *rlppos = 0;
         if (Parse) {
-            parseLine();
+            parseLine(lp);
         } else {
             return;
         }
@@ -692,7 +692,7 @@ EReturn readFile(const char *pp, const char *err) {
             lp = replaceDefine(p);
             return ENDTEXTAREA;
         } // hmm??
-        parseLineSafe();
+        parseLineSafe(lp);
     }
     Fatal("Unexpected end of file"s);
 }

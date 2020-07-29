@@ -608,29 +608,29 @@ char *replaceDefine(const char *lp, char *dest) {
     return nl;
 }
 
-void ParseLabel() {
+void parseLabel(const char *&P) {
     std::string LUnparsed;
     aint val;
-    if (isWhiteSpaceChar(*lp)) {
+    if (isWhiteSpaceChar(*P)) {
         return;
     }
-    if (Asm->options().IsPseudoOpBOF && parseDirective(lp, true)) {
-        while (*lp == ':') {
-            ++lp;
+    if (Asm->options().IsPseudoOpBOF && parseDirective(P, P)) {
+        while (*P == ':') {
+            ++P;
         }
         return;
     }
-    while (*lp && !isWhiteSpaceChar(*lp) && *lp != ':' && *lp != '=') {
-        LUnparsed += *lp;
-        ++lp;
+    while (*P && !isWhiteSpaceChar(*P) && *P != ':' && *P != '=') {
+        LUnparsed += *P;
+        ++P;
     }
-    if (*lp == ':') {
-        ++lp;
+    if (*P == ':') {
+        ++P;
     }
-    skipWhiteSpace(lp);
+    skipWhiteSpace(P);
     IsLabelNotFound = 0;
     if (isdigit((unsigned char) LUnparsed[0])) {
-        if (needEQU(lp) || needDEFL(lp)) {
+        if (needEQU(P) || needDEFL(P)) {
             Error("Number labels only allowed as address labels"s);
             return;
         }
@@ -641,20 +641,20 @@ void ParseLabel() {
         }
     } else {
         bool IsDEFL = false;
-        if (needEQU(lp)) {
-            if (!parseExpression(lp, val)) {
-                Error("Expression error"s, lp);
+        if (needEQU(P)) {
+            if (!parseExpression(P, val)) {
+                Error("Expression error"s, P);
                 val = 0;
             }
-        } else if (needDEFL(lp)) {
-            if (!parseExpression(lp, val)) {
-                Error("Expression error"s, lp);
+        } else if (needDEFL(P)) {
+            if (!parseExpression(P, val)) {
+                Error("Expression error"s, P);
                 val = 0;
             }
             IsDEFL = true;
         } else {
             int gl = 0;
-            const char *p = lp;
+            const char *p = P;
             optional<std::string> Name;
             skipWhiteSpace(p);
             if (*p == '@') {
@@ -662,7 +662,7 @@ void ParseLabel() {
                 gl = 1;
             }
             if ((Name = getID(p)) && Asm->Structs.emit(*Name, LUnparsed, p, gl)) {
-                lp = (char *) p;
+                P = (char *) p;
                 return;
             }
             val = Asm->Em.getCPUAddress();
@@ -682,7 +682,7 @@ void ParseLabel() {
             aint oval;
             const char *t = LUnparsed.c_str();
             if (!Asm->Labels.getLabelValue(t, oval)) {
-                Fatal("Internal error. ParseLabel()"s);
+                Fatal("Internal error. parseLabel()"s);
             }
             /*if (val!=oval) Error("Label has different value in pass 2",temp);*/
             if (!IsDEFL && val != oval) {
@@ -701,9 +701,9 @@ void ParseLabel() {
     }
 }
 
-bool ParseMacro() {
+bool parseMacro(const char *&P) {
     int gl = 0;
-    const char *p = lp;
+    const char *p = P;
     optional<std::string> Name;
     skipWhiteSpace(p);
     if (*p == '@') {
@@ -716,15 +716,15 @@ bool ParseMacro() {
     MacroResult R;
     if ((R = Asm->Macros.emit(*Name, p, line)) == MacroResult::NotFound) {
         if (Asm->Structs.emit(*Name, ""s, p, gl)) {
-            lp = (char *) p;
+            P = (char *) p;
             return true;
         }
     } else if (R == MacroResult::Success) {
-        lp = p;
+        P = p;
         std::string tmp{line};
 
         while (Asm->Macros.readLine(line, LINEMAX)) {
-            parseLineSafe();
+            parseLineSafe(P);
         }
 
         std::strncpy(line, tmp.c_str(), LINEMAX);
@@ -739,8 +739,8 @@ bool ParseMacro() {
     return false;
 }
 
-void parseInstruction(const char *BOL, const char *BOI) {
-    if (parseDirective(BOL, false)) {
+void parseInstruction(const char *BOL, const char *&BOI) {
+    if (parseDirective(BOL, BOI)) {
         return;
     }
     Z80::getOpCode(BOI);
@@ -758,22 +758,22 @@ unsigned char win2dos[] = //taken from HorrorWord %)))
                 0xE7, 0xE8, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF
         };
 
-void parseLine(bool ParseLabels) {
+void parseLine(const char *&P, bool ParseLabels) {
     /*++CurrentGlobalLine;*/
     replacedefineteller = comnxtlin = 0;
     if (!RepeatStack.empty()) {
         RepeatInfo &dup = RepeatStack.top();
         if (!dup.Complete) {
-            lp = line;
-            dup.Lines.emplace_back(lp);
-            parseDirective_REPT();
+            P = line;
+            dup.Lines.emplace_back(P);
+            parseDirective_REPT(P);
             return;
         }
     }
-    lp = replaceDefine(line);
-    const char *BOL = lp;
+    P = replaceDefine(line);
+    const char *BOL = P;
     if (Asm->options().ConvertWindowsToDOS) {
-        auto *lp2 = (unsigned char *) lp;
+        auto *lp2 = (unsigned char *) P;
         while (*(lp2++)) {
             if ((*lp2) >= 128) {
                 *lp2 = win2dos[(*lp2) - 128];
@@ -786,36 +786,36 @@ void parseLine(bool ParseLabels) {
         return;
     }
     comlin += comnxtlin;
-    if (!*lp) {
+    if (!*P) {
         Asm->Listing.listLine(line);
         return;
     }
     if (ParseLabels) {
-        ParseLabel();
+        parseLabel(P);
     }
-    if (skipWhiteSpace(lp)) {
+    if (skipWhiteSpace(P)) {
         Asm->Listing.listLine(line);
         return;
     }
-    ParseMacro();
-    if (skipWhiteSpace(lp)) {
+    parseMacro(P);
+    if (skipWhiteSpace(P)) {
         Asm->Listing.listLine(line);
         return;
     }
-    parseInstruction(BOL, lp);
-    if (skipWhiteSpace(lp)) {
+    parseInstruction(BOL, P);
+    if (skipWhiteSpace(P)) {
         Asm->Listing.listLine(line);
         return;
     }
-    if (*lp) {
-        Error("Unexpected"s, lp, LASTPASS);
+    if (*P) {
+        Error("Unexpected"s, P, LASTPASS);
     }
     Asm->Listing.listLine(line);
 }
 
-void parseLineSafe(bool ParseLabels) {
+void parseLineSafe(const char *&P, bool ParseLabels) {
     char *tmp = NULL, *tmp2 = NULL;
-    const char *rp = lp;
+    const char *rp = P;
     if (sline[0] > 0) {
         tmp = STRDUP(sline);
         if (tmp == NULL) {
@@ -830,7 +830,7 @@ void parseLineSafe(bool ParseLabels) {
     }
 
     CompiledCurrentLine++;
-    parseLine(ParseLabels);
+    parseLine(P, ParseLabels);
 
     *sline = 0;
     *sline2 = 0;
@@ -843,30 +843,30 @@ void parseLineSafe(bool ParseLabels) {
         STRCPY(sline, LINEMAX2, tmp);
         free(tmp);
     }
-    lp = rp;
+    P = rp;
 }
 
-void parseStructLine(CStruct &St) {
+void parseStructLine(const char *&P, CStruct &St) {
     replacedefineteller = comnxtlin = 0;
-    lp = replaceDefine(line);
+    P = replaceDefine(line);
     if (comlin) {
         comlin += comnxtlin;
         return;
     }
     comlin += comnxtlin;
-    if (!*lp) {
+    if (!*P) {
         return;
     }
-    parseStructLabel(lp, St);
-    if (skipWhiteSpace(lp)) {
+    parseStructLabel(P, St);
+    if (skipWhiteSpace(P)) {
         return;
     }
-    parseStructMember(lp, St);
-    if (skipWhiteSpace(lp)) {
+    parseStructMember(P, St);
+    if (skipWhiteSpace(P)) {
         return;
     }
-    if (*lp) {
-        Error("[STRUCT] Unexpected"s, lp);
+    if (*P) {
+        Error("[STRUCT] Unexpected"s, P);
     }
 }
 
@@ -889,7 +889,7 @@ void luaParseLine(char *str) {
     }
 
     STRCPY(line, LINEMAX, str);
-    parseLineSafe();
+    parseLineSafe(lp);
 
     STRCPY(line, LINEMAX, ml);
     free(ml);
@@ -905,7 +905,7 @@ void luaParseCode(char *str) {
     }
 
     STRCPY(line, LINEMAX, str);
-    parseLineSafe(false);
+    parseLineSafe(lp, false);
 
     STRCPY(line, LINEMAX, ml);
     free(ml);

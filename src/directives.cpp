@@ -67,15 +67,15 @@ FunctionTable DirectivesTable_dup;
  * Use this function for now
  * Remove/refactor when transition to the new parser is complete
  */
-bool tryNewDirectiveParser(const char *BOL, bool AtBOL) {
-    size_t DirPos = lp - BOL;
+bool tryNewDirectiveParser(const char *BOL, const char *&P, bool AtBOL) {
+    size_t DirPos = P - BOL;
     parser::State S{*Asm};
-    tao::pegtl::memory_input<> In(lp, lp + strlen(lp),
+    tao::pegtl::memory_input<> In(P, P + strlen(P),
                                   getCurrentSrcFileNameForMsg().string(),
                                   DirPos, CurrentLocalLine, DirPos);
     try {
         if(tao::pegtl::parse<parser::Directive, parser::Actions, parser::Ctrl>(In, S)) {
-            getAll(lp);
+            getAll(P);
             return true;
         } else {
             return false;
@@ -85,21 +85,22 @@ bool tryNewDirectiveParser(const char *BOL, bool AtBOL) {
     }
 }
 
-bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
-    if(tryNewDirectiveParser(BOL, AtBOL))
+bool parseDirective(const char *BOL, const char *&P) { // BOL = Beginning of line
+    bool AtBOL = BOL == P;
+    if(tryNewDirectiveParser(BOL, P, AtBOL))
         return true;
-    const char *olp = lp;
+    const char *olp = P;
     std::string Instr;
-    bp = lp;
-    if ((Instr = getInstr(lp)).empty()) {
-        lp = olp;
+    bp = P;
+    if ((Instr = getInstr(P)).empty()) {
+        P = olp;
         return false;
     }
 
     if (DirectivesTable.callIfExists(Instr, AtBOL)) {
         return true;
     } else if ((!AtBOL || Asm->options().IsPseudoOpBOF) && Instr[0] == '.' &&
-               ((Instr.size() >= 2 && isdigit(Instr[1])) || *lp == '(')) {
+               ((Instr.size() >= 2 && isdigit(Instr[1])) || *P == '(')) {
         // .number or .(expression) prefix which acts as DUP/REPT for a single line
         aint val;
         size_t DirPos = olp - BOL;
@@ -108,37 +109,37 @@ bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
             const char *RepVal = Instr.c_str() + 1;
             if (!parseExpression(RepVal, val)) {
                 Error("Syntax error"s, CATCHALL);
-                lp = olp;
+                P = olp;
                 return false;
             }
-        } else if (*lp == '(') {
-            if (!parseExpPrim(lp, val)) {
+        } else if (*P == '(') {
+            if (!parseExpPrim(P, val)) {
                 Error("Syntax error"s, CATCHALL);
-                lp = olp;
+                P = olp;
                 return false;
             }
         } else {
-            lp = olp;
+            P = olp;
             return false;
         }
         if (val < 1) {
             Error(".X must be positive integer"s, CATCHALL);
-            lp = olp;
+            P = olp;
             return false;
         }
 
         std::string S(DirPos, ' ');
-        skipWhiteSpace(lp);
-        if (*lp) {
-            S += lp;
-            lp += strlen(lp);
+        skipWhiteSpace(P);
+        if (*P) {
+            S += P;
+            P += strlen(P);
         }
         //_COUT pp _ENDL;
         Asm->Listing.startMacro();
         std::string OLine{line};
         do {
             STRCPY(line, LINEMAX, S.c_str());
-            parseLineSafe();
+            parseLineSafe(P);
         } while (--val);
         STRCPY(line, LINEMAX, OLine.c_str());
         Asm->Listing.endMacro();
@@ -146,23 +147,23 @@ bool parseDirective(const char *BOL, bool AtBOL) { // BOL = Beginning of line
 
         return true;
     }
-    lp = olp;
+    P = olp;
     return false;
 }
 
-bool parseDirective_REPT() {
-    const char *olp = lp;
+bool parseDirective_REPT(const char *&P) {
+    const char *olp = P;
     std::string Instr;
-    bp = lp;
-    if ((Instr = getInstr(lp)).empty()) {
-        lp = olp;
+    bp = P;
+    if ((Instr = getInstr(P)).empty()) {
+        P = olp;
         return false;
     }
 
     if (DirectivesTable_dup.callIfExists(Instr)) {
         return true;
     }
-    lp = olp;
+    P = olp;
     return false;
 }
 
@@ -1685,7 +1686,7 @@ void dirSTRUCT() {
         if (cmpHStr(lp, "ends")) {
             break;
         }
-        parseStructLine(St);
+        parseStructLine(lp, St);
         Asm->Listing.listLineSkip(line);
     }
     St.deflab();
@@ -1782,7 +1783,7 @@ void dirEDUP() {
         CurrentLocalLine = dup.CurrentLocalLine;
         for (auto &L : dup.Lines) {
             STRCPY(line, LINEMAX, L.c_str());
-            parseLineSafe();
+            parseLineSafe(lp);
             CurrentLocalLine++;
             CurrentGlobalLine++;
             CompiledCurrentLine++;
