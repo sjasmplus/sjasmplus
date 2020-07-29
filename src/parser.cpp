@@ -35,6 +35,10 @@
 #include "asm.h"
 #include "parser/struct.h"
 
+#include <boost/algorithm/string/case_conv.hpp>
+
+using boost::algorithm::to_upper_copy;
+
 #include "parser.h"
 
 bool synerr;
@@ -45,7 +49,7 @@ extern Assembler *Asm;
 char sline[LINEMAX2], sline2[LINEMAX2];
 
 aint comlin = 0;
-int replacedefineteller = 0, comnxtlin;
+int substituteDepthCount = 0, comnxtlin;
 char dirDEFl[] = "def", dirDEFu[] = "DEF"; /* added for ReplaceDefine */
 
 void initLegacyParser() {
@@ -434,22 +438,28 @@ bool parseExpression(const char *&p, aint &nval) {
     return false;
 }
 
-char *replaceDefine(const char *lp, char *dest) {
-    int definegereplaced = 0, dr;
+/*
+ * Preprocesses a line buffer:
+ *  - applies DEFINEs
+ *  - applies MACROs
+ *  - strips comments
+ *  - replaces multiline comments' tails with spaces
+ */
+char *substituteMacros(const char *lp, char *dest) {
+    bool SubstitutedSome = false, Substituted;
     char *nl = dest;
-    char *rp = nl, a;
+    char *rp = nl, QChar;
     const char *kp;
     optional<std::string> Id;
     std::string Repl;
-    if (++replacedefineteller > 20) {
-        Fatal("Over 20 defines nested"s);
+    if (++substituteDepthCount > 20) {
+        Fatal("Over 20 macro/define substitutions nested"s);
     }
     while (true) {
         if (comlin || comnxtlin) {
-            if (*lp == '*' && *(lp + 1) == '/') {
-                *rp = ' ';
+            if (matchStr(lp, "*/")) {
+                *rp = ' '; // Insert a space in place of a multi-line comment tail
                 ++rp;
-                lp += 2;
                 if (comnxtlin) {
                     --comnxtlin;
                 } else {
@@ -459,56 +469,49 @@ char *replaceDefine(const char *lp, char *dest) {
             }
         }
 
-        if (*lp == ';' && !comlin && !comnxtlin) {
-            *rp = 0;
+        if ((*lp == ';' || peekStr(lp, "//")) && !comlin && !comnxtlin) {
+            *rp = 0; // Reached a line comment. Terminate.
             return nl;
         }
-        if (*lp == '/' && *(lp + 1) == '/' && !comlin && !comnxtlin) {
-            *rp = 0;
-            return nl;
-        }
-        if (*lp == '/' && *(lp + 1) == '*') {
-            lp += 2;
+        if (matchStr(lp, "/*")) {
             ++comnxtlin;
             continue;
         }
 
         if (*lp == '"' || *lp == '\'') {
-            a = *lp;
+            QChar = *lp;
             if (!comlin && !comnxtlin) {
                 *rp = *lp;
                 ++rp;
             }
             ++lp;
 
-            if (a != '\'' || ((*(lp - 2) != 'f' || *(lp - 3) != 'a') && (*(lp - 2) != 'F' || *(lp - 3) != 'A'))) {
-                while (true) {
-                    if (!*lp) {
-                        *rp = 0;
-                        return nl;
-                    }
-                    if (!comlin && !comnxtlin) {
-                        *rp = *lp;
-                    }
-                    if (*lp == a) {
-                        if (!comlin && !comnxtlin) {
-                            ++rp;
-                        }
-                        ++lp;
-                        break;
-                    }
-                    if (*lp == '\\') {
-                        ++lp;
-                        if (!comlin && !comnxtlin) {
-                            ++rp;
-                            *rp = *lp;
-                        }
-                    }
+            while (true) {
+                if (!*lp) {
+                    *rp = 0;
+                    return nl;
+                }
+                if (!comlin && !comnxtlin) {
+                    *rp = *lp;
+                }
+                if (*lp == QChar) {
                     if (!comlin && !comnxtlin) {
                         ++rp;
                     }
                     ++lp;
+                    break;
                 }
+                if (*lp == '\\') {
+                    ++lp;
+                    if (!comlin && !comnxtlin) {
+                        ++rp;
+                        *rp = *lp;
+                    }
+                }
+                if (!comlin && !comnxtlin) {
+                    ++rp;
+                }
+                ++lp;
             }
             continue;
         }
@@ -531,30 +534,26 @@ char *replaceDefine(const char *lp, char *dest) {
         }
 
         Id = getID(lp);
-        dr = 1;
+        Substituted = true;
 
         if (auto Def = Asm->Defines.get(*Id)) {
             Repl = *Def;
         } else {
             Repl = Asm->Macros.getReplacement(*Id);
             if (Asm->Macros.labelPrefix().empty() || Repl.empty()) {
-                dr = 0;
+                Substituted = false;
                 Repl = (*Id);
             }
         }
 
         if (const auto &Arr = Asm->Defines.getArray(*Id)) {
             aint val;
-            //_COUT lp _ENDL;
             while (*(lp++) && (*lp <= ' ' || *lp == '['));
-            //_COUT lp _ENDL;
             if (!parseExpression(lp, val)) {
                 Error("[ARRAY] Expression error"s, CATCHALL);
                 break;
             }
-            //_COUT lp _ENDL;
             while (*lp == ']' && *(lp++));
-            //_COUT "A" _CMDL val _ENDL;
             if (val < 0) {
                 Error("Number of cell must be positive"s, CATCHALL);
                 break;
@@ -566,35 +565,40 @@ char *replaceDefine(const char *lp, char *dest) {
             }
         }
 
-        if (dr) {
+        if (Substituted) {
             kp = lp - (*Id).size();
             while (*(kp--) && *kp <= ' ');
             kp = kp - 4;
             if (cmpHStr(kp, "ifdef")) {
-                dr = 0;
+                Substituted = false;
                 Repl = *Id;
             } else {
                 --kp;
                 if (cmpHStr(kp, "ifndef")) {
-                    dr = 0;
+                    Substituted = false;
                     Repl = *Id;
                 } else if (cmpHStr(kp, "define")) {
-                    dr = 0;
+                    Substituted = false;
                     Repl = *Id;
                 } else if (cmpHStr(kp, "defarray")) {
-                    dr = 0;
+                    Substituted = false;
                     Repl = *Id;
                 }
             }
         }
 
-        if (dr) {
-            definegereplaced = 1;
+        if (Substituted) {
+            SubstitutedSome = true;
         }
         if (!Repl.empty()) {
             for (auto c : Repl) {
                 *rp = c;
                 ++rp;
+            }
+            if (to_upper_copy(Repl) == "AF"s && *lp == '\'') { // Copy apostrophe in AF'
+                *rp = *lp;
+                ++rp;
+                ++lp;
             }
             *rp = '\0';
         }
@@ -602,8 +606,8 @@ char *replaceDefine(const char *lp, char *dest) {
     if (strlen(nl) > LINEMAX - 1) {
         Fatal("Line too long after macro expansion"s);
     }
-    if (definegereplaced) {
-        return replaceDefine(nl, (dest == sline) ? sline2 : sline);
+    if (SubstitutedSome) {
+        return substituteMacros(nl, (dest == sline) ? sline2 : sline);
     }
     return nl;
 }
@@ -760,7 +764,7 @@ unsigned char win2dos[] = //taken from HorrorWord %)))
 
 void parseLine(const char *&P, bool ParseLabels) {
     /*++CurrentGlobalLine;*/
-    replacedefineteller = comnxtlin = 0;
+    substituteDepthCount = comnxtlin = 0;
     if (!RepeatStack.empty()) {
         RepeatInfo &dup = RepeatStack.top();
         if (!dup.Complete) {
@@ -770,7 +774,7 @@ void parseLine(const char *&P, bool ParseLabels) {
             return;
         }
     }
-    P = replaceDefine(line);
+    P = substituteMacros(line);
     const char *BOL = P;
     if (Asm->options().ConvertWindowsToDOS) {
         auto *lp2 = (unsigned char *) P;
@@ -847,8 +851,8 @@ void parseLineSafe(const char *&P, bool ParseLabels) {
 }
 
 void parseStructLine(const char *&P, CStruct &St) {
-    replacedefineteller = comnxtlin = 0;
-    P = replaceDefine(line);
+    substituteDepthCount = comnxtlin = 0;
+    P = substituteMacros(line);
     if (comlin) {
         comlin += comnxtlin;
         return;

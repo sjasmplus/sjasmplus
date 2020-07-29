@@ -47,7 +47,7 @@ bool parseDirective_REPT(const char *&P);
 
 void parseInstruction(const char *BOL, const char *&BOI);
 
-char *replaceDefine(const char *lp, char *dest = sline);
+char *substituteMacros(const char *lp, char *dest = sline);
 
 void parseLine(const char *&P, bool ParseLabels = true);
 

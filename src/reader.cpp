@@ -803,4 +803,35 @@ const std::string getAll(const char *&P) {
     return R;
 }
 
+/*
+ * Tries to match a string, rewinds if no match
+ */
+
+bool matchStr(const char *&P, const char *Str, bool Peek) {
+    auto OP = P;
+    while (*P) {
+        if (*Str != *P || *Str == 0) // No match or reached the end of Str
+            break;
+        else if (*P == 0) { // remaining buffer is shorter than Str
+            P = OP;
+            return false;
+        }
+        ++P;
+        ++Str;
+    }
+    if (*Str == 0) { // Reached the end of Str, found a match
+        if (Peek)
+            P = OP;
+        return true;
+    }
+    else { // No match
+        P = OP;
+        return false;
+    }
+}
+
+bool peekStr(const char *&P, const char *Str) {
+    return matchStr(P, Str, true);
+}
+
 //eof reader.cpp

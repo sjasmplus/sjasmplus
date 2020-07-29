@@ -672,24 +672,24 @@ EReturn readFile(const char *pp, const char *err) {
             ++p;
         }
         if (cmpHStr(p, "endif")) {
-            lp = replaceDefine(p);
+            lp = substituteMacros(p);
             return ENDIF;
         }
         if (cmpHStr(p, "else")) {
             Asm->Listing.listLine(line);
-            lp = replaceDefine(p);
+            lp = substituteMacros(p);
             return ELSE;
         }
         if (cmpHStr(p, "endt")) {
-            lp = replaceDefine(p);
+            lp = substituteMacros(p);
             return ENDTEXTAREA;
         }
         if (cmpHStr(p, "dephase")) {
-            lp = replaceDefine(p);
+            lp = substituteMacros(p);
             return ENDTEXTAREA;
         } // hmm??
         if (cmpHStr(p, "unphase")) {
-            lp = replaceDefine(p);
+            lp = substituteMacros(p);
             return ENDTEXTAREA;
         } // hmm??
         parseLineSafe(lp);
@@ -743,14 +743,14 @@ EReturn skipFile(const char *pp, const char *err) {
             if (iflevel) {
                 --iflevel;
             } else {
-                lp = replaceDefine(p);
+                lp = substituteMacros(p);
                 return ENDIF;
             }
         }
         if (cmpHStr(p, "else")) {
             if (!iflevel) {
                 Asm->Listing.listLine(line);
-                lp = replaceDefine(p);
+                lp = substituteMacros(p);
                 return ELSE;
             }
         }
@@ -785,7 +785,7 @@ bool readFileToListOfStrings(std::list<std::string> &List, const std::string &En
                 ++p;
             }
             if (cmpHStr(p, EndMarker.c_str())) {
-                lp = replaceDefine(p);
+                lp = substituteMacros(p);
                 return true;
             }
         }
