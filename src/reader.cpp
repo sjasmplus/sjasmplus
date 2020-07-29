@@ -830,7 +830,7 @@ bool matchStr(const char *&P, const char *Str, bool Peek) {
     }
 }
 
-bool peekStr(const char *&P, const char *Str) {
+bool peekMatchStr(const char *&P, const char *Str) {
     return matchStr(P, Str, true);
 }
 

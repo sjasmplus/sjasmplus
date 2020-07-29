@@ -231,7 +231,7 @@ MacroResult CMacros::emit(const std::string &Name, const char *&p, const char *L
             }
             ++p;
         } else {
-            while (*p && *p != ',' && *p != ';' && !(*p == '/' && *(p + 1) == '*')) {
+            while (*p && *p != ',' && *p != ';' && !(peekMatchStr(p, "/*"))) {
                 Repl += *p;
                 ++p;
             }

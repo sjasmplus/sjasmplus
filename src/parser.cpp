@@ -469,7 +469,7 @@ char *substituteMacros(const char *lp, char *dest) {
             }
         }
 
-        if ((*lp == ';' || peekStr(lp, "//")) && !comlin && !comnxtlin) {
+        if ((*lp == ';' || peekMatchStr(lp, "//")) && !comlin && !comnxtlin) {
             *rp = 0; // Reached a line comment. Terminate.
             return nl;
         }

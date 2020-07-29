@@ -101,6 +101,6 @@ const std::string getAll(const char *&P);
 
 bool matchStr(const char *&P, const char *Str, bool Peek = false);
 
-bool peekStr(const char *&P, const char *Str);
+bool peekMatchStr(const char *&P, const char *Str);
 
 #endif // SJASMPLUS_READER_H

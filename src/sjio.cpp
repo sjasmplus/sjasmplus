@@ -87,6 +87,19 @@ public:
         }
     }
 
+    bool peekMatch(const std::string &S) {
+        int L = S.size();
+        if (BytesLeft >= L) {
+            for (int i = 0; i < L; i++) {
+                if (this->at(CurIdx + i) != S[i])
+                    return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     std::streamsize left() { return BytesLeft; }
 
     void next() {
@@ -482,14 +495,16 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     } else {
                         rldquotes = true;
                     }
-                } else if (B.cur() == ';' && !rlsquotes && !rldquotes) {
-                    rlcomment = true;
-                } else if (B.cur() == '/' && B.cur2() == '/' && !rlsquotes && !rldquotes) {
-                    rlcomment = true;
-                    *(rlppos++) = B.cur();
-                    B.next();
-                } else if (B.cur() <= ' ' && !rlsquotes && !rldquotes && !rlcomment) {
-                    rlspace = true;
+                } else if (!rlsquotes && !rldquotes) {
+                    if (B.cur() == ';') {
+                        rlcomment = true;
+                    } else if (B.peekMatch("//")) {
+                        rlcomment = true;
+                        *(rlppos++) = B.cur();
+                        B.next();
+                    } else if (B.cur() <= ' ' && !rlcomment) {
+                        rlspace = true;
+                    }
                 }
                 *(rlppos++) = B.cur();
                 B.next();
