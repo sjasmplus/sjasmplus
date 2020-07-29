@@ -857,11 +857,11 @@ void parseStructLine(CStruct &St) {
     if (!*lp) {
         return;
     }
-    parseStructLabel(St);
+    parseStructLabel(lp, St);
     if (skipWhiteSpace(lp)) {
         return;
     }
-    parseStructMember(St);
+    parseStructMember(lp, St);
     if (skipWhiteSpace(lp)) {
         return;
     }

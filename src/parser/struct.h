@@ -3,10 +3,10 @@
 
 #include "asm/struct.h"
 
-SMEMB getStructMemberId(const char *&p);
+SMEMB getStructMemberId(const char *&P);
 
-void parseStructLabel(CStruct &St);
+void parseStructLabel(const char *&P, CStruct &St);
 
-void parseStructMember(CStruct &St);
+void parseStructMember(const char *&P, CStruct &St);
 
 #endif //SJASMPLUS_PARSER_STRUCT_H
