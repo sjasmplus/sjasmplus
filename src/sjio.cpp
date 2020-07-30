@@ -489,17 +489,9 @@ void readBufLine(bool Parse, bool SplitByColon) {
             } else {
                 if (!rl_InComment) {
                     if (B.cur() == '\'' && !rl_InDQuotes) {
-                        if (rl_InSQuotes) {
-                            rl_InSQuotes = false;
-                        } else {
-                            rl_InSQuotes = true;
-                        }
+                        rl_InSQuotes = !rl_InSQuotes;
                     } else if (B.cur() == '"' && !rl_InSQuotes) {
-                        if (rl_InDQuotes) {
-                            rl_InDQuotes = false;
-                        } else {
-                            rl_InDQuotes = true;
-                        }
+                        rl_InDQuotes = !rl_InDQuotes;
                     } else if (!rl_InSQuotes && !rl_InDQuotes) {
                         if (B.cur() == ';') {
                             rl_InComment = true;
