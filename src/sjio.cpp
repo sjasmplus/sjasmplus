@@ -131,7 +131,7 @@ void clearReadLineBuf() {
 }
 // --
 
-bool rldquotes = false, rlsquotes = false, rl_InInstr = false, rlcomment = false, rlcolon = false, rlnewline = true;
+bool rl_InDQuotes = false, rl_InSQuotes = false, rl_InInstr = false, rl_InComment = false, rl_AfterColon = false, rlnewline = true;
 
 fs::ifstream realIFS;
 fs::ifstream *pIFS = &realIFS;
@@ -360,20 +360,20 @@ void includeFile(const fs::path &IncFileName) {
     pIFS = &incIFS;
 //std::cout << "*** INCLUDE: " << nfilename << std::endl;
     TyReadLineBuf SaveReadLineBuf = ReadLineBuf;
-    bool squotes = rlsquotes, dquotes = rldquotes, space = rl_InInstr, comment = rlcomment, colon = rlcolon, newline = rlnewline;
+    bool squotes = rl_InSQuotes, dquotes = rl_InDQuotes, space = rl_InInstr, comment = rl_InComment, colon = rl_AfterColon, newline = rlnewline;
 
-    rldquotes = false;
-    rlsquotes = false;
+    rl_InDQuotes = false;
+    rl_InSQuotes = false;
     rl_InInstr = false;
-    rlcomment = false;
-    rlcolon = false;
+    rl_InComment = false;
+    rl_AfterColon = false;
     rlnewline = true;
 
     ReadLineBuf.clear();
 
     Asm->openFile(resolveIncludeFilename(IncFileName));
 
-    rlsquotes = squotes, rldquotes = dquotes, rl_InInstr = space, rlcomment = comment, rlcolon = colon, rlnewline = newline;
+    rl_InSQuotes = squotes, rl_InDQuotes = dquotes, rl_InInstr = space, rl_InComment = comment, rl_AfterColon = colon, rlnewline = newline;
     ReadLineBuf = SaveReadLineBuf;
 
     pIFS = saveIFS;
@@ -401,7 +401,7 @@ std::istream &sja_getline(std::istream &stream, std::string &str) {
 // TODO: Kill it with fire
 void readBufLine(bool Parse, bool SplitByColon) {
     char *rlppos = line;
-    if (rlcolon) {
+    if (rl_AfterColon) {
         *(rlppos++) = '\t';
     }
     auto &B = ReadLineBuf;
@@ -420,7 +420,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                 CompiledCurrentLine++;
                 CurrentGlobalLine++;
                 //}
-                rlsquotes = rldquotes = rlcomment = rl_InInstr = rlcolon = false;
+                rl_InSQuotes = rl_InDQuotes = rl_InComment = rl_InInstr = rl_AfterColon = false;
                 //_COUT line _ENDL;
                 if (Parse) {
                     parseLine(lp);
@@ -428,11 +428,11 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     return;
                 }
                 rlppos = line;
-                if (rlcolon) {
+                if (rl_AfterColon) {
                     *(rlppos++) = ' ';
                 }
                 rlnewline = true;
-            } else if (B.cur() == ':' && !rldquotes && !rlsquotes && !rlcomment) {
+            } else if (B.cur() == ':' && !rl_InDQuotes && !rl_InSQuotes && !rl_InComment) {
                 if (rl_InInstr) {
                     if (SplitByColon) {
                         while (B.nextIf(':'));
@@ -441,18 +441,18 @@ void readBufLine(bool Parse, bool SplitByColon) {
                         /*if (rlnewline) {
                             CurrentLocalLine++; CurrentLine++; CurrentGlobalLine++; rlnewline = false;
                         }*/
-                        rlcolon = true;
+                        rl_AfterColon = true;
                         if (Parse) {
                             parseLine(lp);
                         } else {
                             return;
                         }
                         rlppos = line;
-                        if (rlcolon) {
+                        if (rl_AfterColon) {
                             *(rlppos++) = ' ';
                         }
                     }
-                } else if (!rlcolon) { // && !rl_InInstr
+                } else if (!rl_AfterColon) { // && !rl_InInstr
                     lp = line;
                     *rlppos = 0;
                     std::string Instr;
@@ -467,7 +467,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                             CurrentGlobalLine++;
                             rlnewline = false;
                         }
-                        rlcolon = true;
+                        rl_AfterColon = true;
                         if (Parse) {
                             parseLine(lp);
                         } else {
@@ -475,7 +475,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                         }
                         rl_InInstr = true;
                         rlppos = line;
-                        if (rlcolon) {
+                        if (rl_AfterColon) {
                             *(rlppos++) = ' ';
                         }
                     } else {
@@ -487,26 +487,26 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     }
                 }
             } else {
-                if (B.cur() == '\'' && !rldquotes && !rlcomment) {
-                    if (rlsquotes) {
-                        rlsquotes = false;
+                if (B.cur() == '\'' && !rl_InDQuotes && !rl_InComment) {
+                    if (rl_InSQuotes) {
+                        rl_InSQuotes = false;
                     } else {
-                        rlsquotes = true;
+                        rl_InSQuotes = true;
                     }
-                } else if (B.cur() == '"' && !rlsquotes && !rlcomment) {
-                    if (rldquotes) {
-                        rldquotes = false;
+                } else if (B.cur() == '"' && !rl_InSQuotes && !rl_InComment) {
+                    if (rl_InDQuotes) {
+                        rl_InDQuotes = false;
                     } else {
-                        rldquotes = true;
+                        rl_InDQuotes = true;
                     }
-                } else if (!rlsquotes && !rldquotes) {
+                } else if (!rl_InSQuotes && !rl_InDQuotes) {
                     if (B.cur() == ';') {
-                        rlcomment = true;
+                        rl_InComment = true;
                     } else if (B.peekMatch("//")) {
-                        rlcomment = true;
+                        rl_InComment = true;
                         *(rlppos++) = B.cur();
                         B.next();
-                    } else if (B.cur() <= ' ' && !rlcomment) {
+                    } else if (B.cur() <= ' ' && !rl_InComment) {
                         rl_InInstr = true;
                     }
                 }
@@ -522,7 +522,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
             CompiledCurrentLine++;
             CurrentGlobalLine++;
         }
-        rlsquotes = rldquotes = rlcomment = rl_InInstr = rlcolon = false;
+        rl_InSQuotes = rl_InDQuotes = rl_InComment = rl_InInstr = rl_AfterColon = false;
         rlnewline = true;
         *rlppos = 0;
         if (Parse) {
@@ -683,7 +683,6 @@ EReturn readFile(const char *pp, const char *err) {
         } else {
             readBufLine(false);
             p = line;
-            //_COUT "RF:" _CMDL rlcolon _CMDL line _ENDL;
         }
 
         skipWhiteSpace(p);
@@ -732,7 +731,6 @@ EReturn skipFile(const char *pp, const char *err) {
         } else {
             readBufLine(false);
             p = line;
-            //_COUT "SF:" _CMDL rlcolon _CMDL line _ENDL;
         }
         skipWhiteSpace(p);
         if (*p == '.') {
