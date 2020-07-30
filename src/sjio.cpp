@@ -131,7 +131,7 @@ void clearReadLineBuf() {
 }
 // --
 
-bool rldquotes = false, rlsquotes = false, rlspace = false, rlcomment = false, rlcolon = false, rlnewline = true;
+bool rldquotes = false, rlsquotes = false, rl_InInstr = false, rlcomment = false, rlcolon = false, rlnewline = true;
 
 fs::ifstream realIFS;
 fs::ifstream *pIFS = &realIFS;
@@ -360,11 +360,11 @@ void includeFile(const fs::path &IncFileName) {
     pIFS = &incIFS;
 //std::cout << "*** INCLUDE: " << nfilename << std::endl;
     TyReadLineBuf SaveReadLineBuf = ReadLineBuf;
-    bool squotes = rlsquotes, dquotes = rldquotes, space = rlspace, comment = rlcomment, colon = rlcolon, newline = rlnewline;
+    bool squotes = rlsquotes, dquotes = rldquotes, space = rl_InInstr, comment = rlcomment, colon = rlcolon, newline = rlnewline;
 
     rldquotes = false;
     rlsquotes = false;
-    rlspace = false;
+    rl_InInstr = false;
     rlcomment = false;
     rlcolon = false;
     rlnewline = true;
@@ -373,7 +373,7 @@ void includeFile(const fs::path &IncFileName) {
 
     Asm->openFile(resolveIncludeFilename(IncFileName));
 
-    rlsquotes = squotes, rldquotes = dquotes, rlspace = space, rlcomment = comment, rlcolon = colon, rlnewline = newline;
+    rlsquotes = squotes, rldquotes = dquotes, rl_InInstr = space, rlcomment = comment, rlcolon = colon, rlnewline = newline;
     ReadLineBuf = SaveReadLineBuf;
 
     pIFS = saveIFS;
@@ -420,7 +420,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                 CompiledCurrentLine++;
                 CurrentGlobalLine++;
                 //}
-                rlsquotes = rldquotes = rlcomment = rlspace = rlcolon = false;
+                rlsquotes = rldquotes = rlcomment = rl_InInstr = rlcolon = false;
                 //_COUT line _ENDL;
                 if (Parse) {
                     parseLine(lp);
@@ -432,55 +432,59 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     *(rlppos++) = ' ';
                 }
                 rlnewline = true;
-            } else if (SplitByColon && B.cur() == ':' && rlspace && !rldquotes && !rlsquotes && !rlcomment) {
-                while (B.nextIf(':'));
-                *rlppos = 0;
-                if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
-                /*if (rlnewline) {
-                    CurrentLocalLine++; CurrentLine++; CurrentGlobalLine++; rlnewline = false;
-                }*/
-                rlcolon = true;
-                if (Parse) {
-                    parseLine(lp);
-                } else {
-                    return;
-                }
-                rlppos = line;
-                if (rlcolon) {
-                    *(rlppos++) = ' ';
-                }
-            } else if (B.cur() == ':' && !rlspace && !rlcolon && !rldquotes && !rlsquotes && !rlcomment) {
-                lp = line;
-                *rlppos = 0;
-                std::string Instr;
-                if ((!rlnewline || Asm->options().IsPseudoOpBOF) &&
-                    !((Instr = getInstr(lp)).empty()) && DirectivesTable.find(Instr)) {
-                    // it's a directive
-                    while (B.nextIf(':'));
-                    if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
-                    if (rlnewline) {
-                        CurrentLocalLine++;
-                        CompiledCurrentLine++;
-                        CurrentGlobalLine++;
-                        rlnewline = false;
+            } else if (B.cur() == ':' && !rldquotes && !rlsquotes && !rlcomment) {
+                if (rl_InInstr) {
+                    if (SplitByColon) {
+                        while (B.nextIf(':'));
+                        *rlppos = 0;
+                        if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
+                        /*if (rlnewline) {
+                            CurrentLocalLine++; CurrentLine++; CurrentGlobalLine++; rlnewline = false;
+                        }*/
+                        rlcolon = true;
+                        if (Parse) {
+                            parseLine(lp);
+                        } else {
+                            return;
+                        }
+                        rlppos = line;
+                        if (rlcolon) {
+                            *(rlppos++) = ' ';
+                        }
                     }
-                    rlcolon = true;
-                    if (Parse) {
-                        parseLine(lp);
+                } else if (!rlcolon) { // && !rl_InInstr
+                    lp = line;
+                    *rlppos = 0;
+                    std::string Instr;
+                    if ((!rlnewline || Asm->options().IsPseudoOpBOF) &&
+                        !((Instr = getInstr(lp)).empty()) && DirectivesTable.find(Instr)) {
+                        // it's a directive
+                        while (B.nextIf(':'));
+                        if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
+                        if (rlnewline) {
+                            CurrentLocalLine++;
+                            CompiledCurrentLine++;
+                            CurrentGlobalLine++;
+                            rlnewline = false;
+                        }
+                        rlcolon = true;
+                        if (Parse) {
+                            parseLine(lp);
+                        } else {
+                            return;
+                        }
+                        rl_InInstr = true;
+                        rlppos = line;
+                        if (rlcolon) {
+                            *(rlppos++) = ' ';
+                        }
                     } else {
-                        return;
-                    }
-                    rlspace = true;
-                    rlppos = line;
-                    if (rlcolon) {
+                        //it's label
+                        *(rlppos++) = ':';
                         *(rlppos++) = ' ';
+                        rl_InInstr = true;
+                        while (B.nextIf(':'));
                     }
-                } else {
-                    //it's label
-                    *(rlppos++) = ':';
-                    *(rlppos++) = ' ';
-                    rlspace = true;
-                    while (B.nextIf(':'));
                 }
             } else {
                 if (B.cur() == '\'' && !rldquotes && !rlcomment) {
@@ -503,7 +507,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                         *(rlppos++) = B.cur();
                         B.next();
                     } else if (B.cur() <= ' ' && !rlcomment) {
-                        rlspace = true;
+                        rl_InInstr = true;
                     }
                 }
                 *(rlppos++) = B.cur();
@@ -518,7 +522,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
             CompiledCurrentLine++;
             CurrentGlobalLine++;
         }
-        rlsquotes = rldquotes = rlcomment = rlspace = rlcolon = false;
+        rlsquotes = rldquotes = rlcomment = rl_InInstr = rlcolon = false;
         rlnewline = true;
         *rlppos = 0;
         if (Parse) {
