@@ -479,7 +479,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                             *(rlppos++) = ' ';
                         }
                     } else {
-                        //it's label
+                        // It's a label
                         *(rlppos++) = ':';
                         *(rlppos++) = ' ';
                         rl_InInstr = true;
@@ -487,27 +487,29 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     }
                 }
             } else {
-                if (B.cur() == '\'' && !rl_InDQuotes && !rl_InComment) {
-                    if (rl_InSQuotes) {
-                        rl_InSQuotes = false;
-                    } else {
-                        rl_InSQuotes = true;
-                    }
-                } else if (B.cur() == '"' && !rl_InSQuotes && !rl_InComment) {
-                    if (rl_InDQuotes) {
-                        rl_InDQuotes = false;
-                    } else {
-                        rl_InDQuotes = true;
-                    }
-                } else if (!rl_InSQuotes && !rl_InDQuotes) {
-                    if (B.cur() == ';') {
-                        rl_InComment = true;
-                    } else if (B.peekMatch("//")) {
-                        rl_InComment = true;
-                        *(rlppos++) = B.cur();
-                        B.next();
-                    } else if (B.cur() <= ' ' && !rl_InComment) {
-                        rl_InInstr = true;
+                if (!rl_InComment) {
+                    if (B.cur() == '\'' && !rl_InDQuotes) {
+                        if (rl_InSQuotes) {
+                            rl_InSQuotes = false;
+                        } else {
+                            rl_InSQuotes = true;
+                        }
+                    } else if (B.cur() == '"' && !rl_InSQuotes) {
+                        if (rl_InDQuotes) {
+                            rl_InDQuotes = false;
+                        } else {
+                            rl_InDQuotes = true;
+                        }
+                    } else if (!rl_InSQuotes && !rl_InDQuotes) {
+                        if (B.cur() == ';') {
+                            rl_InComment = true;
+                        } else if (B.peekMatch("//")) {
+                            rl_InComment = true;
+                            *(rlppos++) = B.cur();
+                            B.next();
+                        } else if (B.cur() <= ' ') {
+                            rl_InInstr = true;
+                        }
                     }
                 }
                 *(rlppos++) = B.cur();
