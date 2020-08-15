@@ -26,7 +26,6 @@
 
 */
 
-#include "parser.h"
 #include "reader.h"
 
 bool cmpHStr(const char *&P1, const char *P2, bool AllowParen) {
@@ -571,85 +570,6 @@ bool getCharConst(const char *&P, aint &Val) {
     return true;
 }
 
-/* modified */
-int getBytes(const char *&P, int *E, int Add, int DC) {
-    aint val;
-    int t = 0;
-    while (true) {
-        skipWhiteSpace(P);
-        if (!*P) {
-            Error("Expression expected"s, SUPPRESS);
-            break;
-        }
-        if (t == 128) {
-            Error("Too many arguments"s, P, SUPPRESS);
-            break;
-        }
-        if (*P == '"') {
-            P++;
-            do {
-                if (!*P || *P == '"') {
-                    Error("Syntax error"s, P, SUPPRESS);
-                    E[t] = -1;
-                    return t;
-                }
-                if (t == 128) {
-                    Error("Too many arguments"s, P, SUPPRESS);
-                    E[t] = -1;
-                    return t;
-                }
-                getCharConstChar(P, val);
-                check8(val);
-                E[t++] = (val + Add) & 255;
-            } while (*P != '"');
-            ++P;
-            if (DC && t) {
-                E[t - 1] |= 128;
-            }
-            /* (begin add) */
-        } else if ((*P == 0x27) && (!*(P + 2) || *(P + 2) != 0x27)) {
-            P++;
-            do {
-                if (!*P || *P == 0x27) {
-                    Error("Syntax error"s, P, SUPPRESS);
-                    E[t] = -1;
-                    return t;
-                }
-                if (t == 128) {
-                    Error("Too many arguments"s, P, SUPPRESS);
-                    E[t] = -1;
-                    return t;
-                }
-                getCharConstCharSingle(P, val);
-                check8(val);
-                E[t++] = (val + Add) & 255;
-            } while (*P != 0x27);
-
-            ++P;
-
-            if (DC && t) {
-                E[t - 1] |= 128;
-            }
-            /* (end add) */
-        } else {
-            if (parseExpression(P, val)) {
-                check8(val);
-                E[t++] = (val + Add) & 255;
-            } else {
-                Error("Syntax error"s, P, SUPPRESS);
-                break;
-            }
-        }
-        skipWhiteSpace(P);
-        if (*P != ',') {
-            break;
-        }
-        ++P;
-    }
-    E[t] = -1;
-    return t;
-}
-
 std::string getString(const char *&P, bool KeepBrackets) {
     std::string Res;
     skipWhiteSpace(P);
@@ -712,90 +632,10 @@ bool needBParen(const char *&P) {
 }
 
 bool isLabChar(char P) {
-    if (isalnum((unsigned char) P) || P == '_' || P == '.' || P == '?' || P == '!' || P == '#' || P == '@') {
-        return true;
-    }
-    return false;
+    return isalnum((unsigned char) P) || P == '_' || P == '.' || P == '?' || P == '!' || P == '#' || P == '@';
 }
 
-/* added */
-int GetArray(const char *&p, int *e, int add, int dc) {
-    aint val;
-    int t = 0;
-    while (true) {
-        skipWhiteSpace(p);
-        if (!*p) {
-            Error("Expression expected"s, SUPPRESS);
-            break;
-        }
-        if (t == 128) {
-            Error("Too many arguments"s, p, SUPPRESS);
-            break;
-        }
-        if (*p == '"') {
-            p++;
-            do {
-                if (!*p || *p == '"') {
-                    Error("Syntax error"s, p, SUPPRESS);
-                    e[t] = -1;
-                    return t;
-                }
-                if (t == 128) {
-                    Error("Too many arguments"s, p, SUPPRESS);
-                    e[t] = -1;
-                    return t;
-                }
-                getCharConstChar(p, val);
-                check8(val);
-                e[t++] = (val + add) & 255;
-            } while (*p != '"');
-            ++p;
-            if (dc && t) {
-                e[t - 1] |= 128;
-            }
-            /* (begin add) */
-        } else if ((*p == 0x27) && (!*(p + 2) || *(p + 2) != 0x27)) {
-            p++;
-            do {
-                if (!*p || *p == 0x27) {
-                    Error("Syntax error"s, p, SUPPRESS);
-                    e[t] = -1;
-                    return t;
-                }
-                if (t == 128) {
-                    Error("Too many arguments"s, p, SUPPRESS);
-                    e[t] = -1;
-                    return t;
-                }
-                getCharConstCharSingle(p, val);
-                check8(val);
-                e[t++] = (val + add) & 255;
-            } while (*p != 0x27);
-            ++p;
-            if (dc && t) {
-                e[t - 1] |= 128;
-            }
-            /* (end add) */
-        } else {
-            if (parseExpression(p, val)) {
-                check8(val);
-                e[t++] = (val + add) & 255;
-            } else {
-                Error("Syntax error"s, p, SUPPRESS);
-                break;
-            }
-        }
-        skipWhiteSpace(p);
-        if (*p != ',') {
-            break;
-        }
-        ++p;
-    }
-    e[t] = -1;
-    return t;
-}
-
-const std::string getAll(const char *&P) {
+std::string getAll(const char *&P) {
     std::string R{P};
     while ((*P > 0)) {
         ++P;

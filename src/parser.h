@@ -55,6 +55,8 @@ void parseLineSafe(const char *&P, bool ParseLabels = true);
 
 void parseStructLine(const char *&P, CStruct &St);
 
+int getBytes(const char *&P, int *E, int Add, int DC);
+
 unsigned long luaCalculate(const char *str);
 
 void luaParseLine(char *str);

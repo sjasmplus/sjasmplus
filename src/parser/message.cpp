@@ -19,6 +19,7 @@ std::string formatMsg(MsgType Type, const tao::pegtl::parse_error &E) {
             case MsgType::Warning:
                 return "warning "s;
             case MsgType::Error:
+            default:
                 return "error: "s;
         }
     }() + E.what();

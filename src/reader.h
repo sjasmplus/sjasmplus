@@ -81,8 +81,6 @@ bool getCharConstChar(const char *&OP, aint &Val);
 
 bool getCharConstCharSingle(const char *&OP, aint &Val);
 
-int getBytes(const char *&P, int *E, int Add, int DC);
-
 bool cmpHStr(const char *&P1, const char *P2, bool AllowParen = false);
 
 std::string getString(const char *&P, bool KeepBrackets = false);
@@ -97,7 +95,7 @@ bool needBParen(const char *&P);
 
 bool isLabChar(char P);
 
-const std::string getAll(const char *&P);
+std::string getAll(const char *&P);
 
 bool matchStr(const char *&P, const char *Str, bool Peek = false);
 
