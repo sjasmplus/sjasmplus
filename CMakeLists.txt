@@ -16,6 +16,8 @@ set(Boost_NO_BOOST_CMAKE ON) # https://gitlab.kitware.com/cmake/cmake/-/issues/1
 find_package (Boost REQUIRED COMPONENTS filesystem system)
 include_directories(${Boost_INCLUDE_DIRS})
 
+set(LINK_LIBS ${Boost_LIBRARIES})
+
 set(SOURCE_FILES
 #        resources/bin2c/bin2c.cpp
 #        resources/SaveTAP_ZX_Spectrum_128K.bin.h
@@ -177,10 +179,14 @@ if (WIN32)
       "<CMAKE_RC_COMPILER> -O coff <FLAGS> <DEFINES> <SOURCE> <OBJECT>")
   endif ()
   set (SOURCE_FILES ${SOURCE_FILES} "${PROJECT_SOURCE_DIR}/win32/sjasmplus.rc")
+  if (MINGW)
+    find_library(libssp NAMES libssp.a)
+    set(LINK_LIBS ${LINK_LIBS} ${libssp})
+  endif()
 endif ()
 
 include_directories(BEFORE sjasm ${LUA_DIR} ${TOLUAPP_DIR} "${PEGTL_DIR}include")
 
 add_executable(sjasmplus ${SOURCE_FILES})
 
-target_link_libraries (sjasmplus ${Boost_LIBRARIES})
+target_link_libraries (sjasmplus ${LINK_LIBS})
