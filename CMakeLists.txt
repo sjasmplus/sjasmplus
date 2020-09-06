@@ -185,7 +185,7 @@ if (WIN32)
   endif()
 endif ()
 
-include_directories(BEFORE sjasm ${LUA_DIR} ${TOLUAPP_DIR} "${PEGTL_DIR}include")
+include_directories(BEFORE ${LUA_DIR} ${TOLUAPP_DIR} "${PEGTL_DIR}include")
 
 add_executable(sjasmplus ${SOURCE_FILES})
 
