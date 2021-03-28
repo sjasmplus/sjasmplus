@@ -536,7 +536,7 @@ char *substituteMacros(const char *lp, char *dest) {
         Id = getID(lp);
         Substituted = true;
 
-        if (auto Def = Asm->Defines.get(*Id)) {
+        if (auto Def = Asm->getDefine(*Id)) {
             Repl = *Def;
         } else {
             Repl = Asm->Macros.getReplacement(*Id);
@@ -546,7 +546,7 @@ char *substituteMacros(const char *lp, char *dest) {
             }
         }
 
-        if (const auto &Arr = Asm->Defines.getArray(*Id)) {
+        if (const auto &Arr = Asm->getDefArray(*Id)) {
             aint val;
             while (*(lp++) && (*lp <= ' ' || *lp == '['));
             if (!parseExpression(lp, val)) {

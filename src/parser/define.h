@@ -32,7 +32,7 @@ template<>
 struct Actions<Define> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
-        S.Asm.Defines.set(S.Id, S.StringVec.empty() ? ""s : S.StringVec[0]);
+        S.Asm.setDefine(S.Id, S.StringVec.empty() ? ""s : S.StringVec[0]);
     }
 };
 
@@ -49,7 +49,7 @@ template<>
 struct Actions<DefArray> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
-        S.Asm.Defines.setArray(S.Id, S.StringVec);
+        S.Asm.setDefArray(S.Id, S.StringVec);
     }
 };
 

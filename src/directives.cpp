@@ -1284,11 +1284,11 @@ void dirUNDEFINE() {
         if (pass == PASS1) {
             Asm->Labels.removeAll();
         }
-        Asm->Defines.clear();
+        Asm->unsetAllDefines();
     } else {
-        bool FoundID = Asm->Defines.unset(*Id);
+        bool FoundID = Asm->unsetDefines(*Id);
 
-        if (Asm->Defines.unsetArray(*Id))
+        if (Asm->unsetDefArray(*Id))
             FoundID = true;
 
         if (Asm->Labels.find(*Id)) {
@@ -1322,7 +1322,7 @@ void dirIFDEF() {
         return;
     }
 
-    if (Asm->Defines.defined(*Id)) {
+    if (Asm->isDefined(*Id)) {
         Asm->Listing.listLine(line);
         /*switch (res=ReadFile()) {*/
         switch (res = readFile(lp, "[IFDEF] No endif")) {
@@ -1378,7 +1378,7 @@ void dirIFNDEF() {
         return;
     }
 
-    if (!Asm->Defines.defined(*Id)) {
+    if (!Asm->isDefined(*Id)) {
         Asm->Listing.listLine(line);
         /*switch (res=ReadFile()) {*/
         switch (res = readFile(lp, "[IFNDEF] No endif")) {
@@ -1851,7 +1851,7 @@ void _lua_showerror() {
 
     ErrorCount++;
 
-    Asm->Defines.set("_ERRORS"s, std::to_string(ErrorCount));
+    Asm->setDefine("_ERRORS"s, std::to_string(ErrorCount));
 
     lua_pop(LUA, 1);
 }

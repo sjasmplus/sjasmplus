@@ -52,7 +52,7 @@ static int tolua_sjasm_sj_get_define00(lua_State *tolua_S) {
         char *tolua_var_1 = ((char *) tolua_tostring(tolua_S, 1, 0));
         {
             std::string tolua_ret;
-            auto Def = Asm->Defines.get(tolua_var_1);
+            auto Def = Asm->getDefine(tolua_var_1);
             if (Def) {
                 tolua_ret = *Def;
             }
@@ -88,7 +88,7 @@ static int tolua_sjasm_sj_insert_define00(lua_State *tolua_S) {
         char *tolua_var_3 = ((char *) tolua_tostring(tolua_S, 2, 0));
         {
             bool tolua_ret = false;
-            if (!Asm->Defines.set(tolua_var_2, tolua_var_3)) {
+            if (!Asm->setDefine(tolua_var_2, tolua_var_3)) {
                 tolua_ret = true; // Indicate that a new entry has been created
             }
             tolua_pushboolean(tolua_S, (bool) tolua_ret);

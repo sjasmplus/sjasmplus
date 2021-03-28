@@ -55,7 +55,39 @@ public:
         Options.LabelsListFName = F;
     }
 
-    CDefines Defines;
+    // Return true if redefined an existing define
+    bool setDefine(const std::string &Name, const std::string &Value) {
+        return Defines.set(Name, Value);
+    }
+
+    optional<std::string> getDefine(const std::string &Name) {
+        return Defines.get(Name);
+    }
+
+    optional<const std::vector<std::string> &> getDefArray(const std::string &Name) {
+        return Defines.getArray(Name);
+    }
+
+    bool setDefArray(const std::string &Name, const std::vector<std::string> &Arr) {
+        return Defines.setArray(Name, Arr);
+    }
+
+    bool isDefined(const std::string &Name) {
+        return Defines.defined(Name);
+    }
+
+    bool unsetDefines(const std::string &Name) {
+        return Defines.unset(Name);
+    }
+
+    bool unsetDefArray(const std::string &Name) {
+        return Defines.unsetArray(Name);
+    }
+
+    void unsetAllDefines() {
+        Defines.clear();
+    }
+
     CodeEmitter Em;
     CLabels Labels;
     CMacros Macros;
@@ -69,6 +101,7 @@ private:
 
     void assemble(int &RetValue);
 
+    CDefines Defines;
     std::vector<fs::path> SrcFileNames;
     COptions Options;
     fs::path MainSrcFileDir;

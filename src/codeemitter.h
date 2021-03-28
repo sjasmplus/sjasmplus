@@ -10,6 +10,9 @@ enum class OutputMode {
     Truncate, Rewind, Append
 };
 
+// FIXME:
+void initLegacyErrorHandler(Assembler *_Asm);
+
 class CodeEmitter {
 
 private:
@@ -37,7 +40,8 @@ private:
 public:
     CodeEmitter() = delete;
     explicit CodeEmitter(Assembler &_Asm) : Asm(_Asm) {
-	reset();
+        initLegacyErrorHandler(&_Asm);
+        reset();
     }
 
     ~CodeEmitter() {

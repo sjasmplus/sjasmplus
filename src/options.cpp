@@ -227,6 +227,11 @@ void showHelp() {
 
 using namespace options;
 
+std::string prefixOption(std::string& Name) {
+    auto Prefix = Name.size() < 2 ? "-"s : "--"s;
+    return Prefix + Name;
+}
+
 COptions::COptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
     for (size_t i = 1; i < (size_t) argc; i++) {
         State S{};
@@ -296,7 +301,7 @@ COptions::COptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) 
                             fs::path P{fs::absolute(S.Value)};
                             CmdLineIncludeDirsList.emplace_back(P);
                         } else {
-                            Fatal("No directory specified for -"s + (S.Name.size() == 1 ? ""s : "-"s) + S.Name);
+                            Fatal("No directory specified for "s + prefixOption(S.Name));
                         }
                         break;
                     case OPT::OUTPUT_DIR:
@@ -330,7 +335,7 @@ COptions::COptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) 
                         break;
                 }
             } else {
-                Fatal("Unrecognized option: "s, S.Name);
+                Fatal("Unrecognized option: "s, prefixOption(S.Name));
             }
         } catch (parse_error &E) {
             // Must be a filename

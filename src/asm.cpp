@@ -114,9 +114,6 @@ void Assembler::assemble(int &RetValue) {
     RetValue = ErrorCount == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-// FIXME:
-void initLegacyErrorHandler(Assembler *_Asm);
-
 Assembler::Assembler(int argc, char *argv[], int &RetValue) :
         Em{*this},
         Labels{*this},
@@ -125,7 +122,6 @@ Assembler::Assembler(int argc, char *argv[], int &RetValue) :
         Modules{*this},
         Listing{*this},
         Options{argc, argv, SrcFileNames} {
-    initLegacyErrorHandler(this);
     const char *Banner = "SjASMPlus Z80 Cross-Assembler v." SJASMPLUS_VERSION;
 
     if (argc == 1) {
