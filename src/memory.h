@@ -192,7 +192,7 @@ private:
     const size_t PageSize = 0x4000;
     int NumPages;
     int NumSlots = 4;
-    int SlotPages[4] = {0, 5, 2, 7};
+    int SlotPages[4] = {0, 5, 2, 0};
     std::vector<uint8_t> Memory;
     std::vector<bool> MemUsage;
     off_t addrToOffset(uint16_t Addr) {
