@@ -29,7 +29,8 @@
 #ifndef SJASMPLUS_SJIO_H
 #define SJASMPLUS_SJIO_H
 
-#include <boost/optional.hpp>
+#include <optional>
+#include <vector>
 
 #include "defines.h"
 #include "fs.h"
@@ -38,7 +39,7 @@
 #include "io_trd.h"
 #include "util.h"
 
-using boost::optional;
+using std::optional;
 
 void enableSourceReader();
 

@@ -4,7 +4,7 @@
 #include "memory.h"
 #include "asm/common.h"
 
-using boost::optional;
+using std::optional;
 
 enum class OutputMode {
     Truncate, Rewind, Append
@@ -129,7 +129,7 @@ public:
         if (Err) return Err;
         else {
             Slot = NewSlot;
-            return boost::none;
+            return std::nullopt;
         }
     }
 

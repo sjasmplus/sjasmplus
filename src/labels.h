@@ -36,7 +36,7 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/tag.hpp>
 #include <boost/multi_index/member.hpp>
-#include <boost/optional.hpp>
+#include <optional>
 
 #include "asm/common.h"
 #include "asm.h"
@@ -48,7 +48,7 @@ using ::boost::multi_index::random_access;
 using ::boost::multi_index::hashed_unique;
 using ::boost::multi_index::tag;
 using ::boost::multi_index::member;
-using ::boost::optional;
+using std::optional;
 
 struct CLocalLabelTableEntry {
     aint Line, Number, Value;

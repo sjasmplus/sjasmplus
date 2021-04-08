@@ -21,7 +21,7 @@ optional<std::string> CDefines::get(const std::string &Name) {
     if (It != DefineTable.end())
         return It->second;
     else
-        return boost::none;
+        return std::nullopt;
 }
 
 bool CDefines::setArray(const std::string &Name, const std::vector<std::string> &Arr) {
@@ -30,12 +30,12 @@ bool CDefines::setArray(const std::string &Name, const std::vector<std::string> 
     return Found;
 }
 
-optional<const std::vector<std::string> &> CDefines::getArray(const std::string &Name) {
+optional<const std::vector<std::string>> CDefines::getArray(const std::string &Name) {
     auto It = DefArrayTable.find(Name);
     if (It != DefArrayTable.end() && !DefArrayTable[Name].empty())
         return It->second;
     else
-        return boost::none;
+        return std::nullopt;
 }
 
 bool CDefines::unsetArray(const std::string &Name) {

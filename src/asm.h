@@ -64,7 +64,7 @@ public:
         return Defines.get(Name);
     }
 
-    optional<const std::vector<std::string> &> getDefArray(const std::string &Name) {
+    optional<const std::vector<std::string>> getDefArray(const std::string &Name) {
         return Defines.getArray(Name);
     }
 

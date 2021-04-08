@@ -11,11 +11,11 @@
 #include <array>
 #include <bitset>
 #include <cstdint>
-#include <boost/optional.hpp>
+#include <optional>
 #include "errors.h"
 
 using namespace std::string_literals;
-using boost::optional;
+using std::optional;
 
 class MemModel {
 protected:
@@ -46,7 +46,7 @@ public:
 
     virtual bool usedAddr(uint16_t Addr) = 0;
 
-    // Searches for an unused memory block and returns an address or boost::none
+    // Searches for an unused memory block and returns an address or std::nullopt
     //
     // Start = start address to search from
     // Size  = size of the block

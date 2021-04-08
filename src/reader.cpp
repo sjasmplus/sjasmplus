@@ -27,6 +27,7 @@
 */
 
 #include <cstring>
+#include <functional>
 
 #include "reader.h"
 
@@ -186,7 +187,7 @@ optional<std::string> getID(const char *&P) {
     skipWhiteSpace(P);
     //if (!isalpha(*P) && *P!='_') return 0;
     if (*P && !isalpha((unsigned char) *P) && *P != '_') {
-        return boost::none;
+        return std::nullopt;
     }
     while (*P) {
         if (!isalnum((unsigned char) *P) && *P != '_' && *P != '.' && *P != '?' && *P != '!' && *P != '#' &&
@@ -197,7 +198,7 @@ optional<std::string> getID(const char *&P) {
         ++P;
     }
     if (!S.empty()) return S;
-    else return boost::none;
+    else return std::nullopt;
 }
 
 std::string getInstr(const char *&P) {

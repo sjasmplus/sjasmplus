@@ -179,7 +179,7 @@ void CStruct::emitMembers(const char *&p) {
             case SMEMB::ALIGN:
                 t = M.Len;
                 while (t--) {
-                    Bytes.emplace_back(boost::none);
+                    Bytes.emplace_back(std::nullopt);
                 }
                 break;
             case SMEMB::BLOCK:

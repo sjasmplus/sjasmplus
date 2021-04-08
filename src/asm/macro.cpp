@@ -1,5 +1,5 @@
 #include <cstring>
-#include <boost/optional.hpp>
+#include <optional>
 #include <boost/algorithm/string.hpp>
 
 #include "asm.h"
@@ -9,7 +9,7 @@
 
 #include "macro.h"
 
-using boost::optional;
+using std::optional;
 
 void CMacros::init() {
     Entries.clear();

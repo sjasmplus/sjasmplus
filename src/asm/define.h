@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <boost/optional.hpp>
+#include <optional>
 
-using boost::optional;
+using std::optional;
 
 class CDefines {
 public:
@@ -19,7 +19,7 @@ public:
 
     bool setArray(const std::string &Name, const std::vector<std::string> &Arr);
 
-    optional<const std::vector<std::string> &> getArray(const std::string &Name);
+    optional<const std::vector<std::string>> getArray(const std::string &Name);
 
     bool unsetArray(const std::string &Name);
 

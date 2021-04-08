@@ -16,7 +16,7 @@ optional<std::string> CodeEmitter::emitByte(uint8_t Byte) {
         RawOFS.write((char *)&Byte, 1);
     }
     incAddress();
-    return boost::none;
+    return std::nullopt;
 }
 
 // Increase address and return true on overflow
@@ -97,7 +97,7 @@ optional<std::string> CodeEmitter::seekRawOutput(std::streamoff Offset, std::ios
                    " of file "s + RawOutputFileName.string();
         }
     }
-    return boost::none;
+    return std::nullopt;
 }
 
 void CodeEmitter::enforceFileSize() {
@@ -133,5 +133,5 @@ optional<std::string> CodeEmitter::align(uint16_t Alignment, optional<uint8_t> F
             incAddress();
         }
     }
-    return boost::none;
+    return std::nullopt;
 }

@@ -266,13 +266,13 @@ optional<std::string> CLabels::validateLabel(const std::string &Name) {
     }
     if (LName.empty() || (!isalpha(LName[0]) && LName[0] != '_')) {
         Error("Invalid labelname"s, LName);
-        return boost::none;
+        return std::nullopt;
     }
     for (auto c : LName) {
         if (!(isalnum(c) || c == '_' || c == '.' || c == '?' ||
                             c == '!' || c == '#' || c == '@')) {
             Error("Invalid labelname"s, LName);
-            return boost::none;
+            return std::nullopt;
         }
     }
     std::string RetValue;
@@ -290,7 +290,7 @@ optional<std::string> CLabels::validateLabel(const std::string &Name) {
     }
     RetValue += LName;
     if (!RetValue.empty()) return RetValue;
-    else return boost::none;
+    else return std::nullopt;
 }
 
 bool CLabels::getLabelValue(const char *&p, aint &val) {

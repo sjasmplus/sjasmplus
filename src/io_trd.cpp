@@ -29,6 +29,7 @@
 #include "sjio.h"
 #include <numeric>
 #include <cstring>
+#include <cassert>
 
 namespace {
 

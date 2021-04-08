@@ -14,7 +14,7 @@ MemModel::findUnusedBlock(uint16_t Start, uint16_t Size,
     if ((!Backwards && ((unsigned int) Start + Size > 0x10000))
         || (int) Start + 1 - Size < 0
         || (SearchLimit != 0 && SearchLimit < Size))
-        return boost::none;
+        return std::nullopt;
     int Step = Backwards ? -1 : 1;
     int End = Backwards
             ? (SearchLimit == 0 ? Size - 1 : Start - SearchLimit)
@@ -30,7 +30,7 @@ MemModel::findUnusedBlock(uint16_t Start, uint16_t Size,
         }
         SearchStart += Step * count + Step;
     }
-    return boost::none;
+    return std::nullopt;
 }
 
 ZXMemModel::ZXMemModel(const std::string &Name, int NPages) : MemModel(Name) {
@@ -49,7 +49,7 @@ optional<std::string> ZXMemModel::setPage(int Slot, int Page) {
 
     SlotPages[Slot] = Page;
 
-    return boost::none;
+    return std::nullopt;
 }
 
 optional<std::string> ZXMemModel::setPage(uint16_t CurrentAddr, int Page) {
@@ -60,7 +60,7 @@ optional<std::string> ZXMemModel::setPage(uint16_t CurrentAddr, int Page) {
 optional<std::string> ZXMemModel::validateSlot(int Slot) {
     if (Slot < 0 || Slot >= NumSlots) {
         return "Slot number should be between 0 and "s + std::to_string(NumSlots);
-    } else return boost::none;
+    } else return std::nullopt;
 }
 
 int ZXMemModel::getPageForAddress(uint16_t CurrentAddr) {

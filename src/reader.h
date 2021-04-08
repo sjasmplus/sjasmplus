@@ -29,9 +29,9 @@
 #ifndef SJASMPLUS_READER_H
 #define SJASMPLUS_READER_H
 
-#include <boost/optional.hpp>
+#include <optional>
 
-using boost::optional;
+using std::optional;
 
 #include "asm/common.h"
 #include "io_trd.h"

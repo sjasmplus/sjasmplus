@@ -27,7 +27,7 @@
 */
 
 #include <string>
-#include <boost/optional.hpp>
+#include <optional>
 #include <boost/algorithm/string/predicate.hpp> // for iequals()
 #include <boost/algorithm/string/case_conv.hpp>
 
@@ -468,7 +468,7 @@ void dirALIGN() {
         case 8192:
         case 16384:
         case 32768: {
-            optional<uint8_t> FillByte = boost::none;
+            std::optional<uint8_t> FillByte = std::nullopt;
             if (!noexp && comma(lp)) {
                 if (parseExpression(lp, Byte)) {
                     if (Byte > 255 || Byte < 0) {

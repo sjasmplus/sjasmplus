@@ -242,7 +242,7 @@ optional<std::string> emitAlignment(uint16_t Alignment, optional<uint8_t> FillBy
             Len--;
         }
     }
-    return boost::none;
+    return std::nullopt;
 }
 
 /*
