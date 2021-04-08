@@ -15,7 +15,7 @@ std::string toHexAlt(aint Number);
 
 class TextOutput {
 protected:
-    fs::ofstream OFS;
+    std::ofstream OFS;
     void open(const fs::path &FileName);
 public:
     virtual void init(fs::path &FileName) = 0;

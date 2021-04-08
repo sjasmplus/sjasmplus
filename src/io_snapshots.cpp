@@ -24,6 +24,8 @@
 
 */
 
+#include <cstring>
+
 #include "defines.h"
 #include "errors.h"
 #include "zxspectrum.h"
@@ -35,7 +37,7 @@ namespace zx {
 bool saveSNA(MemModel &M, const fs::path &fname, uint16_t start) {
     unsigned char snbuf[31];
 
-    fs::ofstream ofs;
+    std::ofstream ofs;
     ofs.open(fname, std::ios_base::binary);
     if (ofs.fail()) {
         Fatal("Error opening file"s, fname.string());

@@ -3,7 +3,7 @@ project(sjasmplus)
 
 SET(SJASMPLUS_VERSION 20190306.1+++WiP)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 configure_file(
         "${PROJECT_SOURCE_DIR}/sjasmplus_conf.h.in"
@@ -13,7 +13,7 @@ include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 set(Boost_NO_BOOST_CMAKE ON) # https://gitlab.kitware.com/cmake/cmake/-/issues/19841
-find_package (Boost REQUIRED COMPONENTS filesystem system)
+find_package (Boost REQUIRED COMPONENTS system)
 include_directories(${Boost_INCLUDE_DIRS})
 
 set(LINK_LIBS ${Boost_LIBRARIES})

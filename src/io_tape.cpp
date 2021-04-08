@@ -33,6 +33,8 @@ misrepresented as being the original software.
 #include <string>
 using namespace std::string_literals;
 
+#include <cstring>
+
 #include "defines.h"
 #include "errors.h"
 #include "memory.h"
@@ -69,7 +71,7 @@ namespace zx {
 
 bool saveTAP(MemModel &M, const fs::path &FileName, uint16_t Start) {
 
-    fs::ofstream ofs;
+    std::ofstream ofs;
     ofs.open(FileName, std::ios_base::binary);
     if (ofs.fail()) {
         Fatal("Error opening file"s, FileName.string());

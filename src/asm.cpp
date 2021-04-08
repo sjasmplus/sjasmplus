@@ -178,7 +178,7 @@ void Assembler::exitFail(const std::string &Msg) {
 }
 
 fs::path Assembler::getAbsPath(const fs::path &p) {
-    return fs::absolute(p, CurrentDirectory);
+    return fs::absolute(CurrentDirectory / p);
 }
 
 // FileName should be an absolute path
@@ -195,7 +195,7 @@ void Assembler::openTopLevelFile(const fs::path &FileName, bool PerFileExports) 
     }
 }
 
-extern fs::ifstream *pIFS; // FIXME
+extern std::ifstream *pIFS; // FIXME
 void clearReadLineBuf(); // FIXME
 extern void readBufLine(bool Parse = true, bool SplitByColon = true); // FIXME
 void checkRepeatStackAtEOF(); // FIXME

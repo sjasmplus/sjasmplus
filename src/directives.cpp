@@ -609,7 +609,7 @@ void dirINCHOB() {
 
     //used for implicit format check
     fnaamh = resolveIncludeFilename(FileName);
-    fs::ifstream IFSH(fnaamh, std::ios::binary);
+    std::ifstream IFSH(fnaamh, std::ios::binary);
     if (IFSH.fail()) {
         Fatal("[INCHOB] Error opening file "s + FileName.string() + ": "s + strerror(errno));
     }
@@ -671,7 +671,7 @@ void dirINCTRD() {
     //TODO: extract code to io_trd
     // open TRD
     fs::path fnaamh2 = resolveIncludeFilename(FileName);
-    fs::ifstream ifs;
+    std::ifstream ifs;
     ifs.open(fnaamh2, std::ios_base::binary);
     if (ifs.fail()) {
         Fatal("[INCTRD] Error opening file "s + FileName.string() + ": "s + strerror(errno));

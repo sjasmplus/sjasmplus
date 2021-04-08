@@ -31,7 +31,7 @@ private:
     fs::path RawOutputFileName;
     bool RawOutputEnable = false;
     bool RawOutputOverride = false;
-    fs::fstream RawOFS;
+    std::fstream RawOFS;
     uintmax_t ForcedRawOutputSize = 0;
     fs::path ForcedOutputDirectory;
 

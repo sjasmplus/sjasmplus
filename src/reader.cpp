@@ -26,6 +26,8 @@
 
 */
 
+#include <cstring>
+
 #include "reader.h"
 
 bool cmpHStr(const char *&P1, const char *P2, bool AllowParen) {

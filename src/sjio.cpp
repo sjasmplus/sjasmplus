@@ -116,7 +116,7 @@ public:
         } else return false;
     }
 
-    std::streamsize read(fs::ifstream &IFS) {
+    std::streamsize read(std::ifstream &IFS) {
         IFS.read((char *) this->data(), this->size());
         this->reset(IFS.gcount());
         return BytesLeft;
@@ -133,8 +133,8 @@ void clearReadLineBuf() {
 
 bool rl_InDQuotes = false, rl_InSQuotes = false, rl_InInstr = false, rl_InComment = false, rl_AfterColon = false, rlnewline = true;
 
-fs::ifstream realIFS;
-fs::ifstream *pIFS = &realIFS;
+std::ifstream realIFS;
+std::ifstream *pIFS = &realIFS;
 
 /*
 void CheckPage() {
@@ -285,7 +285,7 @@ fs::path resolveIncludeFilename(const fs::path &FN) {
         const std::list<fs::path> &List2 = CmdLineIncludesFirst ?
                                      Asm->options().IncludeDirsList : Asm->options().CmdLineIncludeDirsList;
         fs::path FileName = CmdLineIncludesFirst ?
-                            FN.string().substr(1, FN.string().size() - 2) :
+                            fs::path{FN.string().substr(1, FN.string().size() - 2)} :
                             FN;
         if (CmdLineIncludesFirst)
             Res = Asm->getAbsPath(FileName);
@@ -293,7 +293,7 @@ fs::path resolveIncludeFilename(const fs::path &FN) {
         for (auto &P : List1) {
             auto F = P / FileName;
             if (fs::exists(F)) {
-                Res = fs::absolute(F, P);
+                Res = fs::absolute(P / F);
                 Done = true;
                 break;
             }
@@ -302,7 +302,7 @@ fs::path resolveIncludeFilename(const fs::path &FN) {
             for (auto &P : List2) {
                 auto F = P / FileName;
                 if (fs::exists(F)) {
-                    Res = fs::absolute(F, P);
+                    Res = fs::absolute(P / F);
                     Done = true;
                     break;
                 }
@@ -322,7 +322,7 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
               "\" won't fit at current address="s +
               std::to_string(DestAddr));
 
-    fs::ifstream IFS(AbsFilePath, std::ios_base::binary);
+    std::ifstream IFS(AbsFilePath, std::ios_base::binary);
     if (!IFS) Fatal("Error opening file"s, FileName.string());
     if (Length < 0) Fatal("BinIncFile(): len < 0"s, FileName.string());
     if (Length == 0) {
@@ -355,8 +355,8 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
 }
 
 void includeFile(const fs::path &IncFileName) {
-    fs::ifstream *saveIFS = pIFS;
-    fs::ifstream incIFS;
+    std::ifstream *saveIFS = pIFS;
+    std::ifstream incIFS;
     pIFS = &incIFS;
 //std::cout << "*** INCLUDE: " << nfilename << std::endl;
     TyReadLineBuf SaveReadLineBuf = ReadLineBuf;
@@ -528,7 +528,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
     }
 }
 
-int SaveRAM(fs::ofstream &ofs, int start, int length) {
+int SaveRAM(std::ofstream &ofs, int start, int length) {
     //unsigned int addadr = 0,save = 0;
 /*
     aint save = 0;
@@ -646,7 +646,7 @@ uint8_t memGetByte(uint16_t address) {
 
 bool saveBinaryFile(const fs::path &FileName, int Start, int Length) {
 
-    fs::ofstream OFS(FileName, std::ios_base::binary);
+    std::ofstream OFS(FileName, std::ios_base::binary);
     if (!OFS) {
         Fatal("Error opening file: "s + FileName.string());
     }

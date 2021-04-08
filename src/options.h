@@ -30,6 +30,7 @@
 #define SJASMPLUS_OPTIONS_H
 
 #include <list>
+#include <vector>
 
 #include "fs.h"
 

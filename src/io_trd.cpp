@@ -28,6 +28,7 @@
 
 #include "sjio.h"
 #include <numeric>
+#include <cstring>
 
 namespace {
 
@@ -320,7 +321,7 @@ namespace {
 }
 
 int TRD_SaveEmpty(const fs::path &FileName) {
-    fs::ofstream OFS(FileName, std::ios::binary);
+    std::ofstream OFS(FileName, std::ios::binary);
 
     if (!OFS) {
         Error("Error opening file"s, FileName.string(), CATCHALL);
@@ -361,7 +362,7 @@ int TRD_AddFile(const fs::path &FileName, const HobetaFilename &HobetaFileName, 
         Length = 0x10000 - Start;
     }
 
-    fs::fstream OFS(FileName, std::ios::binary | std::ios::in | std::ios::out);
+    std::fstream OFS(FileName, std::ios::binary | std::ios::in | std::ios::out);
 
     if (!OFS) {
         Fatal("Error opening file"s, FileName.string());
@@ -396,7 +397,7 @@ int TRD_AddFile(const fs::path &FileName, const HobetaFilename &HobetaFileName, 
 
 int SaveHobeta(const fs::path &FileName, const HobetaFilename &HobetaFileName, int Start, int Length) {
 
-    fs::ofstream OFS(FileName, std::ios::binary);
+    std::ofstream OFS(FileName, std::ios::binary);
 
     if (!OFS) {
         Error("Error opening file"s, FileName.string(), CATCHALL);

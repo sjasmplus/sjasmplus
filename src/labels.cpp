@@ -196,7 +196,7 @@ std::string CLabels::dump() const {
 }
 
 void CLabels::dumpForUnreal(const fs::path &FileName) const {
-    fs::ofstream OFS(FileName);
+    std::ofstream OFS(FileName);
     if (!OFS.is_open()) {
         Fatal("Error opening file"s, FileName.string());
     }
@@ -227,7 +227,7 @@ void CLabels::dumpForUnreal(const fs::path &FileName) const {
 }
 
 void CLabels::dumpSymbols(const fs::path &FileName) const {
-    fs::ofstream OFS(FileName);
+    std::ofstream OFS(FileName);
     if (!OFS) {
         Fatal("Error opening file"s, FileName.string());
     }

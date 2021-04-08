@@ -1,9 +1,9 @@
 #ifndef SJASMPLUS_FS_H
 #define SJASMPLUS_FS_H
 
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
+#include <filesystem>
+#include <fstream>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 #endif // SJASMPLUS_FS_H

@@ -116,7 +116,7 @@ void CodeEmitter::enforceFileSize() {
 
 fs::path CodeEmitter::resolveOutputPath(const fs::path &p) {
     if (!ForcedOutputDirectory.empty()) {
-        return fs::absolute(p, ForcedOutputDirectory);
+        return fs::absolute(ForcedOutputDirectory / p);
     } else {
         return Asm.getAbsPath(p);
     }

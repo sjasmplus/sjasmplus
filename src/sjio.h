@@ -63,7 +63,7 @@ void readBufLine(bool Parse = true, bool SplitByColon = true); /* added */
 // char *GetPath(const char *fname, TCHAR **filenamebegin); /* added */
 void includeBinaryFile(const fs::path &FileName, int Offset, int Length);
 
-int SaveRAM(fs::ofstream &ofs, int, int);
+int SaveRAM(std::ofstream &ofs, int, int);
 
 void *SaveRAM(void *dst, int start, int size);
 
