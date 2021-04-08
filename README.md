@@ -4,7 +4,7 @@ SJAsmPlus Z80 Assembler
 # Building from source
 ## Requirements
 - [CMake](https://cmake.org/)
-- [Boost](https://www.boost.org/) C++ libraries (filesystem and system components) v1.60.0+
+- [Boost](https://www.boost.org/) C++ libraries
 ```
 mkdir build
 cd build
