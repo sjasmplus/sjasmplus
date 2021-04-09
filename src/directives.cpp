@@ -42,8 +42,8 @@
 #include "io_snapshots.h"
 #include "io_tape.h"
 #include "lua_support.h"
-#include "parser/directives.h"
-#include "parser/message.h"
+#include "parser/parser.h"
+#include "message.h"
 
 #include "directives.h"
 
@@ -68,19 +68,11 @@ FunctionTable DirectivesTable_dup;
 bool tryNewDirectiveParser(const char *BOL, const char *&P, bool AtBOL) {
     size_t DirPos = P - BOL;
     parser::State S{*Asm};
-    tao::pegtl::memory_input<> In(P, P + strlen(P),
-                                  getCurrentSrcFileNameForMsg().string(),
-                                  DirPos, CurrentLocalLine, DirPos);
-    try {
-        if(tao::pegtl::parse<parser::Directive, parser::Actions, parser::Ctrl>(In, S)) {
-            getAll(P);
-            return true;
-        } else {
-            return false;
-        }
-    } catch (tao::pegtl::parse_error &E) {
-        parser::fatal(E);
+    if (parser::parse<msg::MessagePrinter>(S, P, DirPos, CurrentLocalLine)) {
+        getAll(P);
+        return true;
     }
+    return false;
 }
 
 bool parseDirective(const char *BOL, const char *&P) { // BOL = Beginning of line

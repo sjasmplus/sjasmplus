@@ -1,5 +1,5 @@
 #include "reader.h"
-#include "parser.h"
+#include "../parser.h"
 #include "global.h"
 
 #include "struct.h"

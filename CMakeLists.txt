@@ -62,6 +62,8 @@ set(SOURCE_FILES
         lua_support.h
         memory.cpp
         memory.h
+        message.h
+        message_if.h
         modules.cpp
         modules.h
         options.cpp
@@ -76,7 +78,7 @@ set(SOURCE_FILES
         parser/macro.h
         parser/macro.cpp
         parser/message.h
-        parser/message.cpp
+        parser/parser.h
         parser/state.h
         parser/struct.h
         parser/struct.cpp
