@@ -30,13 +30,7 @@
 
 using boost::algorithm::to_upper_copy;
 
-#include "reader.h"
-#include "parser.h"
 #include "listing.h"
-#include "sjio.h"
-#include "support.h"
-#include "global.h"
-#include "codeemitter.h"
 
 #include "tables.h"
 

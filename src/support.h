@@ -34,34 +34,14 @@
 #if defined (_MSC_VER)
 
 #define STRDUP _strdup
-#define STRCAT(strDestination, sizeInBytes, strSource) strcat_s(strDestination, sizeInBytes, strSource)
 #define STRCPY(strDestination, sizeInBytes, strSource) strcpy_s(strDestination, sizeInBytes, strSource)
 #define STRNCPY(strDestination, sizeInBytes, strSource, count) strncpy_s(strDestination, sizeInBytes, strSource, count)
-#define FOPEN(pFile, filename, mode) fopen_s(&pFile, filename, mode)
-#define FOPEN_ISOK(pFile, filename, mode) (fopen_s(&pFile, filename, mode) == 0)
-#define SPRINTF1(buffer, sizeOfBuffer, format, arg1) sprintf_s(buffer, sizeOfBuffer, format, arg1)
-#define SPRINTF2(buffer, sizeOfBuffer, format, arg1, arg2) sprintf_s(buffer, sizeOfBuffer, format, arg1, arg2)
-#define SPRINTF3(buffer, sizeOfBuffer, format, arg1, arg2, arg3) sprintf_s(buffer, sizeOfBuffer, format, arg1, arg2, arg3)
-#define STRNCAT(strDest, bufferSizeInBytes, strSource, count) strncat_s(strDest, bufferSizeInBytes, strSource, count)
 
 #else
 
-#include <sys/time.h>
-#include <unistd.h>
-
-void GetCurrentDirectory(int, char *);
-// int SearchPath(const char *, const char *, const char *, int, char *, char **);
-
 #define STRDUP strdup
-#define STRCAT(strDestination, sizeInBytes, strSource) strcat(strDestination, strSource)
 #define STRCPY(strDestination, sizeInBytes, strSource) strcpy(strDestination, strSource)
 #define STRNCPY(strDestination, sizeInBytes, strSource, count) strncpy(strDestination, strSource, count)
-#define FOPEN(pFile, filename, mode) (pFile = fopen(filename, mode))
-#define FOPEN_ISOK(pFile, filename, mode) ((pFile = fopen(filename, mode)) != NULL)
-#define SPRINTF1(buffer, sizeOfBuffer, format, arg1) sprintf(buffer, format, arg1)
-#define SPRINTF2(buffer, sizeOfBuffer, format, arg1, arg2) sprintf(buffer, format, arg1, arg2)
-#define SPRINTF3(buffer, sizeOfBuffer, format, arg1, arg2, arg3) sprintf(buffer, format, arg1, arg2, arg3)
-#define STRNCAT(strDest, bufferSizeInBytes, strSource, count) strncat(strDest, strSource, count)
 
 #endif
 

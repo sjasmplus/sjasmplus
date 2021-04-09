@@ -30,7 +30,6 @@
 #include "sjio.h"
 #include "z80.h"
 #include "global.h"
-#include "options.h"
 #include "support.h"
 #include "asm.h"
 #include "parser/struct.h"

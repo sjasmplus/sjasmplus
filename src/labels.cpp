@@ -32,7 +32,6 @@
 #include "reader.h"
 #include "util.h"
 #include "global.h"
-#include "support.h"
 #include "parser/macro.h"
 
 #include "labels.h"

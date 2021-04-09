@@ -3,7 +3,6 @@
 //
 
 #include <boost/algorithm/string/case_conv.hpp>
-#include "zxspectrum.h"
 #include "memory.h"
 
 using boost::algorithm::to_upper_copy;

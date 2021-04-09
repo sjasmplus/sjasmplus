@@ -84,7 +84,6 @@ set(SOURCE_FILES
         reader.h
         sjio.cpp
         sjio.h
-        support.cpp
         support.h
         tables.cpp
         tables.h

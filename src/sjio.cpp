@@ -29,7 +29,6 @@
 #include <string>
 #include <iostream>
 #include <array>
-#include <boost/version.hpp>
 #include <parser/macro.h>
 
 using namespace std::string_literals;
@@ -40,8 +39,6 @@ using namespace std::string_literals;
 #include "reader.h"
 #include "global.h"
 #include "options.h"
-#include "support.h"
-#include "codeemitter.h"
 
 #include "sjio.h"
 

@@ -28,7 +28,6 @@ misrepresented as being the original software.
 
 #include <vector>
 #include <cstdint>
-#include <cstddef>
 
 #include <string>
 using namespace std::string_literals;

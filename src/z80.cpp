@@ -31,7 +31,6 @@
 #include "parser.h"
 #include "directives.h"
 #include "sjio.h"
-#include "support.h"
 #include "codeemitter.h"
 
 #include "z80.h"

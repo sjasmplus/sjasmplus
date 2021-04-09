@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include "global.h"
-#include "options.h"
 #include "util.h"
 #include "asm.h"
 #include "listing.h"
