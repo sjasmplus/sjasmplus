@@ -7,7 +7,6 @@
 
 namespace parser {
 
-    template <typename MP>
     bool parse(Assembler &Asm, const char *Buffer, size_t DirPos, size_t LineNumber) {
 
         tao::pegtl::memory_input<> In(Buffer, Buffer + strlen(Buffer),

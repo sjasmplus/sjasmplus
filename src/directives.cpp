@@ -67,7 +67,7 @@ FunctionTable DirectivesTable_dup;
  */
 bool tryNewDirectiveParser(const char *BOL, const char *&P, bool AtBOL) {
     size_t DirPos = P - BOL;
-    if (parser::parse<msg::MessagePrinter>(*Asm, P, DirPos, CurrentLocalLine)) {
+    if (parser::parse(*Asm, P, DirPos, CurrentLocalLine)) {
         getAll(P);
         return true;
     }
