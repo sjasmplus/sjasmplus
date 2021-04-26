@@ -52,7 +52,9 @@ template<>
 struct Actions<DefArray> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
-        S.Asm.setDefArray(S.Id, S.StringVec);
+        if (S.Asm.setDefArray(S.Id, S.StringVec)) {
+            M::warn(In.position(), "`" + S.Id +  "` redefined"s);
+        }
     }
 };
 
