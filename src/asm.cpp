@@ -42,7 +42,6 @@ void Assembler::init() {
 
 extern int pass; // FIXME
 const int LASTPASS = 3; // FIXME
-extern int ErrorCount; // FIXME
 extern aint CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine; // FIXME
 
 
@@ -67,7 +66,7 @@ void Assembler::assemble(int &RetValue) {
         openTopLevelFile(getAbsPath(F), PerFileExports);
     }
 
-    _COUT "Pass 1 complete (" _CMDL ErrorCount _CMDL " errors)" _ENDL;
+    _COUT "Pass 1 complete (" _CMDL msg::ErrorCount _CMDL " errors)" _ENDL;
 
     Options.ConvertWindowsToDOS = W2DEncodingFlag;
 
@@ -82,7 +81,7 @@ void Assembler::assemble(int &RetValue) {
 
         Em.reset();
         if (pass != LASTPASS) {
-            msg("Pass "s + std::to_string(pass) + " complete ("s + std::to_string(ErrorCount) + " errors)"s);
+            msg("Pass "s + std::to_string(pass) + " complete ("s + std::to_string(msg::ErrorCount) + " errors)"s);
         } else {
             msg("Pass 3 complete");
         }
@@ -104,14 +103,14 @@ void Assembler::assemble(int &RetValue) {
         Labels.dumpSymbols(Options.SymbolListFName);
     }
 
-    _COUT "Errors: " _CMDL ErrorCount _CMDL ", warnings: " _CMDL WarningCount _CMDL ", compiled: " _CMDL CompiledCurrentLine _CMDL " lines" _ENDL;
+    _COUT "Errors: " _CMDL msg::ErrorCount _CMDL ", warnings: " _CMDL msg::WarningCount _CMDL ", compiled: " _CMDL CompiledCurrentLine _CMDL " lines" _ENDL;
 
     cout << flush;
 
     // Shutdown Lua
     shutdownLUA();
 
-    RetValue = ErrorCount == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+    RetValue = msg::ErrorCount == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 Assembler::Assembler(int argc, char *argv[], int &RetValue) :

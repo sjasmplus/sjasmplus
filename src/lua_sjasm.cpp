@@ -183,7 +183,7 @@ static int tolua_get_sj_unsigned_current_address(lua_State *tolua_S) {
 #ifndef TOLUA_DISABLE_tolua_get_sj_warning_count
 
 static int tolua_get_sj_warning_count(lua_State *tolua_S) {
-    tolua_pushnumber(tolua_S, (lua_Number) WarningCount);
+    tolua_pushnumber(tolua_S, (lua_Number) msg::WarningCount);
     return 1;
 }
 
@@ -193,7 +193,7 @@ static int tolua_get_sj_warning_count(lua_State *tolua_S) {
 #ifndef TOLUA_DISABLE_tolua_get_sj_error_count
 
 static int tolua_get_sj_error_count(lua_State *tolua_S) {
-    tolua_pushnumber(tolua_S, (lua_Number) ErrorCount);
+    tolua_pushnumber(tolua_S, (lua_Number) msg::ErrorCount);
     return 1;
 }
 

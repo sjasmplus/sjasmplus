@@ -11,6 +11,8 @@
 
 #include "fs.h"
 
+#include "message_if.h"
+
 using namespace std::string_literals;
 
 using std::cout;
@@ -21,8 +23,6 @@ using std::stack;
 
 extern std::string ErrorStr;
 extern int PreviousErrorLine;
-
-extern int WarningCount;
 
 enum EStatus {
     ALL, PASS1, PASS2, PASS3, FATAL, CATCHALL, SUPPRESS

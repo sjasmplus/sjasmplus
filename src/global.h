@@ -14,8 +14,6 @@ extern int pass, IsLabelNotFound;
 
 extern aint CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine;
 
-extern int ErrorCount;
-
 extern stack<RepeatInfo> RepeatStack;
 
 #endif //SJASMPLUS_GLOBAL_H

@@ -1,21 +1,20 @@
 #ifndef SJASMPLUS_PARSER_PARSER_H
 #define SJASMPLUS_PARSER_PARSER_H
 
-#include <message_if.h>
-
 #include "directives.h"
 #include "message.h"
+#include "asm.h"
 
 namespace parser {
 
     template <typename MP>
-    bool parse(parser::State &S, const char *&P, size_t DirPos, size_t LineNumber) {
+    bool parse(Assembler &Asm, const char *Buffer, size_t DirPos, size_t LineNumber) {
 
-        using M = MsgPrinter<MP>;
-        tao::pegtl::memory_input<> In(P, P + strlen(P),
+        tao::pegtl::memory_input<> In(Buffer, Buffer + strlen(Buffer),
                                       getCurrentSrcFileNameForMsg().string(),
                                       DirPos, LineNumber, DirPos);
         try {
+            State S{Asm};
             if (tao::pegtl::parse<parser::Directive, parser::Actions, parser::Ctrl>(In, S)) {
                 return true;
             } else {

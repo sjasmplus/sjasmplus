@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "message.h"
 #include "macro.h"
 
 namespace parser {
@@ -32,7 +33,9 @@ template<>
 struct Actions<Define> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
-        S.Asm.setDefine(S.Id, S.StringVec.empty() ? ""s : S.StringVec[0]);
+        if (S.Asm.setDefine(S.Id, S.StringVec.empty() ? ""s : S.StringVec[0])) {
+            M::warn(In.position(), "`" + S.Id +  "` redefined"s);
+        }
     }
 };
 

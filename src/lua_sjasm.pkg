@@ -51,8 +51,8 @@ module sj {
 	//extern tolua_readonly unsigned long CurrentGlobalLine @ global_line_number;
 	//extern tolua_readonly unsigned long CurrentLocalLine @ local_line_number;
 	//extern tolua_readonly unsigned long CurrentLine @ line_number;
-	extern tolua_readonly int WarningCount @ warning_count;
-	extern tolua_readonly int ErrorCount @ error_count;
+	extern tolua_readonly int msg::WarningCount @ warning_count;
+	extern tolua_readonly int msg::ErrorCount @ error_count;
 	void LuaShellExec @ shellexec(char *command);
 }
 

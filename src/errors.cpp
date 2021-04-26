@@ -8,6 +8,8 @@ extern "C" {
 #include "fs.h"
 #include "parser/define.h"
 
+#include "message_if.h"
+
 #include "errors.h"
 
 // Temporary:
@@ -21,8 +23,6 @@ void initLegacyErrorHandler(Assembler *_Asm) {
 std::string ErrorStr;
 bool IsSkipErrors;
 int PreviousErrorLine = -1;
-
-int WarningCount = 0;
 
 fs::path CurrentSrcFileNameForMsg;
 
@@ -54,9 +54,9 @@ void Error(const std::string &fout, const std::string &bd, int type) {
     }
     IsSkipErrors = (type == SUPPRESS);
     PreviousErrorLine = CurrentLocalLine;
-    ++ErrorCount;
+    ++msg::ErrorCount;
 
-    Asm->setDefine("_ERRORS"s, std::to_string(ErrorCount));
+    Asm->setDefine("_ERRORS"s, std::to_string(msg::ErrorCount));
 
     /*SPRINTF3(ep, LINEMAX2, "%s line %lu: %s", filename, CurrentLocalLine, fout);
     if (bd) {
@@ -121,8 +121,8 @@ void Warning(const std::string &fout, const std::string &bd, int type) {
         return;
     }
 
-    ++WarningCount;
-    Asm->setDefine("_WARNINGS"s, std::to_string(WarningCount));
+    ++msg::WarningCount;
+    Asm->setDefine("_WARNINGS"s, std::to_string(msg::WarningCount));
 
     if (pass > LASTPASS) {
         ErrorStr = "warning: "s + fout;

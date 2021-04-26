@@ -46,7 +46,7 @@ namespace msg {
                     case Type::Note:
                         return "note: "s;
                     case Type::Warning:
-                        return "warning "s;
+                        return "warning: "s;
                     case Type::Error:
                     default:
                         return "error: "s;
@@ -55,6 +55,8 @@ namespace msg {
 
         }
     };
+
+    using M = IMessagePrinter<MessagePrinter>;
 
 } // namespace msg
 

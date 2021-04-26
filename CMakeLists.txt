@@ -63,6 +63,7 @@ set(SOURCE_FILES
         memory.cpp
         memory.h
         message.h
+        message_if.cpp
         message_if.h
         modules.cpp
         modules.h
@@ -78,7 +79,7 @@ set(SOURCE_FILES
         parser/macro.h
         parser/macro.cpp
         parser/message.h
-        parser/parser.h
+        parser/parse.h
         parser/state.h
         parser/struct.h
         parser/struct.cpp

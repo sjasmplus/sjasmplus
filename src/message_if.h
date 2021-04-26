@@ -12,23 +12,29 @@ namespace msg {
         std::size_t Column;
     };
 
-    template <typename T>
-    class IMessagePrinter {
+    extern int WarningCount;
+    extern int ErrorCount;
+
+    template <typename P>
+    struct IMessagePrinter {
 
         static void note(const Position &Pos, const std::string &Message) {
-            T::note(Pos, Message);
+            P::note(Pos, Message);
         }
 
         static void warn(const Position &Pos, const std::string &Message) {
-            T::warn(Pos, Message);
+            P::warn(Pos, Message);
+            ++WarningCount;
         }
 
         static void err(const Position &Pos, const std::string &Message) {
-            T::err(Pos, Message);
+            P::err(Pos, Message);
+            ++ErrorCount;
         }
 
         [[noreturn]] static void fatal(const Position &Pos, const std::string &Message) {
-            T::fatal(Pos, Message);
+            ++ErrorCount;
+            P::fatal(Pos, Message);
         }
 
     };

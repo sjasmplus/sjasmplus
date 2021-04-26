@@ -42,7 +42,7 @@
 #include "io_snapshots.h"
 #include "io_tape.h"
 #include "lua_support.h"
-#include "parser/parser.h"
+#include "parser/parse.h"
 #include "message.h"
 
 #include "directives.h"
@@ -67,8 +67,7 @@ FunctionTable DirectivesTable_dup;
  */
 bool tryNewDirectiveParser(const char *BOL, const char *&P, bool AtBOL) {
     size_t DirPos = P - BOL;
-    parser::State S{*Asm};
-    if (parser::parse<msg::MessagePrinter>(S, P, DirPos, CurrentLocalLine)) {
+    if (parser::parse<msg::MessagePrinter>(*Asm, P, DirPos, CurrentLocalLine)) {
         getAll(P);
         return true;
     }
@@ -1839,9 +1838,9 @@ void _lua_showerror() {
 
     PreviousErrorLine = ln;
 
-    ErrorCount++;
+    msg::ErrorCount++;
 
-    Asm->setDefine("_ERRORS"s, std::to_string(ErrorCount));
+    Asm->setDefine("_ERRORS"s, std::to_string(msg::ErrorCount));
 
     lua_pop(LUA, 1);
 }
