@@ -56,8 +56,6 @@ void Error(const std::string &fout, const std::string &bd, int type) {
     PreviousErrorLine = CurrentLocalLine;
     ++msg::ErrorCount;
 
-    Asm->setDefine("_ERRORS"s, std::to_string(msg::ErrorCount));
-
     /*SPRINTF3(ep, LINEMAX2, "%s line %lu: %s", filename, CurrentLocalLine, fout);
     if (bd) {
         STRCAT(ep, LINEMAX2, ": "); STRCAT(ep, LINEMAX2, bd);
@@ -122,7 +120,6 @@ void Warning(const std::string &fout, const std::string &bd, int type) {
     }
 
     ++msg::WarningCount;
-    Asm->setDefine("_WARNINGS"s, std::to_string(msg::WarningCount));
 
     if (pass > LASTPASS) {
         ErrorStr = "warning: "s + fout;

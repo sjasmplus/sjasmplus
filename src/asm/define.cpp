@@ -1,4 +1,9 @@
+#include <string>
+
+#include "message_if.h"
 #include "define.h"
+
+using namespace std::string_literals;
 
 bool CDefines::set(const std::string &Name, const std::string &Value) {
     bool Overwritten = (DefineTable.find(Name) != DefineTable.end());
@@ -20,8 +25,14 @@ optional<std::string> CDefines::get(const std::string &Name) {
     auto It = DefineTable.find(Name);
     if (It != DefineTable.end())
         return It->second;
-    else
+    else {
+        if (Name == "_ERRORS"s) {
+            return std::to_string(msg::ErrorCount);
+        } else if (Name == "_WARNINGS"s) {
+            return std::to_string(msg::WarningCount);
+        }
         return std::nullopt;
+    }
 }
 
 bool CDefines::setArray(const std::string &Name, const std::vector<std::string> &Arr) {
