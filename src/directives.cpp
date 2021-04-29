@@ -1840,8 +1840,6 @@ void _lua_showerror() {
 
     msg::ErrorCount++;
 
-    Asm->setDefine("_ERRORS"s, std::to_string(msg::ErrorCount));
-
     lua_pop(LUA, 1);
 }
 

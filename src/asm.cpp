@@ -162,8 +162,8 @@ void Assembler::initPass(int P) {
     Defines.set("_SJASMPLUS"s, "1"s);
     Defines.set("_VERSION"s, "\"" SJASMPLUS_VERSION "\"");
     Defines.set("_RELEASE"s, "0"s);
-    Defines.set("_ERRORS"s, "0"s);
-    Defines.set("_WARNINGS"s, "0"s);
+    msg::ErrorCount = 0;
+    msg::WarningCount = 0;
 }
 
 template<typename T>
