@@ -26,15 +26,22 @@
 
 // io_trd.cpp
 
-#include "sjio.h"
 #include <numeric>
 #include <cstring>
 #include <cassert>
+#include <vector>
+#include <string>
 
-namespace {
+#include "io_trd.h"
+
+using namespace std::string_literals;
+
+namespace zx {
+
+namespace trd {
 
     //TODO: extract
-    inline void SaveLEWord(void *dst, unsigned data) {
+    inline void saveLEWord(void *dst, unsigned data) {
         auto *p = static_cast<unsigned char *>(dst);
         p[0] = data & 0xff;
         p[1] = data >> 8;
@@ -103,12 +110,12 @@ namespace {
         }
 
         void SetSize(unsigned size) {
-            SaveLEWord(Size, size);
+            saveLEWord(Size, size);
             SectorsCount = (size + SECTOR_SIZE - 1) / SECTOR_SIZE;
         }
 
         void SetStart(unsigned start) {
-            SaveLEWord(Start, start);
+            saveLEWord(Start, start);
         }
 
         DiskLocation GetEndLocation() const {
@@ -198,7 +205,7 @@ namespace {
 
         void SetFreeSpaceStart(const DiskLocation &location) {
             FreeSpace = location;
-            SaveLEWord(FreeSectors, TOTAL_SECTORS - location.GetAbsoluteSector());
+            saveLEWord(FreeSectors, TOTAL_SECTORS - location.GetAbsoluteSector());
         }
     };
 
@@ -310,7 +317,7 @@ namespace {
         unsigned char CRC[2];
     };
 
-    bool IsBasic(const HobetaFilename &name) {
+    bool isBasic(const HobetaFilename &name) {
         return name.GetType() == "B";
     }
 
@@ -319,42 +326,31 @@ namespace {
     static_assert(sizeof(Catalogue) == 128 * 16, "sizeof(Catalogue) != 128 * 16");
     static_assert(sizeof(ServiceSector) == SECTOR_SIZE, "sizeof(ServiceSector) != SECTOR_SIZE");
     static_assert(sizeof(HobetaHeader) == 17, "sizeof(HobetaHeader) != 17");
-}
 
-int TRD_SaveEmpty(const fs::path &FileName) {
+optional<std::string> saveEmpty(const fs::path &FileName) {
     std::ofstream OFS(FileName, std::ios::binary);
 
     if (!OFS) {
-        Error("Error opening file"s, FileName.string(), CATCHALL);
-        return 0;
+        return "Error opening file: "s + FileName.string();
     }
 
     TRDImage Image;
     Image.Save(OFS);
     if (!OFS) {
-        Error("Write error (disk full?)"s, FileName.string(), CATCHALL);
-        return 0;
+        return "Write error (disk full?): "s + FileName.string();
     } else {
-        return 1;
+        return std::nullopt;
     }
 }
 
-int TRD_AddFile(const fs::path &FileName, const HobetaFilename &HobetaFileName, int Start, int Length,
-                int Autostart) { //autostart added by boo_boo 19_0ct_2008
-    // for Lua
-/*
-    if (!DeviceID) {
-        Error("zx.trdimage_addfile: this function available only in real device emulation mode.", 0);
-        return 0;
-    }
-*/
+optional<std::string> addFile(const std::vector<uint8_t> &Data, const fs::path &FileName,
+                              const HobetaFilename &HobetaFileName, int Start, int Length, int Autostart) {
+                                                                    //autostart added by boo_boo 19_0ct_2008
     if (Start > 0xFFFF) {
-        Error("zx.trdimage_addfile: start address more than 0FFFFh are not allowed"s, std::to_string(Start), PASS3);
-        return 0;
+        return "zx::trd::addFile: start address more than 0FFFFh are not allowed: "s + std::to_string(Start);
     }
     if (Length > 0x10000) {
-        Error("zx.trdimage_addfile: length more than 10000h are not allowed"s, std::to_string(Length), PASS3);
-        return 0;
+        return "zx::trd::addFile: length more than 10000h are not allowed: "s + std::to_string(Length);
     }
     if (Start < 0) {
         Start = 0;
@@ -366,13 +362,12 @@ int TRD_AddFile(const fs::path &FileName, const HobetaFilename &HobetaFileName, 
     std::fstream OFS(FileName, std::ios::binary | std::ios::in | std::ios::out);
 
     if (!OFS) {
-        Fatal("Error opening file"s, FileName.string());
+        return "Error opening file: "s + FileName.string();
     }
 
     TRDImage Image;
     if (!Image.Load(OFS)) {
-        Error("Failed to read TRD image from (I/O error or invalid format)"s, FileName.string(), CATCHALL);
-        return 0;
+        return "Failed to read TRD image from (I/O error or invalid format): "s + FileName.string();
     }
     Image.DeleteFile(HobetaFileName);
 
@@ -380,29 +375,28 @@ int TRD_AddFile(const fs::path &FileName, const HobetaFilename &HobetaFileName, 
             {0x80, 0xaa, (uint8_t) (Autostart & 0xff), (uint8_t) (Autostart >> 8)};
 
     unsigned RealLength = Autostart > 0 ? Length + sizeof(AutostartData) : Length;
-    if (void *data = Image.AddFile(HobetaFileName, IsBasic(HobetaFileName) ? Length : Start, RealLength)) {
-        void *end = SaveRAM(data, Start, Length);
+    if (void *data = Image.AddFile(HobetaFileName, isBasic(HobetaFileName) ? Length : Start, RealLength)) {
+        assert(Data.size() == Length);
+        std::memcpy(data, Data.data(), Data.size());
         if (Autostart > 0) {
-            std::memcpy(end, AutostartData, sizeof(AutostartData));
+            std::memcpy(reinterpret_cast<uint8_t *>(data) + Data.size(), AutostartData, sizeof(AutostartData));
         }
     } else {
-        Error("No space in TRD image"s, FileName.string(), CATCHALL);
-        return 0;
+        return "No space in TRD image: "s + FileName.string();
     }
     if (OFS.seekg(0) && Image.Save(OFS)) {
-        return 1;
+        return std::nullopt;
     }
-    Error("Failed to save TRD image"s, FileName.string(), CATCHALL);
-    return 0;
+    return "Failed to save TRD image: "s + FileName.string();
 }
 
-int SaveHobeta(const fs::path &FileName, const HobetaFilename &HobetaFileName, int Start, int Length) {
+optional<std::string> saveHobeta(const std::vector<uint8_t> &Data, const fs::path &FileName,
+                                 const HobetaFilename &HobetaFileName, int Start, int Length) {
 
     std::ofstream OFS(FileName, std::ios::binary);
 
     if (!OFS) {
-        Error("Error opening file"s, FileName.string(), CATCHALL);
-        return 0;
+        return "Error opening file: "s + FileName.string();
     }
 
     if (Length + Start > 0xFFFF) {
@@ -413,23 +407,25 @@ int SaveHobeta(const fs::path &FileName, const HobetaFilename &HobetaFileName, i
     }
 
     CatEntry entry;
-    entry.SetStart(IsBasic(HobetaFileName) ? Length : Start);
+    entry.SetStart(isBasic(HobetaFileName) ? Length : Start);
     entry.SetName(HobetaFileName);
     entry.SetSize(Length);
 
     std::vector<char> buffer(sizeof(HobetaHeader) + Length);
     HobetaHeader &hdr = *reinterpret_cast<HobetaHeader *>(&buffer[0]);
     std::memcpy(&hdr.Filename, entry.Name, offsetof(HobetaHeader, FullSize));
-    SaveLEWord(hdr.FullSize, SECTOR_SIZE * entry.SectorsCount);
-    SaveLEWord(hdr.CRC, 105 + 257 * std::accumulate(hdr.Filename, hdr.Filename + 15, 0u));
+    saveLEWord(hdr.FullSize, SECTOR_SIZE * entry.SectorsCount);
+    saveLEWord(hdr.CRC, 105 + 257 * std::accumulate(hdr.Filename, hdr.Filename + 15, 0u));
 
-    SaveRAM(&buffer[sizeof(HobetaHeader)], Start, Length);
+    assert(Data.size() == Length);
+    std::memcpy(&buffer[sizeof(HobetaHeader)], Data.data(), Data.size());
 
     if (OFS.write(&buffer.front(), buffer.size())) {
-        return 1;
+        return std::nullopt;
     }
-    Error("Failed to save hobeta file"s, FileName.string(), CATCHALL);
-    return 0;
+    return "Failed to save hobeta file: "s + FileName.string();
 }
 
-//eof io_trd.cpp
+} // namespace trd
+
+} // namespace zx

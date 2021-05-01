@@ -31,8 +31,17 @@
 #ifndef SJASMPLUS_IO_TRD_H
 #define SJASMPLUS_IO_TRD_H
 
+#include <cstdint>
 #include <string>
+#include <optional>
+#include <vector>
 #include "fs.h"
+
+namespace zx {
+
+namespace trd {
+
+    using std::optional;
 
 class HobetaFilename {
 private:
@@ -78,20 +87,20 @@ public:
     }
 };
 
-int TRD_SaveEmpty(const fs::path &FileName);
+/* The following functions return
+   std::nullopt on success or
+   error string on failure */
 
-int TRD_AddFile(const fs::path &FileName, const HobetaFilename &HobetaFileName,
-                int Start, int Length, int Autostart);
+optional<std::string> saveEmpty(const fs::path &FileName);
 
-int SaveHobeta(const fs::path &FileName, const HobetaFilename &HobetaFileName, int Start, int Length);
+optional<std::string> addFile(const std::vector<uint8_t> &Data, const fs::path &FileName,
+                               const HobetaFilename &HobetaFileName, int Start, int Length, int Autostart);
 
-//lua adapters
-inline int TRD_SaveEmpty(char *FileName) {
-    return TRD_SaveEmpty(fs::path(FileName));
-}
+optional<std::string> saveHobeta(const std::vector<uint8_t> &Data, const fs::path &FileName,
+                                 const HobetaFilename &HobetaFileName, int Start, int Length);
 
-inline int TRD_AddFile(char *FileName, char *HobetaFileName, int Start, int Length, int Autostart) {
-    return TRD_AddFile(fs::path(FileName), HobetaFilename(HobetaFileName), Start, Length, Autostart);
-}
+} // namespace trd
+
+} // namespace zx
 
 #endif // SJASMPLUS_IO_TRD_H

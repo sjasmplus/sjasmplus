@@ -613,9 +613,9 @@ fs::path getFileName(const char *&P) {
     return fs::path(result);
 }
 
-HobetaFilename getHobetaFileName(const char *&P) {
+zx::trd::HobetaFilename getHobetaFileName(const char *&P) {
     const std::string &result = getString(P);
-    return HobetaFilename(result);
+    return zx::trd::HobetaFilename{result};
 }
 
 bool needComma(const char *&P) {

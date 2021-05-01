@@ -87,7 +87,7 @@ std::string getString(const char *&P, bool KeepBrackets = false);
 
 fs::path getFileName(const char *&P);
 
-HobetaFilename getHobetaFileName(const char *&P);
+zx::trd::HobetaFilename getHobetaFileName(const char *&P);
 
 bool needComma(const char *&P);
 

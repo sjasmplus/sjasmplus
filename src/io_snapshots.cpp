@@ -26,21 +26,19 @@
 
 #include <cstring>
 
-#include "defines.h"
-#include "errors.h"
 #include "zxspectrum.h"
 
 #include "io_snapshots.h"
 
 namespace zx {
 
-bool saveSNA(MemModel &M, const fs::path &fname, uint16_t start) {
+optional<std::string> saveSNA(MemModel &M, const fs::path &FName, uint16_t Start, std::vector<std::string> &Warnings) {
     unsigned char snbuf[31];
 
-    std::ofstream ofs;
-    ofs.open(fname, std::ios_base::binary);
-    if (ofs.fail()) {
-        Fatal("Error opening file"s, fname.string());
+    std::ofstream OFS;
+    OFS.open(FName, std::ios_base::binary);
+    if (OFS.fail()) {
+        Fatal("Error opening file"s, FName.string());
     }
 
     zx::initBasicVars(M);
@@ -53,8 +51,8 @@ bool saveSNA(MemModel &M, const fs::path &fname, uint16_t start) {
     snbuf[15] = 0x3a; //iy
     snbuf[16] = 0x5c; //iy
     // Set BC=PC to match ZX Basic's USR behavior
-    snbuf[13] = (uint8_t) (start & 0xff); //bc
-    snbuf[14] = (uint8_t) (start >> 8); //bc
+    snbuf[13] = (uint8_t) (Start & 0xff); //bc
+    snbuf[14] = (uint8_t) (Start >> 8); //bc
     if (!M.isPagedMemory()) {
         snbuf[0] = 0x3F; //i
         snbuf[3] = 0x9B; //de'
@@ -83,22 +81,21 @@ bool saveSNA(MemModel &M, const fs::path &fname, uint16_t start) {
             snbuf[23] = 0x2D;// + 16; //sp
             snbuf[24] = 0xFF; //sp
 
-            M.writeByte(0xFF2D + 16, (uint8_t) (start & 0x00FF), true, false);  // pc
-            M.writeByte(0xFF2E + 16, (uint8_t) (start >> 8), true, false);      // pc
+            M.writeByte(0xFF2D + 16, (uint8_t) (Start & 0x00FF), true, false);  // pc
+            M.writeByte(0xFF2E + 16, (uint8_t) (Start >> 8), true, false);      // pc
 
-        } else if ((stack = zx::initMinimalBasicStack(M, 8, start)) != 0) {
+        } else if ((stack = zx::initMinimalBasicStack(M, 8, Start)) != 0) {
             snbuf[23] = (uint8_t) (stack & 0xff); //sp
             snbuf[24] = (uint8_t) (stack >> 8); //sp
 
         } else {
-            Warning("[SAVESNA] RAM <0x4000-0x4001> will be overridden due to 48k snapshot imperfect format."s,
-                    LASTPASS);
+            Warnings.emplace_back("[SAVESNA] RAM <0x4000-0x4001> will be overridden due to 48k snapshot imperfect format."s);
 
             snbuf[23] = 0x00; //sp
             snbuf[24] = 0x40; //sp
 
-            M.writeByte(0x4000, (uint8_t) (start & 0x00FF), true, false);  // pc
-            M.writeByte(0x4001, (uint8_t) (start >> 8), true, false);      // pc
+            M.writeByte(0x4000, (uint8_t) (Start & 0x00FF), true, false);  // pc
+            M.writeByte(0x4001, (uint8_t) (Start >> 8), true, false);      // pc
         }
     } else {
         uint16_t stack = zx::initMinimalBasicStack(M);
@@ -111,79 +108,55 @@ bool saveSNA(MemModel &M, const fs::path &fname, uint16_t start) {
     snbuf[25] = 1; //im 1
     snbuf[26] = 7; //border 7
 
-    ofs.write((const char *) snbuf, sizeof(snbuf) - 4);
-    if (ofs.fail()) {
-        Error("Error writing to "s + fname.string(), strerror(errno), CATCHALL);
-        ofs.close();
+    OFS.write((const char *) snbuf, sizeof(snbuf) - 4);
+    if (OFS.fail()) {
+        OFS.close();
         M.clearEphemerals();
-        return false;
+        return "Error writing to "s + FName.string() + ": "s + strerror(errno);
     }
 
     if (!M.isPagedMemory()) {
         // 48K
-        ofs.write((const char *) M.getPtrToMem() + 0x4000, 0xC000);
+        OFS.write((const char *) M.getPtrToMem() + 0x4000, 0xC000);
     } else {
         // 128K
-        ofs.write((const char *) M.getPtrToPage(5), 0x4000);
-        ofs.write((const char *) M.getPtrToPage(2), 0x4000);
-        ofs.write((const char *) M.getPtrToPageInSlot(3), 0x4000);
+        OFS.write((const char *) M.getPtrToPage(5), 0x4000);
+        OFS.write((const char *) M.getPtrToPage(2), 0x4000);
+        OFS.write((const char *) M.getPtrToPageInSlot(3), 0x4000);
     }
 
     if (!M.isPagedMemory()) {
 
     } else { // 128K
-        snbuf[27] = (uint8_t) (start & 0x00FF); //pc
-        snbuf[28] = (uint8_t) (start >> 8); //pc
+        snbuf[27] = (uint8_t) (Start & 0x00FF); //pc
+        snbuf[28] = (uint8_t) (Start >> 8); //pc
         snbuf[29] = 0x10 + M.getPageNumInSlot(3); //7ffd
         snbuf[30] = 0; //tr-dos
-        ofs.write((const char *) snbuf + 27, 4);
+        OFS.write((const char *) snbuf + 27, 4);
     }
 
-    //if (DeviceID) {
     if (!M.isPagedMemory()) {
-        /*for (int i = 0; i < 5; i++) {
-            if (fwrite(Device->GetPage(0)->RAM, 1, Device->GetPage(0)->Size, ff) != Device->GetPage(0)->Size) {
-                Error("Write error (disk full?)", fname, CATCHALL);
-                fclose(ff);
-                return 0;
-            }
-        }*/
     } else { // 128K
         for (int i = 0; i < 8; i++) {
             if (i != M.getPageNumInSlot(3) && i != 2 && i != 5) {
-                ofs.write((const char *) M.getPtrToPage(i), 0x4000);
+                OFS.write((const char *) M.getPtrToPage(i), 0x4000);
             }
         }
     }
 
     M.clearEphemerals();
-    if (ofs.fail()) {
-        Error("Error writing to "s + fname.string(), strerror(errno), CATCHALL);
-        ofs.close();
-        return false;
+    if (OFS.fail()) {
+        OFS.close();
+        return "Error writing to "s + FName.string() + ": "s + strerror(errno);
     }
-
-    //}
-    /* else {
-        char *buf = (char*) calloc(0x14000, sizeof(char));
-        if (buf == NULL) {
-            Error("No enough memory", 0, FATAL);
-        }
-        memset(buf, 0, 0x14000);
-        if (fwrite(buf, 1, 0x14000, ff) != 0x14000) {
-            Error("Write error (disk full?)", fname, CATCHALL);
-            fclose(ff);
-            return 0;
-        }
-    }*/
 
     if (M.isPagedMemory() &&
             M.getName() != "ZXSPECTRUM128"s) {
-        Warning("Only 128kb will be written to snapshot"s, fname.string());
+        Warnings.emplace_back("Only 128kb will be written to snapshot"s + FName.string());
     }
 
-    ofs.close();
-    return true;
+    OFS.close();
+    return std::nullopt;
 }
 
 } // namespace zx

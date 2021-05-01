@@ -30,12 +30,18 @@
 #define SJASMPLUS_IO_SNAPSHOTS_H
 
 #include <cstdint>
+#include <optional>
+#include <vector>
+#include <string>
 #include "fs.h"
 #include "memory.h"
 
 namespace zx {
 
-bool saveSNA(MemModel &M, const fs::path &fname, uint16_t start);
+    using std::optional;
+
+// Returns std::nullopt on success or error string on failure
+optional<std::string> saveSNA(MemModel &M, const fs::path &FName, uint16_t Start, std::vector<std::string> &Warnings);
 
 } // namespace zx
 

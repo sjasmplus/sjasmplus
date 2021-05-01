@@ -30,12 +30,18 @@
 #define SJASMPLUS_DIRECTIVES_H
 
 #include "tables.h"
+#include "io_trd.h"
 
 extern FunctionTable DirectivesTable;
 
 void InsertDirectives();
 
 void checkRepeatStackAtEOF();
+
+optional<std::string> doSAVETRD(const fs::path &FileName, const zx::trd::HobetaFilename &HobetaFileName,
+                                int Start, int Length, int Autostart);
+
+optional<std::string> doSAVESNA(const fs::path &FileName, uint16_t Start);
 
 bool LuaSetPage(aint n);
 

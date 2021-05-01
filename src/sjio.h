@@ -66,7 +66,7 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length);
 
 int SaveRAM(std::ofstream &ofs, int, int);
 
-void *SaveRAM(void *dst, int start, int size);
+void *readRAM(void *dst, int start, int size);
 
 uint8_t memGetByte(uint16_t address); /* added */
 uint16_t memGetWord(uint16_t address); /* added */

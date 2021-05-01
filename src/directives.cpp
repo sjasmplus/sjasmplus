@@ -43,7 +43,6 @@
 #include "io_tape.h"
 #include "lua_support.h"
 #include "parser/parse.h"
-#include "message.h"
 
 #include "directives.h"
 
@@ -620,7 +619,7 @@ void dirINCTRD() {
     int offset = -1, length = -1, i;
 
     fs::path FileName = fs::path(getString(lp));
-    HobetaFilename HobetaFileName;
+    zx::trd::HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
             HobetaFileName = getHobetaFileName(lp);
@@ -702,6 +701,22 @@ void dirINCTRD() {
     includeBinaryFile(FileName, offset, length);
 }
 
+optional<std::string> doSAVESNA(const fs::path &FileName, uint16_t Start) {
+
+    std::vector<std::string> Warnings;
+
+    auto Err = zx::saveSNA(Asm->Em.getMemModel(), FileName, Start, Warnings);
+
+    for (const std::string &W : Warnings) {
+        Warning(W, LASTPASS);
+    }
+
+    if (Err) {
+        Error("[SAVESNA] "s + *Err, CATCHALL);
+    }
+    return Err;
+}
+
 void dirSAVESNA() {
     if (!Asm->Em.isMemManagerActive()) {
         Error("[SAVESNA] works in device emulation mode only"s);
@@ -738,8 +753,8 @@ void dirSAVESNA() {
         start = StartAddress;
     }
 
-    if (exec && !zx::saveSNA(Asm->Em.getMemModel(), FileName, start)) {
-        Error("[SAVESNA] Error writing file (Disk full?)"s, bp, CATCHALL);
+    if (exec) {
+        doSAVESNA(FileName, start);
         return;
     }
 }
@@ -857,7 +872,7 @@ void dirSAVEHOB() {
     }
 
     const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
-    HobetaFilename HobetaFileName;
+    zx::trd::HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
             HobetaFileName = getHobetaFileName(lp);
@@ -903,8 +918,16 @@ void dirSAVEHOB() {
         Error("[SAVEHOB] Syntax error. No parameters"s, bp, PASS3);
         return;
     }
-    if (exec && !SaveHobeta(FileName, HobetaFileName, start, length)) {
-        Error("[SAVEHOB] Error writing file (Disk full?)"s, bp, CATCHALL);
+    if (exec) {
+
+        std::vector<uint8_t> Data;
+        Data.resize(length);
+        readRAM(Data.data(), start, length);
+
+        auto Err = zx::trd::saveHobeta(Data, FileName, HobetaFileName, start, length);
+        if (Err) {
+            Error("[SAVEHOB] "s + *Err, CATCHALL);
+        }
         return;
     }
 }
@@ -923,7 +946,19 @@ void dirEMPTYTRD() {
         Error("[EMPTYTRD] Syntax error"s, bp, CATCHALL);
         return;
     }
-    TRD_SaveEmpty(FileName);
+    auto Err = zx::trd::saveEmpty(FileName);
+    if (Err) {
+        Error(*Err, CATCHALL);
+    }
+}
+
+optional<std::string> doSAVETRD(const fs::path &FileName, const zx::trd::HobetaFilename &HobetaFileName,
+                                int Start, int Length, int Autostart) {
+
+    std::vector<uint8_t> Data;
+    Data.resize(Length);
+    readRAM(Data.data(), Start, Length);
+    return addFile(Data, FileName, HobetaFileName, Start, Length, Autostart);
 }
 
 void dirSAVETRD() {
@@ -941,7 +976,7 @@ void dirSAVETRD() {
     int start = -1, length = -1, autostart = -1; //autostart added by boo_boo 19_0ct_2008
 
     const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
-    HobetaFilename HobetaFileName;
+    zx::trd::HobetaFilename HobetaFileName;
     if (comma(lp)) {
         if (!comma(lp)) {
             HobetaFileName = getHobetaFileName(lp);
@@ -1002,7 +1037,10 @@ void dirSAVETRD() {
     }
 
     if (exec) {
-        TRD_AddFile(FileName, HobetaFileName, start, length, autostart);
+        auto Err = doSAVETRD(FileName, HobetaFileName, start, length, autostart);
+        if (Err) {
+            Fatal(*Err);
+        }
     }
 }
 

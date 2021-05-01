@@ -580,7 +580,7 @@ int SaveRAM(std::ofstream &ofs, int start, int length) {
     return 1;
 }
 
-void *SaveRAM(void *dst, int start, int length) {
+void *readRAM(void *dst, int start, int length) {
 /*
     if (!DeviceID) {
         return 0;
