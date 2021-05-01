@@ -41,7 +41,6 @@ using std::cerr;
 using std::endl;
 
 #include "defines.h"
-#include "errors.h"
 
 class FunctionTable {
 public:
