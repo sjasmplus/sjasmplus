@@ -15,8 +15,10 @@ namespace msg {
     extern int WarningCount;
     extern int ErrorCount;
 
-    template <typename P>
+    template <typename MPBackend>
     struct IMessagePrinter {
+
+        using P = MPBackend;
 
         static void note(const Position &Pos, const std::string &Message) {
             P::note(Pos, Message);

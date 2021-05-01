@@ -21,16 +21,20 @@ namespace msg {
     class MessagePrinter {
     public:
 
+        static void msg(const std::string &Message) {
+            printL(Message);
+        }
+
         static void note(const Position &Pos, const std::string &Message) {
-            cerr << formatMsg(Type::Note, Pos, Message) << endl;
+            printF(Type::Note, Pos, Message);
         }
 
         static void warn(const Position &Pos, const std::string &Message) {
-            cerr << formatMsg(Type::Warning, Pos, Message) << endl;
+            printF(Type::Warning, Pos, Message);
         }
 
         static void err(const Position &Pos, const std::string &Message) {
-            cerr << formatMsg(Type::Error, Pos, Message) << endl;
+            printF(Type::Error, Pos, Message);
         }
 
         [[noreturn]] static void fatal(const Position &Pos, const std::string &Message) {
@@ -39,6 +43,7 @@ namespace msg {
         }
 
     private:
+
         static std::string formatMsg(Type MType, const Position &P, const std::string &Message) {
             return P.Source.string() + ":"s + std::to_string(P.Line) + ":"s +
                    std::to_string(P.Column) + ": "s + [&]() {
@@ -54,9 +59,15 @@ namespace msg {
             }() + Message;
 
         }
-    };
 
-    using M = IMessagePrinter<MessagePrinter>;
+        static void printF(Type MType, const Position &P, const std::string &Message) {
+            printL(formatMsg(MType, P, Message));
+        }
+
+        static void printL(const std::string &Message) {
+            cerr << Message << endl;
+        }
+    };
 
 } // namespace msg
 

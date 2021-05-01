@@ -68,7 +68,7 @@ struct ArgSep2 : sor<at<one<'('> >, ArgSep1 > {};
 
 struct ArgExpr : seq<ArgSep2, Expr > {};
 
-template<typename Rule>
+template<typename MessagePrinter, typename Rule>
 struct Actions : nothing<Rule> {};
 
 template<typename Rule>
@@ -86,8 +86,8 @@ template<> const std::string Ctrl<RequiredNothing1L>::ErrMsg;
 template<> const std::string Ctrl<TrailingNothing>::ErrMsg;
 
 
-template<>
-struct Actions<EscChar> {
+template<typename MessagePrinter>
+struct Actions<MessagePrinter, EscChar> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
         assert(In.string().size() == 1);
@@ -118,8 +118,8 @@ struct Actions<EscChar> {
     }
 };
 
-template<>
-struct Actions<Char> {
+template<typename MessagePrinter>
+struct Actions<MessagePrinter, Char> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
         if (S.EscChar != 0) {
@@ -132,8 +132,8 @@ struct Actions<Char> {
     }
 };
 
-template<>
-struct Actions<Identifier> {
+template<typename MessagePrinter>
+struct Actions<MessagePrinter, Identifier> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
         S.Id = In.string();

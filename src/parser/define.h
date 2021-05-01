@@ -29,18 +29,18 @@ template<> const std::string Ctrl<DefArrayArgList>::ErrMsg;
 template<> const std::string Ctrl<DefArraySp1>::ErrMsg;
 template<> const std::string Ctrl<DefArraySp2>::ErrMsg;
 
-template<>
-struct Actions<Define> {
+template<typename MessagePrinter>
+struct Actions<MessagePrinter, Define> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
         if (S.Asm.setDefine(S.Id, S.StringVec.empty() ? ""s : S.StringVec[0])) {
-            M::warn(In.position(), "`" + S.Id +  "` redefined"s);
+            MessagePrinter::warn(In.position(), "`" + S.Id +  "` redefined"s);
         }
     }
 };
 
-template<>
-struct Actions<DefineArg> {
+template<typename MessagePrinter>
+struct Actions<MessagePrinter, DefineArg> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
         S.StringVec = {1, In.string()};
@@ -48,12 +48,12 @@ struct Actions<DefineArg> {
 };
 
 
-template<>
-struct Actions<DefArray> {
+template<typename MessagePrinter>
+struct Actions<MessagePrinter, DefArray> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
         if (S.Asm.setDefArray(S.Id, S.StringVec)) {
-            M::warn(In.position(), "`" + S.Id +  "` redefined"s);
+            MessagePrinter::warn(In.position(), "`" + S.Id +  "` redefined"s);
         }
     }
 };

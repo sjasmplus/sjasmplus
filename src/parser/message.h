@@ -7,11 +7,10 @@
 #include <tao/pegtl/position.hpp>
 
 #include "../message_if.h"
-#include "../message.h"
 
 namespace parser {
 
-    template <typename MP>
+    template <typename MPBackend>
     class MessagePrinter {
     public:
 
@@ -44,7 +43,7 @@ namespace parser {
         }
     private:
 
-        using P = msg::IMessagePrinter<MP>;
+        using P = msg::IMessagePrinter<MPBackend>;
 
         static msg::Position getPos(const tao::pegtl::parse_error &E) {
             const auto &Pos = E.positions.back();
@@ -64,8 +63,6 @@ namespace parser {
         }
 
     };
-
-    using M = MessagePrinter<msg::MessagePrinter>;
 
 } // namespace parser
 
