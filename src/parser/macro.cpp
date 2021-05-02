@@ -1,4 +1,8 @@
+#include <string>
+
 #include "macro.h"
+
+using namespace std::string_literals;
 
 namespace parser {
 

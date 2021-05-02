@@ -29,8 +29,12 @@
 #ifndef SJASMPLUS_DIRECTIVES_H
 #define SJASMPLUS_DIRECTIVES_H
 
+#include <optional>
+
 #include "tables.h"
 #include "io_trd.h"
+
+using std::optional;
 
 extern FunctionTable DirectivesTable;
 

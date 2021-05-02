@@ -8,35 +8,38 @@
 
 namespace parser {
 
-    using M = MessagePrinter<msg::MPBackendIO>;
+    template<typename AsmT>
+    struct parse {
 
-    using State = StateT<M>;
-    //struct State : StateT<M> {};
+        using M = MessagePrinter<msg::MPBackendIO>;
 
-    template<typename Rule>
-    struct Actions : ActionsT<State, Rule> {};
+        struct State : StateT<AsmT, M> {};
 
-    bool parse(Assembler &Asm, const char *Buffer, size_t DirPos, size_t LineNumber) {
+        template<typename Rule>
+        struct Actions : ActionsT<State, Rule> {};
 
-        tao::pegtl::memory_input<> In(Buffer, Buffer + strlen(Buffer),
-                                      getCurrentSrcFileNameForMsg().string(),
-                                      DirPos, LineNumber, DirPos);
-        try {
-            State S{Asm};
+        bool operator()(AsmT &Asm, const char *Buffer, size_t DirPos, size_t LineNumber) {
+
+            tao::pegtl::memory_input<> In(Buffer, Buffer + strlen(Buffer),
+                                          getCurrentSrcFileNameForMsg().string(),
+                                          DirPos, LineNumber, DirPos);
+            try {
+                State S{Asm};
 
 
-            if (tao::pegtl::parse<Directive, Actions, Ctrl>(In, S)) {
-                return true;
-            } else {
-                return false;
+                if (tao::pegtl::parse<Directive, Actions, Ctrl>(In, S)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (
+                    tao::pegtl::parse_error &E
+            ) {
+                M::fatal(E);
             }
-        } catch (
-                tao::pegtl::parse_error &E
-        ) {
-            M::fatal(E);
-        }
 
-    }
+        }
+    };
 
 } // namespace parser
 

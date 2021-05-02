@@ -6,6 +6,8 @@
 #include "message.h"
 #include "macro.h"
 
+using namespace std::string_literals;
+
 namespace parser {
 
 struct DefineSp : RequiredNothing1L {};
