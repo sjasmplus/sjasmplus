@@ -1,10 +1,18 @@
 #ifndef SJASMPLUS_MESSAGE_IF_H
 #define SJASMPLUS_MESSAGE_IF_H
 
+#include <cstdlib>
 #include <string>
 #include "fs.h"
 
 namespace msg {
+
+    enum class Type {
+        Note,
+        Warning,
+        Error,
+        Fatal
+    };
 
     struct Position {
         fs::path Source;
@@ -18,25 +26,30 @@ namespace msg {
     template <typename MPBackend>
     struct IMessagePrinter {
 
-        using P = MPBackend;
+        using B = MPBackend;
+
+        static void msg(const std::string &Message) {
+            B::msg(Message);
+        }
 
         static void note(const Position &Pos, const std::string &Message) {
-            P::note(Pos, Message);
+            B::msg(Type::Note, Pos, Message);
         }
 
         static void warn(const Position &Pos, const std::string &Message) {
-            P::warn(Pos, Message);
             ++WarningCount;
+            B::msg(Type::Warning, Pos, Message);
         }
 
         static void err(const Position &Pos, const std::string &Message) {
-            P::err(Pos, Message);
             ++ErrorCount;
+            B::msg(Type::Error, Pos, Message);
         }
 
         [[noreturn]] static void fatal(const Position &Pos, const std::string &Message) {
             ++ErrorCount;
-            P::fatal(Pos, Message);
+            B::msg(Type::Error, Pos, Message);
+            std::exit(EXIT_FAILURE);
         }
 
     };

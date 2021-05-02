@@ -2,13 +2,13 @@
 #define SJASMPLUS_PARSER_PARSER_H
 
 #include "directives.h"
-#include "../message.h"
+#include "../message_backend.h"
 #include "message.h"
 #include "asm.h"
 
 namespace parser {
 
-    using M = MessagePrinter<msg::MessagePrinter>;
+    using M = MessagePrinter<msg::MPBackendIO>;
 
     template<typename Rule>
     struct ActionsM : Actions<M, Rule> {};

@@ -62,7 +62,7 @@ set(SOURCE_FILES
         lua_support.h
         memory.cpp
         memory.h
-        message.h
+        message_backend.h
         message_if.cpp
         message_if.h
         modules.cpp

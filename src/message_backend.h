@@ -2,7 +2,6 @@
 #define SJASMPLUS_MESSAGE_H
 
 #include <iostream>
-#include <cstdlib>
 
 #include "message_if.h"
 
@@ -12,34 +11,15 @@ using std::endl;
 
 namespace msg {
 
-    enum class Type {
-        Note,
-        Warning,
-        Error
-    };
-
-    class MessagePrinter {
+    class MPBackendIO {
     public:
 
         static void msg(const std::string &Message) {
             printL(Message);
         }
 
-        static void note(const Position &Pos, const std::string &Message) {
-            printF(Type::Note, Pos, Message);
-        }
-
-        static void warn(const Position &Pos, const std::string &Message) {
-            printF(Type::Warning, Pos, Message);
-        }
-
-        static void err(const Position &Pos, const std::string &Message) {
-            printF(Type::Error, Pos, Message);
-        }
-
-        [[noreturn]] static void fatal(const Position &Pos, const std::string &Message) {
-            err(Pos, Message);
-            std::exit(EXIT_FAILURE);
+        static void msg(Type T, const Position &Pos, const std::string &Message) {
+            printF(T, Pos, Message);
         }
 
     private:
@@ -53,6 +33,7 @@ namespace msg {
                     case Type::Warning:
                         return "warning: "s;
                     case Type::Error:
+                    case Type::Fatal:
                     default:
                         return "error: "s;
                 }
