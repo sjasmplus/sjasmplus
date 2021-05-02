@@ -114,7 +114,7 @@ struct Actions<MessagePrinter, EscChar> {
                 case 'v':
                     return 11;
             }
-        };
+        }();
     }
 };
 
