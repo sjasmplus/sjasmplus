@@ -10,8 +10,11 @@ namespace parser {
 
     using M = MessagePrinter<msg::MPBackendIO>;
 
+    using State = StateT<M>;
+    //struct State : StateT<M> {};
+
     template<typename Rule>
-    struct ActionsM : Actions<M, Rule> {};
+    struct Actions : ActionsT<State, Rule> {};
 
     bool parse(Assembler &Asm, const char *Buffer, size_t DirPos, size_t LineNumber) {
 
@@ -22,7 +25,7 @@ namespace parser {
             State S{Asm};
 
 
-            if (tao::pegtl::parse<Directive, ActionsM, Ctrl>(In, S)) {
+            if (tao::pegtl::parse<Directive, Actions, Ctrl>(In, S)) {
                 return true;
             } else {
                 return false;

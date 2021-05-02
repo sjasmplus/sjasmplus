@@ -33,8 +33,8 @@ template<> const std::string Ctrl<MacroArgClosingBr>::ErrMsg;
 template<> const std::string Ctrl<MacroArg>::ErrMsg;
 
 
-template<typename MessagePrinter>
-struct Actions<MessagePrinter, MacroEscChar> {
+template<typename State>
+struct ActionsT<State, MacroEscChar> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
         assert(In.string().size() == 1);
@@ -42,8 +42,8 @@ struct Actions<MessagePrinter, MacroEscChar> {
     }
 };
 
-template<typename MessagePrinter>
-struct Actions<MessagePrinter, MacroArgCharBr> {
+template<typename State>
+struct ActionsT<State, MacroArgCharBr> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
         if (S.EscChar != 0) {
@@ -56,16 +56,16 @@ struct Actions<MessagePrinter, MacroArgCharBr> {
     }
 };
 
-template<typename MessagePrinter>
-struct Actions<MessagePrinter, MacroArgString> {
+template<typename State>
+struct ActionsT<State, MacroArgString> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
         S.StringVec.emplace_back(In.string());
     }
 };
 
-template<typename MessagePrinter>
-struct Actions<MessagePrinter, MacroArgStringBr> {
+template<typename State>
+struct ActionsT<State, MacroArgStringBr> {
     template<typename Input>
     static void apply(const Input &In, State &S) {
         S.StringVec.emplace_back(S.String);

@@ -8,9 +8,13 @@
 
 namespace parser {
 
-struct State {
-    State() = delete;
-    explicit State(Assembler &_Asm) : Asm{_Asm}, Id{}, EscChar{}, String{}, StringVec{} {};
+template<typename MessagePrinter>
+struct StateT {
+
+    using M = MessagePrinter;
+
+    StateT() = delete;
+    explicit StateT(Assembler &_Asm) : Asm{_Asm}, Id{}, EscChar{}, String{}, StringVec{} {};
     Assembler &Asm;
     std::string Id;
     char EscChar;
