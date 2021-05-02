@@ -167,7 +167,7 @@ void Assembler::initPass(int P) {
 }
 
 template<typename T>
-void Assembler::msg(const T S) {
+void Assembler::msg(const T &S) {
     cerr << S << endl;
 }
 

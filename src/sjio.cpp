@@ -85,7 +85,7 @@ public:
     }
 
     bool peekMatch(const std::string &S) {
-        int L = S.size();
+        size_t L = S.size();
         if (BytesLeft >= L) {
             for (int i = 0; i < L; i++) {
                 if (this->at(CurIdx + i) != S[i])
@@ -97,7 +97,7 @@ public:
         }
     }
 
-    std::streamsize left() { return BytesLeft; }
+    [[nodiscard]] std::streamsize left() const { return BytesLeft; }
 
     void next() {
         BytesLeft--;
@@ -188,7 +188,7 @@ void emitBytes(int *bytes) {
     }
 }
 
-void emitData(const std::vector<optional<uint8_t>> Bytes) {
+void emitData(const std::vector<optional<uint8_t>>& Bytes) {
     Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
     for (const auto &B : Bytes) {
         if (B) {
@@ -329,7 +329,7 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
         IFS.seekg(0, std::ios_base::beg);
     }
     if (Offset > 0) {
-        IFS.seekg(Offset, IFS.beg);
+        IFS.seekg(Offset, std::ios_base::beg);
         if (IFS.tellg() != Offset) {
             Fatal("Offset ("s + std::to_string(Offset) + ") is beyond file length"s,
                   FileName.string());
@@ -374,25 +374,6 @@ void includeFile(const fs::path &IncFileName) {
     ReadLineBuf = SaveReadLineBuf;
 
     pIFS = saveIFS;
-}
-
-std::istream &sja_getline(std::istream &stream, std::string &str) {
-    char ch;
-    str.clear();
-    while (stream.get(ch)) {
-        if (ch == '\n') {
-            if (stream.peek() == '\r')
-                stream.ignore();
-            break;
-        } else if (ch == '\r') {
-            if (stream.peek() == '\n')
-                stream.ignore();
-            break;
-        } else {
-            str.push_back(ch);
-        }
-    }
-    return stream;
 }
 
 // TODO: Kill it with fire

@@ -36,9 +36,7 @@
 
 using namespace std::string_literals;
 
-namespace zx {
-
-namespace trd {
+namespace zx::trd {
 
     //TODO: extract
     inline void saveLEWord(void *dst, unsigned data) {
@@ -58,12 +56,12 @@ namespace trd {
         unsigned char Sector;
         unsigned char Track;
 
-        unsigned GetAbsoluteSector() const {
+        [[nodiscard]] unsigned getAbsoluteSector() const {
             return TRACK_SECTORS * Track + Sector;
         }
 
         DiskLocation operator+(unsigned sectors) const {
-            DiskLocation result;
+            DiskLocation result{};
             const unsigned sec = Sector + sectors;
             result.Track = Track + sec / TRACK_SECTORS;
             result.Sector = sec % TRACK_SECTORS;
@@ -81,44 +79,44 @@ namespace trd {
         unsigned char SectorsCount;
         DiskLocation Location;
 
-        bool IsEmpty() const {
+        [[nodiscard]] bool isEmpty() const {
             return Name[0] == 0;
         }
 
-        void MarkEmpty() {
+        void markEmpty() {
             Name[0] = 0;
         }
 
-        bool IsDeleted() const {
+        [[nodiscard]] bool isDeleted() const {
             return Name[0] == 1;
         }
 
-        void MarkDeleted() {
+        void markDeleted() {
             Name[0] = 1;
         }
 
-        bool IsName(const HobetaFilename &name) const {
-            return 0 == std::memcmp(Name, name.GetTrDosEntry(), name.GetTrdDosEntrySize());
+        [[nodiscard]] bool isName(const HobetaFilename &name) const {
+            return 0 == std::memcmp(Name, name.getTrDosEntry(), name.getTrDosEntrySize());
         }
 
-        void SetName(const HobetaFilename &name) {
-            std::memcpy(Name, name.GetTrDosEntry(), name.GetTrdDosEntrySize());
+        void setName(const HobetaFilename &name) {
+            std::memcpy(Name, name.getTrDosEntry(), name.getTrDosEntrySize());
         }
 
-        unsigned GetSize() const {
+        [[nodiscard]] unsigned getSize() const {
             return 256 * Size[1] + Size[0];
         }
 
-        void SetSize(unsigned size) {
+        void setSize(unsigned size) {
             saveLEWord(Size, size);
             SectorsCount = (size + SECTOR_SIZE - 1) / SECTOR_SIZE;
         }
 
-        void SetStart(unsigned start) {
+        void setStart(unsigned start) {
             saveLEWord(Start, start);
         }
 
-        DiskLocation GetEndLocation() const {
+        [[nodiscard]] DiskLocation getEndLocation() const {
             return Location + SectorsCount;
         }
     };
@@ -127,45 +125,45 @@ namespace trd {
         static const unsigned LIMIT = 128;
         CatEntry Entries[LIMIT];
 
-        const CatEntry &GetEntry(unsigned idx) const {
+        [[nodiscard]] const CatEntry &getEntry(unsigned idx) const {
             return Entries[idx];
         }
 
-        CatEntry &GetEntry(unsigned idx) {
+        CatEntry &getEntry(unsigned idx) {
             return Entries[idx];
         }
 
-        unsigned FindEntry(const HobetaFilename &name) const {
+        [[nodiscard]] unsigned findEntry(const HobetaFilename &name) const {
             for (unsigned idx = 0; idx != LIMIT; ++idx) {
-                const CatEntry &entry = GetEntry(idx);
-                if (entry.IsEmpty()) {
+                const CatEntry &entry = getEntry(idx);
+                if (entry.isEmpty()) {
                     break;
-                } else if (entry.IsDeleted()) {
+                } else if (entry.isDeleted()) {
                     continue;
-                } else if (entry.IsName(name)) {
+                } else if (entry.isName(name)) {
                     return idx;
                 }
             }
             return LIMIT;
         }
 
-        unsigned GetUsedEntriesCount() const {
+        [[nodiscard]] unsigned getUsedEntriesCount() const {
             for (unsigned idx = 0; idx != LIMIT; ++idx) {
-                const CatEntry &entry = GetEntry(idx);
-                if (entry.IsEmpty()) {
+                const CatEntry &entry = getEntry(idx);
+                if (entry.isEmpty()) {
                     return idx;
                 }
             }
             return LIMIT;
         }
 
-        unsigned GetDeletedEntriesCount() const {
+        [[nodiscard]] unsigned getDeletedEntriesCount() const {
             unsigned result = 0;
             for (unsigned idx = 0; idx != LIMIT; ++idx) {
-                const CatEntry &entry = GetEntry(idx);
-                if (entry.IsEmpty()) {
+                const CatEntry &entry = getEntry(idx);
+                if (entry.isEmpty()) {
                     break;
-                } else if (entry.IsDeleted()) {
+                } else if (entry.isDeleted()) {
                     ++result;
                 }
             }
@@ -186,26 +184,26 @@ namespace trd {
         char Title[8];
         unsigned char Reserved3[3];
 
-        void Init() {
+        void init() {
             std::memset(this, 0, sizeof(*this));
 
             Type = 0x16;
-            SetFreeSpaceStart(DATA_LOCATION);
+            setFreeSpaceStart(DATA_LOCATION);
             Id = 0x10;
             std::memset(Title, ' ', sizeof(Title));
         }
 
-        bool IsValid() const {
+        [[nodiscard]] bool isValid() const {
             return Zero == 0 && Type == 0x16 && Id == 0x10;
         }
 
-        unsigned GetFreeSpaceSize() const {
+        [[nodiscard]] unsigned getFreeSpaceSize() const {
             return 256 * FreeSectors[1] + FreeSectors[0];
         }
 
-        void SetFreeSpaceStart(const DiskLocation &location) {
+        void setFreeSpaceStart(const DiskLocation &location) {
             FreeSpace = location;
-            saveLEWord(FreeSectors, TOTAL_SECTORS - location.GetAbsoluteSector());
+            saveLEWord(FreeSectors, TOTAL_SECTORS - location.getAbsoluteSector());
         }
     };
 
@@ -216,19 +214,19 @@ namespace trd {
     public:
         TRDImage()
                 : Content(TOTAL_SECTORS * SECTOR_SIZE),
-                  Catalog(static_cast<Catalogue *>(GetSector(CATALOG_SECTOR_NUMBER))),
-                  Service(static_cast<ServiceSector *>(GetSector(SERVICE_SECTOR_NUMBER))) {
-            Service->Init();
+                  Catalog(static_cast<Catalogue *>(getSector(CATALOG_SECTOR_NUMBER))),
+                  Service(static_cast<ServiceSector *>(getSector(SERVICE_SECTOR_NUMBER))) {
+            Service->init();
         }
 
-        bool Load(std::istream &in) {
+        bool load(std::istream &in) {
             TRDImage tmp;
             if (
                     in.read(&tmp.Content[0], tmp.Content.size())
                     && in.gcount() == (std::streamsize) Content.size()
-                    && tmp.Service->IsValid()
+                    && tmp.Service->isValid()
                     ) {
-                tmp.FixCatalogue();
+                tmp.fixCatalogue();
                 std::swap(tmp.Content, Content);
                 std::swap(tmp.Catalog, Catalog);
                 std::swap(tmp.Service, Service);
@@ -238,20 +236,20 @@ namespace trd {
             }
         }
 
-        bool Save(std::ostream &out) {
+        bool save(std::ostream &out) {
             return !!out.write(&Content[0], Content.size());
         }
 
-        void DeleteFile(const HobetaFilename &name) {
-            const unsigned idx = Catalog->FindEntry(name);
+        void deleteFile(const HobetaFilename &name) {
+            const unsigned idx = Catalog->findEntry(name);
             if (idx != Catalogue::LIMIT) {
-                CatEntry &cur = Catalog->GetEntry(idx);
-                cur.MarkDeleted();
-                FixCatalogue();
+                CatEntry &cur = Catalog->getEntry(idx);
+                cur.markDeleted();
+                fixCatalogue();
             }
         }
 
-        void *AddFile(const HobetaFilename &name, unsigned start, unsigned size) {
+        void *addFile(const HobetaFilename &name, unsigned start, unsigned size) {
             //assume that catalogue is fixed
             if (Service->TotalFiles == Catalogue::LIMIT) {
                 return nullptr;
@@ -259,48 +257,48 @@ namespace trd {
             if (size >= MAX_FILE_SIZE) {
                 return nullptr;
             }
-            CatEntry entry;
-            entry.SetSize(size);
+            CatEntry entry{};
+            entry.setSize(size);
             entry.Location = Service->FreeSpace;
-            if (entry.SectorsCount > Service->GetFreeSpaceSize()) {
+            if (entry.SectorsCount > Service->getFreeSpaceSize()) {
                 return nullptr;
             }
-            entry.SetStart(start);
-            entry.SetName(name);//can overlap start value if long filename used
-            Catalog->GetEntry(Service->TotalFiles++) = entry;
-            Service->SetFreeSpaceStart(entry.GetEndLocation());
-            return GetSector(entry.Location.GetAbsoluteSector());
+            entry.setStart(start);
+            entry.setName(name);//can overlap start value if long filename used
+            Catalog->getEntry(Service->TotalFiles++) = entry;
+            Service->setFreeSpaceStart(entry.getEndLocation());
+            return getSector(entry.Location.getAbsoluteSector());
         }
 
     private:
-        void *GetSector(unsigned sec) {
+        void *getSector(unsigned sec) {
             assert(sec < TOTAL_SECTORS);
             return &Content[sec * SECTOR_SIZE];
         }
 
-        void FixCatalogue() {
-            unsigned entries = Catalog->GetUsedEntriesCount();
+        void fixCatalogue() {
+            unsigned entries = Catalog->getUsedEntriesCount();
             if (entries) {
-                entries = DropLastDeletedEntries(entries);
+                entries = dropLastDeletedEntries(entries);
             }
             if (entries) {
                 Service->TotalFiles = entries;
-                Service->DeletedFiles = Catalog->GetDeletedEntriesCount();
+                Service->DeletedFiles = Catalog->getDeletedEntriesCount();
                 //assume that entries located sequentially
-                const DiskLocation &freeSpace = Catalog->GetEntry(entries - 1).GetEndLocation();
-                Service->SetFreeSpaceStart(freeSpace);
+                const DiskLocation &freeSpace = Catalog->getEntry(entries - 1).getEndLocation();
+                Service->setFreeSpaceStart(freeSpace);
             } else {
                 Service->TotalFiles = 0;
                 Service->DeletedFiles = 0;
-                Service->SetFreeSpaceStart(DATA_LOCATION);
+                Service->setFreeSpaceStart(DATA_LOCATION);
             }
         }
 
-        unsigned DropLastDeletedEntries(unsigned usedEntries) {
+        unsigned dropLastDeletedEntries(unsigned usedEntries) {
             for (unsigned idx = usedEntries; idx; --idx) {
-                CatEntry &entry = Catalog->GetEntry(idx - 1);
-                if (entry.IsDeleted()) {
-                    entry.MarkEmpty();
+                CatEntry &entry = Catalog->getEntry(idx - 1);
+                if (entry.isDeleted()) {
+                    entry.markEmpty();
                 } else {
                     return idx;
                 }
@@ -318,7 +316,7 @@ namespace trd {
     };
 
     bool isBasic(const HobetaFilename &name) {
-        return name.GetType() == "B";
+        return name.getType() == "B";
     }
 
     static_assert(sizeof(DiskLocation) == 2, "sizeof(DiskLocation) != 2");
@@ -335,7 +333,7 @@ optional<std::string> saveEmpty(const fs::path &FileName) {
     }
 
     TRDImage Image;
-    Image.Save(OFS);
+    Image.save(OFS);
     if (!OFS) {
         return "Write error (disk full?): "s + FileName.string();
     } else {
@@ -366,16 +364,16 @@ optional<std::string> addFile(const std::vector<uint8_t> &Data, const fs::path &
     }
 
     TRDImage Image;
-    if (!Image.Load(OFS)) {
+    if (!Image.load(OFS)) {
         return "Failed to read TRD image from (I/O error or invalid format): "s + FileName.string();
     }
-    Image.DeleteFile(HobetaFileName);
+    Image.deleteFile(HobetaFileName);
 
     unsigned char AutostartData[] =
             {0x80, 0xaa, (uint8_t) (Autostart & 0xff), (uint8_t) (Autostart >> 8)};
 
     unsigned RealLength = Autostart > 0 ? Length + sizeof(AutostartData) : Length;
-    if (void *data = Image.AddFile(HobetaFileName, isBasic(HobetaFileName) ? Length : Start, RealLength)) {
+    if (void *data = Image.addFile(HobetaFileName, isBasic(HobetaFileName) ? Length : Start, RealLength)) {
         assert(Data.size() == Length);
         std::memcpy(data, Data.data(), Data.size());
         if (Autostart > 0) {
@@ -384,7 +382,7 @@ optional<std::string> addFile(const std::vector<uint8_t> &Data, const fs::path &
     } else {
         return "No space in TRD image: "s + FileName.string();
     }
-    if (OFS.seekg(0) && Image.Save(OFS)) {
+    if (OFS.seekg(0) && Image.save(OFS)) {
         return std::nullopt;
     }
     return "Failed to save TRD image: "s + FileName.string();
@@ -407,9 +405,9 @@ optional<std::string> saveHobeta(const std::vector<uint8_t> &Data, const fs::pat
     }
 
     CatEntry entry;
-    entry.SetStart(isBasic(HobetaFileName) ? Length : Start);
-    entry.SetName(HobetaFileName);
-    entry.SetSize(Length);
+    entry.setStart(isBasic(HobetaFileName) ? Length : Start);
+    entry.setName(HobetaFileName);
+    entry.setSize(Length);
 
     std::vector<char> buffer(sizeof(HobetaHeader) + Length);
     HobetaHeader &hdr = *reinterpret_cast<HobetaHeader *>(&buffer[0]);
@@ -426,6 +424,4 @@ optional<std::string> saveHobeta(const std::vector<uint8_t> &Data, const fs::pat
     return "Failed to save hobeta file: "s + FileName.string();
 }
 
-} // namespace trd
-
-} // namespace zx
+} // namespace zx::trd

@@ -672,7 +672,7 @@ void dirINCTRD() {
             Error("[INCTRD] Read error"s, FileName.string(), CATCHALL);
             return;
         }
-        if (0 == std::memcmp(hdr, HobetaFileName.GetTrDosEntry(), HobetaFileName.GetTrdDosEntrySize())) {
+        if (0 == std::memcmp(hdr, HobetaFileName.getTrDosEntry(), HobetaFileName.getTrDosEntrySize())) {
             i = 0;
             break;
         }

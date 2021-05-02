@@ -37,9 +37,7 @@
 #include <vector>
 #include "fs.h"
 
-namespace zx {
-
-namespace trd {
+namespace zx::trd {
 
     using std::optional;
 
@@ -53,7 +51,7 @@ private:
 public:
     HobetaFilename() : Content(NAME_SIZE + MIN_TYPE_SIZE, FILLER) {}
 
-    HobetaFilename(const HobetaFilename &rh) : Content(rh.Content) {}
+    HobetaFilename(const HobetaFilename &rh) = default;
 
     explicit HobetaFilename(const std::string &rh) {
         const std::string::size_type dotPos = rh.find_first_of('.');
@@ -66,23 +64,23 @@ public:
         }
     }
 
-    std::string GetType() const {
+    [[nodiscard]] std::string getType() const {
         return Content.substr(NAME_SIZE);
     }
 
-    bool Empty() const {
+    [[nodiscard]] bool Empty() const {
         return Content.empty();
     }
 
-    const void *GetTrDosEntry() const {
+    [[nodiscard]] const char *getTrDosEntry() const {
         return Content.data();
     }
 
-    std::size_t GetTrdDosEntrySize() const {
+    [[nodiscard]] std::size_t getTrDosEntrySize() const {
         return Content.size();
     }
 
-    const std::string &string() const {
+    [[nodiscard]] const std::string &string() const {
         return Content;
     }
 };
@@ -99,8 +97,6 @@ optional<std::string> addFile(const std::vector<uint8_t> &Data, const fs::path &
 optional<std::string> saveHobeta(const std::vector<uint8_t> &Data, const fs::path &FileName,
                                  const HobetaFilename &HobetaFileName, int Start, int Length);
 
-} // namespace trd
-
-} // namespace zx
+} // namespace zx::trd
 
 #endif // SJASMPLUS_IO_TRD_H

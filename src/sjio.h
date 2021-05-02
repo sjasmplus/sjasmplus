@@ -85,6 +85,6 @@ bool readFileToListOfStrings(std::list<std::string> &List, const std::string &En
 
 optional<std::string> emitAlignment(uint16_t Alignment, optional<uint8_t> FillByte);
 
-void emitData(const std::vector<optional<uint8_t>> Bytes);
+void emitData(const std::vector<optional<uint8_t>>& Bytes);
 
 #endif //SJASMPLUS_SJIO_H

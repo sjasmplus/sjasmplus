@@ -25,7 +25,7 @@ public:
     void initPass(int P);
 
     template<typename T>
-    void msg(T S);
+    void msg(const T &S);
 
     static void exitFail() { std::exit(EXIT_FAILURE); }
 
