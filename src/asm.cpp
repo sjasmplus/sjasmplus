@@ -113,6 +113,9 @@ int Assembler::assemble() {
     return msg::ErrorCount == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+// FIXME: Remove
+void initLegacyErrorHandler(Assembler *_Asm);
+
 int Assembler::run(int argc, char *argv[]) {
     const char *Banner = "SjASMPlus Z80 Cross-Assembler v." SJASMPLUS_VERSION;
 
