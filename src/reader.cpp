@@ -166,17 +166,17 @@ bool cParen(const char *&P) {
 }
 
 const char * getParen(const char *P) {
-    int teller = 0;
+    int Counter = 0;
     skipWhiteSpace(P);
     while (*P) {
         if (*P == '(') {
-            ++teller;
+            ++Counter;
         } else if (*P == ')') {
-            if (teller == 1) {
+            if (Counter == 1) {
                 skipWhiteSpace(++P);
                 return P;
             } else {
-                --teller;
+                --Counter;
             }
         }
         ++P;

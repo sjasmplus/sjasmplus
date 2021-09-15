@@ -104,9 +104,9 @@ struct Directives {
     inline static optional<uint16_t> EntryPoint = std::nullopt;
 
     static void dirBYTE() {
-        int teller, e[256];
-        teller = getBytes(lp, e, 0, 0);
-        if (!teller) {
+        int Size, e[256];
+        Size = getBytes(lp, e, 0, 0);
+        if (!Size) {
             Error("BYTE/DEFB/DB with no arguments"s);
             return;
         }
@@ -114,9 +114,9 @@ struct Directives {
     }
 
     static void dirDC() {
-        int teller, e[129];
-        teller = getBytes(lp, e, 0, 1);
-        if (!teller) {
+        int Size, e[129];
+        Size = getBytes(lp, e, 0, 1);
+        if (!Size) {
             Error("DC with no arguments"s);
             return;
         }
@@ -124,25 +124,25 @@ struct Directives {
     }
 
     static void dirDZ() {
-        int teller, e[130];
-        teller = getBytes(lp, e, 0, 0);
-        if (!teller) {
+        int Size, e[130];
+        Size = getBytes(lp, e, 0, 0);
+        if (!Size) {
             Error("DZ with no arguments"s);
             return;
         }
-        e[teller++] = 0;
-        e[teller] = -1;
+        e[Size++] = 0;
+        e[Size] = -1;
         emitBytes(e);
     }
 
     static void dirABYTE() {
         AInt add;
-        int teller = 0, e[129];
+        int Size = 0, e[129];
         if (parseExpression(lp, add)) {
             check8(add);
             add &= 255;
-            teller = getBytes(lp, e, add, 0);
-            if (!teller) {
+            Size = getBytes(lp, e, add, 0);
+            if (!Size) {
                 Error("ABYTE with no arguments"s);
                 return;
             }
@@ -154,12 +154,12 @@ struct Directives {
 
     static void dirABYTEC() {
         AInt add;
-        int teller = 0, e[129];
+        int Size = 0, e[129];
         if (parseExpression(lp, add)) {
             check8(add);
             add &= 255;
-            teller = getBytes(lp, e, add, 1);
-            if (!teller) {
+            Size = getBytes(lp, e, add, 1);
+            if (!Size) {
                 Error("ABYTEC with no arguments"s);
                 return;
             }
@@ -171,17 +171,17 @@ struct Directives {
 
     static void dirABYTEZ() {
         AInt add;
-        int teller = 0, e[129];
+        int Size = 0, e[129];
         if (parseExpression(lp, add)) {
             check8(add);
             add &= 255;
-            teller = getBytes(lp, e, add, 0);
-            if (!teller) {
+            Size = getBytes(lp, e, add, 0);
+            if (!Size) {
                 Error("ABYTEZ with no arguments"s);
                 return;
             }
-            e[teller++] = 0;
-            e[teller] = -1;
+            e[Size++] = 0;
+            e[Size] = -1;
             emitBytes(e);
         } else {
             Error("[ABYTEZ] Expression expected"s);
@@ -190,15 +190,15 @@ struct Directives {
 
     static void dirWORD() {
         AInt val;
-        int teller = 0, e[129];
+        int Size = 0, e[129];
         skipWhiteSpace(lp);
         while (*lp) {
             if (parseExpression(lp, val)) {
                 check16(val);
-                if (teller > 127) {
+                if (Size > 127) {
                     Fatal("Over 128 values in DW/DEFW/WORD"s);
                 }
-                e[teller++] = val & 65535;
+                e[Size++] = val & 65535;
             } else {
                 Error("[DW/DEFW/WORD] Syntax error"s, lp, CATCHALL);
                 return;
@@ -210,8 +210,8 @@ struct Directives {
             ++lp;
             skipWhiteSpace(lp);
         }
-        e[teller] = -1;
-        if (!teller) {
+        e[Size] = -1;
+        if (!Size) {
             Error("DW/DEFW/WORD with no arguments"s);
             return;
         }
@@ -220,16 +220,16 @@ struct Directives {
 
     static void dirDWORD() {
         AInt val;
-        int teller = 0, e[129 * 2];
+        int Size = 0, e[129 * 2];
         skipWhiteSpace(lp);
         while (*lp) {
             if (parseExpression(lp, val)) {
-                if (teller > 127) {
+                if (Size > 127) {
                     Fatal("[DWORD] Over 128 values"s);
                 }
-                e[teller * 2] = val & 65535;
-                e[teller * 2 + 1] = val >> 16;
-                ++teller;
+                e[Size * 2] = val & 65535;
+                e[Size * 2 + 1] = val >> 16;
+                ++Size;
             } else {
                 Error("[DWORD] Syntax error"s, lp, CATCHALL);
                 return;
@@ -241,8 +241,8 @@ struct Directives {
             ++lp;
             skipWhiteSpace(lp);
         }
-        e[teller * 2] = -1;
-        if (!teller) {
+        e[Size * 2] = -1;
+        if (!Size) {
             Error("DWORD with no arguments"s);
             return;
         }
@@ -251,18 +251,18 @@ struct Directives {
 
     static void dirD24() {
         AInt val;
-        int teller = 0, e[129 * 3];
+        int Size = 0, e[129 * 3];
         skipWhiteSpace(lp);
         while (*lp) {
             if (parseExpression(lp, val)) {
                 check24(val);
-                if (teller > 127) {
+                if (Size > 127) {
                     Fatal("[D24] Over 128 values"s);
                 }
-                e[teller * 3] = val & 255;
-                e[teller * 3 + 1] = (val >> 8) & 255;
-                e[teller * 3 + 2] = (val >> 16) & 255;
-                ++teller;
+                e[Size * 3] = val & 255;
+                e[Size * 3 + 1] = (val >> 8) & 255;
+                e[Size * 3 + 2] = (val >> 16) & 255;
+                ++Size;
             } else {
                 Error("[D24] Syntax error"s, lp, CATCHALL);
                 return;
@@ -274,8 +274,8 @@ struct Directives {
             ++lp;
             skipWhiteSpace(lp);
         }
-        e[teller * 3] = -1;
-        if (!teller) {
+        e[Size * 3] = -1;
+        if (!Size) {
             Error("D24 with no arguments"s);
             return;
         }
