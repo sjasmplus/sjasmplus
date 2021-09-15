@@ -32,7 +32,7 @@ void parseStructLabel(const char *&P, CStruct &St) {
 }
 
 void parseStructMember(const char *&P, CStruct &St) {
-    aint val, len;
+    AInt val, len;
     bp = P;
     switch (getStructMemberId(P)) {
         case SMEMB::BLOCK:

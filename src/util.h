@@ -2,16 +2,16 @@
 #define SJASMPLUS_UTIL_H
 
 #include <string>
-#include "asm/common.h"
+#include "asm/expr.h"
 #include "fs.h"
 
-std::string toHex8(aint Number);
+std::string toHex8(AInt Number);
 
-std::string toHex16(aint Number);
+std::string toHex16(AInt Number);
 
-std::string toHex32(aint Number);
+std::string toHex32(AInt Number);
 
-std::string toHexAlt(aint Number);
+std::string toHexAlt(AInt Number);
 
 class TextOutput {
 protected:

@@ -38,8 +38,8 @@ extern char sline[LINEMAX2], sline2[LINEMAX2];
 
 void initLegacyParser();
 
-bool parseExpression(const char *&p, aint &nval);
-bool parseExpPrim(const char *&p, aint &nval);
+bool parseExpression(const char *&p, AInt &nval);
+bool parseExpPrim(const char *&p, AInt &nval);
 
 bool parseDirective(const char *BOL, const char *&P);
 

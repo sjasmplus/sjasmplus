@@ -86,7 +86,7 @@ bool saveTAP(MemModel &M, const fs::path &FileName, uint16_t Start) {
     writebyte(ofs, 0);            // block type "BASIC"
 
     uint8_t filename[] = "Loader    ";
-    for (aint i = 0; i <= 9; i++)
+    for (int i = 0; i <= 9; i++)
         writebyte(ofs, filename[i]);
 
     writebyte(ofs, 0x1e + 2/*CLS*/);    // line length
@@ -278,7 +278,7 @@ bool saveTAP(MemModel &M, const fs::path &FileName, uint16_t Start) {
         }
 
         // write code blocks
-        for (aint i = 0; i < count; i++) {
+        for (int i = 0; i < count; i++) {
             writecode(ofs, pages_ram[i] + pages_start[i], pages_len[i], (uint16_t)0xC000 + pages_start[i], false);
         }
 
@@ -337,7 +337,7 @@ std::ostream &writecode(std::ostream &stream, const unsigned char *block, uint16
 
         /*char *blockname = new char[32];
         SPRINTF1(blockname, 32, "Code %02d   ", blocknum++);
-        for	(aint i=0;i<=9;i++)
+        for	(AInt i=0;i<=9;i++)
             writebyte(blockname[i], fp);
         delete[] blockname;*/
         uint8_t filename[] = "Loader    ";
@@ -354,7 +354,7 @@ std::ostream &writecode(std::ostream &stream, const unsigned char *block, uint16
     writeword(stream, length + 2);    /* Length of next block */
     parity = 0;
     writebyte(stream, 255);    /* Data... */
-    for (aint i = 0; i < length; i++) {
+    for (int i = 0; i < length; i++) {
         writebyte(stream, block[i]);
     }
     writebyte(stream, parity);

@@ -223,7 +223,7 @@ std::string getInstr(const char *&P) {
 }
 
 /* changes applied from SjASM 0.39g */
-bool check8(aint val, bool error) {
+bool check8(AInt val, bool error) {
     if (val != (val & 255) && ~val > 127 && error) {
         Error("Value doesn't fit into 8 bits"s, std::to_string(val));
         return false;
@@ -241,7 +241,7 @@ bool check8o(long val) {
 }
 
 /* changes applied from SjASM 0.39g */
-bool check16(aint val, bool error) {
+bool check16(AInt val, bool error) {
     if (val != (val & 65535) && ~val > 32767 && error) {
         Error("Value does not fit into 16 bits"s, std::to_string(val));
         return false;
@@ -250,7 +250,7 @@ bool check16(aint val, bool error) {
 }
 
 /* changes applied from SjASM 0.39g */
-bool check24(aint val, bool error) {
+bool check24(AInt val, bool error) {
     if (val != (val & 16777215) && ~val > 8388607 && error) {
         Error("Value does not fit into 24 bits"s, std::to_string(val));
         return false;
@@ -337,8 +337,8 @@ int getval(int p) {
     }
 }
 
-bool getConstant(const char *&OP, aint &Val) {
-    aint base, pb = 1, v, oval;
+bool getConstant(const char *&OP, AInt &Val) {
+    AInt base, pb = 1, v, oval;
     const char *p = OP, *p2, *p3;
 
     skipWhiteSpace(p);
@@ -477,7 +477,7 @@ bool getConstant(const char *&OP, aint &Val) {
     }
 }
 
-bool getCharConstChar(const char *&OP, aint &Val) {
+bool getCharConstChar(const char *&OP, AInt &Val) {
     if ((Val = *OP++) != '\\') {
         return true;
     }
@@ -535,7 +535,7 @@ bool getCharConstChar(const char *&OP, aint &Val) {
 }
 
 /* added */
-bool getCharConstCharSingle(const char *&OP, aint &Val) {
+bool getCharConstCharSingle(const char *&OP, AInt &Val) {
     if ((Val = *OP++) != '\\') {
         return true;
     }
@@ -548,8 +548,8 @@ bool getCharConstCharSingle(const char *&OP, aint &Val) {
     return true;
 }
 
-bool getCharConst(const char *&P, aint &Val) {
-    aint s = 24, r, t = 0;
+bool getCharConst(const char *&P, AInt &Val) {
+    AInt s = 24, r, t = 0;
     Val = 0;
     const char *op = P;
     char q;

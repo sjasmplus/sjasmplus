@@ -159,26 +159,26 @@ void CheckPage() {
 void emit(uint8_t byte) {
     Asm->Listing.addByte(byte);
     if (pass == LASTPASS) {
-        auto err = Asm->Em.emitByte(byte);
-        if (err) Fatal(*err);
+        auto Err = Asm->Em.emitByte(byte);
+        if (Err) Fatal(*Err);
     } else {
         Asm->Em.incAddress();
     }
 }
 
 void emitByte(uint8_t byte) {
-    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
+    Asm->Listing.setUnitStartAddress();
     emit(byte);
 }
 
 void emitWord(uint16_t word) {
-    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
+    Asm->Listing.setUnitStartAddress();
     emit(word % 256);
     emit(word / 256);
 }
 
 void emitBytes(int *bytes) {
-    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
+    Asm->Listing.setUnitStartAddress();
     if (*bytes == -1) {
         Error("Illegal instruction"s, line, CATCHALL);
         getAll(lp);
@@ -189,7 +189,7 @@ void emitBytes(int *bytes) {
 }
 
 void emitData(const std::vector<optional<uint8_t>>& Bytes) {
-    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
+    Asm->Listing.setUnitStartAddress();
     for (const auto &B : Bytes) {
         if (B) {
             emit(*B);
@@ -201,15 +201,15 @@ void emitData(const std::vector<optional<uint8_t>>& Bytes) {
 
 
 void emitWords(int *words) {
-    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
+    Asm->Listing.setUnitStartAddress();
     while (*words != -1) {
         emit((*words) % 256);
         emit((*words++) / 256);
     }
 }
 
-void emitBlock(uint8_t Byte, aint Len, bool NoFill) {
-    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
+void emitBlock(uint8_t Byte, std::size_t Len, bool NoFill) {
+    Asm->Listing.setUnitStartAddress();
     if (Len) {
         Asm->Listing.addByte(Byte);
     }
@@ -229,7 +229,7 @@ void emitBlock(uint8_t Byte, aint Len, bool NoFill) {
 
 optional<std::string> emitAlignment(uint16_t Alignment, optional<uint8_t> FillByte) {
     auto OAddr = Asm->Em.getCPUAddress();
-    Asm->Listing.setPreviousAddress(Asm->Em.getCPUAddress());
+    Asm->Listing.setUnitStartAddress();
     auto Err = Asm->Em.align(Alignment, FillByte);
     if (Err) return Err;
     if (FillByte) {
@@ -509,7 +509,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
 int SaveRAM(std::ofstream &ofs, int start, int length) {
     //unsigned int addadr = 0,save = 0;
 /*
-    aint save = 0;
+    AInt save = 0;
 
     if (!DeviceID) {
         return 0;

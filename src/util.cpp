@@ -8,16 +8,16 @@ const char hd[] = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 };
 
-std::string toHex8(aint Number) {
-    aint N = Number & 0xff;
+std::string toHex8(AInt Number) {
+    AInt N = Number & 0xff;
     std::string S;
     S = hd[N >> 4];
     S += hd[N & 15];
     return S;
 }
 
-std::string toHex16(aint Number) {
-    aint N = Number & 0xffff;
+std::string toHex16(AInt Number) {
+    AInt N = Number & 0xffff;
     std::string S;
     S = hd[N >> 12];
     N &= 0xfff;
@@ -29,8 +29,8 @@ std::string toHex16(aint Number) {
     return S;
 }
 
-std::string toHex32(aint Number) {
-    aint N = Number & 0xffffffff;
+std::string toHex32(AInt Number) {
+    AInt N = Number & 0xffffffff;
     std::string S;
     S = hd[N >> 28];
     N &= 0xfffffff;
@@ -51,8 +51,8 @@ std::string toHex32(aint Number) {
 }
 
 /* added */
-std::string toHexAlt(aint Number) {
-    aint N = Number & 0xffffffff;
+std::string toHexAlt(AInt Number) {
+    AInt N = Number & 0xffffffff;
     std::string S;
     if (N >> 28 != 0) {
         S += hd[N >> 28];

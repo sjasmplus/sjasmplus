@@ -1,8 +1,10 @@
+#include <cassert>
 #include <iostream>
 #include <string>
 #include "global.h"
 #include "util.h"
-#include "asm.h"
+#include "errors.h"
+
 #include "listing.h"
 
 void ListingWriter::listBytes4() {
@@ -41,29 +43,29 @@ void ListingWriter::listBytes5() {
 }
 
 std::string ListingWriter::printCurrentLocalLine() {
-    aint v = CurrentLocalLine;
+    unsigned int V = CurrentLocalLine;
     std::string S;
     switch (NumDigitsInLineNumber) {
         default:
-            S += (unsigned char) ('0' + v / 1000000);
-            v %= 1000000;
+            S += (unsigned char) ('0' + V / 1000000);
+            V %= 1000000;
         case 6:
-            S += (unsigned char) ('0' + v / 100000);
-            v %= 100000;
+            S += (unsigned char) ('0' + V / 100000);
+            V %= 100000;
         case 5:
-            S += (unsigned char) ('0' + v / 10000);
-            v %= 10000;
+            S += (unsigned char) ('0' + V / 10000);
+            V %= 10000;
         case 4:
-            S += (unsigned char) ('0' + v / 1000);
-            v %= 1000;
+            S += (unsigned char) ('0' + V / 1000);
+            V %= 1000;
         case 3:
-            S += (unsigned char) ('0' + v / 100);
-            v %= 100;
+            S += (unsigned char) ('0' + V / 100);
+            V %= 100;
         case 2:
-            S += (unsigned char) ('0' + v / 10);
-            v %= 10;
+            S += (unsigned char) ('0' + V / 10);
+            V %= 10;
         case 1:
-            S += (unsigned char) ('0' + v);
+            S += (unsigned char) ('0' + V);
     }
     S += (includeLevel() > 0 ? '+' : ' ');
     S += (includeLevel() > 1 ? '+' : ' ');
@@ -103,8 +105,8 @@ void ListingWriter::listLine(const char *Line) {
             return;
         }
     }
-    if ((pad = PreviousAddress) == -1) {
-        pad = epadres;
+    if ((pad = UnitStartAddress) == -1) {
+        pad = LastEndAddress;
     }
     std::string Prefix = printCurrentLocalLine();
     OFS << Prefix << toHex16(pad) << ' ';
@@ -130,13 +132,12 @@ void ListingWriter::listLine(const char *Line) {
         OFS << Line << endl;
         listBytesLong(pad, Prefix);
     }
-    epadres = getCPUAddress();
-    PreviousAddress = -1;
+    LastEndAddress = getCPUAddress();
+    UnitStartAddress = -1;
     ByteBuffer.clear();
 }
 
 void ListingWriter::listLineSkip(const char *Line) {
-    aint pad;
     if (pass != LASTPASS || OmitLine) {
         OmitLine = false;
         ByteBuffer.clear();
@@ -148,10 +149,11 @@ void ListingWriter::listLineSkip(const char *Line) {
     if (InMacro) {
         return;
     }
-    if ((pad = PreviousAddress) == -1) {
-        pad = epadres;
+    int Addr;
+    if ((Addr = UnitStartAddress) == -1) {
+        Addr = LastEndAddress;
     }
-    OFS << printCurrentLocalLine() << toHex16(pad);
+    OFS << printCurrentLocalLine() << toHex16(Addr);
     OFS << "~            ";
     if (!ByteBuffer.empty()) {
         Fatal("Internal error lfs"s);
@@ -160,8 +162,8 @@ void ListingWriter::listLineSkip(const char *Line) {
         OFS << ">";
     }
     OFS << Line << endl;
-    epadres = getCPUAddress();
-    PreviousAddress = -1;
+    LastEndAddress = getCPUAddress();
+    UnitStartAddress = -1;
     ByteBuffer.clear();
 }
 
@@ -179,8 +181,8 @@ void ListingWriter::init(fs::path &FileName) {
 }
 
 void ListingWriter::initPass() {
-    epadres = 0;
-    PreviousAddress = 0;
+    LastEndAddress = 0;
+    UnitStartAddress = 0;
     InMacro = false;
 
     // Put this here for now, as MaxLineNumber has the correct value only at the end of pass 1

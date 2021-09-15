@@ -31,7 +31,6 @@
 #include "z80.h"
 #include "global.h"
 #include "support.h"
-#include "asm.h"
 #include "parser/struct.h"
 
 #include <boost/algorithm/string/case_conv.hpp>
@@ -47,7 +46,7 @@ extern Assembler *Asm;
 
 char sline[LINEMAX2], sline2[LINEMAX2];
 
-aint comlin = 0;
+int comlin = 0;
 int substituteDepthCount = 0, comnxtlin;
 char dirDEFl[] = "def", dirDEFu[] = "DEF"; /* added for ReplaceDefine */
 
@@ -55,7 +54,7 @@ void initLegacyParser() {
     comlin = 0;
 }
 
-bool parseExpPrim(const char *&p, aint &nval) {
+bool parseExpPrim(const char *&p, AInt &nval) {
     bool res = false;
     skipWhiteSpace(p);
     if (!*p) {
@@ -83,7 +82,7 @@ bool parseExpPrim(const char *&p, aint &nval) {
             return false;
         }
 
-        nval = (aint) (memGetByte(nval) + (memGetByte(nval + 1) << 8));
+        nval = (AInt) (memGetByte(nval) + (memGetByte(nval + 1) << 8));
 
         return true;
     } else if (isdigit((unsigned char) *p) || (*p == '#' && isalnum((unsigned char) *(p + 1))) ||
@@ -116,10 +115,10 @@ bool parseExpPrim(const char *&p, aint &nval) {
     return res;
 }
 
-bool ParseExpUnair(const char *&p, aint &nval) {
+bool ParseExpUnair(const char *&p, AInt &nval) {
     int oper;
     if ((oper = need(p, "! ~ + - ")) || (oper = needA(p, "not", '!', "low", 'l', "high", 'h', true))) {
-        aint right;
+        AInt right;
         switch (oper) {
             case '!':
                 if (!ParseExpUnair(p, right)) {
@@ -167,8 +166,8 @@ bool ParseExpUnair(const char *&p, aint &nval) {
     }
 }
 
-bool ParseExpMul(const char *&p, aint &nval) {
-    aint left, right;
+bool ParseExpMul(const char *&p, AInt &nval) {
+    AInt left, right;
     int oper;
     if (!ParseExpUnair(p, left)) {
         return false;
@@ -206,8 +205,8 @@ bool ParseExpMul(const char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpAdd(const char *&p, aint &nval) {
-    aint left, right;
+bool ParseExpAdd(const char *&p, AInt &nval) {
+    AInt left, right;
     int oper;
     if (!ParseExpMul(p, left)) {
         return false;
@@ -232,8 +231,8 @@ bool ParseExpAdd(const char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpShift(const char *&p, aint &nval) {
-    aint left, right;
+bool ParseExpShift(const char *&p, AInt &nval) {
+    AInt left, right;
     unsigned long l;
     int oper;
     if (!ParseExpAdd(p, left)) {
@@ -269,8 +268,8 @@ bool ParseExpShift(const char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpMinMax(const char *&p, aint &nval) {
-    aint left, right;
+bool ParseExpMinMax(const char *&p, AInt &nval) {
+    AInt left, right;
     int oper;
     if (!ParseExpShift(p, left)) {
         return false;
@@ -295,8 +294,8 @@ bool ParseExpMinMax(const char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpCmp(const char *&p, aint &nval) {
-    aint left, right;
+bool ParseExpCmp(const char *&p, AInt &nval) {
+    AInt left, right;
     int oper;
     if (!ParseExpMinMax(p, left)) {
         return false;
@@ -327,8 +326,8 @@ bool ParseExpCmp(const char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpEqu(const char *&p, aint &nval) {
-    aint left, right;
+bool ParseExpEqu(const char *&p, AInt &nval) {
+    AInt left, right;
     int oper;
     if (!ParseExpCmp(p, left)) {
         return false;
@@ -354,8 +353,8 @@ bool ParseExpEqu(const char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpBitAnd(const char *&p, aint &nval) {
-    aint left, right;
+bool ParseExpBitAnd(const char *&p, AInt &nval) {
+    AInt left, right;
     if (!ParseExpEqu(p, left)) {
         return false;
     }
@@ -369,8 +368,8 @@ bool ParseExpBitAnd(const char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpBitXor(const char *&p, aint &nval) {
-    aint left, right;
+bool ParseExpBitXor(const char *&p, AInt &nval) {
+    AInt left, right;
     if (!ParseExpBitAnd(p, left)) {
         return false;
     }
@@ -384,8 +383,8 @@ bool ParseExpBitXor(const char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpBitOr(const char *&p, aint &nval) {
-    aint left, right;
+bool ParseExpBitOr(const char *&p, AInt &nval) {
+    AInt left, right;
     if (!ParseExpBitXor(p, left)) {
         return false;
     }
@@ -399,8 +398,8 @@ bool ParseExpBitOr(const char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpLogAnd(const char *&p, aint &nval) {
-    aint left, right;
+bool ParseExpLogAnd(const char *&p, AInt &nval) {
+    AInt left, right;
     if (!ParseExpBitOr(p, left)) {
         return false;
     }
@@ -414,8 +413,8 @@ bool ParseExpLogAnd(const char *&p, aint &nval) {
     return true;
 }
 
-bool ParseExpLogOr(const char *&p, aint &nval) {
-    aint left, right;
+bool ParseExpLogOr(const char *&p, AInt &nval) {
+    AInt left, right;
     if (!ParseExpLogAnd(p, left)) {
         return false;
     }
@@ -429,7 +428,7 @@ bool ParseExpLogOr(const char *&p, aint &nval) {
     return true;
 }
 
-bool parseExpression(const char *&p, aint &nval) {
+bool parseExpression(const char *&p, AInt &nval) {
     if (ParseExpLogOr(p, nval)) {
         return true;
     }
@@ -546,7 +545,7 @@ char *substituteMacros(const char *lp, char *dest) {
         }
 
         if (const auto &Arr = Asm->getDefArray(*Id)) {
-            aint val;
+            AInt val;
             while (*(lp++) && (*lp <= ' ' || *lp == '['));
             if (!parseExpression(lp, val)) {
                 Error("[ARRAY] Expression error"s, CATCHALL);
@@ -613,7 +612,7 @@ char *substituteMacros(const char *lp, char *dest) {
 
 void parseLabel(const char *&P) {
     std::string LUnparsed;
-    aint val;
+    AInt val;
     if (isWhiteSpaceChar(*P)) {
         return;
     }
@@ -682,7 +681,7 @@ void parseLabel(const char *&P) {
             if (IsDEFL && !Asm->Labels.insert(*L, val, false, IsDEFL)) {
                 Error("Duplicate label"s, *L, PASS3);
             }
-            aint oval;
+            AInt oval;
             const char *t = LUnparsed.c_str();
             if (!Asm->Labels.getLabelValue(t, oval)) {
                 Fatal("Internal error. parseLabel()"s);
@@ -874,7 +873,7 @@ void parseStructLine(const char *&P, CStruct &St) {
 }
 
 int getBytes(const char *&P, int *E, int Add, int DC) {
-    aint val;
+    AInt val;
     int t = 0;
     while (true) {
         skipWhiteSpace(P);
@@ -952,7 +951,7 @@ int getBytes(const char *&P, int *E, int Add, int DC) {
 }
 
 unsigned long luaCalculate(const char *str) {
-    aint val;
+    AInt val;
     if (!parseExpression(str, val)) {
         return 0;
     } else {

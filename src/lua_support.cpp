@@ -35,7 +35,7 @@ void LuaShellExec(char *command) {
 #endif
 }
 
-bool LuaSetPage(aint n) {
+bool LuaSetPage(AInt n) {
     auto err = Asm->Em.setPage(n);
     if (err) {
         Error("sj.set_page: "s + *err, lp, CATCHALL);
@@ -44,7 +44,7 @@ bool LuaSetPage(aint n) {
     return true;
 }
 
-bool LuaSetSlot(aint n) {
+bool LuaSetSlot(AInt n) {
     auto err = Asm->Em.setSlot(n);
     if (err) {
         Error("sj.set_slot: "s + *err, lp, CATCHALL);

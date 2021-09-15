@@ -8,7 +8,7 @@ void ExportWriter::init(fs::path &FileName) {
     open(FileName);
 }
 
-void ExportWriter::write(const std::string &Name, aint Value) {
+void ExportWriter::write(const std::string &Name, AInt Value) {
     if (!OFS.is_open()) {
         TextOutput::open(FileName);
     }

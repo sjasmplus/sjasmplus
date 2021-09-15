@@ -136,7 +136,7 @@ struct Directives {
     }
 
     static void dirABYTE() {
-        aint add;
+        AInt add;
         int teller = 0, e[129];
         if (parseExpression(lp, add)) {
             check8(add);
@@ -153,7 +153,7 @@ struct Directives {
     }
 
     static void dirABYTEC() {
-        aint add;
+        AInt add;
         int teller = 0, e[129];
         if (parseExpression(lp, add)) {
             check8(add);
@@ -170,7 +170,7 @@ struct Directives {
     }
 
     static void dirABYTEZ() {
-        aint add;
+        AInt add;
         int teller = 0, e[129];
         if (parseExpression(lp, add)) {
             check8(add);
@@ -189,7 +189,7 @@ struct Directives {
     }
 
     static void dirWORD() {
-        aint val;
+        AInt val;
         int teller = 0, e[129];
         skipWhiteSpace(lp);
         while (*lp) {
@@ -219,7 +219,7 @@ struct Directives {
     }
 
     static void dirDWORD() {
-        aint val;
+        AInt val;
         int teller = 0, e[129 * 2];
         skipWhiteSpace(lp);
         while (*lp) {
@@ -250,7 +250,7 @@ struct Directives {
     }
 
     static void dirD24() {
-        aint val;
+        AInt val;
         int teller = 0, e[129 * 3];
         skipWhiteSpace(lp);
         while (*lp) {
@@ -283,22 +283,22 @@ struct Directives {
     }
 
     static void dirBLOCK() {
-        aint teller, val = 0;
-        if (parseExpression(lp, teller)) {
-            if ((signed) teller < 0) {
+        AInt Size, FillByte = 0;
+        if (parseExpression(lp, Size)) {
+            if ((signed) Size < 0) {
                 Fatal("Negative BLOCK?"s);
             }
             if (comma(lp)) {
-                parseExpression(lp, val);
+                parseExpression(lp, FillByte);
             }
-            emitBlock(val, teller);
+            emitBlock(FillByte, Size);
         } else {
             Error("[BLOCK] Syntax Error"s, lp, CATCHALL);
         }
     }
 
     static void dirORG() {
-        aint val;
+        AInt val;
         if (Asm->Em.isPagedMemory()) {
             if (parseExpression(lp, val)) {
                 Asm->Em.setAddress(val);
@@ -327,7 +327,7 @@ struct Directives {
     }
 
     static void dirDISP() {
-        aint val;
+        AInt val;
         if (parseExpression(lp, val)) {
             Asm->Em.doDisp(val);
         } else {
@@ -349,7 +349,7 @@ struct Directives {
             Error("[PAGE] works in device emulation mode only"s);
             return;
         }
-        aint val;
+        AInt val;
         if (!parseExpression(lp, val)) {
             Error("Syntax error"s, CATCHALL);
             return;
@@ -366,7 +366,7 @@ struct Directives {
             Error("[SLOT] works in device emulation mode only"s);
             return;
         }
-        aint val;
+        AInt val;
         if (!parseExpression(lp, val)) {
             Error("Syntax error"s, CATCHALL);
             return;
@@ -379,8 +379,8 @@ struct Directives {
     }
 
     static void dirALIGN() {
-        aint val;
-        aint Byte;
+        AInt val;
+        AInt Byte;
         bool noexp = false;
         if (!parseExpression(lp, val)) {
             noexp = true;
@@ -446,7 +446,7 @@ struct Directives {
 // Do not process beyond the END directive
     static void dirEND() {
         const char *p = lp;
-        aint val;
+        AInt val;
         if (parseExpression(lp, val)) {
             if (val > 65535 || val < 0) {
                 Error("[END] Invalid address: "s + std::to_string(val), CATCHALL);
@@ -462,7 +462,7 @@ struct Directives {
     }
 
     static void dirSIZE() {
-        aint val;
+        AInt val;
         if (!parseExpression(lp, val)) {
             Error("[SIZE] Syntax error"s, bp, CATCHALL);
             return;
@@ -478,7 +478,7 @@ struct Directives {
     }
 
     static void dirINCBIN() {
-        aint val;
+        AInt val;
         int offset = -1, length = -1;
 
         const fs::path &FileName = getFileName(lp);
@@ -512,7 +512,7 @@ struct Directives {
     }
 
     static void dirINCHOB() {
-        aint val;
+        AInt val;
         fs::path fnaamh;
         unsigned char len[2];
         int offset = 17, length = -1;
@@ -562,7 +562,7 @@ struct Directives {
     }
 
     static void dirINCTRD() {
-        aint val;
+        AInt val;
         char hdr[16];
         int offset = -1, length = -1, i;
 
@@ -659,7 +659,7 @@ struct Directives {
         if (pass != LASTPASS)
             exec = false;
 
-        aint val;
+        AInt val;
         optional<uint16_t> Start = std::nullopt;
 
         const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
@@ -703,7 +703,7 @@ struct Directives {
             exec = false;
         }
 
-        aint val;
+        AInt val;
         optional<uint16_t> Start = std::nullopt;
 
         const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
@@ -746,7 +746,7 @@ struct Directives {
             exec = false;
         }
 
-        aint val;
+        AInt val;
         int start = -1, length = -1;
 
         const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
@@ -795,7 +795,7 @@ struct Directives {
             Error("[SAVEHOB] works in device emulation mode only"s);
             return;
         }
-        aint val;
+        AInt val;
         int start = -1, length = -1;
         bool exec = true;
 
@@ -895,7 +895,7 @@ struct Directives {
             exec = false;
         }
 
-        aint val;
+        AInt val;
         int start = -1, length = -1, autostart = -1; //autostart added by boo_boo 19_0ct_2008
 
         const fs::path &FileName = Asm->Em.resolveOutputPath(getFileName(lp));
@@ -1001,7 +1001,7 @@ struct Directives {
     }
 
     static void dirIF() {
-        aint val;
+        AInt val;
         IsLabelNotFound = 0;
         /*if (!ParseExpression(p,val)) { Error("Syntax error",0,CATCHALL); return; }*/
         if (!parseExpression(lp, val)) {
@@ -1045,7 +1045,7 @@ struct Directives {
     }
 
     static void dirIFN() {
-        aint val;
+        AInt val;
         IsLabelNotFound = 0;
         if (!parseExpression(lp, val)) {
             Error("[IFN] Syntax error"s, CATCHALL);
@@ -1367,7 +1367,7 @@ struct Directives {
     }
 
     static void dirEXPORT() {
-        aint val;
+        AInt val;
         optional<std::string> Label;
 
         if (!(Label = getID(lp))) {
@@ -1390,7 +1390,7 @@ struct Directives {
     static void dirDISPLAY() {
         char decprint = 0;
         std::string Message;
-        aint val;
+        AInt val;
         int t = 0;
         while (true) {
             skipWhiteSpace(lp);
@@ -1523,7 +1523,7 @@ struct Directives {
 
     static void dirASSERT() {
         const char *p = lp;
-        aint val;
+        AInt val;
         /*if (!ParseExpression(lp,val)) { Error("Syntax error",0,CATCHALL); return; }
         if (pass==2 && !val) Error("Assertion failed",p);*/
         if (!parseExpression(lp, val)) {
@@ -1599,7 +1599,7 @@ struct Directives {
 
     static void dirSTRUCT() {
         int global = 0;
-        aint offset = 0, bind = 0;
+        AInt offset = 0, bind = 0;
         optional<std::string> Name;
         skipWhiteSpace(lp);
         if (*lp == '@') {
@@ -1643,7 +1643,7 @@ struct Directives {
     }
 
     static void dirFPOS() {
-        aint Offset;
+        AInt Offset;
         auto Method = std::ios_base::beg;
         skipWhiteSpace(lp);
         if ((*lp == '+') || (*lp == '-')) {
@@ -1659,7 +1659,7 @@ struct Directives {
     }
 
     static void dirDUP() {
-        aint val;
+        AInt val;
         IsLabelNotFound = 0;
 
         if (!RepeatStack.empty()) {

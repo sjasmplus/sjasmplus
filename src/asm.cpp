@@ -42,7 +42,7 @@ void Assembler::init() {
 
 extern int pass; // FIXME
 const int LASTPASS = 3; // FIXME
-extern aint CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine; // FIXME
+extern unsigned int CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine; // FIXME
 
 
 int Assembler::assemble() {
@@ -225,7 +225,7 @@ void Assembler::openFile(const fs::path &FileName) {
         Fatal("Error opening file "s + FileName.string(), strerror(errno));
     }
 
-    aint oCurrentLocalLine = CurrentLocalLine;
+    unsigned int oCurrentLocalLine = CurrentLocalLine;
     CurrentLocalLine = 0;
     SaveCurrentSrcFileNameForMsg = getCurrentSrcFileNameForMsg();
 
@@ -240,7 +240,7 @@ void Assembler::openFile(const fs::path &FileName) {
     SaveCurrentDirectory = CurrentDirectory;
     CurrentDirectory = FileName.parent_path();
 
-    void clearReadLineBuf();
+    clearReadLineBuf();
     readBufLine(true);
 
     checkRepeatStackAtEOF();

@@ -32,8 +32,6 @@
 #include <stack>
 #include <string>
 
-#include "asm/common.h"
-
 class CModules {
 public:
 

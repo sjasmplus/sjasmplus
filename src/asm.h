@@ -41,7 +41,7 @@ public:
 
     int includeLevel() const { return IncludeLevel; }
 
-    aint maxLineNumber() const { return MaxLineNumber; }
+    unsigned int maxLineNumber() const { return MaxLineNumber; }
 
     const COptions &options() const { return Options; }
 
@@ -108,7 +108,7 @@ private:
     fs::path CurrentDirectory;
     fs::path CurrentSrcFileName;
     int IncludeLevel = -1;
-    aint MaxLineNumber = 0;
+    unsigned int MaxLineNumber = 0;
 };
 
 #endif //SJASMPLUS_ASM_H

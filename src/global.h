@@ -3,11 +3,9 @@
 
 #include <stack>
 
-#include "asm/common.h"
 #include "defines.h"
 #include "fs.h"
 #include "tables.h"
-#include "asm/modules.h"
 
 using std::stack;
 
@@ -16,7 +14,7 @@ extern char line[LINEMAX];
 
 extern int pass, IsLabelNotFound;
 
-extern aint CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine;
+extern unsigned int CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine;
 
 extern stack<RepeatInfo> RepeatStack;
 

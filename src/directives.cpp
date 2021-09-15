@@ -63,7 +63,7 @@ bool parseDirective(const char *BOL, const char *&P) { // BOL = Beginning of lin
     } else if ((!AtBOL || Asm->options().IsPseudoOpBOF) && Instr[0] == '.' &&
                ((Instr.size() >= 2 && isdigit(Instr[1])) || *P == '(')) {
         // .number or .(expression) prefix which acts as DUP/REPT for a single line
-        aint val;
+        AInt val;
         size_t DirPos = olp - BOL;
         Asm->Listing.listLine(line);
         if (isdigit(Instr[1])) {

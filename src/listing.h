@@ -5,8 +5,8 @@
 #include <vector>
 #include <string>
 #include <stack>
+#include <functional>
 
-#include "asm/common.h"
 #include "util.h"
 
 
@@ -15,7 +15,7 @@ private:
 
     std::function<uint16_t()> getCPUAddress;
     std::function<int()> includeLevel;
-    std::function<aint()> maxLineNumber;
+    std::function<unsigned int()> maxLineNumber;
 
 
     bool IsActive = false;
@@ -23,8 +23,8 @@ private:
     bool InMacro = false;
     std::stack<bool> MacroStack;
     std::vector<uint8_t> ByteBuffer;
-    int PreviousAddress;
-    aint epadres;
+    int UnitStartAddress;
+    int LastEndAddress;
     int NumDigitsInLineNumber = 0;
 
     void listBytes4();
@@ -41,7 +41,7 @@ public:
     void init0(
             std::function<uint16_t()> const &getCPUAddressFunc,
             std::function<int()> const &includeLevelFunc,
-            std::function<aint()> const &maxLineNumberFunc
+            std::function<unsigned int()> const &maxLineNumberFunc
     ) {
 
         getCPUAddress = getCPUAddressFunc;
@@ -59,8 +59,8 @@ public:
 
     void addByte(uint8_t Byte);
 
-    void setPreviousAddress(int Value) {
-        PreviousAddress = Value;
+    void setUnitStartAddress() {
+        UnitStartAddress = getCPUAddress();
     }
 
     void omitLine() {

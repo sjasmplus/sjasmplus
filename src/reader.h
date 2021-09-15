@@ -33,7 +33,7 @@
 
 using std::optional;
 
-#include "asm/common.h"
+#include "asm/expr.h"
 #include "io_trd.h"
 #include "tables.h"
 
@@ -59,10 +59,10 @@ bool cParen(const char *&P);
 
 const char * getParen(const char *P);
 
-bool check8(aint val, bool error = true); /* changes applied from SjASM 0.39g */
+bool check8(AInt val, bool error = true); /* changes applied from SjASM 0.39g */
 bool check8o(long val); /* changes applied from SjASM 0.39g */
-bool check16(aint val, bool error = true); /* changes applied from SjASM 0.39g */
-bool check24(aint val, bool error = true); /* changes applied from SjASM 0.39g */
+bool check16(AInt val, bool error = true); /* changes applied from SjASM 0.39g */
+bool check24(AInt val, bool error = true); /* changes applied from SjASM 0.39g */
 bool need(const char *&P, char C);
 
 int need(const char *&P, const char *C);
@@ -73,13 +73,13 @@ int needA(const char *&P,
           const char *C3 = nullptr, int R3 = 0,
           bool AllowParen = false);
 
-bool getConstant(const char *&OP, aint &Val);
+bool getConstant(const char *&OP, AInt &Val);
 
-bool getCharConst(const char *&P, aint &Val);
+bool getCharConst(const char *&P, AInt &Val);
 
-bool getCharConstChar(const char *&OP, aint &Val);
+bool getCharConstChar(const char *&OP, AInt &Val);
 
-bool getCharConstCharSingle(const char *&OP, aint &Val);
+bool getCharConstCharSingle(const char *&OP, AInt &Val);
 
 bool cmpHStr(const char *&P1, const char *P2, bool AllowParen = false);
 

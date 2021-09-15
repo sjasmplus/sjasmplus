@@ -51,19 +51,20 @@ using ::boost::multi_index::member;
 using std::optional;
 
 struct CLocalLabelTableEntry {
-    aint Line, Number, Value;
+    int Line, Number;
+    AInt Value;
 
-    CLocalLabelTableEntry(aint _Line, aint _Number, aint _Value) :
+    CLocalLabelTableEntry(int _Line, int _Number, AInt _Value) :
             Line(_Line), Number(_Number), Value(_Value) {}
 };
 
 class CLocalLabels {
 public:
-    aint searchForward(aint LabelNum);
+    AInt searchForward(int LabelNum);
 
-    aint searchBack(aint LabelNum);
+    AInt searchBack(int LabelNum);
 
-    void insert(aint Line, aint Number, aint Value) {
+    void insert(int Line, int Number, AInt Value) {
         Labels.emplace_back(Line, Number, Value);
     }
 
@@ -76,7 +77,7 @@ struct LabelData {
     std::string name;
     int8_t page;
     bool IsDEFL;
-    aint value;
+    AInt value;
     int8_t used;
 };
 
@@ -100,17 +101,17 @@ public:
 
     void initPass();
 
-    bool insert(const std::string &name, aint value, bool Undefined = false, bool isDefl = false);
+    bool insert(const std::string &Name, AInt Value, bool Undefined = false, bool isDefl = false);
 
-    bool updateValue(const std::string &name, aint value);
+    bool updateValue(const std::string &Name, AInt Value);
 
-    bool getValue(const std::string &name, aint &value);
+    bool getValue(const std::string &Name, AInt &Value);
 
-    bool find(const std::string &name);
+    bool find(const std::string &Name);
 
-    bool remove(const std::string &name);
+    bool remove(const std::string &Name);
 
-    bool isUsed(const std::string &name);
+    bool isUsed(const std::string &Name);
 
     void removeAll();
 
@@ -122,21 +123,21 @@ public:
 
     optional<std::string> validateLabel(const std::string &Name);
 
-    bool getLabelValue(const char *&p, aint &val);
+    bool getLabelValue(const char *&P, AInt &Value);
 
-    bool getLocalLabelValue(const char *&op, aint &val);
+    bool getLocalLabelValue(const char *&OP, AInt &Value);
 
-    int luaGetLabel(char *name);
+    int luaGetLabel(char *Name);
 
-    const std::string &lastParsedLabel() const {
+    [[nodiscard]] const std::string &lastParsedLabel() const {
         return LastParsedLabel;
     }
 
-    void setLastParsedLabel(const std::string L) {
+    void setLastParsedLabel(const std::string &L) {
         LastParsedLabel = L;
     }
 
-    void insertLocal(aint Line, aint Number, aint Value) {
+    void insertLocal(int Line, int Number, AInt Value) {
         LocalLabels.insert(Line, Number, Value);
     }
 
@@ -150,8 +151,8 @@ private:
     std::string LastLabel;
     std::string LastParsedLabel;
 
-    LabelContainer _LabelContainer;
-    LabelContainerByName &name_index = _LabelContainer.get<name_tag>();
+    LabelContainer Labels;
+    LabelContainerByName &NameIndex = Labels.get<name_tag>();
 
     CLocalLabels LocalLabels;
 };

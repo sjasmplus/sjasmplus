@@ -4,7 +4,6 @@
 #include "directives.h"
 #include "../message_backend.h"
 #include "message.h"
-#include "asm.h"
 
 namespace parser {
 

@@ -9,7 +9,7 @@ private:
 public:
     explicit ExportWriter(fs::path &_FileName) : FileName{_FileName} {}
     void init(fs::path &FileName) override;
-    void write(const std::string &Name, aint Value);
+    void write(const std::string &Name, AInt Value);
 };
 
 #endif //SJASMPLUS_ASM_EXPORT_H

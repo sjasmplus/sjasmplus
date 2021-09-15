@@ -1,4 +1,3 @@
-#include "asm.h"
 #include "reader.h"
 #include "parser.h"
 #include "sjio.h"
@@ -17,13 +16,13 @@ void CStruct::copyLabels(CStruct &St) {
     }
 }
 
-void CStruct::copyMember(StructMember &Src, aint ndef) {
+void CStruct::copyMember(StructMember &Src, AInt ndef) {
     StructMember M = {noffset, Src.Len, ndef, Src.Type};
     addMember(M);
 }
 
 void CStruct::copyMembers(CStruct &St, const char *&lp) {
-    aint val;
+    AInt val;
     int parentheses = 0;
     StructMember M1 = {noffset, 0, 0, SMEMB::PARENOPEN};
     addMember(M1);
@@ -80,7 +79,7 @@ void CStruct::copyMembers(CStruct &St, const char *&lp) {
 void CStruct::deflab() {
     std::string ln, sn, op;
     optional<std::string> p;
-    aint oval;
+    AInt oval;
     sn = "@"s + FullName;
     op = sn;
     p = this->Parent->Labels->validateLabel(op);
@@ -123,7 +122,7 @@ void CStruct::deflab() {
 void CStruct::emitLabels(const std::string &iid) {
     std::string ln, sn, op;
     optional<std::string> p;
-    aint oval;
+    AInt oval;
     sn = iid;
     op = sn;
     p = this->Parent->Labels->validateLabel(op);
@@ -166,7 +165,7 @@ void CStruct::emitLabels(const std::string &iid) {
 void CStruct::emitMembers(const char *&p) {
     int t;
     std::vector<optional<uint8_t>> Bytes;
-    aint val;
+    AInt val;
     int haakjes = 0;
     skipWhiteSpace(p);
     if (*p == '{') {

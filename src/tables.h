@@ -40,8 +40,6 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#include "defines.h"
-
 class FunctionTable {
 public:
     bool insert(const std::string &Name, void(*FuncPtr)());

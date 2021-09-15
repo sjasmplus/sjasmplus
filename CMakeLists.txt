@@ -25,11 +25,11 @@ set(SOURCE_FILES
 #        resources/SaveTAP_ZX_Spectrum_48K.bin.h
         asm.h
         asm.cpp
-        asm/common.h
         asm/define.h
         asm/define.cpp
         asm/export.h
         asm/export.cpp
+        asm/expr.h
         asm/macro.h
         asm/macro.cpp
         asm/modules.cpp

@@ -4,7 +4,6 @@
 #include <functional>
 
 #include "memory.h"
-#include "asm/common.h"
 
 using std::optional;
 

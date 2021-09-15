@@ -53,7 +53,7 @@ void emitBytes(int *bytes);
 
 void emitWords(int *words);
 
-void emitBlock(uint8_t Byte, aint Len, bool NoFill = false);
+void emitBlock(uint8_t Byte, std::size_t Len, bool NoFill = false);
 
 fs::path resolveIncludeFilename(const fs::path &FN);
 

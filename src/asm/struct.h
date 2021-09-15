@@ -4,6 +4,9 @@
 #include <string>
 #include <list>
 #include <map>
+#include <functional>
+
+#include "labels.h"
 
 using namespace std::string_literals;
 
@@ -23,18 +26,18 @@ enum class SMEMB {
 class StructLabel {
 public:
     std::string Name;
-    aint Offset;
+    AInt Offset;
 
-    StructLabel(std::string _Name, aint _Offset) : Name(std::move(_Name)), Offset(_Offset) {}
+    StructLabel(std::string _Name, AInt _Offset) : Name(std::move(_Name)), Offset(_Offset) {}
 
 };
 
 class StructMember {
 public:
-    aint Offset, Len, Def;
+    AInt Offset, Len, Def;
     SMEMB Type;
 
-    StructMember(aint _Offset, aint _Len, aint _Def, SMEMB _Type) :
+    StructMember(AInt _Offset, AInt _Len, AInt _Def, SMEMB _Type) :
             Offset(_Offset), Len(_Len), Def(_Def), Type(_Type) {}
 
 };
@@ -46,7 +49,7 @@ public:
     CStructs *Parent;
     std::string Name, FullName;
     int binding;
-    aint noffset;
+    AInt noffset;
     int global;
 
     void addLabel(const std::string &Name) {
@@ -60,7 +63,7 @@ public:
 
     void copyLabels(CStruct &St);
 
-    void copyMember(StructMember &Src, aint ndef);
+    void copyMember(StructMember &Src, AInt ndef);
 
     void copyMembers(CStruct &St, const char *&lp);
 
@@ -74,7 +77,7 @@ public:
 
     explicit CStruct(CStructs *_Parent,
                      const std::string &_Name, const std::string &_FullName,
-                     int _Binding, aint _NOffset, int _Global) :
+                     int _Binding, AInt _NOffset, int _Global) :
             Parent{_Parent},
             Name{_Name}, FullName{_FullName},
             binding{_Binding}, noffset{_NOffset}, global{_Global} {}

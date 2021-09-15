@@ -2,7 +2,6 @@
 #include <optional>
 #include <boost/algorithm/string.hpp>
 
-#include "asm.h"
 #include "errors.h"
 #include "reader.h"
 #include "sjio.h"

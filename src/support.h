@@ -29,8 +29,6 @@
 #ifndef SJASMPLUS_SUPPORT_H
 #define SJASMPLUS_SUPPORT_H
 
-#include "defines.h"
-
 #if defined (_MSC_VER)
 
 #define STRDUP _strdup
