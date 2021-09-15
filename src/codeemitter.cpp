@@ -118,7 +118,7 @@ fs::path CodeEmitter::resolveOutputPath(const fs::path &p) {
     if (!ForcedOutputDirectory.empty()) {
         return fs::absolute(ForcedOutputDirectory / p);
     } else {
-        return Asm.getAbsPath(p);
+        return getAbsPath(p);
     }
 }
 

@@ -991,5 +991,3 @@ void luaParseCode(char *str) {
     STRCPY(line, LINEMAX, ml);
     free(ml);
 }
-
-//eof parser.cpp

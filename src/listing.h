@@ -12,7 +12,12 @@
 
 class ListingWriter : public TextOutput {
 private:
-    Assembler &Asm;
+
+    std::function<uint16_t()> getCPUAddress;
+    std::function<int()> includeLevel;
+    std::function<aint()> maxLineNumber;
+
+
     bool IsActive = false;
     bool OmitLine = false;
     bool InMacro = false;
@@ -31,9 +36,18 @@ private:
     std::string printCurrentLocalLine();
 
 public:
-    ListingWriter() = delete;
+    ListingWriter() = default;
 
-    explicit ListingWriter(Assembler &_Asm) : Asm{_Asm} {}
+    void init0(
+            std::function<uint16_t()> const &getCPUAddressFunc,
+            std::function<int()> const &includeLevelFunc,
+            std::function<aint()> const &maxLineNumberFunc
+    ) {
+
+        getCPUAddress = getCPUAddressFunc;
+        includeLevel = includeLevelFunc;
+        maxLineNumber = maxLineNumberFunc;
+    }
 
     void init(fs::path &FileName) override;
 

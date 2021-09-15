@@ -33,6 +33,7 @@
 #include "util.h"
 #include "global.h"
 #include "parser/macro.h"
+#include "asm.h"
 
 #include "labels.h"
 
@@ -237,14 +238,21 @@ void CLabels::dumpSymbols(const fs::path &FileName) const {
     }
 }
 
-void CLabels::init() {
+
+void CLabels::init(CMacros *Mac, CModules *Mod) {
+    Macros = Mac;
+    Modules = Mod;
+    initPass();
+}
+
+void CLabels::initPass() {
     LastParsedLabel.clear();
     LastLabel = "_"s;
 }
 
 optional<std::string> CLabels::validateLabel(const std::string &Name) {
     std::string LName{Name}; // Label name without @ or . prefix
-    std::string ML{Asm.Macros.labelPrefix()};
+    std::string ML{Macros->labelPrefix()};
     bool AsIsLabel = false;
     bool DotLabel = false;
     if (!ML.empty() && LName[0] == '@') {
@@ -276,10 +284,10 @@ optional<std::string> CLabels::validateLabel(const std::string &Name) {
     }
     std::string RetValue;
     if (!ML.empty() && DotLabel) {
-        RetValue = Asm.Macros.labelPrefix() + ">"s;
+        RetValue = Macros->labelPrefix() + ">"s;
     } else {
-        if (!AsIsLabel && !Asm.Modules.empty()) {
-            RetValue = Asm.Modules.getPrefix();
+        if (!AsIsLabel && !Modules->empty()) {
+            RetValue = Modules->getPrefix();
         }
         if (DotLabel) {
             RetValue += LastLabel + "."s;
@@ -293,7 +301,7 @@ optional<std::string> CLabels::validateLabel(const std::string &Name) {
 }
 
 bool CLabels::getLabelValue(const char *&p, aint &val) {
-    std::string ML{Asm.Macros.labelPrefix()};
+    std::string ML{Macros->labelPrefix()};
     const char *op = p;
     bool AsIsLabel = false; // @...
     bool DotLabel = false;
@@ -317,7 +325,7 @@ bool CLabels::getLabelValue(const char *&p, aint &val) {
         }
         TempLabel.clear();
         if (DotLabel) {
-            TempLabel += Asm.Macros.labelPrefix() + ">"s;
+            TempLabel += Macros->labelPrefix() + ">"s;
             if (!isalpha((unsigned char) *p) && *p != '_') {
                 Error("Invalid labelname"s, TempLabel);
                 return false;
@@ -367,8 +375,8 @@ bool CLabels::getLabelValue(const char *&p, aint &val) {
             break;
     }
     TempLabel.clear();
-    if (!AsIsLabel && !Asm.Modules.empty()) {
-        TempLabel = Asm.Modules.getPrefix();
+    if (!AsIsLabel && !Modules->empty()) {
+        TempLabel = Modules->getPrefix();
     }
     if (DotLabel) {
         TempLabel += LastLabel + ".";

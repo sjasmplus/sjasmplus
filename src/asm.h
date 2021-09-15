@@ -12,15 +12,15 @@
 #include "asm/export.h"
 #include "asm/struct.h"
 #include "listing.h"
-#include "modules.h"
+#include "asm/modules.h"
 
 using namespace std::string_literals;
 
 class Assembler {
 public:
-    Assembler() = delete;
+    Assembler() = default;
 
-    Assembler(int argc, char *argv[], int &RetValue);
+    int run(int argc, char *argv[]);
 
     void initPass(int P);
 
@@ -99,7 +99,7 @@ public:
 private:
     void init();
 
-    void assemble(int &RetValue);
+    int assemble();
 
     CDefines Defines;
     std::vector<fs::path> SrcFileNames;

@@ -11,7 +11,12 @@
 
 using std::optional;
 
-void CMacros::init() {
+void CMacros::init(ListingWriter *LW) {
+    LstWriter = LW;
+    initPass();
+}
+
+void CMacros::initPass() {
     Entries.clear();
     MacroNumber = 0;
     LabelPrefix.clear();
@@ -30,8 +35,8 @@ const char *CMacros::readLine(char *Buffer, size_t BufSize) {
     if (inMacroBody()) {
         if (CurrentBodyIt == CurrentBody->end()) {
             emitEnd();
-            Asm.Listing.endMacro();
-            Asm.Listing.omitLine();
+            LstWriter->endMacro();
+            LstWriter->omitLine();
             return nullptr;
         }
         std::strncpy(Buffer, (*CurrentBodyIt).c_str(), BufSize);
@@ -176,7 +181,7 @@ void CMacros::add(const std::string &Name, const char *&p, const char *Line) {
     if (*p/* && *p!=':'*/) {
         Error("Unexpected"s, p, PASS1);
     }
-    Asm.Listing.listLine(Line);
+    LstWriter->listLine(Line);
     if (!readFileToListOfStrings(M.Body, "endm"s)) {
         Error("Unexpected end of macro"s, PASS1);
     }
@@ -252,8 +257,8 @@ MacroResult CMacros::emit(const std::string &Name, const char *&p, const char *L
     skipWhiteSpace(p);
     auto Ret = *p ? MacroResult::TooManyArgs : MacroResult::Success;
 
-    Asm.Listing.listLine(Line);
-    Asm.Listing.startMacro();
+    LstWriter->listLine(Line);
+    LstWriter->startMacro();
     emitStart(OLabelPrefix, ODefs);
 
     setInMemSrc(&M.Body);

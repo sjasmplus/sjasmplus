@@ -4,18 +4,16 @@
 #include <string>
 #include <vector>
 
-#include "asm.h" // FIXME: Remove
-
 namespace parser {
 
-template<typename AsmT, typename MessagePrinter>
+template<typename AsmTy, typename MessagePrinter>
 struct StateT {
 
     using M = MessagePrinter;
 
     StateT() = delete;
-    StateT(AsmT &_Asm) : Asm{_Asm}, Id{}, EscChar{}, String{}, StringVec{} {};
-    AsmT &Asm;
+    StateT(AsmTy &_Asm) : Asm{_Asm}, Id{}, EscChar{}, String{}, StringVec{} {};
+    AsmTy &Asm;
     std::string Id;
     char EscChar;
     std::string String;

@@ -435,7 +435,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                     *rlppos = 0;
                     std::string Instr;
                     if ((!rlnewline || Asm->options().IsPseudoOpBOF) &&
-                        !((Instr = getInstr(lp)).empty()) && DirectivesTable.find(Instr)) {
+                        !((Instr = getInstr(lp)).empty()) && findDirective<decltype(*Asm)>(Instr)) {
                         // it's a directive
                         while (B.nextIf(':'));
                         if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
@@ -559,50 +559,6 @@ int SaveRAM(std::ofstream &ofs, int start, int length) {
 */
 
     return 1;
-}
-
-void *readRAM(void *dst, int start, int length) {
-/*
-    if (!DeviceID) {
-        return 0;
-    }
-*/
-
-    auto *target = static_cast<unsigned char *>(dst);
-    if (start + length > 0x10000)
-        Fatal("*SaveRAM(): start("s + std::to_string(start) + ") + length("s +
-              std::to_string(length) + ") > 0x10000"s);
-    if (length <= 0) {
-        length = 0x10000 - start;
-    }
-
-    Asm->Em.getBytes(target, start, length);
-    target += length;
-
-/*
-    aint save = 0;
-
-    CDeviceSlot *S;
-    for (int i = 0; i < Device->SlotsCount; i++) {
-        S = Device->GetSlot(i);
-        if (start >= S->Address && start < S->Address + S->Size) {
-            if (length < S->Size - (start - S->Address)) {
-                save = length;
-            } else {
-                save = S->Size - (start - S->Address);
-            }
-            std::memcpy(target, S->Page->RAM + (start - S->Address), save);
-            target += save;
-            length -= save;
-            start += save;
-            if (length <= 0) {
-                break;
-            }
-        }
-    }
-*/
-
-    return target;
 }
 
 uint16_t memGetWord(uint16_t address) {

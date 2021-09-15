@@ -1,6 +1,8 @@
 #ifndef SJASMPLUS_CODEEMITTER_H
 #define SJASMPLUS_CODEEMITTER_H
 
+#include <functional>
+
 #include "memory.h"
 #include "asm/common.h"
 
@@ -17,7 +19,7 @@ class CodeEmitter {
 
 private:
 
-    Assembler &Asm;
+    std::function<fs::path(const fs::path &)> getAbsPath;
     uint16_t CPUAddress;
     uint16_t EmitAddress; // = CPUAddress unless the DISP directive is used
     bool Disp; // DISP flag
@@ -38,9 +40,10 @@ private:
     void enforceFileSize();
 
 public:
-    CodeEmitter() = delete;
-    explicit CodeEmitter(Assembler &_Asm) : Asm(_Asm) {
-        initLegacyErrorHandler(&_Asm);
+    CodeEmitter() = default;
+
+    void init(std::function<fs::path(const fs::path &)> const &getAbsPathFunc) {
+        getAbsPath = getAbsPathFunc;
         reset();
     }
 
@@ -51,11 +54,11 @@ public:
         }
     }
 
-    uint16_t getCPUAddress() {
+    uint16_t getCPUAddress() const {
         return CPUAddress;
     }
 
-    uint16_t getEmitAddress() {
+    uint16_t getEmitAddress() const {
         return Disp ? EmitAddress : CPUAddress;
     }
 
@@ -81,7 +84,7 @@ public:
     // ENT directive (undoes DISP)
     void doEnt();
 
-    bool isDisp() { return Disp; }
+    bool isDisp() const { return Disp; }
 
     optional<std::string> align(uint16_t Alignment, optional<uint8_t> FillByte);
 

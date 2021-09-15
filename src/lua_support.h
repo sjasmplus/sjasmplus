@@ -17,6 +17,8 @@ extern "C" {
 #include "lua_lpack.h"
 }
 
+#include "asm/common.h"
+
 #include "lua_sjasm.h"
 
 extern lua_State *LUA;
@@ -26,5 +28,9 @@ void initLUA();
 void shutdownLUA();
 
 void LuaShellExec(char *command);
+
+bool LuaSetPage(aint n);
+
+bool LuaSetSlot(aint n);
 
 #endif //SJASMPLUS_LUA_SUPPORT_H

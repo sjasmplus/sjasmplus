@@ -1,8 +1,14 @@
 #include "errors.h"
+#include "asm.h"
+#include "global.h"
+
 #include "lua_support.h"
 
 lua_State *LUA;
 int LuaLine = -1;
+
+// FIXME: errors.cpp
+extern Assembler *Asm;
 
 void LuaFatalError(lua_State *L) {
     Fatal((char *) lua_tostring(L, -1));
@@ -27,4 +33,22 @@ void LuaShellExec(char *command) {
 #else
     system(command);
 #endif
+}
+
+bool LuaSetPage(aint n) {
+    auto err = Asm->Em.setPage(n);
+    if (err) {
+        Error("sj.set_page: "s + *err, lp, CATCHALL);
+        return false;
+    }
+    return true;
+}
+
+bool LuaSetSlot(aint n) {
+    auto err = Asm->Em.setSlot(n);
+    if (err) {
+        Error("sj.set_slot: "s + *err, lp, CATCHALL);
+        return false;
+    }
+    return true;
 }

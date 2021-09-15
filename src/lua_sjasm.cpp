@@ -286,7 +286,7 @@ static int tolua_sjasm_zx_trdimage_add_file00(lua_State *tolua_S) {
         int length = ((int) tolua_tonumber(tolua_S, 4, 0));
         int autostart = ((int) tolua_tonumber(tolua_S, 5, 0));
         {
-            auto Err = doSAVETRD(fs::path{fname}, zx::trd::HobetaFilename{fhobname}, start,
+            auto Err = doSAVETRD(Asm, fs::path{fname}, zx::trd::HobetaFilename{fhobname}, start,
                                         length, autostart);
             if (Err) {
                 Error(*Err, CATCHALL);
@@ -324,7 +324,7 @@ static int tolua_sjasm_zx_save_snapshot_sna12800(lua_State *tolua_S) {
         unsigned short start = ((unsigned short) tolua_tonumber(tolua_S, 2, 0));
         {
 
-            auto Err = doSAVESNA(fname, start);
+            auto Err = doSAVESNA(Asm, fname, start);
             int tolua_ret = Err ? 0 : 1;
             tolua_pushnumber(tolua_S, (lua_Number) tolua_ret);
         }

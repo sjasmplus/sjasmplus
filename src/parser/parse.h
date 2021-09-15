@@ -8,17 +8,17 @@
 
 namespace parser {
 
-    template<typename AsmT>
+    template<typename AsmTy>
     struct parse {
 
         using M = MessagePrinter<msg::MPBackendIO>;
 
-        struct State : StateT<AsmT, M> {};
+        struct State : StateT<AsmTy, M> {};
 
         template<typename Rule>
         struct Actions : ActionsT<State, Rule> {};
 
-        bool operator()(AsmT &Asm, const char *Buffer, size_t DirPos, size_t LineNumber) {
+        bool operator()(AsmTy &Asm, const char *Buffer, size_t DirPos, size_t LineNumber) {
 
             tao::pegtl::memory_input<> In(Buffer, Buffer + strlen(Buffer),
                                           getCurrentSrcFileNameForMsg().string(),

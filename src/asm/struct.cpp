@@ -83,17 +83,17 @@ void CStruct::deflab() {
     aint oval;
     sn = "@"s + FullName;
     op = sn;
-    p = this->Parent->Asm.Labels.validateLabel(op);
+    p = this->Parent->Labels->validateLabel(op);
     if (pass == LASTPASS) {
         const char *t = op.c_str();
-        if (!this->Parent->Asm.Labels.getLabelValue(t, oval)) {
+        if (!this->Parent->Labels->getLabelValue(t, oval)) {
             Fatal("Internal error. parseLabel()"s);
         }
         if (noffset != oval) {
-            Error("Label has different value in pass 2"s, this->Parent->Asm.Labels.TempLabel);
+            Error("Label has different value in pass 2"s, this->Parent->Labels->TempLabel);
         }
     } else {
-        if (!this->Parent->Asm.Labels.insert(*p, noffset)) {
+        if (!this->Parent->Labels->insert(*p, noffset)) {
             Error("Duplicate label"s, PASS1);
         }
     }
@@ -101,19 +101,19 @@ void CStruct::deflab() {
     for (auto &L : Labels) {
         ln = sn + L.Name;
         op = ln;
-        if (!(p = this->Parent->Asm.Labels.validateLabel(ln))) {
+        if (!(p = this->Parent->Labels->validateLabel(ln))) {
             Error("Illegal labelname"s, ln, PASS1);
         }
         if (pass == LASTPASS) {
             const char *t = op.c_str();
-            if (!this->Parent->Asm.Labels.getLabelValue(t, oval)) {
+            if (!this->Parent->Labels->getLabelValue(t, oval)) {
                 Fatal("Internal error. parseLabel()"s);
             }
             if (L.Offset != oval) {
-                Error("Label has different value in pass 2"s, this->Parent->Asm.Labels.TempLabel);
+                Error("Label has different value in pass 2"s, this->Parent->Labels->TempLabel);
             }
         } else {
-            if (!this->Parent->Asm.Labels.insert(*p, L.Offset)) {
+            if (!this->Parent->Labels->insert(*p, L.Offset)) {
                 Error("Duplicate label"s, PASS1);
             }
         }
@@ -126,17 +126,17 @@ void CStruct::emitLabels(const std::string &iid) {
     aint oval;
     sn = iid;
     op = sn;
-    p = this->Parent->Asm.Labels.validateLabel(op);
+    p = this->Parent->Labels->validateLabel(op);
     if (pass == LASTPASS) {
         const char *t = op.c_str();
-        if (!this->Parent->Asm.Labels.getLabelValue(t, oval)) {
+        if (!this->Parent->Labels->getLabelValue(t, oval)) {
             Fatal("Internal error. parseLabel()"s);
         }
-        if (this->Parent->Asm.Em.getCPUAddress() != oval) {
-            Error("Label has different value in pass 2"s, this->Parent->Asm.Labels.TempLabel);
+        if (this->Parent->getCPUAddress() != oval) {
+            Error("Label has different value in pass 2"s, this->Parent->Labels->TempLabel);
         }
     } else {
-        if (!this->Parent->Asm.Labels.insert(*p, this->Parent->Asm.Em.getCPUAddress())) {
+        if (!this->Parent->Labels->insert(*p, this->Parent->getCPUAddress())) {
             Error("Duplicate label"s, PASS1);
         }
     }
@@ -144,19 +144,19 @@ void CStruct::emitLabels(const std::string &iid) {
     for (const auto &L : Labels) {
         ln = sn + L.Name;
         op = ln;
-        if (!(p = this->Parent->Asm.Labels.validateLabel(ln))) {
+        if (!(p = this->Parent->Labels->validateLabel(ln))) {
             Error("Illegal labelname"s, ln, PASS1);
         }
         if (pass == LASTPASS) {
             const char *t = op.c_str();
-            if (!this->Parent->Asm.Labels.getLabelValue(t, oval)) {
+            if (!this->Parent->Labels->getLabelValue(t, oval)) {
                 Fatal("Internal error. parseLabel()"s);
             }
-            if (L.Offset + this->Parent->Asm.Em.getCPUAddress() != oval) {
-                Error("Label has different value in pass 2"s, this->Parent->Asm.Labels.TempLabel);
+            if (L.Offset + this->Parent->getCPUAddress() != oval) {
+                Error("Label has different value in pass 2"s, this->Parent->Labels->TempLabel);
             }
         } else {
-            if (!this->Parent->Asm.Labels.insert(*p, L.Offset + this->Parent->Asm.Em.getCPUAddress())) {
+            if (!this->Parent->Labels->insert(*p, L.Offset + this->Parent->getCPUAddress())) {
                 Error("Duplicate label"s, PASS1);
             }
         }
@@ -267,8 +267,8 @@ void CStruct::emitMembers(const char *&p) {
 CStruct &CStructs::add(const std::string &Name, int Offset, int idx, int Global) {
     std::string FullName;
 
-    if (!Global && !Asm.Modules.empty()) {
-        FullName = Asm.Modules.getPrefix();
+    if (!Global && !Modules->empty()) {
+        FullName = Modules->getPrefix();
     }
     FullName += Name;
     if (Entries.find(FullName) != Entries.end()) {
@@ -283,7 +283,7 @@ CStruct &CStructs::add(const std::string &Name, int Offset, int idx, int Global)
 }
 
 std::map<std::string, CStruct>::iterator CStructs::find(const std::string &Name, int Global) {
-    const std::string &FullName = Global ? Name : Name + Asm.Modules.getPrefix();
+    const std::string &FullName = Global ? Name : Name + Modules->getPrefix();
     auto it = Entries.find(FullName);
     if (it != Entries.end())
         return it;

@@ -38,8 +38,8 @@
 #include <boost/multi_index/member.hpp>
 #include <optional>
 
-#include "asm/common.h"
-#include "asm.h"
+#include "asm/macro.h"
+#include "asm/modules.h"
 #include "fs.h"
 
 using ::boost::multi_index_container;
@@ -94,11 +94,11 @@ typedef LabelContainer::index<name_tag>::type LabelContainerByName;
 
 class CLabels {
 public:
-    CLabels() = delete;
+    CLabels() = default;
 
-    explicit CLabels(Assembler &_Asm) : Asm{_Asm} {}
+    void init(CMacros *Mac, CModules *Mod);
 
-    void init();
+    void initPass();
 
     bool insert(const std::string &name, aint value, bool Undefined = false, bool isDefl = false);
 
@@ -143,7 +143,8 @@ public:
     std::string TempLabel;
 
 private:
-    Assembler &Asm;
+    CMacros *Macros = nullptr;
+    CModules *Modules = nullptr;
 
 
     std::string LastLabel;

@@ -7,7 +7,7 @@
 #include "defines.h"
 #include "fs.h"
 #include "tables.h"
-#include "modules.h"
+#include "asm/modules.h"
 
 using std::stack;
 

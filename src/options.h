@@ -49,8 +49,8 @@ void showHelp();
 
 class COptions {
 public:
-    COptions() = delete;
-    explicit COptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames);
+    COptions() = default;
+    void operator()(int argc, char *argv[], std::vector<fs::path> &SrcFileNames);
 
     bool SymbolListEnabled = false;
     fs::path SymbolListFName;

@@ -45,7 +45,7 @@ const int LASTPASS = 3; // FIXME
 extern aint CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine; // FIXME
 
 
-void Assembler::assemble(int &RetValue) {
+int Assembler::assemble() {
     // if memory type != none
     bool W2DEncodingFlag = Options.ConvertWindowsToDOS;
 
@@ -110,18 +110,27 @@ void Assembler::assemble(int &RetValue) {
     // Shutdown Lua
     shutdownLUA();
 
-    RetValue = msg::ErrorCount == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+    return msg::ErrorCount == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-Assembler::Assembler(int argc, char *argv[], int &RetValue) :
-        Em{*this},
-        Labels{*this},
-        Macros{*this},
-        Structs{*this},
-        Modules{*this},
-        Listing{*this},
-        Options{argc, argv, SrcFileNames} {
+int Assembler::run(int argc, char *argv[]) {
     const char *Banner = "SjASMPlus Z80 Cross-Assembler v." SJASMPLUS_VERSION;
+
+    Options(argc, argv, SrcFileNames);
+    Macros.init(&Listing);
+    Labels.init(&Macros, &Modules);
+
+    auto gAP = [this](auto &P) { return getAbsPath(P); };
+    Em.init(gAP);
+    initLegacyErrorHandler(this);
+
+    auto gCPUA = [this]() { return Em.getCPUAddress(); };
+    Structs.init(gCPUA, &Labels, &Modules);
+
+    auto iL = [this]() { return includeLevel(); };
+    auto mLN = [this]() { return maxLineNumber(); };
+    Listing.init0(gCPUA, iL, mLN);
+
 
     if (argc == 1) {
         msg(Banner + "\n"s +
@@ -140,22 +149,22 @@ Assembler::Assembler(int argc, char *argv[], int &RetValue) :
 
     init();
 
-    assemble(RetValue);
+    return assemble();
 }
 
 void initLegacyParser(); // FIXME
 void enableSourceReader(); // FIXME
 
 void Assembler::initPass(int P) {
-    Labels.init();
+    Labels.initPass();
     pass = P;
     Em.reset();
     enableSourceReader();
     CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
     Listing.initPass();
-    Macros.init();
+    Macros.initPass();
     initLegacyParser();
-    Structs.init();
+    Structs.initPass();
     Defines.clear();
 
     // predefined

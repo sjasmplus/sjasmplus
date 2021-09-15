@@ -5,8 +5,6 @@
 #include <list>
 #include <map>
 
-#include "common.h"
-
 using namespace std::string_literals;
 
 enum class SMEMB {
@@ -88,19 +86,25 @@ private:
 
 class CStructs {
 public:
-    CStruct & add(const std::string &Name, int Offset, int idx, int Global);
 
-    void init() {
+    CStructs() = default;
+
+    void init(std::function<uint16_t()> const &getCPUAddressFunc, CLabels *L, CModules *M) {
+        getCPUAddress = getCPUAddressFunc;
+        Labels = L;
+        Modules = M;
+        initPass();
+    }
+
+    void initPass() {
         // ?
     }
 
-    CStructs() = delete;
+    std::function<uint16_t()> getCPUAddress;
+    CLabels *Labels = nullptr;
+    CModules *Modules = nullptr;
 
-    explicit CStructs(Assembler &_Asm) : Asm{_Asm} {
-        init();
-    }
-
-    Assembler &Asm;
+    CStruct & add(const std::string &Name, int Offset, int idx, int Global);
 
     std::map<std::string, CStruct>::iterator find(const std::string &Name, int Global);
 

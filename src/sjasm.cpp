@@ -30,7 +30,6 @@
 
 int main(int argc, char *argv[]) {
 
-    int RetValue;
-    Assembler Asm(argc, argv, RetValue);
-    return RetValue;
+    auto Asm = Assembler{};
+    return Asm.run(argc, argv);
 }

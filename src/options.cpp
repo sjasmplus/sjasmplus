@@ -232,7 +232,7 @@ std::string prefixOption(std::string& Name) {
     return Prefix + Name;
 }
 
-COptions::COptions(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
+void COptions::operator()(int argc, char *argv[], std::vector<fs::path> &SrcFileNames) {
     for (size_t i = 1; i < (size_t) argc; i++) {
         State S{};
         argv_input<> In(argv, i);

@@ -66,7 +66,21 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length);
 
 int SaveRAM(std::ofstream &ofs, int, int);
 
-void *readRAM(void *dst, int start, int size);
+template <typename AsmTy>
+void *readRAM(AsmTy &Asm, void *Dst, int Start, int Size) {
+    auto *Target = static_cast<unsigned char *>(Dst);
+    if (Start + Size > 0x10000)
+        Fatal("*readRAM(): Start("s + std::to_string(Start) + ") + Size("s +
+              std::to_string(Size) + ") > 0x10000"s);
+    if (Size <= 0) {
+        Size = 0x10000 - Start;
+    }
+
+    Asm->Em.getBytes(Target, Start, Size);
+    Target += Size;
+
+    return Target;
+}
 
 uint8_t memGetByte(uint16_t address); /* added */
 uint16_t memGetWord(uint16_t address); /* added */

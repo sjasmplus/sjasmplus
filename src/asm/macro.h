@@ -6,7 +6,7 @@
 #include <list>
 #include <stack>
 
-#include "asm.h"
+#include "listing.h"
 
 using namespace std::string_literals;
 
@@ -17,8 +17,6 @@ enum class MacroResult {
     NotEnoughArgs,
     TooManyArgs
 };
-
-void initMacros();
 
 class CMacroDefineTable {
 public:
@@ -64,17 +62,15 @@ typedef struct {
 
 class CMacros {
 public:
-    CMacros() = delete;
-
-    explicit CMacros(Assembler &_Asm) : Asm{_Asm} {
-        init();
-    }
+    CMacros() = default;
 
     void add(const std::string &Name, const char *&p, const char *Line);
 
     MacroResult emit(const std::string &Name, const char *&p, const char *Line);
 
-    void init();
+    void init(ListingWriter *LW);
+
+    void initPass();
 
     const std::string &labelPrefix() {
         return LabelPrefix;
@@ -91,7 +87,7 @@ public:
     }
 
 private:
-    Assembler &Asm;
+    ListingWriter *LstWriter = nullptr;
 
     std::map<std::string, CMacroTableEntry> Entries;
 

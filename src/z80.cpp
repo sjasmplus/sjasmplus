@@ -71,7 +71,7 @@ enum Z80Reg {
     Z80_UNK = -1
 };
 
-std::map<enum Z80Reg, std::string> RegToName = {
+const std::map<enum Z80Reg, std::string> RegToName = {
         {Z80_B,   "B"s},
         {Z80_C,   "C"s},
         {Z80_D,   "D"s},
@@ -5433,7 +5433,7 @@ void OpCode_XOR() {
 }
 
 /* modified */
-void Init() {
+void init() {
     OpCodeTable.insert("adc"s, OpCode_ADC);
     OpCodeTable.insert("add"s, OpCode_ADD);
     OpCodeTable.insert("and"s, OpCode_AND);
@@ -5523,6 +5523,6 @@ void initCPUParser(bool FakeInstructions,
     Z80::Options.Target = Target;
     Z80::Options.IsReversePOP = IsReversePOP;
 
-    Z80::Init();
-    InsertDirectives();
+    Z80::init();
+    insertDirectives<decltype(*Asm)>(*Asm);
 }

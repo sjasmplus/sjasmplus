@@ -65,9 +65,9 @@ std::string ListingWriter::printCurrentLocalLine() {
         case 1:
             S += (unsigned char) ('0' + v);
     }
-    S += (Asm.includeLevel() > 0 ? '+' : ' ');
-    S += (Asm.includeLevel() > 1 ? '+' : ' ');
-    S += (Asm.includeLevel() > 2 ? '+' : ' ');
+    S += (includeLevel() > 0 ? '+' : ' ');
+    S += (includeLevel() > 1 ? '+' : ' ');
+    S += (includeLevel() > 2 ? '+' : ' ');
     return S;
 }
 
@@ -130,7 +130,7 @@ void ListingWriter::listLine(const char *Line) {
         OFS << Line << endl;
         listBytesLong(pad, Prefix);
     }
-    epadres = Asm.Em.getCPUAddress();
+    epadres = getCPUAddress();
     PreviousAddress = -1;
     ByteBuffer.clear();
 }
@@ -160,7 +160,7 @@ void ListingWriter::listLineSkip(const char *Line) {
         OFS << ">";
     }
     OFS << Line << endl;
-    epadres = Asm.Em.getCPUAddress();
+    epadres = getCPUAddress();
     PreviousAddress = -1;
     ByteBuffer.clear();
 }
@@ -186,22 +186,22 @@ void ListingWriter::initPass() {
     // Put this here for now, as MaxLineNumber has the correct value only at the end of pass 1
     // i.e. it is usable only after the first pass
     NumDigitsInLineNumber = 1;
-    if (Asm.maxLineNumber() > 9) {
+    if (maxLineNumber() > 9) {
         NumDigitsInLineNumber = 2;
     }
-    if (Asm.maxLineNumber() > 99) {
+    if (maxLineNumber() > 99) {
         NumDigitsInLineNumber = 3;
     }
-    if (Asm.maxLineNumber() > 999) {
+    if (maxLineNumber() > 999) {
         NumDigitsInLineNumber = 4;
     }
-    if (Asm.maxLineNumber() > 9999) {
+    if (maxLineNumber() > 9999) {
         NumDigitsInLineNumber = 5;
     }
-    if (Asm.maxLineNumber() > 99999) {
+    if (maxLineNumber() > 99999) {
         NumDigitsInLineNumber = 6;
     }
-    if (Asm.maxLineNumber() > 999999) {
+    if (maxLineNumber() > 999999) {
         NumDigitsInLineNumber = 7;
     }
 }

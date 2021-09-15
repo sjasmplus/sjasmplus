@@ -32,6 +32,8 @@ set(SOURCE_FILES
         asm/export.cpp
         asm/macro.h
         asm/macro.cpp
+        asm/modules.cpp
+        asm/modules.h
         asm/struct.h
         asm/struct.cpp
         sjasm.cpp
@@ -65,8 +67,6 @@ set(SOURCE_FILES
         message_backend.h
         message_if.cpp
         message_if.h
-        modules.cpp
-        modules.h
         options.cpp
         options.h
         parser.cpp

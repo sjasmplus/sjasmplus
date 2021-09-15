@@ -36,11 +36,8 @@
 
 class CModules {
 public:
-    Assembler &Asm;
 
-    CModules() = delete;
-
-    explicit CModules(Assembler &_Asm) : Asm{_Asm} {}
+    CModules() = default;
 
     void begin(const std::string &Name);
 
