@@ -425,34 +425,19 @@ bool getConstant(const char *&OP, AInt &Val) {
             p2 = p--;
             if (isdigit((unsigned char) *p)) {
                 base = 10;
-            } else if (*p == 'b') {
+            } else if (*p == 'b' || *p == 'B') {
                 base = 2;
                 --p;
-            } else if (*p == 'h') {
+            } else if (*p == 'h' || *p == 'H') {
                 base = 16;
                 --p;
-            } else if (*p == 'B') {
-                base = 2;
-                --p;
-            } else if (*p == 'H') {
-                base = 16;
-                --p;
-            } else if (*p == 'o') {
+            } else if (*p == 'o' || *p == 'O') {
                 base = 8;
                 --p;
-            } else if (*p == 'q') {
+            } else if (*p == 'q' || *p == 'Q') {
                 base = 8;
                 --p;
-            } else if (*p == 'd') {
-                base = 10;
-                --p;
-            } else if (*p == 'O') {
-                base = 8;
-                --p;
-            } else if (*p == 'Q') {
-                base = 8;
-                --p;
-            } else if (*p == 'D') {
+            } else if (*p == 'd' || *p == 'D') {
                 base = 10;
                 --p;
             } else {
@@ -477,75 +462,72 @@ bool getConstant(const char *&OP, AInt &Val) {
     }
 }
 
-bool getCharConstChar(const char *&OP, AInt &Val) {
-    if ((Val = *OP++) != '\\') {
-        return true;
+void getCharConstChar(const char *&OP, AInt &Val) {
+    if ((Val = (unsigned char) (*OP++)) != '\\') {
+        return;
     }
-    switch (Val = *OP++) {
+    switch (Val = (unsigned char) (*OP++)) {
         case '\\':
         case '\'':
         case '\"':
         case '\?':
-            return true;
+            return;
         case 'n':
         case 'N':
             Val = 10;
-            return true;
+            return;
         case 't':
         case 'T':
             Val = 9;
-            return true;
+            return;
         case 'v':
         case 'V':
             Val = 11;
-            return true;
+            return;
         case 'b':
         case 'B':
             Val = 8;
-            return true;
+            return;
         case 'r':
         case 'R':
             Val = 13;
-            return true;
+            return;
         case 'f':
         case 'F':
             Val = 12;
-            return true;
+            return;
         case 'a':
         case 'A':
             Val = 7;
-            return true;
+            return;
         case 'e':
         case 'E':
             Val = 27;
-            return true;
+            return;
         case 'd':
         case 'D':
             Val = 127;
-            return true;
+            return;
         default:
             --OP;
             Val = '\\';
 
             Error("Unknown escape"s, OP);
 
-            return true;
+            return;
     }
-    return false;
 }
 
-/* added */
-bool getCharConstCharSingle(const char *&OP, AInt &Val) {
-    if ((Val = *OP++) != '\\') {
-        return true;
+void getCharConstCharSingle(const char *&OP, AInt &Val) {
+    if ((Val = (unsigned char) (*OP++)) != '\\') {
+        return;
     }
-    switch (Val = *OP++) {
+    switch (Val = (unsigned char) (*OP++)) {
         case '\'':
-            return true;
+            return;
     }
     --OP;
     Val = '\\';
-    return true;
 }
 
 bool getCharConst(const char *&P, AInt &Val) {
@@ -612,7 +594,7 @@ std::string getString(const char *&P, bool KeepBrackets) {
 
 fs::path getFileName(const char *&P) {
     const std::string &result = getString(P, true);
-    return fs::path(result);
+    return {result};
 }
 
 zx::trd::HobetaFilename getHobetaFileName(const char *&P) {

@@ -77,9 +77,9 @@ bool getConstant(const char *&OP, AInt &Val);
 
 bool getCharConst(const char *&P, AInt &Val);
 
-bool getCharConstChar(const char *&OP, AInt &Val);
+void getCharConstChar(const char *&OP, AInt &Val);
 
-bool getCharConstCharSingle(const char *&OP, AInt &Val);
+void getCharConstCharSingle(const char *&OP, AInt &Val);
 
 bool cmpHStr(const char *&P1, const char *P2, bool AllowParen = false);
 
