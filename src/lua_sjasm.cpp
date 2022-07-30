@@ -20,7 +20,6 @@ TOLUA_API int tolua_sjasm_open(lua_State *tolua_S);
 #include "directives.h"
 #include "parser.h"
 #include "options.h"
-#include "global.h"
 #include "io_snapshots.h"
 #include "parser/define.h"
 
