@@ -101,12 +101,12 @@ void Error(const std::string &fout, int type) {
 
 void Fatal(const std::string &errstr) {
     Error(errstr, ""s, FATAL);
-    throw ("Unreachable code executed!");
+    throw std::runtime_error("Unreachable code executed!");
 }
 
 void Fatal(const std::string &errstr, const std::string &bd) {
     Error(errstr, bd, FATAL);
-    throw ("Unreachable code executed!");
+    throw std::runtime_error("Unreachable code executed!");
 }
 
 void Warning(const std::string &fout, const std::string &bd, int type) {
