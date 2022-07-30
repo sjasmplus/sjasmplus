@@ -127,7 +127,7 @@ public:
 
     bool getLocalLabelValue(const char *&OP, AInt &Value);
 
-    int luaGetLabel(char *Name);
+    int luaGetLabel(const char *Name);
 
     [[nodiscard]] const std::string &lastParsedLabel() const {
         return LastParsedLabel;

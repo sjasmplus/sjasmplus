@@ -41,7 +41,7 @@ struct update_label {
     update_label(int8_t new_page, bool new_IsDEFL, AInt new_value, int8_t new_used) :
             new_page(new_page), new_IsDEFL(new_IsDEFL), new_value(new_value), new_used(new_used) {}
 
-    void operator()(LabelData &L) {
+    void operator()(LabelData &L) const {
         L.page = new_page;
         L.IsDEFL = new_IsDEFL;
         L.value = new_value;
@@ -56,9 +56,9 @@ private:
 };
 
 struct update_value {
-    update_value(AInt new_value) : new_value(new_value) {}
+    explicit update_value(AInt new_value) : new_value(new_value) {}
 
-    void operator()(LabelData &L) {
+    void operator()(LabelData &L) const {
         L.value = new_value;
     }
 
@@ -67,9 +67,9 @@ private:
 };
 
 struct update_used {
-    update_used(AInt new_used) : new_used(new_used) {}
+    explicit update_used(AInt new_used) : new_used(new_used) {}
 
-    void operator()(LabelData &L) {
+    void operator()(LabelData &L) const {
         L.used = new_used;
     }
 
@@ -489,7 +489,7 @@ AInt CLocalLabels::searchBack(int LabelNum) {
     return (AInt) -1;
 }
 
-int CLabels::luaGetLabel(char *Name) {
+int CLabels::luaGetLabel(const char *Name) {
     AInt val;
 
     if (!getValue(Name, val)) {
