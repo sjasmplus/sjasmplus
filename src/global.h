@@ -14,7 +14,7 @@ extern char line[LINEMAX];
 
 extern int pass, IsLabelNotFound;
 
-extern unsigned int CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine;
+extern unsigned int CurrentGlobalLine, CompiledCurrentLine;
 
 extern stack<RepeatInfo> RepeatStack;
 

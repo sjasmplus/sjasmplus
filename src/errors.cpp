@@ -37,10 +37,10 @@ fs::path &getCurrentSrcFileNameForMsg() {
 void Error(const std::string &fout, const std::string &bd, int type) {
     lua_Debug ar;
 
-    if (IsSkipErrors && PreviousErrorLine == CurrentLocalLine && type != FATAL) {
+    if (IsSkipErrors && PreviousErrorLine == Asm->currentBuffer().CurrentLine && type != FATAL) {
         return;
     }
-    if (type == CATCHALL && PreviousErrorLine == CurrentLocalLine) {
+    if (type == CATCHALL && PreviousErrorLine == Asm->currentBuffer().CurrentLine) {
         return;
     }
     if (type == PASS1 && pass != 1) {
@@ -53,7 +53,7 @@ void Error(const std::string &fout, const std::string &bd, int type) {
         return;
     }
     IsSkipErrors = (type == SUPPRESS);
-    PreviousErrorLine = CurrentLocalLine;
+    PreviousErrorLine = Asm->currentBuffer().CurrentLine;
     ++msg::ErrorCount;
 
     /*SPRINTF3(ep, LINEMAX2, "%s line %lu: %s", filename, CurrentLocalLine, fout);
@@ -73,7 +73,7 @@ void Error(const std::string &fout, const std::string &bd, int type) {
             lua_getinfo(LUA, "l", &ar);
             ln = LuaLine + ar.currentline;
         } else {
-            ln = CurrentLocalLine;
+            ln = Asm->currentBuffer().CurrentLine;
         }
         ErrorStr = getCurrentSrcFileNameForMsg().string() + "("s + std::to_string(ln) + "): error: "s + fout;
     }
@@ -130,7 +130,7 @@ void Warning(const std::string &fout, const std::string &bd, int type) {
             lua_getinfo(LUA, "l", &ar);
             ln = LuaLine + ar.currentline;
         } else {
-            ln = CurrentLocalLine;
+            ln = Asm->currentBuffer().CurrentLine;
         }
         ErrorStr = getCurrentSrcFileNameForMsg().string() + "("s + std::to_string(ln) + "): warning: "s + fout;
     }

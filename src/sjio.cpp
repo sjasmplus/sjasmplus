@@ -26,12 +26,7 @@
 
 */
 
-#include <string>
-#include <iostream>
-#include <array>
 #include <parser/macro.h>
-
-using namespace std::string_literals;
 
 #include "directives.h"
 #include "parser.h"
@@ -54,106 +49,8 @@ void disableSourceReader() {
     SourceReaderEnabled = false;
 }
 
-class TyReadLineBuf : public std::array<uint8_t, LINEMAX * 2> {
-private:
-    std::streamsize BytesLeft;
-    size_type CurIdx;
-
-    void reset(std::streamsize Size) {
-        BytesLeft = Size;
-        CurIdx = 0;
-    }
-
-public:
-    void clear() { reset(0); }
-
-    uint8_t cur() {
-        if (BytesLeft > 0) {
-            return this->at(CurIdx);
-        } else {
-            return 0;
-        }
-    }
-
-    uint8_t cur2() { // Return character next to current if available
-        if (BytesLeft >= 2) {
-            return this->at(CurIdx + 1);
-        } else {
-            return 0;
-        }
-    }
-
-    bool peekMatch(const std::string &S) {
-        size_t L = S.size();
-        if (BytesLeft >= L) {
-            for (int i = 0; i < L; i++) {
-                if (this->at(CurIdx + i) != S[i])
-                    return false;
-            }
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    [[nodiscard]] std::streamsize left() const { return BytesLeft; }
-
-    void next() {
-        BytesLeft--;
-        if (BytesLeft > 0) {
-            CurIdx++;
-        }
-    }
-
-    bool nextIf(char c) {
-        if (cur() == c) {
-            next();
-            return true;
-        } else return false;
-    }
-
-    std::streamsize read(std::ifstream &IFS) {
-        IFS.read((char *) this->data(), this->size());
-        this->reset(IFS.gcount());
-        return BytesLeft;
-    }
-};
-
-TyReadLineBuf ReadLineBuf;
-
-// Temporary
-void clearReadLineBuf() {
-    ReadLineBuf.clear();
-}
-// --
-
 bool rl_InDQuotes = false, rl_InSQuotes = false, rl_InInstr = false, rl_InComment = false, rl_AfterColon = false, rlnewline = true;
 
-std::ifstream realIFS;
-std::ifstream *pIFS = &realIFS;
-
-/*
-void CheckPage() {
-    if (!DeviceID) {
-        return;
-    }
-
-    CDeviceSlot *S;
-    for (int i = 0; i < Device->SlotsCount; i++) {
-        S = Device->GetSlot(i);
-        int realAddr = PseudoORG ? adrdisp : CurAddress;
-        if (realAddr >= S->Address && ((realAddr < 65536 && realAddr < S->Address + S->Size) ||
-                                       (realAddr >= 65536 && realAddr <= S->Address + S->Size))) {
-            MemoryPointer = S->Page->RAM + (realAddr - S->Address);
-            Page = S->Page;
-            return;
-        }
-    }
-
-    Warning("Error in CheckPage(). Please, contact with the author of this program.", 0, FATAL);
-    ExitASM(1);
-}
-*/
 
 void emit(uint8_t byte) {
     Asm->Listing.addByte(byte);
@@ -351,11 +248,7 @@ void includeBinaryFile(const fs::path &FileName, int Offset, int Length) {
 }
 
 void includeFile(const fs::path &IncFileName) {
-    std::ifstream *saveIFS = pIFS;
-    std::ifstream incIFS;
-    pIFS = &incIFS;
-//std::cout << "*** INCLUDE: " << nfilename << std::endl;
-    TyReadLineBuf SaveReadLineBuf = ReadLineBuf;
+
     bool squotes = rl_InSQuotes, dquotes = rl_InDQuotes, space = rl_InInstr, comment = rl_InComment, colon = rl_AfterColon, newline = rlnewline;
 
     rl_InDQuotes = false;
@@ -365,24 +258,19 @@ void includeFile(const fs::path &IncFileName) {
     rl_AfterColon = false;
     rlnewline = true;
 
-    ReadLineBuf.clear();
-
     Asm->openFile(resolveIncludeFilename(IncFileName));
 
     rl_InSQuotes = squotes, rl_InDQuotes = dquotes, rl_InInstr = space, rl_InComment = comment, rl_AfterColon = colon, rlnewline = newline;
-    ReadLineBuf = SaveReadLineBuf;
-
-    pIFS = saveIFS;
 }
 
 // TODO: Kill it with fire
-void readBufLine(bool Parse, bool SplitByColon) {
+void processBuffer(bool Parse, bool SplitByColon) {
     char *rlppos = line;
     if (rl_AfterColon) {
         *(rlppos++) = '\t';
     }
-    auto &B = ReadLineBuf;
-    while (SourceReaderEnabled && (B.left() > 0 || (B.read(*pIFS)))) {
+    auto &B = Asm->currentBuffer();
+    while (SourceReaderEnabled && (B.left() > 0)) {
         while (SourceReaderEnabled && B.left() > 0) {
             if (B.cur() == '\n' || B.cur() == '\r') {
                 if (B.nextIf('\n')) {
@@ -393,7 +281,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                 *rlppos = 0;
                 if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
                 //if (rlnewline) {
-                CurrentLocalLine++;
+                Asm->currentBuffer().CurrentLine++;
                 CompiledCurrentLine++;
                 CurrentGlobalLine++;
                 //}
@@ -439,7 +327,7 @@ void readBufLine(bool Parse, bool SplitByColon) {
                         while (B.nextIf(':'));
                         if (strlen(line) == LINEMAX - 1) Fatal("Line too long"s);
                         if (rlnewline) {
-                            CurrentLocalLine++;
+                            Asm->currentBuffer().CurrentLine++;
                             CompiledCurrentLine++;
                             CurrentGlobalLine++;
                             rlnewline = false;
@@ -487,9 +375,9 @@ void readBufLine(bool Parse, bool SplitByColon) {
         }
     }
     //for end line
-    if (pIFS->eof() && B.left() <= 0 && line[0]) {
+    if (B.left() <= 0 && line[0]) {
         if (rlnewline) {
-            CurrentLocalLine++;
+            B.CurrentLine++;
             CompiledCurrentLine++;
             CurrentGlobalLine++;
         }
@@ -506,14 +394,6 @@ void readBufLine(bool Parse, bool SplitByColon) {
 }
 
 int SaveRAM(std::ofstream &ofs, int start, int length) {
-    //unsigned int addadr = 0,save = 0;
-/*
-    AInt save = 0;
-
-    if (!DeviceID) {
-        return 0;
-    }
-*/
 
     if (start + length > 0x10000) {
         Fatal("SaveRAM(): start("s + std::to_string(start) + ") + length("s +
@@ -530,32 +410,6 @@ int SaveRAM(std::ofstream &ofs, int start, int length) {
     if (ofs.fail()) {
         Fatal("SaveRAM(): Error writing "s + std::to_string(length) + " bytes: "s + strerror(errno));
     }
-
-
-/*
-    CDeviceSlot *S;
-    for (int i = 0; i < Device->SlotsCount; i++) {
-        S = Device->GetSlot(i);
-        if (start >= S->Address && start < S->Address + S->Size) {
-            if (length < S->Size - (start - S->Address)) {
-                save = length;
-            } else {
-                save = S->Size - (start - S->Address);
-            }
-            try {
-                ofs.write(S->Page->RAM + (start - S->Address), save);
-            } catch (std::ofstream::failure &e) {
-                return 0;
-            }
-            length -= save;
-            start += save;
-            //_COUT "Start: " _CMDL start _CMDL " Length: " _CMDL length _ENDL;
-            if (length <= 0) {
-                return 1;
-            }
-        }
-    }
-*/
 
     return 1;
 }
@@ -598,7 +452,7 @@ bool saveBinaryFile(const fs::path &FileName, int Start, int Length) {
 
 EReturn readFile(const char *pp, const char *err) {
     const char *p;
-    while (ReadLineBuf.left() > 0 || !pIFS->eof()) {
+    while (Asm->currentBuffer().left() > 0) {
         if (!SourceReaderEnabled) {
             return END;
         }
@@ -608,7 +462,7 @@ EReturn readFile(const char *pp, const char *err) {
             }
             p = line;
         } else {
-            readBufLine(false);
+            processBuffer(false);
             p = line;
         }
 
@@ -646,7 +500,7 @@ EReturn readFile(const char *pp, const char *err) {
 EReturn skipFile(const char *pp, const char *err) {
     const char *p;
     int iflevel = 0;
-    while (ReadLineBuf.left() > 0 || !pIFS->eof()) {
+    while (Asm->currentBuffer().left() > 0) {
         if (!SourceReaderEnabled) {
             return END;
         }
@@ -656,7 +510,7 @@ EReturn skipFile(const char *pp, const char *err) {
             }
             p = line;
         } else {
-            readBufLine(false);
+            processBuffer(false);
             p = line;
         }
         skipWhiteSpace(p);
@@ -708,19 +562,19 @@ int readLine(bool SplitByColon) {
     if (!SourceReaderEnabled) {
         return 0;
     }
-    int res = (ReadLineBuf.left() > 0 || !pIFS->eof());
-    readBufLine(false, SplitByColon);
+    int res = (Asm->currentBuffer().left() > 0);
+    processBuffer(false, SplitByColon);
     return res;
 }
 
 bool readFileToListOfStrings(std::list<std::string> &List, const std::string &EndMarker) {
     const char *p;
     List.clear();
-    while (ReadLineBuf.left() > 0 || !pIFS->eof()) {
+    while (Asm->currentBuffer().left() > 0) {
         if (!SourceReaderEnabled) {
             return false;
         }
-        readBufLine(false);
+        processBuffer(false);
         p = line;
 
         if (*p) {

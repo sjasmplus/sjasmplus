@@ -16,6 +16,88 @@
 
 using namespace std::string_literals;
 
+using std::unique_ptr;
+
+
+class SourceCodeBuffer {
+
+protected:
+    std::vector<uint8_t> Data{};
+
+private:
+    std::vector<uint8_t>::size_type CurIdx{0};
+
+public:
+
+    unsigned int CurrentLine{0};
+    fs::path FileName{};
+    std::string SrcFileNameForMsg{};
+
+    uint8_t cur() {
+        if (left() > 0) {
+            return this->Data.at(CurIdx);
+        } else {
+            return 0;
+        }
+    }
+
+    uint8_t cur2() { // Return character next to current if available
+        if (left() >= 2) {
+            return this->Data.at(CurIdx + 1);
+        } else {
+            return 0;
+        }
+    }
+
+    bool peekMatch(const std::string &S) {
+        size_t L = S.size();
+        if (left() >= L) {
+            for (int i = 0; i < L; i++) {
+                if (this->Data.at(CurIdx + i) != (uint8_t) S[i])
+                    return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    [[nodiscard]] std::streamsize left() const { return Data.size() - CurIdx; }
+
+    void next() {
+        if (left() > 0) {
+            CurIdx++;
+        }
+    }
+
+    bool nextIf(uint8_t c) {
+        if (cur() == c) {
+            next();
+            return true;
+        } else return false;
+    }
+
+};
+
+class SourceCodeFile : public SourceCodeBuffer {
+
+public:
+    explicit SourceCodeFile(const fs::path &FileName) {
+        this->FileName = FileName;
+        std::ifstream IFS(FileName, std::ios::binary);
+        if (IFS.fail()) {
+            Fatal("Error opening file "s + FileName.string(), strerror(errno));
+        }
+        Data = std::vector<uint8_t>(std::istreambuf_iterator<char>(IFS), std::istreambuf_iterator<char>());
+        if (IFS.fail()) {
+            Fatal("Error reading file "s + FileName.string(), strerror(errno));
+        }
+        IFS.close();
+    }
+};
+
+using SourceFilesT = std::stack<unique_ptr<SourceCodeBuffer>>;
+
 class Assembler {
 public:
     Assembler() = default;
@@ -39,7 +121,7 @@ public:
 
     void openFile(const fs::path &FileName);
 
-    int includeLevel() const { return IncludeLevel; }
+    int includeLevel() const { return SourceBuffers.size() - 1; }
 
     unsigned int maxLineNumber() const { return MaxLineNumber; }
 
@@ -47,8 +129,16 @@ public:
 
     void setConvWin2Dos(bool V) { Options.ConvertWindowsToDOS = V; }
 
-    const fs::path &currentDirectory() const {
-        return CurrentDirectory;
+    auto &currentBuffer() {
+        return *SourceBuffers.top();
+    }
+
+    const fs::path currentDirectory() const {
+        if (!SourceBuffers.empty() && !(SourceBuffers.top()->FileName.empty())) {
+            return SourceBuffers.top()->FileName.parent_path();
+        } else {
+            return fs::current_path();
+        }
     }
 
     void setLabelsListFName(const fs::path &F) {
@@ -105,9 +195,7 @@ private:
     std::vector<fs::path> SrcFileNames;
     COptions Options;
     fs::path MainSrcFileDir;
-    fs::path CurrentDirectory;
-    fs::path CurrentSrcFileName;
-    int IncludeLevel = -1;
+    SourceFilesT SourceBuffers;
     unsigned int MaxLineNumber = 0;
 };
 

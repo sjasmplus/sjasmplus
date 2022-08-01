@@ -39,6 +39,8 @@
 #include "io_trd.h"
 #include "util.h"
 
+using namespace std::string_literals;
+
 using std::optional;
 
 void enableSourceReader();
@@ -59,9 +61,8 @@ fs::path resolveIncludeFilename(const fs::path &FN);
 
 void includeFile(const fs::path &IncFileName);
 
-void readBufLine(bool Parse = true, bool SplitByColon = true); /* added */
+void processBuffer(bool Parse = true, bool SplitByColon = true);
 
-// char *GetPath(const char *fname, TCHAR **filenamebegin); /* added */
 void includeBinaryFile(const fs::path &FileName, int Offset, int Length);
 
 int SaveRAM(std::ofstream &ofs, int, int);
@@ -82,8 +83,8 @@ void *readRAM(AsmTy &Asm, void *Dst, int Start, int Size) {
     return Target;
 }
 
-uint8_t memGetByte(uint16_t address); /* added */
-uint16_t memGetWord(uint16_t address); /* added */
+uint8_t memGetByte(uint16_t address);
+uint16_t memGetWord(uint16_t address);
 bool saveBinaryFile(const fs::path &FileName, int Start, int Length);
 
 int readLine(bool SplitByColon = true);

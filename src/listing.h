@@ -16,6 +16,7 @@ private:
     std::function<uint16_t()> getCPUAddress;
     std::function<int()> includeLevel;
     std::function<unsigned int()> maxLineNumber;
+    std::function<int()> currentLine;
 
 
     bool IsActive = false;
@@ -41,12 +42,14 @@ public:
     void init0(
             std::function<uint16_t()> const &getCPUAddressFunc,
             std::function<int()> const &includeLevelFunc,
-            std::function<unsigned int()> const &maxLineNumberFunc
+            std::function<unsigned int()> const &maxLineNumberFunc,
+            std::function<int()> const &currentLineFunc
     ) {
 
         getCPUAddress = getCPUAddressFunc;
         includeLevel = includeLevelFunc;
         maxLineNumber = maxLineNumberFunc;
+        currentLine = currentLineFunc;
     }
 
     void init(fs::path &FileName) override;

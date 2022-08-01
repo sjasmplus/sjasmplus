@@ -39,7 +39,7 @@
 bool tryNewDirectiveParser(const char *BOL, const char *&P, bool AtBOL) {
     size_t DirPos = P - BOL;
     auto Parser = parser::parse<Assembler>{};
-    if (Parser(*Asm, P, DirPos, CurrentLocalLine)) {
+    if (Parser(*Asm, P, DirPos, Asm->currentBuffer().CurrentLine)) {
         getAll(P);
         return true;
     }

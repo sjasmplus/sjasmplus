@@ -1692,7 +1692,7 @@ struct Directives {
 
         dup.Lines = {lp};
         dup.CurrentGlobalLine = CurrentGlobalLine;
-        dup.CurrentLocalLine = CurrentLocalLine;
+        dup.CurrentLocalLine = Asm->currentBuffer().CurrentLine;
         dup.Complete = false;
         RepeatStack.push(dup);
     }
@@ -1727,21 +1727,21 @@ struct Directives {
             Fatal("[EDUP/ENDR] Out of memory"s);
         }
         gcurln = CurrentGlobalLine;
-        lcurln = CurrentLocalLine;
+        lcurln = Asm->currentBuffer().CurrentLine;
         while (dup.RepeatCount--) {
             CurrentGlobalLine = dup.CurrentGlobalLine;
-            CurrentLocalLine = dup.CurrentLocalLine;
+            Asm->currentBuffer().CurrentLine = dup.CurrentLocalLine;
             for (auto &L : dup.Lines) {
                 STRCPY(line, LINEMAX, L.c_str());
                 parseLineSafe(lp);
-                CurrentLocalLine++;
+                Asm->currentBuffer().CurrentLine++;
                 CurrentGlobalLine++;
                 CompiledCurrentLine++;
             }
         }
         RepeatStack.pop();
         CurrentGlobalLine = gcurln;
-        CurrentLocalLine = lcurln;
+        Asm->currentBuffer().CurrentLine = lcurln;
         Asm->Listing.endMacro();
         Asm->Listing.omitLine();
         STRCPY(line, LINEMAX, ml);
@@ -1856,7 +1856,7 @@ struct Directives {
             execute = true;
         }
 
-        ln = CurrentLocalLine;
+        ln = Asm->currentBuffer().CurrentLine;
         Asm->Listing.listLine(line);
         while (true) {
             if (!readLine(false)) {
@@ -1928,7 +1928,7 @@ struct Directives {
             return;
         }
 
-        LuaLine = CurrentLocalLine;
+        LuaLine = Asm->currentBuffer().CurrentLine;
         error = luaL_loadfile(LUA, FileName.string().c_str()) || lua_pcall(LUA, 0, 0, 0);
         if (error) {
             _lua_showerror();

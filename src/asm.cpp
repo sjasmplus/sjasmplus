@@ -9,16 +9,14 @@ using std::cerr;
 using std::endl;
 
 void Assembler::init() {
-    // get current directory
-    CurrentDirectory = fs::current_path();
 
     initLUA(); // FIXME
 
     MainSrcFileDir = SrcFileNames.empty() ?
-                     CurrentDirectory :
+                     currentDirectory() :
                      fs::absolute(SrcFileNames[0]).parent_path();
     Options.IncludeDirsList.push_front(MainSrcFileDir);
-    Options.IncludeDirsList.push_back(CurrentDirectory);
+    Options.IncludeDirsList.push_back(currentDirectory());
 
     if (SrcFileNames.empty()) {
         exitFail("No input file(s)"s);
@@ -132,7 +130,8 @@ int Assembler::run(int argc, char *argv[]) {
 
     auto iL = [this]() { return includeLevel(); };
     auto mLN = [this]() { return maxLineNumber(); };
-    Listing.init0(gCPUA, iL, mLN);
+    auto cL = [this]() { return currentBuffer().CurrentLine; };
+    Listing.init0(gCPUA, iL, mLN, cL);
 
 
     if (argc == 1) {
@@ -189,7 +188,7 @@ void Assembler::exitFail(const std::string &Msg) {
 }
 
 fs::path Assembler::getAbsPath(const fs::path &p) {
-    return fs::absolute(CurrentDirectory / p);
+    return fs::absolute(currentDirectory() / p);
 }
 
 // FileName should be an absolute path
@@ -199,58 +198,41 @@ void Assembler::openTopLevelFile(const fs::path &FileName, bool PerFileExports) 
         E.replace_extension(".exp");
         Exports = new ExportWriter{E};
     }
+
     openFile(getAbsPath(FileName));
+
     if (PerFileExports) {
         delete Exports;
         Exports = nullptr;
     }
 }
 
-extern std::ifstream *pIFS; // FIXME
-void clearReadLineBuf(); // FIXME
-extern void readBufLine(bool Parse = true, bool SplitByColon = true); // FIXME
+extern void processBuffer(bool Parse = true, bool SplitByColon = true); // FIXME
 void checkRepeatStackAtEOF(); // FIXME
 
 // FileName should be an absolute path
 void Assembler::openFile(const fs::path &FileName) {
-    fs::path SaveCurrentSrcFileNameForMsg;
-    fs::path SaveCurrentDirectory;
 
-    CurrentSrcFileName = FileName;
+    if (includeLevel() >= 20) Fatal("Over 20 files nested");
 
-    if (++IncludeLevel > 20) Fatal("Over 20 files nested");
-
-    pIFS->open(FileName, std::ios::binary);
-    if (pIFS->fail()) {
-        Fatal("Error opening file "s + FileName.string(), strerror(errno));
-    }
-
-    unsigned int oCurrentLocalLine = CurrentLocalLine;
-    CurrentLocalLine = 0;
-    SaveCurrentSrcFileNameForMsg = getCurrentSrcFileNameForMsg();
+    SourceBuffers.push(unique_ptr<SourceCodeBuffer>(new SourceCodeFile {FileName}));
 
     if (Options.IsShowFullPath || BOOST_VERSION < 106000) {
-        setCurrentSrcFileNameForMsg(FileName);
+        SourceBuffers.top()->SrcFileNameForMsg = FileName;
     }
 #if (BOOST_VERSION >= 106000)
     else {
-        setCurrentSrcFileNameForMsg(fs::relative(FileName, MainSrcFileDir));
+        SourceBuffers.top()->SrcFileNameForMsg = fs::relative(FileName, MainSrcFileDir);
     }
 #endif
-    SaveCurrentDirectory = CurrentDirectory;
-    CurrentDirectory = FileName.parent_path();
 
-    clearReadLineBuf();
-    readBufLine(true);
+    processBuffer(true);
 
+    // FIXME:
     checkRepeatStackAtEOF();
 
-    pIFS->close();
-    --IncludeLevel;
-    CurrentDirectory = SaveCurrentDirectory;
-    setCurrentSrcFileNameForMsg(SaveCurrentSrcFileNameForMsg);
-    if (CurrentLocalLine > MaxLineNumber) {
-        MaxLineNumber = CurrentLocalLine;
+    if (currentBuffer().CurrentLine > MaxLineNumber) {
+        MaxLineNumber = currentBuffer().CurrentLine;
     }
-    CurrentLocalLine = oCurrentLocalLine;
+    SourceBuffers.pop();
 }

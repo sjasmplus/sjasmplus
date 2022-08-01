@@ -43,7 +43,7 @@ void ListingWriter::listBytes5() {
 }
 
 std::string ListingWriter::printCurrentLocalLine() {
-    unsigned int V = CurrentLocalLine;
+    unsigned int V = currentLine();
     std::string S;
     switch (NumDigitsInLineNumber) {
         default:
