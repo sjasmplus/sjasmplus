@@ -965,7 +965,6 @@ void luaParseLine(char *str) {
     ml = STRDUP(line);
     if (ml == nullptr) {
         Fatal("Out of memory!"s);
-        return;
     }
 
     STRCPY(line, LINEMAX, str);
@@ -981,7 +980,6 @@ void luaParseCode(char *str) {
     ml = STRDUP(line);
     if (ml == nullptr) {
         Fatal("Out of memory!"s);
-        return;
     }
 
     STRCPY(line, LINEMAX, str);
