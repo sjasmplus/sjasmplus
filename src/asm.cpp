@@ -40,7 +40,7 @@ void Assembler::init() {
 
 extern int pass; // FIXME
 const int LASTPASS = 3; // FIXME
-extern unsigned int CurrentGlobalLine, CurrentLocalLine, CompiledCurrentLine; // FIXME
+extern unsigned int CurrentGlobalLine, CompiledCurrentLine; // FIXME
 
 
 int Assembler::assemble() {
@@ -162,7 +162,7 @@ void Assembler::initPass(int P) {
     pass = P;
     Em.reset();
     enableSourceReader();
-    CurrentGlobalLine = CurrentLocalLine = CompiledCurrentLine = 0;
+    CurrentGlobalLine = CompiledCurrentLine = 0;
     Listing.initPass();
     Macros.initPass();
     initLegacyParser();

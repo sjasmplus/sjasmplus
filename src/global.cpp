@@ -5,6 +5,6 @@ char line[LINEMAX];
 
 int pass = 0, IsLabelNotFound = 0;
 
-unsigned int CurrentGlobalLine = 0, CurrentLocalLine = 0, CompiledCurrentLine = 0;
+unsigned int CurrentGlobalLine = 0, CompiledCurrentLine = 0;
 
 stack<RepeatInfo> RepeatStack; /* added */

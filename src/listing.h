@@ -34,7 +34,7 @@ private:
 
     void listBytesLong(int pad, const std::string &Prefix);
 
-    std::string printCurrentLocalLine();
+    std::string fmtCurrentLine();
 
 public:
     ListingWriter() = default;

@@ -42,7 +42,7 @@ void ListingWriter::listBytes5() {
     OFS << "  ";
 }
 
-std::string ListingWriter::printCurrentLocalLine() {
+std::string ListingWriter::fmtCurrentLine() {
     unsigned int V = currentLine();
     std::string S;
     switch (NumDigitsInLineNumber) {
@@ -108,7 +108,7 @@ void ListingWriter::listLine(const char *Line) {
     if ((pad = UnitStartAddress) == -1) {
         pad = LastEndAddress;
     }
-    std::string Prefix = printCurrentLocalLine();
+    std::string Prefix = fmtCurrentLine();
     OFS << Prefix << toHex16(pad) << ' ';
     if (ByteBuffer.size() < 5) {
         listBytes4();
@@ -153,7 +153,7 @@ void ListingWriter::listLineSkip(const char *Line) {
     if ((Addr = UnitStartAddress) == -1) {
         Addr = LastEndAddress;
     }
-    OFS << printCurrentLocalLine() << toHex16(Addr);
+    OFS << fmtCurrentLine() << toHex16(Addr);
     OFS << "~            ";
     if (!ByteBuffer.empty()) {
         Fatal("Internal error lfs"s);
