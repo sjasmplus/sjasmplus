@@ -218,11 +218,11 @@ void Assembler::openFile(const fs::path &FileName) {
     SourceBuffers.push(unique_ptr<SourceCodeBuffer>(new SourceCodeFile {FileName}));
 
     if (Options.IsShowFullPath || BOOST_VERSION < 106000) {
-        SourceBuffers.top()->SrcFileNameForMsg = FileName;
+        SourceBuffers.top()->SrcFileNameForMsg = FileName.string();
     }
 #if (BOOST_VERSION >= 106000)
     else {
-        SourceBuffers.top()->SrcFileNameForMsg = fs::relative(FileName, MainSrcFileDir);
+        SourceBuffers.top()->SrcFileNameForMsg = fs::relative(FileName, MainSrcFileDir).string();
     }
 #endif
 
