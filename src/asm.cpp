@@ -12,11 +12,14 @@ void Assembler::init() {
 
     initLUA(); // FIXME
 
+    auto CWD = currentDirectory();
     MainSrcFileDir = SrcFileNames.empty() ?
-                     currentDirectory() :
+                     CWD :
                      fs::absolute(SrcFileNames[0]).parent_path();
     Options.IncludeDirsList.push_front(MainSrcFileDir);
-    Options.IncludeDirsList.push_back(currentDirectory());
+    if (CWD != MainSrcFileDir) {
+        Options.IncludeDirsList.push_back(currentDirectory());
+    }
 
     if (SrcFileNames.empty()) {
         exitFail("No input file(s)"s);
