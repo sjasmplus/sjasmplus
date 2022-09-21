@@ -31,5 +31,5 @@
 int main(int argc, char *argv[]) {
 
     auto Asm = Assembler{};
-    return Asm.run(argc, argv);
+    return Asm.runCLI(argc, argv);
 }

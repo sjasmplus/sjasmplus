@@ -89,12 +89,9 @@ bool saveBinaryFile(const fs::path &FileName, int Start, int Length);
 
 int readLine(bool SplitByColon = true);
 
-EReturn ReadFile();
+[[nodiscard]] EReturn readFile(const char *pp, const char *err);
 
-EReturn readFile(const char *pp, const char *err); /* added */
-EReturn SkipFile();
-
-EReturn skipFile(const char *pp, const char *err); /* added */
+[[nodiscard]] EReturn skipFile(const char *pp, const char *err);
 
 bool readFileToListOfStrings(std::list<std::string> &List, const std::string &EndMarker);
 

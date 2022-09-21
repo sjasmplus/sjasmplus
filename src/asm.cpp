@@ -8,7 +8,25 @@
 using std::cerr;
 using std::endl;
 
+// FIXME: Remove
+void initLegacyErrorHandler(Assembler *_Asm);
+
 void Assembler::init() {
+
+    Macros.init(&Listing);
+    Labels.init(&Macros, &Modules);
+
+    auto gAP = [this](auto &P) { return getAbsPath(P); };
+    Em.init(gAP);
+    initLegacyErrorHandler(this);
+
+    auto gCPUA = [this]() { return Em.getCPUAddress(); };
+    Structs.init(gCPUA, &Labels, &Modules);
+
+    auto iL = [this]() { return includeLevel(); };
+    auto mLN = [this]() { return maxLineNumber(); };
+    auto cL = [this]() { return currentBuffer().CurrentLine; };
+    Listing.init0(gCPUA, iL, mLN, cL);
 
     initLUA(); // FIXME
 
@@ -46,7 +64,10 @@ const int LASTPASS = 3; // FIXME
 extern unsigned int CurrentGlobalLine, CompiledCurrentLine; // FIXME
 
 
-int Assembler::assemble() {
+int Assembler::assemble(const std::string &Input) {
+
+    init();
+
     // if memory type != none
     bool W2DEncodingFlag = Options.ConvertWindowsToDOS;
 
@@ -114,28 +135,10 @@ int Assembler::assemble() {
     return msg::ErrorCount == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-// FIXME: Remove
-void initLegacyErrorHandler(Assembler *_Asm);
-
-int Assembler::run(int argc, char *argv[]) {
+int Assembler::runCLI(int argc, char *argv[]) {
     const char *Banner = "SjASMPlus Z80 Cross-Assembler v." SJASMPLUS_VERSION;
 
     Options(argc, argv, SrcFileNames);
-    Macros.init(&Listing);
-    Labels.init(&Macros, &Modules);
-
-    auto gAP = [this](auto &P) { return getAbsPath(P); };
-    Em.init(gAP);
-    initLegacyErrorHandler(this);
-
-    auto gCPUA = [this]() { return Em.getCPUAddress(); };
-    Structs.init(gCPUA, &Labels, &Modules);
-
-    auto iL = [this]() { return includeLevel(); };
-    auto mLN = [this]() { return maxLineNumber(); };
-    auto cL = [this]() { return currentBuffer().CurrentLine; };
-    Listing.init0(gCPUA, iL, mLN, cL);
-
 
     if (argc == 1) {
         msg(Banner + "\n"s +
@@ -150,11 +153,7 @@ int Assembler::run(int argc, char *argv[]) {
         msg(Banner);
     }
 
-
-
-    init();
-
-    return assemble();
+    return assemble(""s);
 }
 
 void initLegacyParser(); // FIXME

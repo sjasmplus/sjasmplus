@@ -96,13 +96,21 @@ public:
     }
 };
 
-using SourceFilesT = std::stack<unique_ptr<SourceCodeBuffer>>;
+class SourceCodeString : public SourceCodeBuffer {
+    explicit SourceCodeString(const std::string &Str) {
+        this->FileName = "== string ==";
+        std::istringstream ISS(Str);
+        Data = std::vector<uint8_t>(std::istreambuf_iterator<char>(ISS), std::istreambuf_iterator<char>());
+    }
+};
+
+using SourceCodeBuffersT = std::stack<unique_ptr<SourceCodeBuffer>>;
 
 class Assembler {
 public:
     Assembler() = default;
 
-    int run(int argc, char *argv[]);
+    int runCLI(int argc, char *argv[]);
 
     void initPass(int P);
 
@@ -189,13 +197,13 @@ public:
 private:
     void init();
 
-    int assemble();
+    int assemble(const std::string &Input);
 
     CDefines Defines;
     std::vector<fs::path> SrcFileNames;
     COptions Options;
     fs::path MainSrcFileDir;
-    SourceFilesT SourceBuffers;
+    SourceCodeBuffersT SourceBuffers;
     unsigned int MaxLineNumber = 0;
 };
 

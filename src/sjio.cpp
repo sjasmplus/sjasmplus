@@ -450,7 +450,7 @@ bool saveBinaryFile(const fs::path &FileName, int Start, int Length) {
     return !OFS.fail();
 }
 
-EReturn readFile(const char *pp, const char *err) {
+[[nodiscard]] EReturn readFile(const char *pp, const char *err) {
     const char *p;
     while (Asm->currentBuffer().left() > 0) {
         if (!SourceReaderEnabled) {
@@ -497,7 +497,7 @@ EReturn readFile(const char *pp, const char *err) {
 }
 
 
-EReturn skipFile(const char *pp, const char *err) {
+[[nodiscard]] EReturn skipFile(const char *pp, const char *err) {
     const char *p;
     int iflevel = 0;
     while (Asm->currentBuffer().left() > 0) {
