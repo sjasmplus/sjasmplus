@@ -31,6 +31,10 @@ const std::array<std::string, 8> TableALU = {
     "ADD A,", "ADC A,", "SUB", "SBC A,", "AND", "XOR", "OR", "CP"
 };
 
+const std::array<std::string, 8> TableROT = {
+        "RLC", "RRC", "RL", "RR", "SLA", "SRA", "SLL", "SRL"
+};
+
 // Convert given relative displacement [-128...127] into textual representation relative to `$`
 // Used by DJNZ, JR, JC cc
 auto dispToText(int Disp) -> std::string {
