@@ -83,21 +83,7 @@ gen_common = """
     """
 
 
-def simple(instr: str) -> T:
-    return T(TestBits(
-        template="""
-    TEST_CASE("%(name)s") {
-        %(common)s
-        REQUIRE (ASM(%(asm)s) == DB {%(mc)s });
-    }
-    """,
-        subst={'name': instr, 'asm': '" ' + instr + '"', 'common': gen_common},
-        prefix=bytes(),
-        mcbits=[0]
-    ))
-
-
-def w_args(name: str, instr_s: str) -> T:
+def i(name: str, instr_s: str) -> T:
     return T(TestBits(
         template="""
     TEST_CASE("%(name)s") {
@@ -105,10 +91,14 @@ def w_args(name: str, instr_s: str) -> T:
         REQUIRE (ASM(%(asm)s) == DB {%(mc)s });
     }
     """,
-        subst={'name': name, 'asm': '" ' + instr_s + '"', 'common': gen_common},
+        subst={'name': name, 'asm': '" ' + instr_s + '"', 'common': gen_common, 'extra': ''},
         prefix=bytes(),
         mcbits=[0]
     ))
+
+
+def i1(instr: str) -> T:
+    return i(instr, instr)
 
 
 def set_mcbits(tb: TestBits, x: int) -> T:
@@ -290,22 +280,22 @@ for x in range(4):
                         for y in range(8):
                             match y:
                                 case 0:
-                                    simple('NOP') >> sx(x) >> sy(y) >> sz(z) >> done
+                                    i1('NOP') >> sx(x) >> sy(y) >> sz(z) >> done
                                 case 1:
-                                    simple('EX AF, AF\'') >> sx(x) >> sy(y) >> sz(z) >> done
+                                    i1('EX AF, AF\'') >> sx(x) >> sy(y) >> sz(z) >> done
                                 case 2:
-                                    w_args('DJNZ', 'DJNZ') >> sx(x) >> sy(y) >> sz(z) >> gen_disp >> done
+                                    i('DJNZ', 'DJNZ') >> sx(x) >> sy(y) >> sz(z) >> gen_disp >> done
                                 case 3:
-                                    w_args('JR', 'JR') >> sx(x) >> sy(y) >> sz(z) >> gen_disp >> done
+                                    i('JR', 'JR') >> sx(x) >> sy(y) >> sz(z) >> gen_disp >> done
                                 case _:  # 4..7
-                                    w_args('JR cc', 'JR') >> sx(x) >> sy(y) >> sz(z) >> gen_cc2 >> gen_disp >> done
+                                    i('JR cc', 'JR') >> sx(x) >> sy(y) >> sz(z) >> gen_cc2 >> gen_disp >> done
                     case 1:
                         for q in range(2):
                             match q:
                                 case 0:
-                                    w_args('LD rp, nn', 'LD') >> sx(x) >> sz(z) >> sq(q) >> rp_p >> imm16 >> done
+                                    i('LD rp, nn', 'LD') >> sx(x) >> sz(z) >> sq(q) >> rp_p >> imm16 >> done
                                 case 1:
-                                    w_args('ADD HL, rp', 'ADD HL,') >> sx(x) >> sz(z) >> sq(q) >> rp_p >> done
+                                    i('ADD HL, rp', 'ADD HL,') >> sx(x) >> sz(z) >> sq(q) >> rp_p >> done
                     case 2:
                         for q in range(2):
                             match q:
@@ -313,96 +303,96 @@ for x in range(4):
                                     for p in range(4):
                                         match p:
                                             case 0:
-                                                simple('LD (BC), A') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> done
+                                                i1('LD (BC), A') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> done
                                             case 1:
-                                                simple('LD (DE), A') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> done
+                                                i1('LD (DE), A') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> done
                                             case 2:
-                                                w_args('LD (nn), HL', 'LD') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> \
-                                                    immaddr >> arg('HL') >> done
+                                                i('LD (nn), HL', 'LD') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> \
+                                                immaddr >> arg('HL') >> done
                                             case 3:
-                                                w_args('LD (nn), A', 'LD') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> \
-                                                    immaddr >> arg('A') >> done
+                                                i('LD (nn), A', 'LD') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> \
+                                                immaddr >> arg('A') >> done
                                 case 1:
                                     for p in range(4):
                                         match p:
                                             case 0:
-                                                simple('LD A, (BC)') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> done
+                                                i1('LD A, (BC)') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> done
                                             case 1:
-                                                simple('LD A, (DE)') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> done
+                                                i1('LD A, (DE)') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> done
                                             case 2:
-                                                w_args('LD HL, (nn)', 'LD') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> \
-                                                    arg('HL') >> immaddr >> done
+                                                i('LD HL, (nn)', 'LD') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> \
+                                                arg('HL') >> immaddr >> done
                                             case 3:
-                                                w_args('LD A, (nn)', 'LD') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> \
-                                                    arg('A') >> immaddr >> done
+                                                i('LD A, (nn)', 'LD') >> sx(x) >> sz(z) >> sp(p) >> sq(q) >> \
+                                                arg('A') >> immaddr >> done
                     case 3:
                         for q in range(2):
                             match q:
                                 case 0:
-                                    w_args('INC rp', 'INC') >> sx(x) >> sz(z) >> sq(q) >> rp_p >> done
+                                    i('INC rp', 'INC') >> sx(x) >> sz(z) >> sq(q) >> rp_p >> done
                                 case 1:
-                                    w_args('DEC rp', 'DEC') >> sx(x) >> sz(z) >> sq(q) >> rp_p >> done
+                                    i('DEC rp', 'DEC') >> sx(x) >> sz(z) >> sq(q) >> rp_p >> done
                     case 4:
-                        w_args('INC r', 'INC') >> sx(x) >> sz(z) >> r_y >> done
+                        i('INC r', 'INC') >> sx(x) >> sz(z) >> r_y >> done
                     case 5:
-                        w_args('DEC r', 'DEC') >> sx(x) >> sz(z) >> r_y >> done
+                        i('DEC r', 'DEC') >> sx(x) >> sz(z) >> r_y >> done
                     case 6:
-                        w_args('LD r, n', 'LD') >> sx(x) >> sz(z) >> r_y >> imm8 >> done
+                        i('LD r, n', 'LD') >> sx(x) >> sz(z) >> r_y >> imm8 >> done
                     case 7:
-                        for y, i in enumerate(['RLCA', 'RRCA', 'RLA', 'RRA',
+                        for y, j in enumerate(['RLCA', 'RRCA', 'RLA', 'RRA',
                                                'DAA', 'CPL', 'SCF', 'CCF']):
-                            simple(i) >> sx(x) >> sy(y) >> sz(z) >> done
+                            i1(j) >> sx(x) >> sy(y) >> sz(z) >> done
         case 1:
-            w_args('LD r1, r2', 'LD') >> sx(x) >> r_y >> r_z_yz_not6 >> done
-            simple('HALT') >> sx(x) >> sy(6) >> sz(6) >> done
+            i('LD r1, r2', 'LD') >> sx(x) >> r_y >> r_z_yz_not6 >> done
+            i1('HALT') >> sx(x) >> sy(6) >> sz(6) >> done
         case 2:
-            w_args('ALU r', '') >> sx(x) >> alu >> r_z >> done
+            i('ALU r', '') >> sx(x) >> alu >> r_z >> done
         case 3:
             for z in range(8):
                 match z:
                     case 0:
-                        w_args('RET cc', 'RET') >> sx(x) >> sz(z) >> gen_cc >> done
+                        i('RET cc', 'RET') >> sx(x) >> sz(z) >> gen_cc >> done
                     case 1:
                         for q in range(2):
                             match q:
                                 case 0:
-                                    w_args('POP rp2', 'POP') >> sx(x) >> sz(z) >> sq(q) >> rp2_p >> done
+                                    i('POP rp2', 'POP') >> sx(x) >> sz(z) >> sq(q) >> rp2_p >> done
                                 case 1:
-                                    for p, i in enumerate(['RET', 'EXX', 'JP HL', 'LD SP, HL']):
-                                        simple(i) >> sx(x) >> sz(z) >> sq(q) >> sp(p) >> done
+                                    for p, j in enumerate(['RET', 'EXX', 'JP HL', 'LD SP, HL']):
+                                        i1(j) >> sx(x) >> sz(z) >> sq(q) >> sp(p) >> done
                     case 2:
-                        w_args('JP cc, nn', 'JP') >> sx(x) >> sz(z) >> gen_cc >> imm16 >> done
+                        i('JP cc, nn', 'JP') >> sx(x) >> sz(z) >> gen_cc >> imm16 >> done
                     case 3:
                         for y in range(8):
                             match y:
                                 case 0:
-                                    w_args('JP nn', 'JP') >> sx(x) >> sy(y) >> sz(z) >> imm16 >> done
+                                    i('JP nn', 'JP') >> sx(x) >> sy(y) >> sz(z) >> imm16 >> done
                                 case 1:
                                     # CB prefix
                                     pass
                                 case 2:
-                                    w_args('OUT (n), A', 'OUT') >> sx(x) >> sy(y) >> sz(z) >> imm8port >> arg('A') >> done
+                                    i('OUT (n), A', 'OUT') >> sx(x) >> sy(y) >> sz(z) >> imm8port >> arg('A') >> done
                                 case 3:
-                                    w_args('IN A, (n)', 'IN A, ') >> sx(x) >> sy(y) >> sz(z) >> imm8port >> done
+                                    i('IN A, (n)', 'IN A, ') >> sx(x) >> sy(y) >> sz(z) >> imm8port >> done
                                 case _:
-                                    simple(['EX (SP), HL', 'EX DE, HL', 'DI', 'EI'][y-4]) >> sx(x) >> sy(y) >> sz(z) >> done
+                                    i1(['EX (SP), HL', 'EX DE, HL', 'DI', 'EI'][y - 4]) >> sx(x) >> sy(y) >> sz(z) >> done
                     case 4:
-                        w_args('CALL cc, nn', 'CALL') >> sx(x) >> sz(z) >> gen_cc >> imm16 >> done
+                        i('CALL cc, nn', 'CALL') >> sx(x) >> sz(z) >> gen_cc >> imm16 >> done
                     case 5:
                         for q in range(2):
                             match q:
                                 case 0:
-                                    w_args('PUSH rp2', 'PUSH') >> sx(x) >> sz(z) >> sq(q) >> rp2_p >> done
+                                    i('PUSH rp2', 'PUSH') >> sx(x) >> sz(z) >> sq(q) >> rp2_p >> done
                                 case 1:
                                     for p in range(4):
                                         match p:
                                             case 0:
-                                                w_args('CALL nn', 'CALL') >> sx(x) >> sz(z) >> sq(q) >> sp(p) >> imm16 >> done
+                                                i('CALL nn', 'CALL') >> sx(x) >> sz(z) >> sq(q) >> sp(p) >> imm16 >> done
                                             case _:
                                                 # DD / ED / FD prefixes
                                                 pass
                     case 6:
-                        w_args('ALU n', '') >> sx(x) >> sz(z) >> alu >> imm8 >> done
+                        i('ALU n', '') >> sx(x) >> sz(z) >> alu >> imm8 >> done
                     case 7:
                         for y in range(8):
-                            simple('RST ' + byte_to_hex(y * 8)) >> sx(x) >> sy(y) >> sz(z) >> done
+                            i1('RST ' + byte_to_hex(y * 8)) >> sx(x) >> sy(y) >> sz(z) >> done
