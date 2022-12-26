@@ -36,7 +36,6 @@ set(SOURCE_FILES
         asm/modules.h
         asm/struct.h
         asm/struct.cpp
-        sjasm.cpp
         codeemitter.cpp
         codeemitter.h
         directives.cpp
@@ -189,6 +188,10 @@ endif ()
 
 include_directories(BEFORE ${LUA_DIR} ${TOLUAPP_DIR} "${PEGTL_DIR}include")
 
-add_executable(sjasmplus ${SOURCE_FILES})
+add_library(sjasmplus_lib OBJECT ${SOURCE_FILES})
 
-target_link_libraries (sjasmplus ${LINK_LIBS})
+add_executable(sjasmplus src/sjasm.cpp )
+
+target_link_libraries (sjasmplus sjasmplus_lib ${LINK_LIBS})
+
+add_subdirectory(tests tests EXCLUDE_FROM_ALL)

@@ -11,7 +11,14 @@ using std::endl;
 // FIXME: Remove
 void initLegacyErrorHandler(Assembler *_Asm);
 
-void Assembler::init() {
+extern int pass; // FIXME
+const int LASTPASS = 3; // FIXME
+extern unsigned int CurrentGlobalLine, CompiledCurrentLine; // FIXME
+
+
+auto Assembler::assemble(const std::string &Input) -> int {
+
+    auto StringInput = !Input.empty();
 
     Macros.init(&Listing);
     Labels.init(&Macros, &Modules);
@@ -36,10 +43,10 @@ void Assembler::init() {
                      fs::absolute(SrcFileNames[0]).parent_path();
     Options.IncludeDirsList.push_front(MainSrcFileDir);
     if (CWD != MainSrcFileDir) {
-        Options.IncludeDirsList.push_back(currentDirectory());
+        Options.IncludeDirsList.push_back(CWD);
     }
 
-    if (SrcFileNames.empty()) {
+    if (!StringInput && SrcFileNames.empty()) {
         exitFail("No input file(s)"s);
     }
 
@@ -52,21 +59,10 @@ void Assembler::init() {
     }
     Em.setRawOutputOptions(Options.EnableOrOverrideRawOutput,
                            Options.RawOutputFileName,
-                           Options.OutputDirectory);
+                           Options.OutputDirectory, StringInput ? &OStream : nullptr);
 
     // FIXME:
     initCPUParser(Options.FakeInstructions, Options.Target, Options.IsReversePOP);
-
-}
-
-extern int pass; // FIXME
-const int LASTPASS = 3; // FIXME
-extern unsigned int CurrentGlobalLine, CompiledCurrentLine; // FIXME
-
-
-int Assembler::assemble(const std::string &Input) {
-
-    init();
 
     // if memory type != none
     bool W2DEncodingFlag = Options.ConvertWindowsToDOS;
@@ -83,12 +79,19 @@ int Assembler::assemble(const std::string &Input) {
         Exports = new ExportWriter{Options.ExportFName};
     }
 
-    // open source files
-    for (const auto &F : SrcFileNames) {
-        openTopLevelFile(getAbsPath(F), PerFileExports);
+
+    if (!StringInput) {
+        // open source files
+        for (const auto &F : SrcFileNames) {
+            openTopLevelFile(getAbsPath(F), PerFileExports);
+        }
+    } else {
+        openString(Input);
     }
 
-    _COUT "Pass 1 complete (" _CMDL msg::ErrorCount _CMDL " errors)" _ENDL;
+    if (!StringInput) {
+        msg("Pass 1 complete (" + std::to_string(msg::ErrorCount) + " errors)");
+    }
 
     Options.ConvertWindowsToDOS = W2DEncodingFlag;
 
@@ -97,14 +100,17 @@ int Assembler::assemble(const std::string &Input) {
 
         initPass(pass);
 
-        for (const auto &F : SrcFileNames) {
-            openTopLevelFile(getAbsPath(F), PerFileExports);
+        if (!StringInput) {
+            for (const auto &F : SrcFileNames) {
+                openTopLevelFile(getAbsPath(F), PerFileExports);
+            }
+        } else {
+            openString(Input);
         }
 
-        Em.reset();
-        if (pass != LASTPASS) {
+        if (pass != LASTPASS && !StringInput) {
             msg("Pass "s + std::to_string(pass) + " complete ("s + std::to_string(msg::ErrorCount) + " errors)"s);
-        } else {
+        } else if (!StringInput) {
             msg("Pass 3 complete");
         }
     } while (pass < 3);;
@@ -125,9 +131,11 @@ int Assembler::assemble(const std::string &Input) {
         Labels.dumpSymbols(Options.SymbolListFName);
     }
 
-    _COUT "Errors: " _CMDL msg::ErrorCount _CMDL ", warnings: " _CMDL msg::WarningCount _CMDL ", compiled: " _CMDL CompiledCurrentLine _CMDL " lines" _ENDL;
 
-    cout << flush;
+    if (!StringInput) {
+        msg("Errors: " + std::to_string(msg::ErrorCount) + ", warnings: " + std::to_string(msg::WarningCount) +
+            ", compiled: " + std::to_string(CompiledCurrentLine) + " lines");
+    }
 
     // Shutdown Lua
     shutdownLUA();
@@ -135,7 +143,13 @@ int Assembler::assemble(const std::string &Input) {
     return msg::ErrorCount == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-int Assembler::runCLI(int argc, char *argv[]) {
+auto Assembler::assembleString(const std::string &Input) -> std::vector<uint8_t> {
+    OStream.str(""s);
+    assemble(Input);
+    return {std::vector<uint8_t>(std::istreambuf_iterator<char>(OStream), std::istreambuf_iterator<char>())};
+}
+
+auto Assembler::runCLI(int argc, char *argv[]) -> int {
     const char *Banner = "SjASMPlus Z80 Cross-Assembler v." SJASMPLUS_VERSION;
 
     Options(argc, argv, SrcFileNames);
@@ -153,7 +167,7 @@ int Assembler::runCLI(int argc, char *argv[]) {
         msg(Banner);
     }
 
-    return assemble(""s);
+    return assemble();
 }
 
 void initLegacyParser(); // FIXME
@@ -189,7 +203,7 @@ void Assembler::exitFail(const std::string &Msg) {
     exitFail();
 }
 
-fs::path Assembler::getAbsPath(const fs::path &p) {
+auto Assembler::getAbsPath(const fs::path &p) -> fs::path {
     return fs::absolute(currentDirectory() / p);
 }
 
@@ -227,6 +241,20 @@ void Assembler::openFile(const fs::path &FileName) {
         SourceBuffers.top()->SrcFileNameForMsg = fs::relative(FileName, MainSrcFileDir).string();
     }
 #endif
+
+    processBuffer(true);
+
+    // FIXME:
+    checkRepeatStackAtEOF();
+
+    if (currentBuffer().CurrentLine > MaxLineNumber) {
+        MaxLineNumber = currentBuffer().CurrentLine;
+    }
+    SourceBuffers.pop();
+}
+
+void Assembler::openString(const std::string &Input) {
+    SourceBuffers.push(unique_ptr<SourceCodeBuffer>(new SourceCodeString {Input}));
 
     processBuffer(true);
 

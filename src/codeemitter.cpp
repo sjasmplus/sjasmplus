@@ -12,8 +12,8 @@ optional<std::string> CodeEmitter::emitByte(uint8_t Byte) {
     if (MemManager.isActive()) {
         MemManager.writeByte(getEmitAddress(), Byte);
     }
-    if (RawOFS.is_open()) {
-        RawOFS.write((char *)&Byte, 1);
+    if (RawOStream != nullptr) {
+        RawOStream->write((char *)&Byte, 1);
     }
     incAddress();
     return std::nullopt;
@@ -49,19 +49,24 @@ void CodeEmitter::doEnt() {
     Disp = false;
 }
 
-void CodeEmitter::setRawOutputOptions(bool EnableOrOverride,
-                                      const fs::path &FileName,
-                                      const fs::path &_ForcedOutputDirectory) {
+void CodeEmitter::setRawOutputOptions(bool EnableOrOverride, const fs::path &FileName,
+                                      const fs::path &_ForcedOutputDirectory, std::stringstream *StringStream) {
     if (EnableOrOverride) {
         RawOutputOverride = !FileName.empty();
         setRawOutput(FileName);
     }
     ForcedOutputDirectory = _ForcedOutputDirectory;
+
+    if (StringStream != nullptr) {
+        RawOutputOverride = true;
+        setRawOutput(StringStream);
+    }
 }
 
 void CodeEmitter::setRawOutput(const fs::path &FileName, OutputMode Mode) {
     if (RawOFS.is_open()) {
         RawOFS.close();
+        RawOStream = nullptr;
         enforceFileSize();
     }
     auto OpenMode = std::ios_base::binary | std::ios_base::in | std::ios_base::out;
@@ -78,21 +83,27 @@ void CodeEmitter::setRawOutput(const fs::path &FileName, OutputMode Mode) {
     RawOutputEnable = true;
     RawOutputFileName = ForcedOutputDirectory.empty() ? FileName : resolveOutputPath(FileName);
     RawOFS.open(RawOutputFileName, OpenMode);
+    RawOStream = &RawOFS;
+}
+
+void CodeEmitter::setRawOutput(std::stringstream *SStream) {
+    RawOStream = SStream;
+    RawOutputEnable = true;
 }
 
 optional<std::string> CodeEmitter::seekRawOutput(std::streamoff Offset, std::ios_base::seekdir Method) {
-    if (RawOFS.is_open()) {
+    if (RawOStream != nullptr) {
 
         std::streampos NewPos;
         if (Method == std::ios_base::cur) {
-            NewPos = RawOFS.tellp() + Offset;
+            NewPos = RawOStream->tellp() + Offset;
         } else {
             NewPos = Offset;
         }
 
-        RawOFS.seekp(Offset, Method);
+        RawOStream->seekp(Offset, Method);
 
-        if (RawOFS.tellp() != NewPos) {
+        if (RawOStream->tellp() != NewPos) {
             return "Could not seek to position "s + std::to_string(Offset) +
                    " of file "s + RawOutputFileName.string();
         }

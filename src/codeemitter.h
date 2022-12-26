@@ -29,6 +29,7 @@ private:
     fs::path RawOutputFileName;
     bool RawOutputEnable = false;
     bool RawOutputOverride = false;
+    std::ostream *RawOStream = nullptr; // Points to either RawOFS or externally supplied stringstream
     std::fstream RawOFS;
     uintmax_t ForcedRawOutputSize = 0;
     fs::path ForcedOutputDirectory;
@@ -46,6 +47,7 @@ public:
     ~CodeEmitter() {
         if (RawOFS.is_open()) {
             RawOFS.close();
+            RawOStream = nullptr;
             enforceFileSize();
         }
     }
@@ -162,11 +164,12 @@ public:
         return MemManager.getPtrToPageInSlot(Slot);
     }
 
-    void setRawOutputOptions(bool EnableOrOverride,
-                             const fs::path &FileName,
-                             const fs::path &_ForcedOutputDirectory);
+    void setRawOutputOptions(bool EnableOrOverride, const fs::path &FileName,
+                             const fs::path &_ForcedOutputDirectory, std::stringstream *StringStream);
 
     void setRawOutput(const fs::path &FileName, OutputMode Mode = OutputMode::Truncate);
+
+    void setRawOutput(std::stringstream *SStream);
 
     bool isRawOutputEnabled() { return RawOutputEnable; }
 
