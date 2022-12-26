@@ -1,8 +1,3 @@
-# **********************************************
-# Add this to main CMakeLists.txt:
-# add_subdirectory(tests tests EXCLUDE_FROM_ALL)
-# **********************************************
-
 enable_testing()
 
 find_package(Catch2 3 REQUIRED)
@@ -23,8 +18,6 @@ add_executable(z80tests z80tests.cpp ${GENERATED_FILE})
 target_link_libraries(z80tests PRIVATE Catch2::Catch2WithMain sjasmplus_lib ${LINK_LIBS})
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS z80tests)
-
-add_dependencies(z80tests z80_gen.inc.h)
 
 include(CTest)
 include(Catch)
