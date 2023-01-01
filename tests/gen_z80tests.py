@@ -91,7 +91,11 @@ def i(name: str, instr_s: str) -> T:
         template="""
     TEST_CASE("%(name)s") {
         %(common)s%(extra)s
-        REQUIRE (ASM(%(asm)s) == DB {%(mc)s });
+        std::string AsmSrc = %(asm)s;
+        auto ResultGot = ASM(AsmSrc);
+        std::vector<uint8_t> ResultExpected = {%(mc)s };
+        INFO("\\"" << AsmSrc << "\\" -> " << toHex(ResultGot) << " -- Expected: " << toHex(ResultExpected));   
+        REQUIRE (ResultGot == ResultExpected );
     }
     """,
         subst={'name': name, 'asm': '" ' + instr_s + '"', 'common': gen_common, 'extra': ''},
@@ -107,6 +111,12 @@ def i1(instr: str) -> T:
 def cb(name: str, instr_s: str) -> T:
     tb = (i(name, instr_s)).value
     tb = tb._replace(prefix=bytes(b'\xCB'))
+    return T(tb)
+
+
+def ed(name: str, instr_s: str) -> T:
+    tb = (i(name, instr_s)).value
+    tb = tb._replace(prefix=bytes(b'\xED'))
     return T(tb)
 
 
@@ -175,6 +185,16 @@ def rp_p(tb: TestBits) -> T:
     return T(tb)
 
 
+def rp_p_not2(tb: TestBits) -> T:
+    """ To skip ED-prefixed duplicates of LD (nn), HL / LD HL, (nn)"""
+    templ_add_extra(tb, """
+        auto RP = GENERATE(filter([](int i) { return i != 2; }, range(0, 4)));
+    """)
+    tb.subst['asm'] += '" " + TableRP[RP] + ","'
+    tb.mcbits[0] = wrap_uint8_t(byte_to_hex(tb.mcbits[0]) + ' | (RP << 4)')
+    return T(tb)
+
+
 def rp2_p(tb: TestBits) -> T:
     templ_add_extra(tb, """
         auto RP = GENERATE(range(0, 4));
@@ -187,6 +207,15 @@ def rp2_p(tb: TestBits) -> T:
 def r_y(tb: TestBits) -> T:
     templ_add_extra(tb, """
         auto Y = GENERATE(range(0, 8));
+    """)
+    tb.subst['asm'] += '" " + TableR[Y] + ","'
+    tb.mcbits[0] = wrap_uint8_t(byte_to_hex(tb.mcbits[0]) + ' | (Y << 3)')
+    return T(tb)
+
+
+def r_y_not6(tb: TestBits) -> T:
+    templ_add_extra(tb, """
+        auto Y = GENERATE(filter([](int i) { return i != 6; }, range(0, 8)));
     """)
     tb.subst['asm'] += '" " + TableR[Y] + ","'
     tb.mcbits[0] = wrap_uint8_t(byte_to_hex(tb.mcbits[0]) + ' | (Y << 3)')
@@ -286,6 +315,27 @@ def rot(tb: TestBits) -> T:
     """)
     tb.subst['asm'] = '" " + TableROT[Y] + '
     tb.mcbits[0] = wrap_uint8_t(byte_to_hex(tb.mcbits[0]) + ' | (Y << 3)')
+    return T(tb)
+
+
+def im_y(tb: TestBits) -> T:
+    """ Skip '0/1' """
+    templ_add_extra(tb, """
+        auto Y = GENERATE(filter([](int i) { return i != 1; }, range(0, 4)));
+    """)
+    tb.subst['asm'] += '" " + TableIM[Y] + ","'
+    tb.mcbits[0] = wrap_uint8_t(byte_to_hex(tb.mcbits[0]) + ' | (Y << 3)')
+    return T(tb)
+
+
+def bli(tb: TestBits) -> T:
+    """Block instructions"""
+    templ_add_extra(tb, """
+        auto Y = GENERATE(range(4, 8));
+        auto Z = GENERATE(range(0, 4));
+    """)
+    tb.subst['asm'] = '" " + TableBLI[Y-4][Z]'
+    tb.mcbits[0] = wrap_uint8_t(byte_to_hex(tb.mcbits[0]) + ' | (Y << 3) | Z')
     return T(tb)
 
 
@@ -437,3 +487,51 @@ for x in range(4):
         case 3:
             cb('SET y, r', 'SET') >> sx(x) >> lit_y >> r_z >> done
 
+# ED prefix
+for x in range(4):
+    match x:
+        case 0:
+            pass
+        case 1:
+            for z in range(8):
+                match z:
+                    case 0:
+                        ed('IN r, (C)', 'IN') >> sx(x) >> sz(z) >> r_y_not6 >> arg('(C)') >> done
+                        ed('IN (C)', 'IN (C)') >> sx(x) >> sz(z) >> sy(6) >> done
+                    case 1:
+                        ed('OUT (C), r', 'OUT (C),') >> sx(x) >> sz(z) >> r_y_not6 >> done
+                        ed('OUT (C), 0', 'OUT (C), 0') >> sx(x) >> sz(z) >> sy(6) >> done
+                    case 2:
+                        for q in range(2):
+                            match q:
+                                case 0:
+                                    ed('SBC HL, rp', 'SBC HL,') >> sx(x) >> sz(z) >> sq(q) >> rp_p >> done
+                                case 1:
+                                    ed('ADC HL, rp', 'ADC HL,') >> sx(x) >> sz(z) >> sq(q) >> rp_p >> done
+                    case 3:
+                        for q in range(2):
+                            match q:
+                                case 0:
+                                    ed('LD (nn), rp', 'LD') >> sx(x) >> sz(z) >> sq(q) >> immaddr >> rp_p_not2 >> done
+                                case 1:
+                                    ed('LD rp, (nn)', 'LD') >> sx(x) >> sz(z) >> sq(q) >> rp_p_not2 >> immaddr >> done
+                    case 4:
+                        ed('NEG', 'NEG') >> sx(x) >> sz(z) >> sy(0) >> done
+                    case 5:
+                        for y in range(2):
+                            match y:
+                                case 0:
+                                    ed('RETN', 'RETN') >> sx(x) >> sz(z) >> sy(y) >> done
+                                case 1:
+                                    ed('RETI', 'RETI') >> sx(x) >> sz(z) >> sy(y) >> done
+                    case 6:
+                        ed('IM n', 'IM') >> sx(x) >> sz(z) >> im_y >> done
+                    case 7:
+                        for y, j in enumerate(['LD I, A', 'LD R, A', 'LD A, I', 'LD A, R',
+                                               'RRD', 'RLD']):
+                            ed(j, j) >> sx(x) >> sz(z) >> sy(y) >> done
+
+        case 2:
+            ed('Block instructions', '') >> sx(x) >> bli >> done
+        case 3:
+            pass
